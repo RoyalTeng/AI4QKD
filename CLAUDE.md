@@ -219,3 +219,69 @@ protocol_graph = {
 4. **验证**：使用`black`、`flake8`和`mypy`进行代码质量检查
 5. **测试示例**：用`python examples/bb84_example.py`验证更改
 6. **文档**：在`devlog/`中更新重要更改的开发日志
+
+## 开发规则总结
+
+### 必须遵循的命令规范
+
+#### 环境命令
+```bash
+# Windows环境设置
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+pip install -e .
+```
+
+#### 测试命令（强制要求）
+```bash
+# 所有变更前必须运行
+pytest tests/
+pytest --cov=. tests/
+pytest tests/test_simulator.py    # 仿真器模块专用
+```
+
+#### 代码质量命令（提交前必须）
+```bash
+black .      # 代码格式化
+flake8 .     # 代码检查
+mypy .       # 类型检查
+```
+
+#### 验证命令
+```bash
+python examples/bb84_example.py  # 验证更改有效性
+```
+
+### 严格执行的开发原则
+
+#### 1. TDD强制要求
+- **仿真器模块（simulator/）**：所有更改必须先写测试再实现
+- **测试构建顺序**：单光子 → 单信道 → 单测量 → 完整协议
+- **绝对禁止**：在没有完整测试覆盖下提交`simulate_protocol_graph`
+
+#### 2. 节点类型规范（不可违反）
+- **标准类型**：QSP、QC、QM、CLO（量子态准备、信道、测量、经典操作）
+- **命名规则**：节点ID必须反映类型（`qsp_1`、`qc_alice_bob`）
+- **归属规则**：每个节点必须有`party`属性（Alice、Bob、Eve）
+
+#### 3. 安全分析要求（关键规范）
+- **强制使用**：有限密钥安全分析（非渐近极限）
+- **框架要求**：可组合安全框架实现
+- **计算规则**：使用平滑最小熵H_min^ε(X|E)
+
+#### 4. 架构依赖顺序（不可颠倒）
+1. AI智能体层 → QCGF DSL  
+2. QCGF DSL → 仿真器
+3. 仿真器 → 安全评估器
+4. 安全评估器 → 形式化验证
+
+### 代码质量要求
+- **提交前检查**：必须通过black、flake8、mypy
+- **测试覆盖率**：仿真器模块要求100%覆盖
+- **示例验证**：所有更改必须通过`python examples/bb84_example.py`验证
+
+### 项目特殊要求
+- **协议图格式**：必须符合指定的数据结构规范
+- **安全计算**：禁用渐近分析，仅使用现实有限密钥方法
+- **模块协调**：层间接口严格按照依赖关系设计

@@ -16,8 +16,8 @@
 """
 
 # 通用安全性分析器（新功能）
-from .key_rate_calculator import UniversalKeyRateCalculator
-from .entropy_estimator import UniversalEntropyEstimator
+# from .key_rate_calculator import UniversalKeyRateCalculator
+# from .entropy_estimator import UniversalEntropyEstimator
 
 # 传统安全性分析器（向后兼容）
 from .key_rate_calculator import KeyRateCalculator, KeyRateParameters, KeyRateResult
@@ -27,9 +27,9 @@ from .composable_security import ComposableSecurityAnalyzer, ComposableSecurityR
 from .ac_framework import ProtocolType, SecurityParameters
 
 __all__ = [
-    # 新功能
-    "UniversalKeyRateCalculator",
-    "UniversalEntropyEstimator",
+    # 新功能 (暂时注释)
+    # "UniversalKeyRateCalculator",
+    # "UniversalEntropyEstimator",
     # 向后兼容
     "KeyRateCalculator",
     "KeyRateParameters", 
