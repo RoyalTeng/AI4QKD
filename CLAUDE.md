@@ -385,6 +385,7 @@ AI4QKD/
 
 ### Conda虚拟环境
 - **环境名称**: ai4qkd_env
+- **环境路径**: D:\Users\Administrator\miniconda3\envs\ai4qkd_env
 - **Python版本**: 3.8+
 - **状态**: 已创建并安装依赖
 - **使用方式**: 整个重构过程都使用此环境
@@ -394,6 +395,9 @@ AI4QKD/
 # 激活conda环境
 conda activate ai4qkd_env
 
+# 或者直接指定路径激活
+conda activate D:\Users\Administrator\miniconda3\envs\ai4qkd_env
+
 # 验证环境
 python --version
 pip list | grep -E "(numpy|scipy|matplotlib|qiskit|torch)"
@@ -401,6 +405,7 @@ pip list | grep -E "(numpy|scipy|matplotlib|qiskit|torch)"
 
 ### 环境要求
 - 确保每次开发前都激活 `ai4qkd_env` 环境
+- 环境路径：`D:\Users\Administrator\miniconda3\envs\ai4qkd_env`
 - 所有依赖包都已预装，无需重新安装
 - 使用此环境进行所有重构工作
 
@@ -686,6 +691,7 @@ class [ClassName]:
 
 ### 环境使用提醒
 - 使用已创建的conda环境 `ai4qkd_env`
+- 环境路径：`D:\Users\Administrator\miniconda3\envs\ai4qkd_env`
 - 每次开发前必须激活环境：`conda activate ai4qkd_env`
 - 所有依赖已预装，无需重新安装
 - 确保在此环境中进行所有重构工作
