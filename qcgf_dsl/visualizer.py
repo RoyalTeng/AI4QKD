@@ -70,7 +70,7 @@ class ProtocolVisualizer:
         - 提供合理的默认设置
         - 便于扩展和定制
         
-        Args:
+        参数：
             style_config: 样式配置字典
         """
         self.style_config = style_config or {}
@@ -146,21 +146,21 @@ class ProtocolVisualizer:
         - 优化了布局和渲染性能
         - 支持多种输出选项
         
-        Args:
+        参数：
             protocol: 要可视化的协议图
             layout: 布局算法名称
             save_path: 保存路径（可选）
             show_labels: 是否显示节点标签
             show_edge_labels: 是否显示边标签
             
-        Returns:
+        返回值：
             matplotlib figure对象（如果可用）
             
-        Raises:
+        异常：
             RuntimeError: matplotlib不可用时抛出
         """
         if not self._matplotlib_available:
-            raise RuntimeError("Matplotlib is required for visualization but not available")
+            raise RuntimeError("可视化需要Matplotlib库但不可用")
         
         # 使用指定布局或默认布局
         layout_type = layout or self.style["layout"]
@@ -196,18 +196,18 @@ class ProtocolVisualizer:
             return fig
             
         except Exception as e:
-            warnings.warn(f"Visualization failed: {e}", RuntimeWarning)
+            warnings.warn(f"可视化失败: {e}", RuntimeWarning)
             return None
     
     def _compute_layout(self, G, layout_type: str) -> Dict[str, Tuple[float, float]]:
         """
         计算图布局
         
-        Args:
+        参数：
             G: NetworkX图对象
             layout_type: 布局算法类型
             
-        Returns:
+        返回值：
             Dict[str, Tuple[float, float]]: 节点位置字典
         """
         # 简化的布局实现（保持向后兼容性）
@@ -231,7 +231,7 @@ class ProtocolVisualizer:
         """
         绘制节点
         
-        Args:
+        参数：
             G: NetworkX图对象
             pos: 节点位置字典
             ax: matplotlib轴对象
@@ -266,7 +266,7 @@ class ProtocolVisualizer:
         """
         绘制边
         
-        Args:
+        参数：
             G: NetworkX图对象  
             pos: 节点位置字典
             ax: matplotlib轴对象
@@ -302,7 +302,7 @@ class ProtocolVisualizer:
         """
         添加图例
         
-        Args:
+        参数：
             ax: matplotlib轴对象
         """
         # 简化的图例实现
@@ -326,12 +326,12 @@ class ProtocolVisualizer:
         - 简化导出流程
         - 确保文件格式正确性
         
-        Args:
+        参数：
             protocol: 协议图对象
             filepath: 输出文件路径
         """
         if not self._matplotlib_available:
-            raise RuntimeError("Matplotlib is required for SVG export")
+            raise RuntimeError("SVG导出需要Matplotlib库")
         
         fig = self.visualize(protocol)
         if fig:
@@ -347,13 +347,13 @@ class ProtocolVisualizer:
         - 支持DPI设置
         - 优化图像质量
         
-        Args:
+        参数：
             protocol: 协议图对象
             filepath: 输出文件路径
             dpi: 图像分辨率
         """
         if not self._matplotlib_available:
-            raise RuntimeError("Matplotlib is required for PNG export")
+            raise RuntimeError("PNG导出需要Matplotlib库")
         
         fig = self.visualize(protocol)
         if fig:
@@ -373,13 +373,13 @@ def visualize_protocol(protocol: ProtocolGraph,
     - 简化调用方式
     - 提供常用参数的快捷设置
     
-    Args:
+    参数：
         protocol: 要可视化的协议图
         layout: 布局算法
         save_path: 保存路径（可选）
         **kwargs: 其他可视化参数
         
-    Returns:
+    返回值：
         matplotlib figure对象（如果可用）
     """
     visualizer = ProtocolVisualizer()

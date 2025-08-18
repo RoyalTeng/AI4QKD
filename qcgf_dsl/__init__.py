@@ -140,7 +140,7 @@ def create_bb84_protocol():
     - 简化用户的协议创建流程
     - 基于原有BB84测试用例设计
     
-    Returns:
+    返回值：
         ProtocolGraph: 配置好的BB84协议图
     """
     protocol = ProtocolGraph("BB84_Protocol")
@@ -181,7 +181,7 @@ def create_mdi_qkd_protocol():
     - 简化多方协议的创建流程
     - 支持Charlie方的Bell态测量
     
-    Returns:
+    返回值：
         ProtocolGraph: 配置好的MDI-QKD协议图
     """
     protocol = ProtocolGraph("MDI_QKD_Protocol")
@@ -223,13 +223,13 @@ def parse_protocol_from_string(dsl_text: str) -> ProtocolGraph:
     - 提供统一的错误处理
     - 基于原有解析器功能封装
     
-    Args:
+    参数：
         dsl_text: DSL格式的协议描述文本
         
-    Returns:
+    返回值：
         ProtocolGraph: 解析后的协议图
         
-    Raises:
+    异常：
         ValueError: DSL语法错误时抛出
     """
     parser = QCGFParser()
@@ -245,12 +245,12 @@ def save_protocol_to_file(protocol: ProtocolGraph, filepath: str, format_type: s
     - 统一的文件操作接口
     - 基于原有序列化功能扩展
     
-    Args:
+    参数：
         protocol: 要保存的协议图
         filepath: 文件路径
         format_type: 文件格式 ("json", "dsl")
         
-    Raises:
+    异常：
         ValueError: 不支持的文件格式
         IOError: 文件写入错误
     """
@@ -260,7 +260,7 @@ def save_protocol_to_file(protocol: ProtocolGraph, filepath: str, format_type: s
         serializer = QCGFSerializer()
         serializer.serialize_to_file(protocol, filepath)
     else:
-        raise ValueError(f"Unsupported format: {format_type}")
+        raise ValueError(f"不支持的格式: {format_type}")
 
 
 def load_protocol_from_file(filepath: str) -> ProtocolGraph:
@@ -272,13 +272,13 @@ def load_protocol_from_file(filepath: str) -> ProtocolGraph:
     - 统一的文件加载接口
     - 基于文件扩展名选择解析器
     
-    Args:
+    参数：
         filepath: 文件路径
         
-    Returns:
+    返回值：
         ProtocolGraph: 加载的协议图
         
-    Raises:
+    异常：
         ValueError: 不支持的文件格式
         IOError: 文件读取错误
     """
@@ -292,7 +292,7 @@ def load_protocol_from_file(filepath: str) -> ProtocolGraph:
         parser = QCGFParser()
         return parser.parse_from_file(filepath)
     else:
-        raise ValueError(f"Unsupported file extension: {ext}")
+        raise ValueError(f"不支持的文件扩展名: {ext}")
 
 
 # 模块级别的配置检查
@@ -312,19 +312,19 @@ def _check_dependencies():
     try:
         import networkx
     except ImportError:
-        raise ImportError("NetworkX is required for protocol graph functionality")
+        raise ImportError("协议图功能需要NetworkX库，请安装NetworkX")
     
     # 检查matplotlib（可选，用于可视化）
     try:
         import matplotlib
     except ImportError:
-        warnings.warn("Matplotlib not available - visualization features disabled", ImportWarning)
+        warnings.warn("Matplotlib不可用 - 可视化功能已禁用", ImportWarning)
     
     # 检查qiskit（可选，用于代码生成）
     try:
         import qiskit
     except ImportError:
-        warnings.warn("Qiskit not available - code generation features limited", ImportWarning)
+        warnings.warn("Qiskit不可用 - 代码生成功能受限", ImportWarning)
 
 
 # 执行依赖检查

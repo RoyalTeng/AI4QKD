@@ -108,13 +108,13 @@ class QCGFParser:
         - 改进了错误处理和报告
         - 优化了解析性能
         
-        Args:
+        参数：
             text: 包含协议描述的DSL文本
             
-        Returns:
+        返回值：
             ProtocolGraph: 解析后的协议图
             
-        Raises:
+        异常：
             ValueError: DSL语法错误时抛出
         """
         # 重置行号计数器
@@ -146,10 +146,10 @@ class QCGFParser:
         - 统一处理注释、空行、行号
         - 便于错误定位和报告
         
-        Args:
+        参数：
             text: 原始DSL文本
             
-        Returns:
+        返回值：
             List[Tuple[int, str]]: (行号, 有效行内容) 的列表
         """
         valid_lines = []
@@ -184,11 +184,11 @@ class QCGFParser:
         - 提供详细的错误定位
         - 支持灵活的参数格式
         
-        Args:
+        参数：
             lines: 预处理后的文本行
             protocol: 协议图对象
             
-        Raises:
+        异常：
             ValueError: 节点定义语法错误时抛出
         """
         for line_num, line in lines:
@@ -205,7 +205,7 @@ class QCGFParser:
         """
         解析单个节点定义
         
-        Args:
+        参数：
             match: 正则匹配结果
             protocol: 协议图对象
         """
@@ -250,11 +250,11 @@ class QCGFParser:
         - 验证节点存在性
         - 支持边参数定义
         
-        Args:
+        参数：
             lines: 预处理后的文本行
             protocol: 协议图对象
             
-        Raises:
+        异常：
             ValueError: 边定义语法错误时抛出
         """
         for line_num, line in lines:
@@ -271,7 +271,7 @@ class QCGFParser:
         """
         解析单个边定义
         
-        Args:
+        参数：
             match: 正则匹配结果
             protocol: 协议图对象
         """
@@ -314,13 +314,13 @@ class QCGFParser:
         - 自动类型转换和验证
         - 改进错误处理
         
-        Args:
+        参数：
             params_str: 参数字符串
             
-        Returns:
+        返回值：
             Dict[str, Any]: 解析后的参数字典
             
-        Raises:
+        异常：
             ValueError: 参数格式错误时抛出
         """
         if not params_str:
@@ -355,10 +355,10 @@ class QCGFParser:
         - 支持布尔值、数值、字符串
         - 提供合理的默认转换逻辑
         
-        Args:
+        参数：
             value: 字符串格式的参数值
             
-        Returns:
+        返回值：
             Any: 转换后的参数值
         """
         # 去除首尾空白
@@ -397,10 +397,10 @@ class QCGFParser:
         - 检查协议图的基本完整性
         - 提供有用的验证信息
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Raises:
+        异常：
             ValueError: 协议图不完整或无效时抛出
         """
         # 检查协议图是否为空
@@ -419,7 +419,7 @@ class QCGFParser:
                 isolated_nodes.append(node.node_id)
         
         if isolated_nodes:
-            print(f"Warning: Found isolated nodes: {isolated_nodes}")
+            print(f"警告: 发现孤立节点: {isolated_nodes}")
     
     def parse_from_file(self, filepath: str) -> ProtocolGraph:
         """
@@ -430,13 +430,13 @@ class QCGFParser:
         - 使用UTF-8编码确保中文支持
         - 提供详细的文件错误信息
         
-        Args:
+        参数：
             filepath: 文件路径
             
-        Returns:
+        返回值：
             ProtocolGraph: 解析后的协议图
             
-        Raises:
+        异常：
             IOError: 文件读取错误时抛出
             ValueError: 文件格式错误时抛出
         """
@@ -497,7 +497,7 @@ class QCGFSerializer:
         - 提供合理的默认格式设置
         - 便于扩展和定制
         
-        Args:
+        参数：
             format_options: 格式化选项字典
         """
         self.format_options = format_options or {}
@@ -526,10 +526,10 @@ class QCGFSerializer:
         - 改进了可读性和结构化
         - 支持多种格式化选项
         
-        Args:
+        参数：
             protocol: ProtocolGraph实例
             
-        Returns:
+        返回值：
             str: 协议的DSL文本表示
         """
         lines = []
@@ -562,10 +562,10 @@ class QCGFSerializer:
         - 包含生成时间和版本
         - 便于文档和追踪
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Returns:
+        返回值：
             List[str]: 头部信息行列表
         """
         import datetime
@@ -596,10 +596,10 @@ class QCGFSerializer:
         - 优化参数格式化
         - 添加类型描述注释
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Returns:
+        返回值：
             List[str]: 节点定义行列表
         """
         lines = ["# Node Definitions"]
@@ -631,11 +631,11 @@ class QCGFSerializer:
         """
         按类型分组序列化节点
         
-        Args:
+        参数：
             protocol: 协议图对象
             nodes: 节点列表
             
-        Returns:
+        返回值：
             List[str]: 分组后的节点定义行列表
         """
         lines = ["# Node Definitions (Grouped by Type)"]
@@ -678,10 +678,10 @@ class QCGFSerializer:
         - 优化参数对齐和可读性
         - 处理特殊字符和引号
         
-        Args:
+        参数：
             node: 节点对象
             
-        Returns:
+        返回值：
             str: 格式化的节点定义行
         """
         # 基本格式: NodeType node_id
@@ -706,10 +706,10 @@ class QCGFSerializer:
         - 确保重要参数的完整性
         - 处理枚举类型的序列化
         
-        Args:
+        参数：
             node: 节点对象
             
-        Returns:
+        返回值：
             Dict[str, Any]: 需要序列化的参数
         """
         # 获取节点的默认模板
@@ -747,10 +747,10 @@ class QCGFSerializer:
         - 优化边参数的格式化
         - 提供清晰的边类型标识
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Returns:
+        返回值：
             List[str]: 边定义行列表
         """
         lines = ["# Edge Definitions"]
@@ -778,12 +778,12 @@ class QCGFSerializer:
         - 清晰的边类型标识
         - 合理的参数格式化
         
-        Args:
+        参数：
             source: 源节点ID
             target: 目标节点ID
             edge_data: 边数据字典
             
-        Returns:
+        返回值：
             str: 格式化的边定义行
         """
         # 获取边类型
@@ -814,10 +814,10 @@ class QCGFSerializer:
         - 支持多种数据类型的格式化
         - 提供美观的排列方式
         
-        Args:
+        参数：
             params: 参数字典
             
-        Returns:
+        返回值：
             str: 格式化的参数字符串
         """
         if not params:
@@ -846,10 +846,10 @@ class QCGFSerializer:
         - 处理枚举类型
         - 保持数值精度
         
-        Args:
+        参数：
             value: 参数值
             
-        Returns:
+        返回值：
             str: 格式化的参数值字符串
         """
         # 处理None值
@@ -900,10 +900,10 @@ class QCGFSerializer:
         - 便于协议分析和调试
         - 格式化统计信息的展示
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Returns:
+        返回值：
             List[str]: 统计信息行列表
         """
         lines = ["# Protocol Statistics"]
@@ -951,11 +951,11 @@ class QCGFSerializer:
         - 使用UTF-8编码确保中文支持
         - 提供详细的文件错误信息
         
-        Args:
+        参数：
             protocol: ProtocolGraph实例
             filepath: 输出文件路径
             
-        Raises:
+        异常：
             IOError: 文件写入错误时抛出
         """
         try:
@@ -977,7 +977,7 @@ class QCGFSerializer:
         - 提供动态修改格式化选项的接口
         - 便于定制序列化输出
         
-        Args:
+        参数：
             key: 选项键
             value: 选项值
         """
@@ -987,7 +987,7 @@ class QCGFSerializer:
         """
         获取当前格式化选项
         
-        Returns:
+        返回值：
             Dict[str, Any]: 当前格式化选项
         """
         return self.options.copy()

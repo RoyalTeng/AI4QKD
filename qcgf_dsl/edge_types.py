@@ -78,10 +78,10 @@ class EdgeType(Enum):
         - 支持大小写不敏感的匹配
         - 支持常见的边类型别名
         
-        Args:
+        参数：
             value: 待匹配的值
             
-        Returns:
+        返回值：
             EdgeType: 匹配的边类型枚举，未匹配时返回None
         """
         if isinstance(value, str):
@@ -115,7 +115,7 @@ class EdgeType(Enum):
         - 明确定义量子边的范围
         - 便于量子信息的路由管理
         
-        Returns:
+        返回值：
             List[EdgeType]: 量子边类型列表
         """
         return [cls.QUANTUM]
@@ -130,7 +130,7 @@ class EdgeType(Enum):
         - 涵盖所有非量子的边类型
         - 便于经典信息的处理
         
-        Returns:
+        返回值：
             List[EdgeType]: 经典边类型列表
         """
         return [cls.CLASSICAL, cls.CONTROL, cls.DATA, cls.FEEDBACK, cls.SYNCHRONIZATION]
@@ -145,10 +145,10 @@ class EdgeType(Enum):
         - 优化判断逻辑的性能
         - 使用集合操作提高效率
         
-        Args:
+        参数：
             edge_type: 待检查的边类型
             
-        Returns:
+        返回值：
             bool: 是否为量子边类型
         """
         return edge_type in cls.get_quantum_edges()
@@ -163,10 +163,10 @@ class EdgeType(Enum):
         - 与量子边判断保持一致
         - 确保分类的完整性
         
-        Args:
+        参数：
             edge_type: 待检查的边类型
             
-        Returns:
+        返回值：
             bool: 是否为经典边类型
         """
         return edge_type in cls.get_classical_edges()
@@ -180,7 +180,7 @@ class EdgeType(Enum):
         - 提供用户友好的类型说明
         - 支持国际化和本地化
         
-        Returns:
+        返回值：
             str: 边类型的中文描述
         """
         descriptions = {
@@ -217,7 +217,7 @@ class EdgeDirection(Enum):
         """
         获取方向的中文描述
         
-        Returns:
+        返回值：
             str: 方向的中文描述
         """
         descriptions = {
@@ -289,17 +289,17 @@ def get_edge_template(edge_type: EdgeType) -> Dict[str, Any]:
     - 优化查找性能
     - 支持理想化模式的参数调整
     
-    Args:
+    参数：
         edge_type: 边类型
         
-    Returns:
+    返回值：
         Dict[str, Any]: 包含默认参数的字典
         
-    Raises:
+    异常：
         ValueError: 不支持的边类型
     """
     if edge_type not in EDGE_TYPE_TEMPLATES:
-        raise ValueError(f"Unsupported edge type: {edge_type}")
+        raise ValueError(f"不支持的边类型: {edge_type}")
     
     import copy
     template = copy.deepcopy(EDGE_TYPE_TEMPLATES[edge_type])
@@ -321,11 +321,11 @@ def validate_edge_params(edge_type: EdgeType, params: Dict[str, Any]) -> bool:
     - 支持理想化模式的宽松验证
     - 统一了错误处理机制
     
-    Args:
+    参数：
         edge_type: 边类型
         params: 参数字典
         
-    Returns:
+    返回值：
         bool: 参数是否有效
     """
     # 检查边类型是否支持
@@ -348,10 +348,10 @@ def _get_required_edge_params(edge_type: EdgeType) -> List[str]:
     """
     获取边类型的必需参数列表
     
-    Args:
+    参数：
         edge_type: 边类型
         
-    Returns:
+    返回值：
         List[str]: 必需参数名称列表
     """
     required_params = {
@@ -370,11 +370,11 @@ def _validate_edge_param_ranges(edge_type: EdgeType, params: Dict[str, Any]) -> 
     """
     验证边参数的取值范围
     
-    Args:
+    参数：
         edge_type: 边类型
         params: 参数字典
         
-    Returns:
+    返回值：
         bool: 参数是否在有效范围内
     """
     # QUANTUM边的参数验证
@@ -434,7 +434,7 @@ def _is_idealized_mode() -> bool:
     - 避免循环导入的问题
     - 支持理想化边参数调整
     
-    Returns:
+    返回值：
         bool: 是否为理想化模式
     """
     # 尝试从node_types模块导入，避免循环导入
@@ -451,11 +451,11 @@ def _apply_idealized_edge_params(edge_type: EdgeType, template: Dict[str, Any]) 
     """
     应用理想化模式的边参数调整
     
-    Args:
+    参数：
         edge_type: 边类型
         template: 原始参数模板
         
-    Returns:
+    返回值：
         Dict[str, Any]: 调整后的理想化参数模板
     """
     # QUANTUM边的理想化调整
@@ -528,14 +528,14 @@ class Edge:
         - 优化了默认参数的设置
         - 改进了验证机制
         
-        Args:
+        参数：
             source_id: 源节点ID
             target_id: 目标节点ID
             edge_type: 边类型
             params: 边参数字典
             edge_id: 边ID（可选，自动生成）
             
-        Raises:
+        异常：
             ValueError: 参数无效时抛出
         """
         self.source_id = source_id
@@ -549,7 +549,7 @@ class Edge:
         
         # 验证参数
         if not validate_edge_params(edge_type, self.params):
-            raise ValueError(f"Invalid parameters for edge type {edge_type}: {self.params}")
+            raise ValueError(f"边类型 {edge_type} 的参数无效: {self.params}")
     
     def _set_default_params(self):
         """
@@ -574,10 +574,10 @@ class Edge:
         - 确保更新后参数的有效性
         - 提供清晰的错误信息
         
-        Args:
+        参数：
             new_params: 新的参数字典
             
-        Raises:
+        异常：
             ValueError: 参数无效时抛出
         """
         # 备份原参数
@@ -590,7 +590,7 @@ class Edge:
         if not validate_edge_params(self.edge_type, self.params):
             # 恢复原参数
             self.params = old_params
-            raise ValueError(f"Invalid parameters for edge type {self.edge_type}: {new_params}")
+            raise ValueError(f"边类型 {self.edge_type} 的参数无效: {new_params}")
     
     def get_param(self, key: str, default: Any = None) -> Any:
         """
@@ -601,11 +601,11 @@ class Edge:
         - 支持默认值机制
         - 简化参数访问逻辑
         
-        Args:
+        参数：
             key: 参数名
             default: 默认值
             
-        Returns:
+        返回值：
             Any: 参数值
         """
         return self.params.get(key, default)
@@ -619,11 +619,11 @@ class Edge:
         - 确保设置后参数的有效性
         - 简化参数修改操作
         
-        Args:
+        参数：
             key: 参数名
             value: 参数值
             
-        Raises:
+        异常：
             ValueError: 参数无效时抛出
         """
         # 备份原值
@@ -639,7 +639,7 @@ class Edge:
                 self.params[key] = old_value
             else:
                 self.params.pop(key, None)
-            raise ValueError(f"Invalid parameter {key}={value} for edge type {self.edge_type}")
+            raise ValueError(f"边类型 {self.edge_type} 的参数无效: {key}={value}")
     
     def is_quantum_edge(self) -> bool:
         """
@@ -649,7 +649,7 @@ class Edge:
         - 保持原有的类型判断接口
         - 使用类方法简化判断逻辑
         
-        Returns:
+        返回值：
             bool: 是否为量子边
         """
         return EdgeType.is_quantum_edge(self.edge_type)
@@ -662,7 +662,7 @@ class Edge:
         - 保持原有的类型判断接口
         - 与量子边判断保持一致
         
-        Returns:
+        返回值：
             bool: 是否为经典边
         """
         return EdgeType.is_classical_edge(self.edge_type)
@@ -675,7 +675,7 @@ class Edge:
         - 新增方向获取的便捷方法
         - 支持方向相关的路由逻辑
         
-        Returns:
+        返回值：
             EdgeDirection: 边的方向
         """
         return self.params.get("direction", EdgeDirection.FORWARD)
@@ -689,7 +689,7 @@ class Edge:
         - 确保所有属性的正确序列化
         - 支持JSON格式的导出
         
-        Returns:
+        返回值：
             Dict[str, Any]: 边的字典表示
         """
         # 处理枚举类型的序列化
@@ -718,13 +718,13 @@ class Edge:
         - 正确处理枚举类型的反序列化
         - 确保创建对象的有效性
         
-        Args:
+        参数：
             data: 边数据字典
             
-        Returns:
+        返回值：
             Edge: 边对象实例
             
-        Raises:
+        异常：
             ValueError: 数据格式错误时抛出
         """
         # 处理枚举类型的反序列化
@@ -753,7 +753,7 @@ class Edge:
         - 提供更多有用信息
         - 便于调试和日志记录
         
-        Returns:
+        返回值：
             str: 边的字符串表示
         """
         direction_arrow = self._get_direction_arrow()
@@ -763,7 +763,7 @@ class Edge:
         """
         根据边的方向获取箭头符号
         
-        Returns:
+        返回值：
             str: 方向箭头符号
         """
         direction = self.get_direction()
@@ -780,7 +780,7 @@ class Edge:
         """
         详细字符串表示
         
-        Returns:
+        返回值：
             str: 边的详细字符串表示
         """
         return f"Edge(id={self.edge_id}, {self.source_id}->{self.target_id}, type={self.edge_type.value}, params={len(self.params)} items)"
@@ -789,10 +789,10 @@ class Edge:
         """
         边的相等性比较
         
-        Args:
+        参数：
             other: 另一个边对象
             
-        Returns:
+        返回值：
             bool: 是否相等
         """
         if not isinstance(other, Edge):
@@ -806,7 +806,7 @@ class Edge:
         """
         边的哈希值计算
         
-        Returns:
+        返回值：
             int: 哈希值
         """
         return hash((self.source_id, self.target_id, self.edge_type))

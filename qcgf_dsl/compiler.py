@@ -71,7 +71,7 @@ class QCGFCompiler:
         - 提供可配置的模板系统
         - 便于扩展和定制
         
-        Args:
+        参数：
             target_language: 目标语言 ("python", "qiskit", "cirq")
             template_config: 模板配置字典
         """
@@ -191,7 +191,7 @@ from qiskit.quantum_info import random_statevector
         except ImportError:
             self.framework_available["qiskit"] = False
             if self.target_language == "qiskit":
-                warnings.warn("Qiskit not available but required for target language", ImportWarning)
+                warnings.warn("需要Qiskit但不可用", ImportWarning)
         
         # 检查Cirq
         try:
@@ -200,7 +200,7 @@ from qiskit.quantum_info import random_statevector
         except ImportError:
             self.framework_available["cirq"] = False
             if self.target_language == "cirq":
-                warnings.warn("Cirq not available but required for target language", ImportWarning)
+                warnings.warn("需要Cirq但不可用", ImportWarning)
     
     def compile(self, protocol: ProtocolGraph, 
                 output_file: Optional[str] = None,
@@ -215,16 +215,16 @@ from qiskit.quantum_info import random_statevector
         - 优化了代码生成性能
         - 支持多种输出选项
         
-        Args:
+        参数：
             protocol: 要编译的协议图
             output_file: 输出文件路径（可选）
             include_comments: 是否包含注释
             include_tests: 是否包含测试代码
             
-        Returns:
+        返回值：
             str: 生成的代码字符串
             
-        Raises:
+        异常：
             ValueError: 协议格式错误时抛出
             RuntimeError: 编译过程出错时抛出
         """
@@ -252,26 +252,26 @@ from qiskit.quantum_info import random_statevector
             return code
             
         except Exception as e:
-            raise RuntimeError(f"Protocol compilation failed: {e}")
+            raise RuntimeError(f"协议编译失败: {e}")
     
     def _validate_protocol(self, protocol: ProtocolGraph):
         """
         验证协议图的有效性
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Raises:
+        异常：
             ValueError: 协议图无效时抛出
         """
         if not protocol:
-            raise ValueError("Protocol graph cannot be None")
+            raise ValueError("协议图不能为空")
         
         if protocol.get_node_count() == 0:
-            raise ValueError("Protocol graph is empty")
+            raise ValueError("协议图为空")
         
         if not protocol.is_dag():
-            raise ValueError("Protocol graph must be a DAG")
+            raise ValueError("协议图必须是有向无环图(DAG)")
     
     def _compile_to_python(self, protocol: ProtocolGraph, 
                           include_comments: bool, 
@@ -279,12 +279,12 @@ from qiskit.quantum_info import random_statevector
         """
         编译为Python代码
         
-        Args:
+        参数：
             protocol: 协议图对象
             include_comments: 是否包含注释
             include_tests: 是否包含测试代码
             
-        Returns:
+        返回值：
             str: 生成的Python代码
         """
         import datetime
@@ -331,16 +331,16 @@ from qiskit.quantum_info import random_statevector
         """
         编译为Qiskit代码
         
-        Args:
+        参数：
             protocol: 协议图对象
             include_comments: 是否包含注释
             include_tests: 是否包含测试代码
             
-        Returns:
+        返回值：
             str: 生成的Qiskit代码
         """
         if not self.framework_available.get("qiskit", False):
-            warnings.warn("Qiskit not available, generating basic Python code instead")
+            warnings.warn("Qiskit不可用，生成基础Python代码")
             return self._compile_to_python(protocol, include_comments, include_tests)
         
         # 基于Python代码生成，添加Qiskit特定内容
@@ -368,16 +368,16 @@ from qiskit.quantum_info import random_statevector
         """
         编译为Cirq代码
         
-        Args:
+        参数：
             protocol: 协议图对象
             include_comments: 是否包含注释
             include_tests: 是否包含测试代码
             
-        Returns:
+        返回值：
             str: 生成的Cirq代码
         """
         if not self.framework_available.get("cirq", False):
-            warnings.warn("Cirq not available, generating basic Python code instead")
+            warnings.warn("Cirq不可用，生成基础Python代码")
             return self._compile_to_python(protocol, include_comments, include_tests)
         
         # TODO: 实现Cirq特定的代码生成
@@ -387,11 +387,11 @@ from qiskit.quantum_info import random_statevector
         """
         生成节点方法代码
         
-        Args:
+        参数：
             node: 节点对象
             include_comments: 是否包含注释
             
-        Returns:
+        返回值：
             str: 节点方法代码
         """
         method_name = f"execute_{node.node_id.lower()}"
@@ -415,10 +415,10 @@ from qiskit.quantum_info import random_statevector
         """
         生成协议执行步骤代码
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Returns:
+        返回值：
             str: 执行步骤代码
         """
         steps = []
@@ -448,10 +448,10 @@ from qiskit.quantum_info import random_statevector
         """
         生成测试代码
         
-        Args:
+        参数：
             protocol: 协议图对象
             
-        Returns:
+        返回值：
             str: 测试代码
         """
         class_name = self._to_class_name(protocol.name)
@@ -479,10 +479,10 @@ if __name__ == "__main__":
         """
         转换协议名称为类名
         
-        Args:
+        参数：
             name: 协议名称
             
-        Returns:
+        返回值：
             str: 类名
         """
         # 移除特殊字符，转换为驼峰命名
@@ -504,13 +504,13 @@ def compile_protocol(protocol: ProtocolGraph,
     - 简化调用方式
     - 提供常用参数的快捷设置
     
-    Args:
+    参数：
         protocol: 要编译的协议图
         target_language: 目标语言
         output_file: 输出文件路径
         **kwargs: 其他编译参数
         
-    Returns:
+    返回值：
         str: 生成的代码
     """
     compiler = QCGFCompiler(target_language)
@@ -529,7 +529,7 @@ def compile_to_file(protocol: ProtocolGraph,
     - 简化文件操作
     - 提供友好的错误处理
     
-    Args:
+    参数：
         protocol: 要编译的协议图
         filepath: 输出文件路径
         target_language: 目标语言
@@ -542,4 +542,4 @@ def compile_to_file(protocol: ProtocolGraph,
             f.write(code)
         print(f"协议代码已生成到: {filepath}")
     except Exception as e:
-        raise IOError(f"Failed to write code to file '{filepath}': {e}")
+        raise IOError(f"无法将代码写入文件 '{filepath}': {e}")

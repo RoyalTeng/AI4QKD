@@ -92,7 +92,7 @@ class NodeType(Enum):
         - 使用列表推导优化性能
         - 返回不可变的类型列表
         
-        Returns:
+        返回值：
             List[NodeType]: 量子节点类型列表
         """
         return [cls.QSP, cls.QC, cls.QM, cls.QG, cls.QD, cls.BSM]
@@ -107,7 +107,7 @@ class NodeType(Enum):
         - 明确区分量子和经典节点
         - 便于类型验证和处理
         
-        Returns:
+        返回值：
             List[NodeType]: 经典节点类型列表
         """
         return [cls.CLO, cls.CS, cls.CC]
@@ -122,10 +122,10 @@ class NodeType(Enum):
         - 优化判断逻辑的性能
         - 使用集合操作提高效率
         
-        Args:
+        参数：
             node_type: 待检查的节点类型
             
-        Returns:
+        返回值：
             bool: 是否为量子节点类型
         """
         return node_type in cls.get_quantum_types()
@@ -140,10 +140,10 @@ class NodeType(Enum):
         - 与量子类型判断保持一致
         - 确保分类的完整性
         
-        Args:
+        参数：
             node_type: 待检查的节点类型
             
-        Returns:
+        返回值：
             bool: 是否为经典节点类型
         """
         return node_type in cls.get_classical_types()
@@ -157,7 +157,7 @@ class NodeType(Enum):
         - 提供用户友好的类型说明
         - 支持国际化和本地化
         
-        Returns:
+        返回值：
             str: 节点类型的中文描述
         """
         descriptions = {
@@ -216,10 +216,10 @@ class Party(Enum):
         - 简化了匹配逻辑，提高性能
         - 支持常见的参与者名称变体
         
-        Args:
+        参数：
             value: 待匹配的值
             
-        Returns:
+        返回值：
             Party: 匹配的参与者枚举，未匹配时返回None
         """
         if isinstance(value, str):
@@ -252,7 +252,7 @@ class Party(Enum):
         - 便于理解协议中各方的职责
         - 支持教学和文档生成
         
-        Returns:
+        返回值：
             str: 参与者角色的中文描述
         """
         descriptions = {
@@ -342,13 +342,13 @@ def get_node_template(node_type: NodeType) -> Dict[str, Any]:
     - 使用深拷贝避免模板污染
     - 优化查找性能
     
-    Args:
+    参数：
         node_type: 节点类型
         
-    Returns:
+    返回值：
         Dict[str, Any]: 包含默认参数的字典
         
-    Raises:
+    异常：
         ValueError: 不支持的节点类型
     """
     if node_type not in NODE_TYPE_TEMPLATES:
@@ -373,11 +373,11 @@ def validate_node_params(node_type: NodeType, params: Dict[str, Any]) -> bool:
     - 支持理想化模式的宽松验证
     - 统一了错误处理机制
     
-    Args:
+    参数：
         node_type: 节点类型
         params: 参数字典
         
-    Returns:
+    返回值：
         bool: 参数是否有效
     """
     # 检查节点类型是否支持
@@ -408,10 +408,10 @@ def _get_required_params(node_type: NodeType) -> List[str]:
     - 便于维护和扩展
     - 支持不同模式的不同要求
     
-    Args:
+    参数：
         node_type: 节点类型
         
-    Returns:
+    返回值：
         List[str]: 必需参数名称列表
     """
     required_params = {
@@ -440,11 +440,11 @@ def _validate_realistic_params(node_type: NodeType, params: Dict[str, Any]) -> b
     - 确保参数值在物理合理范围内
     - 提供清晰的验证规则
     
-    Args:
+    参数：
         node_type: 节点类型
         params: 参数字典
         
-    Returns:
+    返回值：
         bool: 参数是否在有效范围内
     """
     # QC节点的参数验证
@@ -505,7 +505,7 @@ def set_idealized_mode(enabled: bool = True):
     - 改进了用户提示信息
     - 支持环境变量配置
     
-    Args:
+    参数：
         enabled: 是否启用理想化模式
     """
     global _IDEALIZED_MODE
@@ -530,7 +530,7 @@ def is_idealized_mode() -> bool:
     - 保持原有的状态查询接口
     - 简化了状态检查逻辑
     
-    Returns:
+    返回值：
         bool: 是否为理想化模式
     """
     return _IDEALIZED_MODE
@@ -580,10 +580,10 @@ def _get_idealized_template(node_type: NodeType) -> Dict[str, Any]:
     - 使用理想化的物理参数
     - 保持参数结构的一致性
     
-    Args:
+    参数：
         node_type: 节点类型
         
-    Returns:
+    返回值：
         Dict[str, Any]: 理想化参数模板
     """
     import copy
@@ -623,11 +623,11 @@ def _validate_idealized_params(node_type: NodeType, params: Dict[str, Any]) -> b
     - 允许理想化的极值参数
     - 保持基本的合理性检查
     
-    Args:
+    参数：
         node_type: 节点类型
         params: 参数字典
         
-    Returns:
+    返回值：
         bool: 参数是否有效（理想化标准）
     """
     # 理想化模式下允许更宽松的参数范围
@@ -654,10 +654,10 @@ def compare_mode_parameters(node_type: NodeType) -> Dict[str, Any]:
     - 简化了比较逻辑和输出格式
     - 便于分析不同模式的影响
     
-    Args:
+    参数：
         node_type: 节点类型
         
-    Returns:
+    返回值：
         Dict[str, Any]: 参数比较结果
     """
     # 保存当前模式
@@ -704,11 +704,11 @@ def _calculate_improvement(real_val, ideal_val) -> str:
     """
     计算参数改进描述
     
-    Args:
+    参数：
         real_val: 现实值
         ideal_val: 理想值
         
-    Returns:
+    返回值：
         str: 改进描述
     """
     if isinstance(real_val, (int, float)) and isinstance(ideal_val, (int, float)):

@@ -78,7 +78,7 @@ class Node:
         - 优化了默认参数的设置
         - 改进了验证机制
         
-        Args:
+        参数：
             node_id: 节点唯一标识符
             node_type: 节点类型
             params: 节点参数字典
@@ -86,7 +86,7 @@ class Node:
             position: 节点位置坐标 (x, y)
             metadata: 额外元数据
             
-        Raises:
+        异常：
             ValueError: 参数无效时抛出
         """
         self.node_id = node_id
@@ -101,7 +101,7 @@ class Node:
         
         # 验证参数
         if not validate_node_params(node_type, self.params):
-            raise ValueError(f"Invalid parameters for node type {node_type}: {self.params}")
+            raise ValueError(f"节点类型 {node_type} 的参数无效: {self.params}")
     
     def _set_default_params(self):
         """
@@ -136,10 +136,10 @@ class Node:
         - 确保更新后参数的有效性
         - 提供清晰的错误信息
         
-        Args:
+        参数：
             new_params: 新的参数字典
             
-        Raises:
+        异常：
             ValueError: 参数无效时抛出
         """
         # 备份原参数
@@ -152,7 +152,7 @@ class Node:
         if not validate_node_params(self.node_type, self.params):
             # 恢复原参数
             self.params = old_params
-            raise ValueError(f"Invalid parameters for node type {self.node_type}: {new_params}")
+            raise ValueError(f"节点类型 {self.node_type} 的参数无效: {new_params}")
         
         # 更新参与者信息（如果参数中包含）
         if "party" in new_params:
@@ -173,11 +173,11 @@ class Node:
         - 支持默认值机制
         - 简化参数访问逻辑
         
-        Args:
+        参数：
             key: 参数名
             default: 默认值
             
-        Returns:
+        返回值：
             Any: 参数值
         """
         return self.params.get(key, default)
@@ -191,11 +191,11 @@ class Node:
         - 确保设置后参数的有效性
         - 简化参数修改操作
         
-        Args:
+        参数：
             key: 参数名
             value: 参数值
             
-        Raises:
+        异常：
             ValueError: 参数无效时抛出
         """
         # 备份原值
@@ -211,7 +211,7 @@ class Node:
                 self.params[key] = old_value
             else:
                 self.params.pop(key, None)
-            raise ValueError(f"Invalid parameter {key}={value} for node type {self.node_type}")
+            raise ValueError(f"节点类型 {self.node_type} 的参数无效: {key}={value}")
         
         # 特殊处理参与者参数
         if key == "party":
@@ -231,7 +231,7 @@ class Node:
         - 保持原有的类型判断接口
         - 使用类方法简化判断逻辑
         
-        Returns:
+        返回值：
             bool: 是否为量子节点
         """
         return NodeType.is_quantum_type(self.node_type)
@@ -244,7 +244,7 @@ class Node:
         - 保持原有的类型判断接口
         - 与量子节点判断保持一致
         
-        Returns:
+        返回值：
             bool: 是否为经典节点
         """
         return NodeType.is_classical_type(self.node_type)
@@ -258,7 +258,7 @@ class Node:
         - 结合类型和参与者信息
         - 便于调试和文档生成
         
-        Returns:
+        返回值：
             str: 节点描述
         """
         type_desc = self.node_type.get_description()
@@ -274,7 +274,7 @@ class Node:
         - 正确处理枚举类型的序列化
         - 确保所有属性的正确序列化
         
-        Returns:
+        返回值：
             Dict[str, Any]: 节点的字典表示
         """
         # 处理参数中的枚举类型
@@ -304,13 +304,13 @@ class Node:
         - 正确处理枚举类型的反序列化
         - 确保创建对象的有效性
         
-        Args:
+        参数：
             data: 节点数据字典
             
-        Returns:
+        返回值：
             Node: 节点实例
             
-        Raises:
+        异常：
             ValueError: 数据格式错误时抛出
         """
         # 处理枚举类型的反序列化
@@ -346,7 +346,7 @@ class Node:
         - 提供更多有用信息
         - 便于调试和日志记录
         
-        Returns:
+        返回值：
             str: 节点的字符串表示
         """
         party_str = f", {self.party.value}" if self.party != Party.UNKNOWN else ""
@@ -356,7 +356,7 @@ class Node:
         """
         详细字符串表示
         
-        Returns:
+        返回值：
             str: 节点的详细字符串表示
         """
         return f"Node(id={self.node_id}, type={self.node_type.value}, party={self.party.value if self.party else 'None'}, params={len(self.params)} items)"
@@ -365,10 +365,10 @@ class Node:
         """
         节点的相等性比较
         
-        Args:
+        参数：
             other: 另一个节点对象
             
-        Returns:
+        返回值：
             bool: 是否相等
         """
         if not isinstance(other, Node):
@@ -380,7 +380,7 @@ class Node:
         """
         节点的哈希值计算
         
-        Returns:
+        返回值：
             int: 哈希值
         """
         return hash(self.node_id)
@@ -418,7 +418,7 @@ class ProtocolGraph:
         - 简化了图的初始化逻辑
         - 优化了统计信息的管理
         
-        Args:
+        参数：
             name: 协议图名称
         """
         self.name = name
@@ -445,17 +445,17 @@ class ProtocolGraph:
         - 优化了ID生成机制
         - 改进了重复检查和验证
         
-        Args:
+        参数：
             node_type: 节点类型
             params: 节点参数
             party: 参与者
             position: 节点位置
             node_id: 节点ID（可选，自动生成）
             
-        Returns:
+        返回值：
             str: 节点ID
             
-        Raises:
+        异常：
             ValueError: 节点ID已存在或参数无效
         """
         # 生成唯一节点ID
@@ -464,7 +464,7 @@ class ProtocolGraph:
         
         # 检查节点ID是否已存在
         if self.has_node(node_id):
-            raise ValueError(f"Node with ID '{node_id}' already exists")
+            raise ValueError(f"节点ID '{node_id}' 已存在")
         
         # 创建节点对象
         try:
@@ -476,7 +476,7 @@ class ProtocolGraph:
                 position=position
             )
         except ValueError as e:
-            raise ValueError(f"Failed to create node '{node_id}': {e}")
+            raise ValueError(f"创建节点 '{node_id}' 失败: {e}")
         
         # 添加到图中
         self.graph.add_node(node_id, node=node)
@@ -495,10 +495,10 @@ class ProtocolGraph:
         - 确保ID的唯一性和可读性
         - 支持调试和可视化
         
-        Args:
+        参数：
             node_type: 节点类型
             
-        Returns:
+        返回值：
             str: 唯一的节点ID
         """
         base_id = f"{node_type.value.lower()}_{self.node_counter}"
@@ -520,10 +520,10 @@ class ProtocolGraph:
         - 自动删除相关的边
         - 更新统计信息
         
-        Args:
+        参数：
             node_id: 节点ID
             
-        Returns:
+        返回值：
             bool: 是否成功删除
         """
         if not self.has_node(node_id):
@@ -551,27 +551,27 @@ class ProtocolGraph:
         - 强化了DAG约束检查
         - 优化了参数验证
         
-        Args:
+        参数：
             source_id: 源节点ID
             target_id: 目标节点ID
             edge_type: 边类型
             params: 边参数
             
-        Returns:
+        返回值：
             bool: 是否成功添加
             
-        Raises:
+        异常：
             ValueError: 创建环路或参数无效时抛出
         """
         # 检查节点是否存在
         if not self.has_node(source_id):
-            raise ValueError(f"Source node '{source_id}' does not exist")
+            raise ValueError(f"源节点 '{source_id}' 不存在")
         if not self.has_node(target_id):
-            raise ValueError(f"Target node '{target_id}' does not exist")
+            raise ValueError(f"目标节点 '{target_id}' 不存在")
         
         # 检查是否会形成环路
         if self._would_create_cycle(source_id, target_id):
-            raise ValueError(f"Adding edge {source_id} -> {target_id} would create a cycle")
+            raise ValueError(f"添加边 {source_id} -> {target_id} 会形成环路")
         
         # 创建边对象
         try:
@@ -582,7 +582,7 @@ class ProtocolGraph:
                 params=params
             )
         except ValueError as e:
-            raise ValueError(f"Failed to create edge {source_id} -> {target_id}: {e}")
+            raise ValueError(f"创建边 {source_id} -> {target_id} 失败: {e}")
         
         # 添加边到图中
         self.graph.add_edge(source_id, target_id, edge=edge, edge_type=edge_type, params=params or {})
@@ -597,11 +597,11 @@ class ProtocolGraph:
         - 保持原有remove_edge方法的接口
         - 简化删除逻辑
         
-        Args:
+        参数：
             source_id: 源节点ID
             target_id: 目标节点ID
             
-        Returns:
+        返回值：
             bool: 是否成功删除
         """
         if self.graph.has_edge(source_id, target_id):
@@ -617,10 +617,10 @@ class ProtocolGraph:
         - 保持原有get_node方法的接口
         - 简化节点访问逻辑
         
-        Args:
+        参数：
             node_id: 节点ID
             
-        Returns:
+        返回值：
             Optional[Node]: 节点实例或None
         """
         if self.has_node(node_id):
@@ -635,7 +635,7 @@ class ProtocolGraph:
         - 新增获取所有节点的便捷方法
         - 便于遍历和批量操作
         
-        Returns:
+        返回值：
             List[Node]: 所有节点的列表
         """
         return [node_data["node"] for node_id, node_data in self.graph.nodes(data=True)]
@@ -648,10 +648,10 @@ class ProtocolGraph:
         - 保持原有get_nodes_by_type方法的接口
         - 优化查找性能
         
-        Args:
+        参数：
             node_type: 节点类型
             
-        Returns:
+        返回值：
             List[Node]: 指定类型的节点列表
         """
         nodes = []
@@ -669,10 +669,10 @@ class ProtocolGraph:
         - 保持原有get_nodes_by_party方法的接口
         - 简化查找逻辑
         
-        Args:
+        参数：
             party: 参与者
             
-        Returns:
+        返回值：
             List[Node]: 指定参与者的节点列表
         """
         nodes = []
@@ -690,11 +690,11 @@ class ProtocolGraph:
         - 保持原有get_neighbors方法的接口
         - 支持不同方向的邻居查找
         
-        Args:
+        参数：
             node_id: 节点ID
             direction: 方向 ("in", "out", "both")
             
-        Returns:
+        返回值：
             List[str]: 邻居节点ID列表
         """
         if not self.has_node(node_id):
@@ -717,10 +717,10 @@ class ProtocolGraph:
         - 保持原有get_edges方法的接口
         - 支持获取特定节点的边
         
-        Args:
+        参数：
             node_id: 节点ID（可选）
             
-        Returns:
+        返回值：
             List[Tuple[str, str, Dict]]: 边列表
         """
         if node_id:
@@ -745,11 +745,11 @@ class ProtocolGraph:
         - 新增获取边数据的便捷方法
         - 便于边属性的访问
         
-        Args:
+        参数：
             source_id: 源节点ID
             target_id: 目标节点ID
             
-        Returns:
+        返回值：
             Optional[Dict[str, Any]]: 边数据或None
         """
         if self.has_edge(source_id, target_id):
@@ -763,10 +763,10 @@ class ProtocolGraph:
         重构思路：
         - 保持原有has_node方法的接口
         
-        Args:
+        参数：
             node_id: 节点ID
             
-        Returns:
+        返回值：
             bool: 节点是否存在
         """
         return self.graph.has_node(node_id)
@@ -778,11 +778,11 @@ class ProtocolGraph:
         重构思路：
         - 保持原有has_edge方法的接口
         
-        Args:
+        参数：
             source_id: 源节点ID
             target_id: 目标节点ID
             
-        Returns:
+        返回值：
             bool: 边是否存在
         """
         return self.graph.has_edge(source_id, target_id)
@@ -794,7 +794,7 @@ class ProtocolGraph:
         重构思路：
         - 保持原有get_node_count方法的接口
         
-        Returns:
+        返回值：
             int: 节点数量
         """
         return self.graph.number_of_nodes()
@@ -806,7 +806,7 @@ class ProtocolGraph:
         重构思路：
         - 保持原有get_edge_count方法的接口
         
-        Returns:
+        返回值：
             int: 边数量
         """
         return self.graph.number_of_edges()
@@ -819,7 +819,7 @@ class ProtocolGraph:
         - 保持原有is_dag方法的接口
         - 使用NetworkX的高效实现
         
-        Returns:
+        返回值：
             bool: 是否为DAG
         """
         return nx.is_directed_acyclic_graph(self.graph)
@@ -832,10 +832,10 @@ class ProtocolGraph:
         - 保持原有get_topological_order方法的接口
         - 使用NetworkX的高效算法
         
-        Returns:
+        返回值：
             List[str]: 拓扑排序的节点ID列表
             
-        Raises:
+        异常：
             ValueError: 图不是DAG时抛出
         """
         if not self.is_dag():
@@ -850,10 +850,10 @@ class ProtocolGraph:
         - 保持原有find_first_node_by_type方法的接口
         - 结合拓扑排序和类型查找
         
-        Args:
+        参数：
             node_type: 节点类型
             
-        Returns:
+        返回值：
             Optional[Node]: 找到的节点或None
         """
         try:
@@ -876,11 +876,11 @@ class ProtocolGraph:
         - 保持原有的环路检查逻辑
         - 使用NetworkX的高效实现
         
-        Args:
+        参数：
             source_id: 源节点ID
             target_id: 目标节点ID
             
-        Returns:
+        返回值：
             bool: 是否会形成环路
         """
         # 创建临时图进行测试
@@ -897,7 +897,7 @@ class ProtocolGraph:
         - 使用缓存机制提高性能
         - 扩展统计信息的内容
         
-        Returns:
+        返回值：
             Dict[str, Any]: 统计信息字典
         """
         # 如果统计信息需要更新，重新计算
@@ -947,7 +947,7 @@ class ProtocolGraph:
         """
         获取边类型统计
         
-        Returns:
+        返回值：
             Dict[str, int]: 边类型统计字典
         """
         edge_stats = {}
@@ -964,7 +964,7 @@ class ProtocolGraph:
         """
         计算图的密度
         
-        Returns:
+        返回值：
             float: 图的密度（0-1之间）
         """
         node_count = self.get_node_count()
@@ -979,7 +979,7 @@ class ProtocolGraph:
         """
         计算平均度数
         
-        Returns:
+        返回值：
             float: 平均度数
         """
         node_count = self.get_node_count()
@@ -998,7 +998,7 @@ class ProtocolGraph:
         - 确保所有数据的正确序列化
         - 支持完整的往返转换
         
-        Returns:
+        返回值：
             Dict[str, Any]: 协议图字典表示
         """
         # 序列化节点
@@ -1037,13 +1037,13 @@ class ProtocolGraph:
         - 正确处理所有数据的反序列化
         - 确保对象创建的有效性
         
-        Args:
+        参数：
             data: 协议图数据字典
             
-        Returns:
+        返回值：
             ProtocolGraph: 协议图实例
             
-        Raises:
+        异常：
             ValueError: 数据格式错误时抛出
         """
         graph = cls(data.get("name", "QKD_Protocol"))
@@ -1054,7 +1054,7 @@ class ProtocolGraph:
                 node = Node.from_dict(node_data)
                 graph.graph.add_node(node_id, node=node)
             except Exception as e:
-                raise ValueError(f"Failed to restore node '{node_id}': {e}")
+                raise ValueError(f"恢复节点 '{node_id}' 失败: {e}")
         
         # 恢复边
         for edge_data in data["edges"]:
@@ -1069,7 +1069,7 @@ class ProtocolGraph:
                 graph.graph.add_edge(source, target, edge=edge, edge_type=edge_type, params=params)
                 
             except Exception as e:
-                raise ValueError(f"Failed to restore edge {edge_data.get('source', '?')} -> {edge_data.get('target', '?')}: {e}")
+                raise ValueError(f"恢复边 {edge_data.get('source', '?')} -> {edge_data.get('target', '?')} 失败: {e}")
         
         # 恢复元数据
         metadata = data.get("metadata", {})
@@ -1089,10 +1089,10 @@ class ProtocolGraph:
         - 使用UTF-8编码确保中文支持
         - 格式化JSON输出便于阅读
         
-        Args:
+        参数：
             filename: 文件名
             
-        Raises:
+        异常：
             IOError: 文件写入错误时抛出
         """
         try:
@@ -1111,13 +1111,13 @@ class ProtocolGraph:
         - 使用UTF-8编码确保中文支持
         - 提供清晰的错误信息
         
-        Args:
+        参数：
             filename: 文件名
             
-        Returns:
+        返回值：
             ProtocolGraph: 协议图实例
             
-        Raises:
+        异常：
             IOError: 文件读取错误时抛出
             ValueError: 文件格式错误时抛出
         """
@@ -1128,7 +1128,7 @@ class ProtocolGraph:
         except FileNotFoundError:
             raise IOError(f"Protocol graph file '{filename}' not found")
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format in '{filename}': {e}")
+            raise ValueError(f"文件 '{filename}' 的JSON格式无效: {e}")
         except Exception as e:
             raise IOError(f"Failed to load protocol graph from '{filename}': {e}")
     
@@ -1141,7 +1141,7 @@ class ProtocolGraph:
         - 通过序列化/反序列化实现深拷贝
         - 便于协议变体的创建
         
-        Returns:
+        返回值：
             ProtocolGraph: 克隆的协议图
         """
         return self.from_dict(self.to_dict())
@@ -1155,11 +1155,11 @@ class ProtocolGraph:
         - 自动处理节点ID冲突
         - 支持复合协议的构建
         
-        Args:
+        参数：
             other: 要合并的协议图
             prefix: 节点ID前缀（避免冲突）
             
-        Returns:
+        返回值：
             ProtocolGraph: 合并后的协议图
         """
         merged = self.clone()
@@ -1209,7 +1209,7 @@ class ProtocolGraph:
         - 保持原有字符串表示格式
         - 提供有用的统计信息
         
-        Returns:
+        返回值：
             str: 协议图的字符串表示
         """
         stats = self.get_statistics()
@@ -1219,7 +1219,7 @@ class ProtocolGraph:
         """
         详细字符串表示
         
-        Returns:
+        返回值：
             str: 协议图的详细字符串表示
         """
         stats = self.get_statistics()
