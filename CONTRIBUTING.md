@@ -100,6 +100,21 @@ conda activate ai4qkd_env
 - 函数和类必须有文档字符串
 - 保持代码可读性
 
+#### 技术方向规范 (NEW! 2025-08-19)
+**重要**: 项目专注于离散变量QKD(DV-QKD)，贡献者必须遵循以下技术原则：
+
+- ✅ **允许的参数类型**: 
+  - 偏振态、测量基、探测器效率
+  - 量子门保真度、传输损耗、信道长度
+  - 所有符合DV-QKD物理模型的参数
+  
+- ❌ **禁止的参数类型**:
+  - `discrimination_threshold` - 连续变量判决阈值
+  - `variance` - 高斯调制方差
+  - `quadrature_phase` - 正交相位参数
+  - `coherent_amplitude` - 相干态振幅
+  - 任何连续变量QKD(CV-QKD)相关参数
+
 ```python
 # 好的代码示例
 def calculate_key_rate(protocol_data: Dict[str, Any], 

@@ -125,7 +125,13 @@ AI4QKD/
 
 ### 基本原则
 
-#### 1. 基于参考的重构
+#### 1. 技术方向一致性原则 (NEW! 2025-08-19)
+- **DV-QKD专注**: 项目专注于点对点离散变量量子密钥分发协议
+- **参数纯净性**: 严格禁止引入连续变量QKD(CV-QKD)相关参数
+- **架构清洁**: 保持技术架构的专业性和一致性
+- **概念分离**: 避免DV-QKD和CV-QKD概念混淆
+
+#### 2. 基于参考的重构
 - **必须参考**: GitHub master分支的原有实现
 - **保持思路**: 维持设计思路的连续性
 - **优化实现**: 在原有基础上改进性能和可维护性
@@ -136,6 +142,89 @@ AI4QKD/
 
 ```
 🧠 探索与规划 → 🧪 测试先行 → 💻 编码实现 → 🔄 多轮迭代 → ✅ 提交与反馈
+```
+
+### DV-QKD技术规范 (NEW! 2025-08-19)
+
+#### 禁止的CV-QKD参数
+开发者必须严格避免引入以下连续变量QKD相关参数：
+
+```python
+# ❌ 禁止的参数
+discrimination_threshold = 0.5  # 连续变量判决阈值
+variance = 0.1                  # 高斯调制方差
+quadrature_phase = 0.0         # 正交相位参数
+coherent_amplitude = 1.0       # 相干态振幅
+squeezed_parameter = 0.2       # 压缩参数
+homodyne_angle = np.pi/4       # 零差测量角度
+```
+
+#### 允许的DV-QKD参数
+以下参数符合离散变量QKD要求，可以在代码中使用：
+
+```python
+# ✅ 允许的参数
+# 偏振相关
+polarization_state = "H"       # 水平偏振态
+polarization_angle = 0.0       # 偏振角度
+extinction_ratio = 0.99        # 消光比
+
+# 测量相关
+basis = "Z"                    # 测量基（Z基或X基）
+detector_efficiency = 0.8     # 探测器效率
+dark_count_rate = 1e-6         # 暗计数率
+gate_time = 1e-9              # 门时间
+
+# 量子门相关
+gate_type = "CNOT"            # 量子门类型
+gate_fidelity = 0.99          # 量子门保真度
+rotation_angle = np.pi/2      # 旋转角度（用于量子门）
+
+# 物理信道相关
+transmission_loss = 0.2        # 传输损耗
+background_noise = 0.01       # 背景噪声
+channel_length = 10.0         # 信道长度(km)
+```
+
+#### 量子态定义规范
+DV-QKD中的量子态必须是离散的：
+
+```python
+# ✅ 正确的量子态定义
+quantum_states = {
+    "0": np.array([1, 0]),     # |0⟩态
+    "1": np.array([0, 1]),     # |1⟩态
+    "+": np.array([1, 1])/np.sqrt(2),  # |+⟩态
+    "-": np.array([1, -1])/np.sqrt(2), # |-⟩态
+}
+
+# ❌ 避免的连续态定义
+coherent_state = np.exp(-alpha**2/2) * np.array([...])  # 相干态
+squeezed_state = ...                                    # 压缩态
+```
+
+#### 测量方式规范
+DV-QKD使用光子探测器进行测量：
+
+```python
+# ✅ 正确的测量方式
+def photon_detection_measurement(quantum_state, basis="Z"):
+    """光子探测器测量"""
+    if basis == "Z":
+        # Z基测量：直接测量|0⟩和|1⟩
+        prob_0 = abs(quantum_state[0])**2
+        return 0 if np.random.random() < prob_0 else 1
+    elif basis == "X":
+        # X基测量：测量|+⟩和|-⟩
+        plus_state = np.array([1, 1])/np.sqrt(2)
+        minus_state = np.array([1, -1])/np.sqrt(2)
+        prob_plus = abs(np.dot(quantum_state, plus_state))**2
+        return 0 if np.random.random() < prob_plus else 1
+
+# ❌ 避免的连续测量方式
+def homodyne_detection(quantum_state, local_oscillator_phase):
+    """避免：零差测量（连续变量测量方式）"""
+    pass
 ```
 
 ### 代码注释要求
@@ -905,6 +994,11 @@ jobs:
 - [ ] 代码风格规范
 - [ ] 性能要求满足
 - [ ] 向后兼容性保持
+- [ ] **DV-QKD技术方向一致性** (NEW! 2025-08-19)
+  - [ ] 无连续变量QKD相关参数（如discrimination_threshold）
+  - [ ] 量子态定义符合离散变量QKD要求
+  - [ ] 测量方式使用光子探测器模式
+  - [ ] 参数范围符合DV-QKD物理约束
 
 #### 审查流程
 1. **提交PR**: 创建详细的Pull Request
