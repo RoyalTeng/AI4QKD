@@ -540,7 +540,7 @@ class ProtocolGraph:
     def add_edge(self,
                  source_id: str,
                  target_id: str,
-                 edge_type: EdgeType = EdgeType.QUANTUM,
+                 edge_type: EdgeType = EdgeType.QF,
                  params: Optional[Dict[str, Any]] = None) -> bool:
         """
         添加边到协议图
@@ -952,7 +952,7 @@ class ProtocolGraph:
         """
         edge_stats = {}
         for _, _, edge_data in self.graph.edges(data=True):
-            edge_type = edge_data.get("edge_type", EdgeType.QUANTUM)
+            edge_type = edge_data.get("edge_type", EdgeType.QF)
             if hasattr(edge_type, 'value'):
                 edge_type_key = edge_type.value
             else:
@@ -1012,7 +1012,7 @@ class ProtocolGraph:
             edge_dict = {
                 "source": source,
                 "target": target,
-                "edge_type": edge_data.get("edge_type", EdgeType.QUANTUM).value,
+                "edge_type": edge_data.get("edge_type", EdgeType.QF).value,
                 "params": edge_data.get("params", {})
             }
             edges.append(edge_dict)
@@ -1194,7 +1194,7 @@ class ProtocolGraph:
         for source, target, edge_data in other.get_edges():
             new_source = id_mapping[source]
             new_target = id_mapping[target]
-            edge_type = edge_data.get("edge_type", EdgeType.QUANTUM)
+            edge_type = edge_data.get("edge_type", EdgeType.QF)
             params = edge_data.get("params", {})
             
             merged.add_edge(new_source, new_target, edge_type, params)

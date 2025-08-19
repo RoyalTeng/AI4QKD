@@ -1,82 +1,71 @@
 """
-AI4QKD - 边类型定义模块 (重构版)
+AI4QKD - 边类型定义模块 (严格按照研究方案)
 
-重构思路：
-- 参考GitHub master分支的edge_types.py实现思路
-- 保持原有EdgeType枚举和Edge类的接口兼容性
-- 简化了边类型系统，减少不必要的复杂性
-- 优化了边参数模板和验证机制
+设计依据：
+- 严格遵循f:\AI4QKD\研究方案\第一部分.pdf中2.3节的定义
+- 实现研究方案要求的4种标准边类型
+- 移除不在研究方案中的多余边类型
+- 简化参数模板专注于信息流抽象
 
-设计原则：
-- 清晰的边类型分类（量子vs经典）
-- 高效的参数验证机制
-- 简洁的边对象设计
-- 完整的向后兼容性
+核心边类型（按研究方案2.3节）：
+- QF: 量子流 (Quantum Flow) - 量子比特从量子操作节点流向量子操作节点
+- CF: 经典流 (Classical Flow) - 经典信息在经典操作节点间传递
+- ControlF: 控制流 (Control Flow) - 操作执行顺序或条件依赖
+- QCIF: 量子-经典接口流 (Quantum-Classical Interface Flow) - 量子测量结果转为经典比特
 
-主要改进：
-- 简化了边类型的枚举定义
-- 优化了参数模板的数据结构
-- 改进了边对象的创建和管理
-- 统一了验证逻辑的实现
+重要变更：
+- 移除了不在研究方案中的边类型（DATA、FEEDBACK、SYNCHRONIZATION）
+- 修正了边类型命名以精确匹配研究方案
+- 移除了大量物理传输参数，专注信息流抽象
+- 实现了研究方案要求的严格连接约束
 
-作者: Claude (AI Assistant)
-重构日期: 2025-08-17
-参考版本: GitHub master分支 edge_types.py
+作者: Claude (AI Assistant) 
+重构日期: 2025-08-19
+依据文档: f:\AI4QKD\研究方案\第一部分.pdf 第2.3节
 """
 
 from enum import Enum
 from typing import Dict, Any, Optional, List, Union
 
-# =============================================================================
-# 重构说明: 此模块基于GitHub master分支的edge_types.py重构
-# 重构日期: 2025-08-17
-# 重构原因: 简化边类型系统，提高性能和可维护性
-# 主要改进: 优化枚举设计，简化参数模板，改进对象管理
-# 参考文件: qcgf_dsl/edge_types.py
-# =============================================================================
 
+# =============================================================================
+# 研究方案标准边类型定义  
+# 依据: f:\AI4QKD\研究方案\第一部分.pdf 第2.3节
+# =============================================================================
 
 class EdgeType(Enum):
     """
-    协议图边类型枚举 - 重构版本
+    协议图边类型枚举 - 严格按照研究方案第一部分PDF 2.3节定义
     
-    重构思路：
-    - 保持原有的边类型分类（量子、经典、控制等）
-    - 简化了边类型的定义，使用更直观的命名
-    - 优化了类型检查方法的性能
-    - 新增了边类型的描述信息
+    研究方案定义的4种标准边类型：
     
-    设计改进：
-    - 使用更清晰的枚举值命名
-    - 统一的类型分类方法
-    - 简化的类型检查逻辑
-    - 完善的文档字符串
-    
-    核心边类型：
-    - QUANTUM: 量子信道，用于传输量子态
-    - CLASSICAL: 经典信道，用于传输经典信息
-    - CONTROL: 控制信号，用于操作控制
-    - DATA: 数据传输，用于处理后的数据
-    - FEEDBACK: 反馈信号，用于协议反馈
-    - SYNCHRONIZATION: 同步信号，用于时间同步
+    - QF (Quantum Flow): 量子流
+      目的: 表示量子比特从一个量子操作节点流向另一个量子操作节点
+      约束: 只能连接量子操作节点（QSP, QOP, QC, QI, QM 的量子输入/输出）
+      
+    - CF (Classical Flow): 经典流  
+      目的: 表示经典信息（如测量结果、协商信息、原始密钥、纠错后的密钥等）在经典操作节点间的传递
+      约束: 适用于CIS, CLO, CC, CD, KE 的输入/输出，以及 QM 的经典测量结果输出
+      
+    - ControlF (Control Flow): 控制流
+      目的: 表示操作的执行顺序或条件依赖。通常由CD节点发出，控制其他节点的执行
+      约束: 连接 CD 节点的输出到任何其他操作节点的输入，指示该操作何时、在何种条件下被触发
+      
+    - QCIF (Quantum-Classical Interface Flow): 量子-经典接口流
+      目的: 特殊的混合流，表示量子测量结果转化为经典比特后，传递给经典逻辑操作或决策节点
+      约束: 只能从 QM 节点的经典输出连接到 CLO 或 CD 节点的输入
     """
     
-    QUANTUM = "quantum"           # 量子信道
-    CLASSICAL = "classical"       # 经典信道
-    CONTROL = "control"           # 控制信号
-    DATA = "data"                # 数据传输
-    FEEDBACK = "feedback"        # 反馈信号
-    SYNCHRONIZATION = "sync"     # 同步信号
+    # 研究方案标准边类型（严格按照PDF 2.3节）
+    QF = "QF"           # 量子流 (Quantum Flow)
+    CF = "CF"           # 经典流 (Classical Flow) 
+    CONTROL_F = "ControlF"  # 控制流 (Control Flow)
+    QCIF = "QCIF"       # 量子-经典接口流 (Quantum-Classical Interface Flow)
     
     @classmethod
     def _missing_(cls, value):
         """
-        处理枚举缺失值的情况
-        
-        重构思路：
-        - 保持原有的灵活匹配机制
-        - 支持大小写不敏感的匹配
-        - 支持常见的边类型别名
+        处理枚举缺失值的情况，支持大小写不敏感匹配和常见别名
         
         参数：
             value: 待匹配的值
@@ -87,18 +76,19 @@ class EdgeType(Enum):
         if isinstance(value, str):
             # 大小写不敏感匹配
             for member in cls:
-                if member.name.upper() == value.upper() or member.value.lower() == value.lower():
+                if member.name.upper() == value.upper() or member.value.upper() == value.upper():
                     return member
             
             # 常见别名映射
             aliases = {
-                "q": cls.QUANTUM,
-                "c": cls.CLASSICAL,
-                "ctrl": cls.CONTROL,
-                "fb": cls.FEEDBACK,
-                "sync": cls.SYNCHRONIZATION,
-                "quantum_channel": cls.QUANTUM,
-                "classical_channel": cls.CLASSICAL
+                "quantum": cls.QF,
+                "classical": cls.CF,
+                "control": cls.CONTROL_F,
+                "quantum_flow": cls.QF,
+                "classical_flow": cls.CF,
+                "control_flow": cls.CONTROL_F,
+                "qci": cls.QCIF,
+                "interface": cls.QCIF
             }
             
             return aliases.get(value.lower())
@@ -106,102 +96,93 @@ class EdgeType(Enum):
         return None
     
     @classmethod
-    def get_quantum_edges(cls) -> List['EdgeType']:
+    def get_quantum_flow_types(cls) -> List['EdgeType']:
         """
-        获取所有量子相关边类型
-        
-        重构思路：
-        - 保持原有的分类方法接口
-        - 明确定义量子边的范围
-        - 便于量子信息的路由管理
+        获取量子信息流类型（按研究方案定义）
         
         返回值：
-            List[EdgeType]: 量子边类型列表
+            List[EdgeType]: 量子信息流类型列表
         """
-        return [cls.QUANTUM]
+        return [cls.QF, cls.QCIF]  # QCIF包含量子信息转换
     
     @classmethod
-    def get_classical_edges(cls) -> List['EdgeType']:
+    def get_classical_flow_types(cls) -> List['EdgeType']:
         """
-        获取所有经典相关边类型
-        
-        重构思路：
-        - 保持原有的分类方法接口
-        - 涵盖所有非量子的边类型
-        - 便于经典信息的处理
+        获取经典信息流类型（按研究方案定义）
         
         返回值：
-            List[EdgeType]: 经典边类型列表
+            List[EdgeType]: 经典信息流类型列表
         """
-        return [cls.CLASSICAL, cls.CONTROL, cls.DATA, cls.FEEDBACK, cls.SYNCHRONIZATION]
+        return [cls.CF, cls.QCIF]  # QCIF输出经典信息
     
     @classmethod
-    def is_quantum_edge(cls, edge_type: 'EdgeType') -> bool:
+    def get_control_flow_types(cls) -> List['EdgeType']:
         """
-        判断是否为量子边类型
+        获取控制流类型（按研究方案定义）
         
-        重构思路：
-        - 保持原有判断方法的接口
-        - 优化判断逻辑的性能
-        - 使用集合操作提高效率
+        返回值：
+            List[EdgeType]: 控制流类型列表
+        """
+        return [cls.CONTROL_F]
+    
+    @classmethod
+    def is_quantum_flow(cls, edge_type: 'EdgeType') -> bool:
+        """
+        判断是否为量子信息流类型
         
         参数：
             edge_type: 待检查的边类型
             
         返回值：
-            bool: 是否为量子边类型
+            bool: 是否为量子信息流
         """
-        return edge_type in cls.get_quantum_edges()
+        return edge_type in cls.get_quantum_flow_types()
     
     @classmethod
-    def is_classical_edge(cls, edge_type: 'EdgeType') -> bool:
+    def is_classical_flow(cls, edge_type: 'EdgeType') -> bool:
         """
-        判断是否为经典边类型
-        
-        重构思路：
-        - 保持原有判断方法的接口
-        - 与量子边判断保持一致
-        - 确保分类的完整性
+        判断是否为经典信息流类型
         
         参数：
             edge_type: 待检查的边类型
             
         返回值：
-            bool: 是否为经典边类型
+            bool: 是否为经典信息流
         """
-        return edge_type in cls.get_classical_edges()
+        return edge_type in cls.get_classical_flow_types()
+    
+    @classmethod
+    def is_control_flow(cls, edge_type: 'EdgeType') -> bool:
+        """
+        判断是否为控制流类型
+        
+        参数：
+            edge_type: 待检查的边类型
+            
+        返回值：
+            bool: 是否为控制流
+        """
+        return edge_type in cls.get_control_flow_types()
     
     def get_description(self) -> str:
         """
-        获取边类型的中文描述
-        
-        重构思路：
-        - 新增边类型的描述功能
-        - 提供用户友好的类型说明
-        - 支持国际化和本地化
+        获取边类型的详细描述（基于研究方案定义）
         
         返回值：
             str: 边类型的中文描述
         """
         descriptions = {
-            self.QUANTUM: "量子信道 - 传输量子态和量子纠缠",
-            self.CLASSICAL: "经典信道 - 传输经典比特信息",
-            self.CONTROL: "控制信号 - 协调和控制协议执行",
-            self.DATA: "数据传输 - 传输处理后的数据结果",
-            self.FEEDBACK: "反馈信号 - 提供协议执行反馈",
-            self.SYNCHRONIZATION: "同步信号 - 保持时间和操作同步"
+            self.QF: "量子流 - 表示量子比特从一个量子操作节点流向另一个量子操作节点",
+            self.CF: "经典流 - 表示经典信息在经典操作节点间的传递",
+            self.CONTROL_F: "控制流 - 表示操作的执行顺序或条件依赖",
+            self.QCIF: "量子-经典接口流 - 量子测量结果转化为经典比特后的特殊接口"
         }
         return descriptions.get(self, "未知边类型")
 
 
 class EdgeDirection(Enum):
     """
-    边方向枚举 - 重构版本
-    
-    重构思路：
-    - 保持原有的方向定义
-    - 简化方向的使用逻辑
-    - 支持双向通信建模
+    边方向枚举 - 简化版本专注于信息流方向
     
     方向类型：
     - FORWARD: 前向传输（默认方向）
@@ -228,53 +209,125 @@ class EdgeDirection(Enum):
         return descriptions.get(self, "未知方向")
 
 
+# =============================================================================
+# 基于研究方案的边类型连接约束
+# 实现研究方案2.3节要求的严格连接约束规则
+# =============================================================================
+
+# 边类型连接约束（基于研究方案精确定义）
+EDGE_CONNECTION_CONSTRAINTS = {
+    EdgeType.QF: {
+        "allowed_source_nodes": ["QSP", "QOP", "QC", "QI"],
+        "allowed_target_nodes": ["QOP", "QC", "QI", "QM"],
+        "description": "量子态从量子操作节点到量子操作节点",
+        "flow_type": "quantum_state"
+    },
+    
+    EdgeType.CF: {
+        "allowed_source_nodes": ["CIS", "CLO", "CC", "CD", "QM"],
+        "allowed_target_nodes": ["CLO", "CC", "CD", "KE"],
+        "description": "经典信息在经典操作节点间传递",
+        "flow_type": "classical_bits"
+    },
+    
+    EdgeType.CONTROL_F: {
+        "allowed_source_nodes": ["CD"],  # 只能从决策节点发出
+        "allowed_target_nodes": ["QSP", "QOP", "QC", "QI", "QM", "CIS", "CLO", "CC", "CD", "KE"],  # 可以控制任何节点
+        "description": "控制执行顺序和条件依赖",
+        "flow_type": "control_signal"
+    },
+    
+    EdgeType.QCIF: {
+        "allowed_source_nodes": ["QM"],  # 只能从量子测量节点发出
+        "allowed_target_nodes": ["CLO", "CD"],  # 连接到经典处理节点
+        "description": "量子测量结果转为经典信息的特殊接口",
+        "flow_type": "measurement_result"
+    }
+}
+
+
+def validate_edge_connection(edge_type: EdgeType, source_node_type: str, target_node_type: str) -> bool:
+    """
+    验证边连接是否符合研究方案的约束规则
+    
+    参数：
+        edge_type: 边类型
+        source_node_type: 源节点类型字符串
+        target_node_type: 目标节点类型字符串
+        
+    返回值：
+        bool: 连接是否有效
+    """
+    if edge_type not in EDGE_CONNECTION_CONSTRAINTS:
+        return False
+    
+    constraints = EDGE_CONNECTION_CONSTRAINTS[edge_type]
+    
+    # 检查源节点类型是否允许
+    if source_node_type not in constraints["allowed_source_nodes"]:
+        return False
+    
+    # 检查目标节点类型是否允许
+    if target_node_type not in constraints["allowed_target_nodes"]:
+        return False
+    
+    return True
+
+
+def get_allowed_edges_for_connection(source_node_type: str, target_node_type: str) -> List[EdgeType]:
+    """
+    获取两个节点类型之间允许的边类型列表
+    
+    参数：
+        source_node_type: 源节点类型字符串
+        target_node_type: 目标节点类型字符串
+        
+    返回值：
+        List[EdgeType]: 允许的边类型列表
+    """
+    allowed_edges = []
+    
+    for edge_type, constraints in EDGE_CONNECTION_CONSTRAINTS.items():
+        if (source_node_type in constraints["allowed_source_nodes"] and
+            target_node_type in constraints["allowed_target_nodes"]):
+            allowed_edges.append(edge_type)
+    
+    return allowed_edges
+
+
 # ============================================================================
-# 边类型参数模板系统 - 重构版本
+# 简化的边参数模板系统 - 专注信息流抽象
+# 移除物理传输参数，只保留信息流的抽象特性
 # ============================================================================
 
-# 边类型默认参数模板
+# 边类型参数模板 - 严格按照研究方案简化设计
 EDGE_TYPE_TEMPLATES = {
-    EdgeType.QUANTUM: {
-        "loss": 0.1,              # 传输损耗
-        "noise": 0.01,            # 噪声强度
-        "distance": 50.0,         # 传输距离(公里)
-        "wavelength": 1550.0,     # 波长(纳米)
-        "bandwidth": 1e12,        # 带宽(赫兹)
-        "direction": EdgeDirection.FORWARD
+    EdgeType.QF: {
+        "flow_type": "quantum_state",    # 流动的信息类型
+        "direction": EdgeDirection.FORWARD,
+        "description": "量子态信息流"
     },
-    EdgeType.CLASSICAL: {
-        "bandwidth": 1e9,         # 带宽(比特/秒)
-        "latency": 1e-6,          # 延迟(秒)
-        "error_rate": 1e-9,       # 错误率
-        "encryption": False,      # 是否加密
-        "direction": EdgeDirection.BIDIRECTIONAL
+    
+    EdgeType.CF: {
+        "flow_type": "classical_bits",   # 流动的信息类型
+        "data_category": "measurement_result",  # 数据类别
+        "direction": EdgeDirection.BIDIRECTIONAL,
+        "description": "经典比特信息流"
     },
-    EdgeType.CONTROL: {
-        "signal_type": "digital", # 信号类型
-        "voltage": 3.3,           # 电压(伏特)
-        "frequency": 1e6,         # 频率(赫兹)
-        "response_time": 1e-6,    # 响应时间(秒)
-        "direction": EdgeDirection.BIDIRECTIONAL
+    
+    EdgeType.CONTROL_F: {
+        "flow_type": "control_signal",   # 控制信号类型
+        "control_type": "execution_order", # 控制类型
+        "condition": "always",           # 触发条件
+        "direction": EdgeDirection.FORWARD,
+        "description": "执行控制信号流"
     },
-    EdgeType.DATA: {
-        "data_type": "raw_key",   # 数据类型
-        "compression_ratio": 1.0, # 压缩比
-        "format": "binary",       # 数据格式
-        "priority": "normal",     # 传输优先级
-        "direction": EdgeDirection.FORWARD
-    },
-    EdgeType.FEEDBACK: {
-        "feedback_type": "error_correction",  # 反馈类型
-        "delay": 1e-3,            # 反馈延迟(秒)
-        "reliability": 0.99,      # 可靠性
-        "direction": EdgeDirection.BACKWARD
-    },
-    EdgeType.SYNCHRONIZATION: {
-        "sync_type": "clock",     # 同步类型
-        "frequency": 1e9,         # 同步频率(赫兹)
-        "jitter": 1e-12,          # 时钟抖动(秒)
-        "precision": 1e-9,        # 同步精度(秒)
-        "direction": EdgeDirection.BIDIRECTIONAL
+    
+    EdgeType.QCIF: {
+        "flow_type": "interface_conversion", # 接口转换类型
+        "conversion_type": "measurement_to_classical",
+        "direction": EdgeDirection.FORWARD,
+        "description": "量子-经典接口转换流"
     }
 }
 
@@ -282,12 +335,6 @@ EDGE_TYPE_TEMPLATES = {
 def get_edge_template(edge_type: EdgeType) -> Dict[str, Any]:
     """
     获取指定边类型的默认参数模板
-    
-    重构思路：
-    - 保持原有get_edge_template函数的接口
-    - 使用深拷贝避免模板污染
-    - 优化查找性能
-    - 支持理想化模式的参数调整
     
     参数：
         edge_type: 边类型
@@ -304,22 +351,13 @@ def get_edge_template(edge_type: EdgeType) -> Dict[str, Any]:
     import copy
     template = copy.deepcopy(EDGE_TYPE_TEMPLATES[edge_type])
     
-    # 如果是理想化模式，调整参数
-    if _is_idealized_mode():
-        template = _apply_idealized_edge_params(edge_type, template)
-    
+    # 理想化模式下无需调整，边代表抽象信息流
     return template
 
 
 def validate_edge_params(edge_type: EdgeType, params: Dict[str, Any]) -> bool:
     """
     验证边参数的有效性
-    
-    重构思路：
-    - 保持原有validate_edge_params函数的接口
-    - 简化了验证逻辑，提高性能
-    - 支持理想化模式的宽松验证
-    - 统一了错误处理机制
     
     参数：
         edge_type: 边类型
@@ -340,8 +378,7 @@ def validate_edge_params(edge_type: EdgeType, params: Dict[str, Any]) -> bool:
         if param not in params:
             return False
     
-    # 参数范围验证
-    return _validate_edge_param_ranges(edge_type, params)
+    return True
 
 
 def _get_required_edge_params(edge_type: EdgeType) -> List[str]:
@@ -355,162 +392,33 @@ def _get_required_edge_params(edge_type: EdgeType) -> List[str]:
         List[str]: 必需参数名称列表
     """
     required_params = {
-        EdgeType.QUANTUM: ["loss"],
-        EdgeType.CLASSICAL: ["bandwidth"],
-        EdgeType.CONTROL: ["signal_type"],
-        EdgeType.DATA: ["data_type"],
-        EdgeType.FEEDBACK: ["feedback_type"],
-        EdgeType.SYNCHRONIZATION: ["sync_type"]
+        EdgeType.QF: ["flow_type"],
+        EdgeType.CF: ["flow_type", "data_category"],
+        EdgeType.CONTROL_F: ["control_type"],
+        EdgeType.QCIF: ["conversion_type"]
     }
     
     return required_params.get(edge_type, [])
 
 
-def _validate_edge_param_ranges(edge_type: EdgeType, params: Dict[str, Any]) -> bool:
-    """
-    验证边参数的取值范围
-    
-    参数：
-        edge_type: 边类型
-        params: 参数字典
-        
-    返回值：
-        bool: 参数是否在有效范围内
-    """
-    # QUANTUM边的参数验证
-    if edge_type == EdgeType.QUANTUM:
-        if "loss" in params and not (0 <= params["loss"] <= 1):
-            return False
-        if "noise" in params and not (0 <= params["noise"] <= 1):
-            return False
-        if "distance" in params and params["distance"] < 0:
-            return False
-        if "wavelength" in params and params["wavelength"] <= 0:
-            return False
-    
-    # CLASSICAL边的参数验证
-    elif edge_type == EdgeType.CLASSICAL:
-        if "bandwidth" in params and params["bandwidth"] <= 0:
-            return False
-        if "latency" in params and params["latency"] < 0:
-            return False
-        if "error_rate" in params and not (0 <= params["error_rate"] <= 1):
-            return False
-    
-    # CONTROL边的参数验证
-    elif edge_type == EdgeType.CONTROL:
-        if "voltage" in params and params["voltage"] < 0:
-            return False
-        if "frequency" in params and params["frequency"] <= 0:
-            return False
-        if "response_time" in params and params["response_time"] < 0:
-            return False
-    
-    # FEEDBACK边的参数验证
-    elif edge_type == EdgeType.FEEDBACK:
-        if "delay" in params and params["delay"] < 0:
-            return False
-        if "reliability" in params and not (0 <= params["reliability"] <= 1):
-            return False
-    
-    # SYNCHRONIZATION边的参数验证
-    elif edge_type == EdgeType.SYNCHRONIZATION:
-        if "frequency" in params and params["frequency"] <= 0:
-            return False
-        if "jitter" in params and params["jitter"] < 0:
-            return False
-        if "precision" in params and params["precision"] <= 0:
-            return False
-    
-    return True
-
-
-def _is_idealized_mode() -> bool:
-    """
-    检查当前是否为理想化模式
-    
-    重构思路：
-    - 与node_types模块保持一致的模式检查
-    - 避免循环导入的问题
-    - 支持理想化边参数调整
-    
-    返回值：
-        bool: 是否为理想化模式
-    """
-    # 尝试从node_types模块导入，避免循环导入
-    try:
-        from .node_types import is_idealized_mode
-        return is_idealized_mode()
-    except ImportError:
-        # 如果无法导入，检查环境变量
-        import os
-        return os.getenv('AI4QKD_IDEALIZED_MODE', 'False').lower() == 'true'
-
-
-def _apply_idealized_edge_params(edge_type: EdgeType, template: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    应用理想化模式的边参数调整
-    
-    参数：
-        edge_type: 边类型
-        template: 原始参数模板
-        
-    返回值：
-        Dict[str, Any]: 调整后的理想化参数模板
-    """
-    # QUANTUM边的理想化调整
-    if edge_type == EdgeType.QUANTUM:
-        template["loss"] = 0.0      # 无损耗
-        template["noise"] = 0.0     # 无噪声
-        template["bandwidth"] = float('inf')  # 无限带宽
-    
-    # CLASSICAL边的理想化调整
-    elif edge_type == EdgeType.CLASSICAL:
-        template["bandwidth"] = float('inf')  # 无限带宽
-        template["latency"] = 0.0            # 无延迟
-        template["error_rate"] = 0.0         # 无错误
-    
-    # CONTROL边的理想化调整
-    elif edge_type == EdgeType.CONTROL:
-        template["response_time"] = 0.0      # 瞬时响应
-    
-    # FEEDBACK边的理想化调整
-    elif edge_type == EdgeType.FEEDBACK:
-        template["delay"] = 0.0              # 无延迟
-        template["reliability"] = 1.0        # 100%可靠性
-    
-    # SYNCHRONIZATION边的理想化调整
-    elif edge_type == EdgeType.SYNCHRONIZATION:
-        template["jitter"] = 0.0             # 无抖动
-        template["precision"] = 0.0          # 完美精度
-    
-    return template
-
-
 # ============================================================================
-# Edge类定义 - 重构版本
+# Edge类定义 - 重构版本专注信息流抽象
 # ============================================================================
 
 class Edge:
     """
-    协议图边类 - 重构版本
+    协议图边类 - 严格按照研究方案重构
     
     重构思路：
-    - 保持原有Edge类的接口兼容性
-    - 简化了边对象的创建和管理
-    - 优化了参数验证和更新机制
-    - 改进了序列化和反序列化功能
-    
-    设计改进：
-    - 更清晰的构造函数设计
-    - 统一的参数管理接口
-    - 简化的类型检查方法
-    - 完善的字符串表示
+    - 移除了大量物理传输参数，专注信息流抽象
+    - 增强了连接约束验证
+    - 简化了参数管理，突出信息流特性
+    - 完善了序列化支持
     
     核心功能：
-    - 边的创建和参数管理
-    - 边类型和方向的验证
-    - 边对象的序列化
+    - 信息流的抽象表示
+    - 节点间连接约束验证
+    - 边类型和方向管理
     """
     
     def __init__(self,
@@ -521,12 +429,6 @@ class Edge:
                  edge_id: Optional[str] = None):
         """
         初始化边对象
-        
-        重构思路：
-        - 保持原有构造函数的接口
-        - 简化了参数处理逻辑
-        - 优化了默认参数的设置
-        - 改进了验证机制
         
         参数：
             source_id: 源节点ID
@@ -542,7 +444,7 @@ class Edge:
         self.target_id = target_id
         self.edge_type = edge_type
         self.params = params or {}
-        self.edge_id = edge_id or f"{source_id}_{target_id}"
+        self.edge_id = edge_id or f"{source_id}_{target_id}_{edge_type.value}"
         
         # 设置默认参数
         self._set_default_params()
@@ -554,25 +456,28 @@ class Edge:
     def _set_default_params(self):
         """
         设置默认参数
-        
-        重构思路：
-        - 基于模板系统设置默认值
-        - 避免覆盖用户提供的参数
-        - 确保参数的完整性
         """
         template = get_edge_template(self.edge_type)
         for key, value in template.items():
             if key not in self.params:
                 self.params[key] = value
     
+    def validate_connection(self, source_node_type: str, target_node_type: str) -> bool:
+        """
+        验证此边是否可以连接给定的节点类型
+        
+        参数：
+            source_node_type: 源节点类型
+            target_node_type: 目标节点类型
+            
+        返回值：
+            bool: 是否可以连接
+        """
+        return validate_edge_connection(self.edge_type, source_node_type, target_node_type)
+    
     def update_params(self, new_params: Dict[str, Any]):
         """
         更新边参数
-        
-        重构思路：
-        - 保持原有的参数更新接口
-        - 确保更新后参数的有效性
-        - 提供清晰的错误信息
         
         参数：
             new_params: 新的参数字典
@@ -596,11 +501,6 @@ class Edge:
         """
         获取指定参数值
         
-        重构思路：
-        - 保持原有的参数获取接口
-        - 支持默认值机制
-        - 简化参数访问逻辑
-        
         参数：
             key: 参数名
             default: 默认值
@@ -613,11 +513,6 @@ class Edge:
     def set_param(self, key: str, value: Any):
         """
         设置单个参数值
-        
-        重构思路：
-        - 提供便捷的单参数设置接口
-        - 确保设置后参数的有效性
-        - 简化参数修改操作
         
         参数：
             key: 参数名
@@ -641,53 +536,57 @@ class Edge:
                 self.params.pop(key, None)
             raise ValueError(f"边类型 {self.edge_type} 的参数无效: {key}={value}")
     
-    def is_quantum_edge(self) -> bool:
+    def is_quantum_flow(self) -> bool:
         """
-        判断是否为量子边
-        
-        重构思路：
-        - 保持原有的类型判断接口
-        - 使用类方法简化判断逻辑
+        判断是否为量子信息流
         
         返回值：
-            bool: 是否为量子边
+            bool: 是否为量子信息流
         """
-        return EdgeType.is_quantum_edge(self.edge_type)
+        return EdgeType.is_quantum_flow(self.edge_type)
     
-    def is_classical_edge(self) -> bool:
+    def is_classical_flow(self) -> bool:
         """
-        判断是否为经典边
-        
-        重构思路：
-        - 保持原有的类型判断接口
-        - 与量子边判断保持一致
+        判断是否为经典信息流
         
         返回值：
-            bool: 是否为经典边
+            bool: 是否为经典信息流
         """
-        return EdgeType.is_classical_edge(self.edge_type)
+        return EdgeType.is_classical_flow(self.edge_type)
+    
+    def is_control_flow(self) -> bool:
+        """
+        判断是否为控制流
+        
+        返回值：
+            bool: 是否为控制流
+        """
+        return EdgeType.is_control_flow(self.edge_type)
     
     def get_direction(self) -> EdgeDirection:
         """
         获取边的方向
         
-        重构思路：
-        - 新增方向获取的便捷方法
-        - 支持方向相关的路由逻辑
-        
         返回值：
             EdgeDirection: 边的方向
         """
-        return self.params.get("direction", EdgeDirection.FORWARD)
+        direction_value = self.params.get("direction", EdgeDirection.FORWARD)
+        if isinstance(direction_value, str):
+            return EdgeDirection(direction_value)
+        return direction_value
+    
+    def get_flow_type(self) -> str:
+        """
+        获取信息流类型
+        
+        返回值：
+            str: 信息流类型
+        """
+        return self.params.get("flow_type", "unknown")
     
     def to_dict(self) -> Dict[str, Any]:
         """
         将边转换为字典表示
-        
-        重构思路：
-        - 保持原有的序列化接口
-        - 确保所有属性的正确序列化
-        - 支持JSON格式的导出
         
         返回值：
             Dict[str, Any]: 边的字典表示
@@ -712,11 +611,6 @@ class Edge:
     def from_dict(cls, data: Dict[str, Any]) -> 'Edge':
         """
         从字典创建边对象
-        
-        重构思路：
-        - 保持原有的反序列化接口
-        - 正确处理枚举类型的反序列化
-        - 确保创建对象的有效性
         
         参数：
             data: 边数据字典
@@ -748,16 +642,12 @@ class Edge:
         """
         字符串表示
         
-        重构思路：
-        - 保持原有的字符串表示格式
-        - 提供更多有用信息
-        - 便于调试和日志记录
-        
         返回值：
             str: 边的字符串表示
         """
         direction_arrow = self._get_direction_arrow()
-        return f"Edge({self.source_id} {direction_arrow} {self.target_id}, {self.edge_type.value})"
+        flow_type = self.get_flow_type()
+        return f"Edge({self.source_id} {direction_arrow} {self.target_id}, {self.edge_type.value}[{flow_type}])"
     
     def _get_direction_arrow(self) -> str:
         """
@@ -783,7 +673,7 @@ class Edge:
         返回值：
             str: 边的详细字符串表示
         """
-        return f"Edge(id={self.edge_id}, {self.source_id}->{self.target_id}, type={self.edge_type.value}, params={len(self.params)} items)"
+        return f"Edge(id={self.edge_id}, {self.source_id}->{self.target_id}, type={self.edge_type.value}, flow={self.get_flow_type()})"
     
     def __eq__(self, other) -> bool:
         """
@@ -810,3 +700,67 @@ class Edge:
             int: 哈希值
         """
         return hash((self.source_id, self.target_id, self.edge_type))
+
+
+# ============================================================================
+# 连接验证辅助函数
+# ============================================================================
+
+def get_edge_constraints_summary() -> Dict[str, Any]:
+    """
+    获取所有边类型连接约束的汇总信息
+    
+    返回值：
+        Dict[str, Any]: 约束汇总信息
+    """
+    return {
+        "constraints": EDGE_CONNECTION_CONSTRAINTS,
+        "total_edge_types": len(EdgeType),
+        "connection_rules": {
+            "QF": "量子操作节点间的量子态流动",
+            "CF": "经典操作节点间的经典信息传递",
+            "ControlF": "CD节点控制其他所有节点的执行",
+            "QCIF": "QM节点到CLO/CD节点的量子-经典转换"
+        }
+    }
+
+
+def validate_protocol_graph_edges(edges: List[Dict[str, Any]], nodes: Dict[str, Dict[str, Any]]) -> List[str]:
+    """
+    验证协议图中所有边的连接约束
+    
+    参数：
+        edges: 边列表
+        nodes: 节点字典 {node_id: node_info}
+        
+    返回值：
+        List[str]: 违规信息列表，空列表表示全部有效
+    """
+    violations = []
+    
+    for edge in edges:
+        source_id = edge.get("source_id")
+        target_id = edge.get("target_id") 
+        edge_type = edge.get("edge_type")
+        
+        # 检查节点是否存在
+        if source_id not in nodes:
+            violations.append(f"源节点 {source_id} 不存在")
+            continue
+        if target_id not in nodes:
+            violations.append(f"目标节点 {target_id} 不存在")
+            continue
+        
+        # 获取节点类型
+        source_node_type = nodes[source_id].get("node_type", "")
+        target_node_type = nodes[target_id].get("node_type", "")
+        
+        # 验证连接约束
+        try:
+            edge_type_enum = EdgeType(edge_type)
+            if not validate_edge_connection(edge_type_enum, source_node_type, target_node_type):
+                violations.append(f"无效连接: {source_node_type}({source_id}) -{edge_type}-> {target_node_type}({target_id})")
+        except ValueError:
+            violations.append(f"未知边类型: {edge_type}")
+    
+    return violations

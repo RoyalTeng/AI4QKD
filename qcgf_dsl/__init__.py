@@ -133,83 +133,122 @@ __all__ = [
 # 便捷功能函数（新增）
 def create_bb84_protocol():
     """
-    创建标准BB84协议的便捷函数
+    创建标准BB84协议的便捷函数 - 严格按照研究方案重构
     
     重构思路：
-    - 提供快速创建常用协议的接口
-    - 简化用户的协议创建流程
-    - 基于原有BB84测试用例设计
+    - 基于研究方案的节点和边类型定义
+    - 使用重构后的标准类型（QF代替QUANTUM）
+    - 创建符合研究方案的BB84协议结构
     
     返回值：
         ProtocolGraph: 配置好的BB84协议图
     """
     protocol = ProtocolGraph("BB84_Protocol")
     
-    # Alice方：量子态准备
+    # Alice方：量子态准备 (QSP)
     alice_qsp = protocol.add_node(
         node_type=NodeType.QSP,
         party=Party.ALICE,
-        params={"state": "|0⟩", "fidelity": 0.99}
+        params={"intensity": 0.1, "polarization": "H"}
     )
     
-    # 量子信道
+    # 量子信道 (QC)
     quantum_channel = protocol.add_node(
         node_type=NodeType.QC,
-        params={"loss": 0.1, "noise": 0.01, "distance": 50.0}
+        params={"length": 50.0, "loss_per_unit": 0.2}
     )
     
-    # Bob方：量子测量  
+    # Bob方：量子测量 (QM)
     bob_qm = protocol.add_node(
         node_type=NodeType.QM,
         party=Party.BOB,
-        params={"basis": "computational", "efficiency": 0.8}
+        params={"detector_efficiency": 0.8, "basis_id": 0}
     )
     
-    # 构建连接
-    protocol.add_edge(alice_qsp, quantum_channel, EdgeType.QUANTUM)
-    protocol.add_edge(quantum_channel, bob_qm, EdgeType.QUANTUM)
+    # 经典信息源 (Alice的随机比特) 
+    alice_cis = protocol.add_node(
+        node_type=NodeType.CIS,
+        party=Party.ALICE,
+        params={"length": 1000}
+    )
+    
+    # 密钥提取 (Bob方)
+    bob_ke = protocol.add_node(
+        node_type=NodeType.KE,
+        party=Party.BOB,
+        params={"key_length": 256}
+    )
+    
+    # 构建连接 - 使用研究方案定义的边类型
+    protocol.add_edge(alice_qsp, quantum_channel, EdgeType.QF)  # 量子流
+    protocol.add_edge(quantum_channel, bob_qm, EdgeType.QF)    # 量子流
+    protocol.add_edge(bob_qm, bob_ke, EdgeType.QCIF)          # 量子-经典接口流
+    protocol.add_edge(alice_cis, bob_ke, EdgeType.CF)         # 经典流
     
     return protocol
 
 
 def create_mdi_qkd_protocol():
     """
-    创建标准MDI-QKD协议的便捷函数
+    创建标准MDI-QKD协议的便捷函数 - 严格按照研究方案重构
     
     重构思路：
-    - 基于原有的MDI-QKD协议结构
-    - 简化多方协议的创建流程
-    - 支持Charlie方的Bell态测量
+    - 基于研究方案的节点类型定义
+    - 使用QI (量子干涉) 代替已删除的BSM类型
+    - 创建符合研究方案的MDI-QKD协议结构
     
     返回值：
         ProtocolGraph: 配置好的MDI-QKD协议图
     """
     protocol = ProtocolGraph("MDI_QKD_Protocol")
     
-    # Alice方：量子态准备
+    # Alice方：量子态准备 (QSP)
     alice_qsp = protocol.add_node(
         node_type=NodeType.QSP,
         party=Party.ALICE,
-        params={"state": "|+⟩", "fidelity": 0.95}
+        params={"intensity": 0.1, "polarization": "D"}
     )
     
-    # Bob方：量子态准备
+    # Bob方：量子态准备 (QSP)
     bob_qsp = protocol.add_node(
         node_type=NodeType.QSP,
         party=Party.BOB, 
-        params={"state": "|+⟩", "fidelity": 0.95}
+        params={"intensity": 0.1, "polarization": "D"}
     )
     
-    # Charlie方：Bell态测量
-    charlie_bsm = protocol.add_node(
-        node_type=NodeType.BSM,
+    # Charlie方：量子干涉测量 (QI - Bell态测量的抽象)
+    charlie_qi = protocol.add_node(
+        node_type=NodeType.QI,
         party=Party.CHARLIE,
-        params={"efficiency": 0.5}
+        params={"input_qubits": [0, 1], "reflectivity": 0.5}
     )
     
-    # 构建连接
-    protocol.add_edge(alice_qsp, charlie_bsm, EdgeType.QUANTUM)
-    protocol.add_edge(bob_qsp, charlie_bsm, EdgeType.QUANTUM)
+    # Charlie的量子测量 (QM)
+    charlie_qm = protocol.add_node(
+        node_type=NodeType.QM,
+        party=Party.CHARLIE,
+        params={"detector_efficiency": 0.8}
+    )
+    
+    # 密钥提取节点
+    alice_ke = protocol.add_node(
+        node_type=NodeType.KE,
+        party=Party.ALICE,
+        params={"key_length": 256}
+    )
+    
+    bob_ke = protocol.add_node(
+        node_type=NodeType.KE,
+        party=Party.BOB,
+        params={"key_length": 256}
+    )
+    
+    # 构建连接 - 使用研究方案定义的边类型
+    protocol.add_edge(alice_qsp, charlie_qi, EdgeType.QF)     # Alice量子流到Charlie
+    protocol.add_edge(bob_qsp, charlie_qi, EdgeType.QF)       # Bob量子流到Charlie
+    protocol.add_edge(charlie_qi, charlie_qm, EdgeType.QF)    # 干涉结果到测量
+    protocol.add_edge(charlie_qm, alice_ke, EdgeType.QCIF)    # 测量结果到Alice密钥
+    protocol.add_edge(charlie_qm, bob_ke, EdgeType.QCIF)      # 测量结果到Bob密钥
     
     return protocol
 

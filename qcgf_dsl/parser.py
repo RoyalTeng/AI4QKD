@@ -787,7 +787,7 @@ class QCGFSerializer:
             str: 格式化的边定义行
         """
         # 获取边类型
-        edge_type = edge_data.get("edge_type", EdgeType.QUANTUM)
+        edge_type = edge_data.get("edge_type", EdgeType.QF)
         if hasattr(edge_type, 'value'):
             edge_type_str = edge_type.value
         else:

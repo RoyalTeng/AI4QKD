@@ -215,6 +215,23 @@ class NodeType(Enum):
     SINK = "SINK"      # 汇聚节点
 ```
 
+#### QC节点子类型说明
+
+QC（量子信道）节点支持以下子类型：
+
+- **FIBER**: 光纤量子信道
+  - 适用于光纤传输的量子通信
+  - 支持参数：`loss`、`distance`、`dispersion` 等
+  
+- **FREE_SPACE**: 自由空间量子信道  
+  - 适用于自由空间传输的量子通信
+  - 支持参数：`loss`、`distance`、`atmospheric_effects` 等
+
+**注意**: 
+- v2.0.1版本已移除 `QUANTUM_MEMORY` 子类型
+- 移除原因：点对点DV-QKD协议专业化，不需要量子存储器功能
+- 现有使用 `FIBER` 和 `FREE_SPACE` 子类型的代码无影响
+
 #### 方法
 
 ##### get_quantum_types() / get_classical_types()
