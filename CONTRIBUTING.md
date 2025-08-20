@@ -2,6 +2,13 @@
 
 感谢您对AI4QKD项目的兴趣！我们欢迎各种形式的贡献，包括代码、文档、测试、想法和反馈。
 
+**⚠️ 重构阶段特别说明**: 项目当前在 `clean-start-v3` 分支进行完全重构。参与贡献前请务必阅读 [CLAUDE.md](CLAUDE.md) 了解重构指导原则和工作流程。
+
+**📋 重构优先级**: 
+1. 🥇 qcgf_dsl 模块优化 (当前重点)
+2. 🥈 核心模块开发 (core/ 目录)
+3. 🥉 示例和工具开发 (examples/, utils/)
+
 ## 🎯 贡献方式
 
 ### 📝 代码贡献
@@ -108,12 +115,23 @@ conda activate ai4qkd_env
   - 量子门保真度、传输损耗、信道长度
   - 所有符合DV-QKD物理模型的参数
   
-- ❌ **禁止的参数类型**:
-  - `discrimination_threshold` - 连续变量判决阈值
+- ❌ **严格禁止的参数类型**:
+  - `discrimination_threshold` - 连续变量判决阈值（已在v2.0.1中移除）
   - `variance` - 高斯调制方差
   - `quadrature_phase` - 正交相位参数
   - `coherent_amplitude` - 相干态振幅
+  - `squeezed_parameter` - 压缩参数
+  - `homodyne_angle` - 零差测量角度
+  - `heterodyne_phase` - 外差测量相位
+  - `displacement_parameter` - 位移参数
+  - `thermal_photon_number` - 热光子数
   - 任何连续变量QKD(CV-QKD)相关参数
+
+**⚠️ 代码审查必检项**: 
+- 检查变量命名是否包含`discrimination`、`coherent`、`squeezed`等CV-QKD关键词
+- 验证量子态定义是否为离散态（|0⟩、|1⟩、|+⟩、|-⟩）
+- 确认测量方式使用光子探测器而非连续测量
+- 审查算法是否基于离散量子态操作
 
 ```python
 # 好的代码示例

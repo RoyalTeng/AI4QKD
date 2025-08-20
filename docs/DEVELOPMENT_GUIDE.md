@@ -4,6 +4,8 @@
 
 本指南面向希望参与AI4QKD项目开发的贡献者，包括核心开发者、研究人员和社区贡献者。
 
+**⚠️ 重要提醒**: 项目当前处于**完全重构阶段** (`clean-start-v3` 分支)，原有复杂代码已清空，只保留核心 `qcgf_dsl` 模块。参与开发前请先阅读 [CLAUDE.md](../CLAUDE.md) 了解重构指导原则。
+
 ## 📋 开发环境
 
 ### 系统要求
@@ -71,7 +73,7 @@ mypy qcgf_dsl/
 
 ## 🏗️ 项目架构
 
-### 当前架构 (v2.0.0)
+### 当前架构 (v2.0.0) - clean-start-v3 分支
 
 ```
 AI4QKD/
@@ -147,17 +149,29 @@ AI4QKD/
 ### DV-QKD技术规范 (NEW! 2025-08-19)
 
 #### 禁止的CV-QKD参数
-开发者必须严格避免引入以下连续变量QKD相关参数：
+
+**⚠️ 严格禁止**: 开发者必须严格避免引入以下连续变量QKD相关参数：
 
 ```python
-# ❌ 禁止的参数
+# ❌ 禁止的参数类型
 discrimination_threshold = 0.5  # 连续变量判决阈值
-variance = 0.1                  # 高斯调制方差
+variance = 0.1                  # 高斯调制方差  
 quadrature_phase = 0.0         # 正交相位参数
 coherent_amplitude = 1.0       # 相干态振幅
 squeezed_parameter = 0.2       # 压缩参数
 homodyne_angle = np.pi/4       # 零差测量角度
+displacement_parameter = 2.0    # 位移参数
+squeezing_angle = 0.0          # 压缩角
+quadrature_variance = 0.25     # 正交分量方差
+thermal_photon_number = 0.1    # 热光子数
+heterodyne_phase = np.pi/3     # 外差测量相位
 ```
+
+**⚠️ 违规检测**: 代码审查时必须检查以下关键词：
+- `discrimination`、`threshold`、`coherent`、`squeezed`
+- `quadrature`、`homodyne`、`heterodyne`、`gaussian`
+- `variance`（除非明确用于其他统计目的）
+- `displacement`、`squeezing`、`thermal`
 
 #### 允许的DV-QKD参数
 以下参数符合离散变量QKD要求，可以在代码中使用：
@@ -999,6 +1013,10 @@ jobs:
   - [ ] 量子态定义符合离散变量QKD要求
   - [ ] 测量方式使用光子探测器模式
   - [ ] 参数范围符合DV-QKD物理约束
+  - [ ] 变量命名遵循DV-QKD术语规范
+  - [ ] 代码注释避免CV-QKD概念引用
+  - [ ] 算法实现基于离散量子态操作
+  - [ ] 性能指标符合DV-QKD评估标准
 
 #### 审查流程
 1. **提交PR**: 创建详细的Pull Request

@@ -232,6 +232,8 @@ QC（量子信道）节点支持以下子类型：
 - 移除原因：点对点DV-QKD协议专业化，不需要量子存储器功能
 - 现有使用 `FIBER` 和 `FREE_SPACE` 子类型的代码无影响
 
+**⚠️ 重要**: v2.0.1版本已移除所有连续变量QKD(CV-QKD)相关参数，包括`discrimination_threshold`等。这确保了项目100%专注于离散变量QKD技术。
+
 #### 方法
 
 ##### get_quantum_types() / get_classical_types()
@@ -300,6 +302,45 @@ class EdgeDirection(Enum):
     BACKWARD = "backward"        # 后向
     BIDIRECTIONAL = "bidirectional"  # 双向
 ```
+
+## 参数规范 (DV-QKD专业要求)
+
+### DV-QKD参数规范
+
+**✅ 允许的参数类型** (符合离散变量QKD):
+```python
+# 量子态参数
+"state": "|0⟩" | "|1⟩" | "|+⟩" | "|-⟩" | "|L⟩" | "|R⟩"
+"polarization": "H" | "V" | "D" | "A" | "L" | "R"
+"fidelity": 0.0 <= float <= 1.0
+
+# 测量参数  
+"basis": "Z" | "X" | "computational" | "hadamard"
+"efficiency": 0.0 <= float <= 1.0
+"dark_count_rate": 0.0 <= float <= 1e-3
+"gate_time": 1e-12 <= float <= 1e-6
+
+# 信道参数
+"loss": 0.0 <= float <= 1.0
+"distance": 0.0 <= float <= 1000.0  # km
+"transmission": 0.0 <= float <= 1.0
+```
+
+**❌ 禁止的参数类型** (连续变量QKD):
+```python
+# 严格禁止使用以下参数
+"discrimination_threshold"  # v2.0.1中已移除
+"variance" 
+"quadrature_phase"
+"coherent_amplitude"
+"squeezed_parameter"
+"homodyne_angle"
+"heterodyne_phase"
+"displacement_parameter"
+"thermal_photon_number"
+```
+
+**⚠️ 违规检测**: 系统会在参数验证时检查并拒绝CV-QKD相关参数，确保技术方向一致性。
 
 ## 模板和验证
 
