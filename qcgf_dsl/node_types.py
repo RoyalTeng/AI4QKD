@@ -446,7 +446,6 @@ NODE_TYPE_TEMPLATES = {
         "dark_count_rate": 1e-6,            # 暗计数率(每秒假阳性计数)
         "afterpulse_probability": 1e-3,     # 余脉冲概率
         "dead_time": 1e-6,                  # 探测器死时间
-        "discrimination_threshold": 0.5,     # 区分不同结果的阈值
         "party": Party.BOB
     },
     
