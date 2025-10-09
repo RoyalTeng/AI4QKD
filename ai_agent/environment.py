@@ -122,52 +122,64 @@ class QKDSimEnv(gym.Env):
         try:
             # 分析协议结构
             operations = []
-            
+
             # 添加量子态准备操作
             qsp_nodes = protocol_graph.get_nodes_by_type(NodeType.QSP)
-            for node_id in qsp_nodes:
+            for index, node_id in enumerate(qsp_nodes):
                 node = protocol_graph.get_node(node_id)
-                operation = QuantumOperation(
-                    operation_type=QuantumOperationType.STATE_PREPARATION,
-                    parties=["Alice"],
-                    parameters=node.params or {}
+                operations.append(
+                    QuantumOperation(
+                        name=f"state_preparation_{index}",
+                        operation_type=QuantumOperationType.PREPARATION,
+                        parameters=node.params or {}
+                    )
                 )
-                operations.append(operation)
-            
+
             # 添加量子信道操作
             qc_nodes = protocol_graph.get_nodes_by_type(NodeType.QC)
-            for node_id in qc_nodes:
+            for index, node_id in enumerate(qc_nodes):
                 node = protocol_graph.get_node(node_id)
-                operation = QuantumOperation(
-                    operation_type=QuantumOperationType.CHANNEL_TRANSMISSION,
-                    parties=["Alice", "Bob"],
-                    parameters=node.params or {}
+                operations.append(
+                    QuantumOperation(
+                        name=f"quantum_channel_{index}",
+                        operation_type=QuantumOperationType.CHANNEL,
+                        parameters=node.params or {}
+                    )
                 )
-                operations.append(operation)
-            
+
             # 添加量子测量操作
             qm_nodes = protocol_graph.get_nodes_by_type(NodeType.QM)
             bsm_nodes = protocol_graph.get_nodes_by_type(NodeType.BSM)
-            for node_id in qm_nodes + bsm_nodes:
+            for index, node_id in enumerate(qm_nodes + bsm_nodes):
                 node = protocol_graph.get_node(node_id)
-                operation = QuantumOperation(
-                    operation_type=QuantumOperationType.MEASUREMENT,
-                    parties=["Bob"],
-                    parameters=node.params or {}
+                operations.append(
+                    QuantumOperation(
+                        name=f"measurement_{index}",
+                        operation_type=QuantumOperationType.MEASUREMENT,
+                        parameters=node.params or {}
+                    )
                 )
-                operations.append(operation)
-            
+
             # 创建协议特征
             protocol_features = ProtocolFeatures(
                 name=protocol_graph.name or "AI_Generated_Protocol",
                 operations=operations,
                 parties=["Alice", "Bob"],
-                classical_channels=1,
-                security_assumptions=[]
+                communication_rounds=max(1, len(operations)),
+                measurement_bases=(
+                    max(1, len(qm_nodes)) if qm_nodes else 2
+                ),
+                decoy_states=any(
+                    any(
+                        key in (protocol_graph.get_node(node_id).params or {})
+                        for key in ('intensity', 'intensities', 'decoy_states')
+                    )
+                    for node_id in qsp_nodes
+                ) if qsp_nodes else False
             )
-            
+
             return protocol_features
-            
+
         except Exception as e:
             self.logger.error(f"协议特征转换失败: {e}")
             return None
