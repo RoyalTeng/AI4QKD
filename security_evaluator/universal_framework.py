@@ -59,12 +59,15 @@ class QuantumOperation:
     
     def __post_init__(self):
         """初始化后处理"""
-        # 转换字符串类型为枚举
-        if isinstance(self.operation_type, str):
-            try:
-                self.operation_type = QuantumOperationType(self.operation_type)
-            except ValueError:
-                logger.warning(f"Unknown operation type: {self.operation_type}")
+        # 兼容旧接口：QuantumOperation(name, matrix, operation_type)
+        if self._looks_like_legacy_signature():
+            legacy_matrix = self.operation_type
+            legacy_operation_type = self.matrix
+            self.matrix = legacy_matrix
+            self.operation_type = legacy_operation_type
+
+        # 规范化操作类型，保持对字符串比较的兼容性
+        self.operation_type = self._normalise_operation_type(self.operation_type)
         
         # 推断维度
         if self.matrix is not None and self.dimension is None:
@@ -79,9 +82,9 @@ class QuantumOperation:
         
         验证条件：U†U = UU† = I
         """
-        if self.operation_type != QuantumOperationType.UNITARY:
+        if self.operation_type_enum != QuantumOperationType.UNITARY:
             return False
-            
+
         if not isinstance(self.matrix, np.ndarray):
             return False
         
@@ -106,36 +109,36 @@ class QuantumOperation:
         1. 每个算子都是半正定的
         2. 完备性：Σᵢ Mᵢ = I
         """
-        if self.operation_type != QuantumOperationType.MEASUREMENT:
+        if self.operation_type_enum != QuantumOperationType.MEASUREMENT:
             return False
-            
+
         if not isinstance(self.matrix, list):
             return False
-        
+
         # 检查每个算子的半正定性
         for M in self.matrix:
             eigenvals = np.linalg.eigvals(M)
             if not np.all(eigenvals >= -tolerance):
                 return False
-        
+
         # 检查完备性
-        total = sum(self.matrix)
+        total = sum(M.conj().T @ M for M in self.matrix)
         expected_identity = np.eye(self.matrix[0].shape[0])
-        
+
         return np.allclose(total, expected_identity, atol=tolerance)
-    
+
     def is_valid_channel(self, tolerance: float = 1e-10) -> bool:
         """
         检查是否为有效的量子信道
         
         验证条件：Σᵢ Kᵢ†Kᵢ = I（Kraus算子完备性）
         """
-        if self.operation_type != QuantumOperationType.CHANNEL:
+        if self.operation_type_enum != QuantumOperationType.CHANNEL:
             return False
-            
+
         if not isinstance(self.matrix, list):
             return False
-        
+
         # 检查Kraus算子完备性
         total = sum(K.conj().T @ K for K in self.matrix)
         expected_identity = np.eye(self.matrix[0].shape[0])
@@ -149,9 +152,9 @@ class QuantumOperation:
         对于幺正操作：返回矩阵乘积
         对于其他操作：根据操作类型确定组合规则
         """
-        if (self.operation_type == QuantumOperationType.UNITARY and 
-            other.operation_type == QuantumOperationType.UNITARY):
-            
+        if (self.operation_type_enum == QuantumOperationType.UNITARY and
+            other.operation_type_enum == QuantumOperationType.UNITARY):
+
             # 幺正操作的组合
             composed_matrix = self.matrix @ other.matrix
             return QuantumOperation(
@@ -177,11 +180,11 @@ class QuantumOperation:
             对于测量：(概率, 后验态) 的列表
             对于信道：输出密度矩阵
         """
-        if self.operation_type == QuantumOperationType.UNITARY:
+        if self.operation_type_enum == QuantumOperationType.UNITARY:
             U = self.matrix
             return U @ state @ U.conj().T
-        
-        elif self.operation_type == QuantumOperationType.MEASUREMENT:
+
+        elif self.operation_type_enum == QuantumOperationType.MEASUREMENT:
             results = []
             for i, M in enumerate(self.matrix):
                 prob = np.real(np.trace(M @ state))
@@ -192,12 +195,52 @@ class QuantumOperation:
                     results.append((0.0, None))
             return results
         
-        elif self.operation_type == QuantumOperationType.CHANNEL:
+        elif self.operation_type_enum == QuantumOperationType.CHANNEL:
             output_state = sum(K @ state @ K.conj().T for K in self.matrix)
             return output_state
-        
+
         else:
             raise NotImplementedError(f"State application not implemented for {self.operation_type}")
+
+    @staticmethod
+    def _normalise_operation_type(operation_type: Union[QuantumOperationType, str, None]) -> str:
+        """将传入的操作类型统一为字符串形式"""
+        if isinstance(operation_type, QuantumOperationType):
+            return operation_type.value
+
+        if isinstance(operation_type, str):
+            try:
+                return QuantumOperationType(operation_type).value
+            except ValueError:
+                logger.warning(f"Unknown operation type: {operation_type}")
+                return operation_type
+
+        if operation_type is None:
+            logger.warning("Operation type not provided. Falling back to 'unknown'.")
+            return "unknown"
+
+        raise TypeError(f"Unsupported operation type: {type(operation_type)}")
+
+    def _looks_like_legacy_signature(self) -> bool:
+        """判断是否使用了旧的位置参数顺序"""
+        matrix_is_type = isinstance(self.matrix, (QuantumOperationType, str))
+
+        if matrix_is_type:
+            if self.operation_type is None:
+                return True
+
+            if not isinstance(self.operation_type, (QuantumOperationType, str)):
+                return True
+
+        return False
+
+    @property
+    def operation_type_enum(self) -> Optional[QuantumOperationType]:
+        """以枚举形式返回操作类型，便于内部逻辑判断"""
+        try:
+            return QuantumOperationType(self.operation_type)
+        except ValueError:
+            return None
 
 
 # ==================== 协议特征相关类 ====================
@@ -234,6 +277,19 @@ class ProtocolFeatures:
             self.trusted_parties = self.parties.copy()
         if self.untrusted_parties is None:
             self.untrusted_parties = []
+
+        # 将可选布尔参数规范化
+        if self.decoy_states is None and self.intensity_settings:
+            self.decoy_states = True
+        elif self.decoy_states is None:
+            self.decoy_states = False
+        else:
+            self.decoy_states = bool(self.decoy_states)
+
+        if self.device_independence is None:
+            self.device_independence = False
+        else:
+            self.device_independence = bool(self.device_independence)
     
     def calculate_information_theoretic_features(self) -> Dict[str, Any]:
         """
@@ -365,13 +421,21 @@ class ProtocolFeatures:
             比较结果字典
         """
         comparison = {}
-        
-        # 复杂度比较
+
+        # 复杂度比较：除基础指标外，考虑诱骗态设置等高级特性
         complexity_diff = (
             len(other.operations) - len(self.operations) +
             len(other.parties) - len(self.parties) +
             other.communication_rounds - self.communication_rounds
         )
+
+        intensity_self = self.intensity_settings or 0
+        intensity_other = other.intensity_settings or 0
+        complexity_diff += max(0, intensity_other - intensity_self)
+
+        if other.decoy_states and not self.decoy_states:
+            complexity_diff += 1
+
         comparison['complexity_difference'] = complexity_diff
         
         # 安全性增强比较
@@ -467,28 +531,32 @@ class UniversalSecurityParameters:
         bounds = {}
         
         # 隐私放大界限
-        bounds['privacy_amplification_bound'] = (
-            min_entropy - mutual_information - 
+        bounds['privacy_amplification_bound'] = max(
+            0.0,
+            min_entropy - mutual_information -
             np.sqrt(np.log(1/self.epsilon_sec) / (2 * protocol_rounds))
         )
         
         # 纠错界限
-        bounds['error_correction_bound'] = (
-            mutual_information + 
+        bounds['error_correction_bound'] = max(
+            0.0,
+            mutual_information +
             np.sqrt(np.log(1/self.epsilon_cor) / (2 * protocol_rounds))
         )
         
         # 有限密钥界限
-        bounds['finite_key_bound'] = (
-            min_entropy - 
+        bounds['finite_key_bound'] = max(
+            0.0,
+            min_entropy -
             np.sqrt(np.log(1/self.finite_key_param) * protocol_rounds)
         )
-        
+
         # 熵平滑界限
-        bounds['smoothed_entropy_bound'] = (
+        bounds['smoothed_entropy_bound'] = max(
+            0.0,
             min_entropy - np.log2(1/self.entropy_smoothing_param)
         )
-        
+
         return bounds
     
     def adapt_for_protocol(self, protocol_type: str) -> 'UniversalSecurityParameters':
