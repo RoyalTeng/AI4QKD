@@ -91,3 +91,69 @@ graph TD
 
 ---
 
+## 五、关键运行流程细化
+
+### 1. AI 驱动的协议搜索闭环
+- **训练启动**：`main.py` 读取 `config/settings.py` 等配置，初始化 `QKDSimEnv`（环境）与 `HybridAgent`（混合智能体）。
+- **协议生成与编辑**：`ai_agent/environment.py` 暴露 6 种动作（结构重组、参数优化等），驱动 `qcgf_dsl/protocol_graph.py` 产生或修改协议节点/边。
+- **仿真与指标计算**：`simulator/universal_quantum_simulator.py` 解析协议图，调用 `state_preparation.py`、`channel_model.py`、`measurement.py` 等物理子模块生成 QBER、增益等指标。
+- **安全评估**：`security_evaluator/key_rate_calculator.py` 联合 `entropy_estimator.py`、`finite_key_analysis.py` 计算密钥率与可组合安全参数。
+- **形式化反馈**：如需理论检查，`formal_verification/protocol_verifier.py` 与 `model_checker.py` 读取协议图/评估结果，生成验证反馈。
+- **日志与持久化**：`utils/training_logger.py` 将每回合的动作、奖励、模型权重写入 `results/<run_id>/` 与 `logs/ai_training/<run_id>/`，支持 `--resume_id` 恢复。
+
+### 2. 经典协议运行路径（示例脚本）
+- `examples/bb84_example.py`、`examples/mdi_qkd_example.py` 等直接构造预置协议图（或调用配置），通过 `universal_quantum_simulator.py` 计算性能，再交由 `key_rate_calculator.py` 得到密钥率；不进入 AI 训练循环。
+
+### 3. 独立安全评估路径
+- `examples/example_security_evaluator.py` 展示仅使用 `security_evaluator` 模块的方式：外部提供协议特征/仿真结果即可获得安全参数，便于与第三方仿真器集成。
+
+---
+
+## 六、核心模块间的依赖关系（文件级）
+
+```mermaid
+flowchart LR
+    subgraph Config & Entrypoint
+        cfg[config/settings.py] --> main[main.py]
+        main -->|初始化| env[ai_agent/environment.py]
+        main -->|加载策略| hybrid[ai_agent/hybrid_agent.py]
+    end
+
+    env -->|编辑/解析| pg[qcgf_dsl/protocol_graph.py]
+    hybrid -->|调用环境| env
+
+    pg --> uqsim[simulator/universal_quantum_simulator.py]
+    uqsim --> sp[simulator/state_preparation.py]
+    uqsim --> cm[simulator/channel_model.py]
+    uqsim --> ms[simulator/measurement.py]
+    uqsim --> pm[simulator/performance_metrics.py]
+
+    uqsim --> sec[security_evaluator/key_rate_calculator.py]
+    sec --> ent[security_evaluator/entropy_estimator.py]
+    sec --> fk[security_evaluator/finite_key_analysis.py]
+
+    sec --> fv[formal_verification/protocol_verifier.py]
+    fv --> mc[formal_verification/model_checker.py]
+
+    main --> log[utils/training_logger.py]
+    log --> resdir[results/<run_id>/]
+    log --> logdir[logs/ai_training/<run_id>/]
+```
+
+---
+
+## 七、配置、结果与可视化
+- **配置中心**：`config/settings.py` 定义训练与仿真超参，`config/ai_agent_config.py`、`config/qkd_protocols.py` 补充协议与智能体细节；命令行参数（如 `--resume_id`、`--episode`、`--run_id`）在 `main.py` 中解析并覆盖默认配置。
+- **结果产出**：训练产生的检查点位于 `results/<run_id>/best|latest|episodes/`，动作/奖励日志位于 `logs/ai_training/<run_id>/`，示例脚本输出直接在控制台或 `logs/` 下生成记录。
+- **可视化**：`qcgf_dsl/visualizer.py` 支持协议图渲染，`utils/visualization.py` 提供指标绘制；在训练或仿真后可用于生成协议结构图或性能曲线。
+
+---
+
+## 八、扩展与集成建议
+- **新增协议原语**：在 `qcgf_dsl/node_types.py`、`edge_types.py` 定义新节点/边类型，并扩展 `protocol_graph.py` 的解析与验证逻辑。
+- **物理模型替换**：在 `simulator/` 下添加自定义信道/噪声/测量模块，并在 `universal_quantum_simulator.py` 注册入口；保持接口返回标准化性能指标以兼容安全评估。
+- **AI 算法扩展**：在 `ai_agent/drl/` 或 `ai_agent/ea/` 添加新智能体，实现与 `HybridAgent` 的策略融合或替换；确保环境动作/奖励空间一致。
+- **验证流程增强**：向 `formal_verification/` 添加新的模型检查或定理证明器，实现更严格的安全性保证。
+
+---
+
