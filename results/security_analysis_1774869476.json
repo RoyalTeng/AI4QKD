@@ -1,0 +1,114 @@
+{
+  "protocol_name": "Discovered Innovative Protocol",
+  "structure_analysis": {
+    "security_score": 0.5333333333333333,
+    "findings": [
+      "✅ 包含经典验证节点（窃听检测）",
+      "✅ 发现 1 个控制信号连接",
+      "  控制信号数量适中，可能安全",
+      "✅ 发现基于干涉的验证方法",
+      "✅ 识别出 6 个关键节点",
+      "✅ 量子组件丰富（3个），可能提供多样性安全",
+      "✅ 经典处理组件充足（3个），支持安全后处理"
+    ],
+    "warnings": [
+      "⚠️ 未明确识别隐私放大组件",
+      "⚠️ 未明确识别认证机制"
+    ],
+    "has_eavesdropping_detection": true,
+    "has_privacy_amplification": false,
+    "has_authentication": false,
+    "control_edges_count": 1,
+    "interference_based_verification": true
+  },
+  "attack_analysis": {
+    "attack_analysis": {
+      "photon_number_splitting": {
+        "resistant": false,
+        "score": 0.5,
+        "countermeasures_found": false
+      },
+      "time_shift": {
+        "resistant": true,
+        "score": 0.6,
+        "countermeasures_found": true
+      },
+      "blinding": {
+        "resistant": false,
+        "score": 0.5,
+        "countermeasures_found": false
+      },
+      "trojan_horse": {
+        "resistant": false,
+        "score": 0.5,
+        "countermeasures_found": false
+      },
+      "intercept_resend": {
+        "resistant": true,
+        "score": 1.0,
+        "countermeasures_found": true
+      },
+      "man_in_the_middle": {
+        "resistant": false,
+        "score": 0.5,
+        "countermeasures_found": false
+      }
+    },
+    "average_resistance_score": 0.6,
+    "high_risk_attacks": []
+  },
+  "security_rating": {
+    "overall_score": 0.5733333333333334,
+    "security_level": "🟠 低安全性",
+    "rating": "C",
+    "structure_score": 0.5333333333333333,
+    "attack_resistance_score": 0.6,
+    "major_risks": [
+      "⚠️ 未明确识别隐私放大组件",
+      "⚠️ 未明确识别认证机制"
+    ],
+    "security_advantages": [
+      "包含经典验证节点（窃听检测）",
+      "发现 1 个控制信号连接",
+      "发现基于干涉的验证方法",
+      "识别出 6 个关键节点",
+      "量子组件丰富（3个），可能提供多样性安全",
+      "经典处理组件充足（3个），支持安全后处理"
+    ],
+    "recommendations": [
+      "添加隐私放大组件以增强安全性",
+      "添加经典信道认证机制"
+    ]
+  },
+  "comparison_with_standard": {
+    "BB84": {
+      "security_score": 0.3,
+      "rating": "D",
+      "security_level": "🔴 安全性不足",
+      "major_risks_count": 3,
+      "advantages_count": 1
+    },
+    "MDI-QKD": {
+      "security_score": 0.4600000000000001,
+      "rating": "C",
+      "security_level": "🟠 低安全性",
+      "major_risks_count": 2,
+      "advantages_count": 3
+    },
+    "TF-QKD": {
+      "security_score": 0.36,
+      "rating": "D",
+      "security_level": "🔴 安全性不足",
+      "major_risks_count": 3,
+      "advantages_count": 2
+    },
+    "AI_Protocol": {
+      "security_score": 0.5733333333333334,
+      "rating": "C",
+      "security_level": "🟠 低安全性",
+      "major_risks_count": 2,
+      "advantages_count": 6
+    }
+  },
+  "timestamp": 1774869476.499375
+}

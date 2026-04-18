@@ -1,0 +1,15 @@
+# AI4QKD项目依赖
+
+# 核心依赖
+numpy>=1.21.0
+scipy>=1.7.0
+networkx>=3.0
+
+# 可选依赖（AI功能需要）
+# torch>=2.0.0
+# torch-geometric>=2.3.0
+
+# 开发工具
+pytest>=7.0.0
+black>=22.0.0
+flake8>=5.0.0

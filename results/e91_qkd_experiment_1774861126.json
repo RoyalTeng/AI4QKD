@@ -1,0 +1,196 @@
+{
+  "experiment": "E91 Protocol Discovery",
+  "config": {
+    "iterations": 80,
+    "population_size": 18,
+    "mutation_rate": 0.35
+  },
+  "baseline_results": {
+    "e91_template": {
+      "fitness": 0.256608,
+      "e91_score": 1.0,
+      "is_e91_like": true,
+      "stats": {
+        "name": "E91 Protocol Template",
+        "node_count": 8,
+        "edge_count": 8,
+        "node_stats": {
+          "quantum_state_preparation": 1,
+          "quantum_channel": 2,
+          "quantum_measurement": 2,
+          "classical_channel": 1,
+          "classical_verification": 1,
+          "classical_key_extraction": 1
+        },
+        "party_stats": {
+          "alice": 1,
+          "bob": 1,
+          "both": 2
+        }
+      }
+    },
+    "bb84": {
+      "fitness": 0.256608,
+      "stats": {
+        "name": "BB84 Protocol",
+        "node_count": 4,
+        "edge_count": 4,
+        "node_stats": {
+          "quantum_state_preparation": 1,
+          "quantum_channel": 1,
+          "quantum_measurement": 1,
+          "classical_channel": 1
+        },
+        "party_stats": {
+          "alice": 1,
+          "bob": 1
+        }
+      }
+    }
+  },
+  "ai_training_result": {
+    "best_fitness": 0.35660800000000004,
+    "best_protocol_stats": {
+      "name": "Random_Protocol_7665",
+      "node_count": 7,
+      "edge_count": 8,
+      "node_stats": {
+        "classical_channel": 2,
+        "classical_processing": 1,
+        "quantum_channel": 1,
+        "quantum_state_preparation": 1,
+        "quantum_measurement": 2
+      },
+      "party_stats": {
+        "charlie": 1,
+        "bob": 2,
+        "alice": 1
+      }
+    },
+    "e91_features": {
+      "entanglement": {
+        "has_entanglement_source": false,
+        "has_bell_state": false,
+        "entanglement_distribution": false
+      },
+      "measurement": {
+        "has_two_measurements": true,
+        "has_random_basis": false,
+        "has_multiple_settings": false
+      },
+      "verification": {
+        "has_bell_test": false,
+        "has_CHSH_test": false,
+        "has_classical_communication": true
+      },
+      "security": {
+        "device_independent": false,
+        "bell_violation_based": false,
+        "no_trusted_source": false
+      },
+      "e91_score": 0.15000000000000002,
+      "is_e91_like": false,
+      "statistics": {
+        "entanglement_sources": 0,
+        "measurement_nodes": 2,
+        "bell_test_nodes": 0,
+        "parties": [
+          "charlie",
+          "bob",
+          "alice"
+        ],
+        "total_nodes": 7,
+        "total_edges": 8
+      }
+    },
+    "fitness_history": [
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004,
+      0.35660800000000004
+    ],
+    "iterations": 80
+  },
+  "comparison": {
+    "improvement_vs_e91_template": 38.9699463773538,
+    "improvement_vs_bb84": 38.9699463773538,
+    "e91_discovery_success": false
+  },
+  "timestamp": 1774861126
+}

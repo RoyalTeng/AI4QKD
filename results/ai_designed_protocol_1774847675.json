@@ -1,0 +1,23 @@
+{
+  "name": "BB84 Protocol",
+  "fitness": 0.7128,
+  "statistics": {
+    "name": "BB84 Protocol",
+    "node_count": 4,
+    "edge_count": 4,
+    "node_stats": {
+      "quantum_state_preparation": 1,
+      "quantum_channel": 1,
+      "quantum_measurement": 1,
+      "classical_channel": 1
+    },
+    "party_stats": {
+      "alice": 1,
+      "bob": 1
+    }
+  },
+  "training_info": {
+    "iterations": 20,
+    "timestamp": 1774847675
+  }
+}

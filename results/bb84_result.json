@@ -1,0 +1,8 @@
+{
+  "protocol_name": "BB84 Protocol",
+  "pulse_count": 10000,
+  "qber": 0.01,
+  "gain": 0.72,
+  "raw_key_rate": 0.36,
+  "simulation_time": 2.86102294921875e-06
+}

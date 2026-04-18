@@ -1,0 +1,64 @@
+{
+  "name": "BB84 Protocol",
+  "nodes": [
+    {
+      "node_id": "Alice_QSP",
+      "node_type": "quantum_state_preparation",
+      "params": {
+        "state": "|+\u27e9",
+        "basis": "X"
+      },
+      "party": "alice"
+    },
+    {
+      "node_id": "QuantumChannel",
+      "node_type": "quantum_channel",
+      "params": {
+        "loss": 0.1
+      },
+      "party": null
+    },
+    {
+      "node_id": "Bob_QM",
+      "node_type": "quantum_measurement",
+      "params": {
+        "basis": "X"
+      },
+      "party": "bob"
+    },
+    {
+      "node_id": "ClassicalChannel",
+      "node_type": "classical_channel",
+      "params": {
+        "capacity": 1.0
+      },
+      "party": null
+    }
+  ],
+  "edges": [
+    {
+      "source_id": "Alice_QSP",
+      "target_id": "QuantumChannel",
+      "edge_type": "quantum",
+      "params": {}
+    },
+    {
+      "source_id": "Alice_QSP",
+      "target_id": "ClassicalChannel",
+      "edge_type": "classical",
+      "params": {}
+    },
+    {
+      "source_id": "QuantumChannel",
+      "target_id": "Bob_QM",
+      "edge_type": "quantum",
+      "params": {}
+    },
+    {
+      "source_id": "Bob_QM",
+      "target_id": "ClassicalChannel",
+      "edge_type": "classical",
+      "params": {}
+    }
+  ]
+}

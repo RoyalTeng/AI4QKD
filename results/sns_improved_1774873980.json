@@ -1,0 +1,24 @@
+{
+  "experiment": "Improved SNS Protocol Discovery",
+  "improvements": [
+    "Relaxed feature detection",
+    "Multiple SNS variants",
+    "Enhanced training parameters",
+    "Adjusted fitness weights (40% performance + 60% SNS)"
+  ],
+  "config": {
+    "generations": 120,
+    "population_size": 35,
+    "mutation_rate": 0.7,
+    "elite_size": 1,
+    "sns_variants_count": 3
+  },
+  "results": {
+    "best_fitness": 0.8276432,
+    "best_sns_compatibility": 0.875,
+    "best_base_performance": 0.256608,
+    "protocol_quality": "🏆 高质量SNS-like协议",
+    "improvement_effect": "✅ 显著改进"
+  },
+  "timestamp": 1774873980
+}

@@ -1,0 +1,85 @@
+{
+  "experiment": "Two-Stage Innovation Experiment",
+  "philosophy": "Phase1: 100% novelty, Phase2: 70% performance + 30% novelty",
+  "config": {
+    "phase1_generations": 50,
+    "phase2_generations": 50,
+    "phase1_population": 25,
+    "phase2_population": 20
+  },
+  "phase1_results": {
+    "innovative_protocols_count": 10,
+    "top_innovations": [
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.5430578759142178,
+        0.5196432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.5313369887088583,
+        0.5226432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ],
+      [
+        "Random_Protocol_5248_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated_mutated",
+        0.523378771477399,
+        0.5166432000000001
+      ]
+    ],
+    "time_seconds": 0.12119507789611816
+  },
+  "phase2_results": {
+    "best_fitness": 0.5334454085325748,
+    "best_novelty": 0.5294838951085826,
+    "best_performance": {
+      "base_fitness": 0.256608,
+      "security": 0.7000000000000001,
+      "efficiency": 0.8,
+      "robustness": 0.73,
+      "complexity_penalty": 0.12,
+      "total": 0.5351432
+    },
+    "time_seconds": 0.08237504959106445
+  },
+  "final_assessment": {
+    "innovation_level": "🥉 轻度创新",
+    "performance_level": "🐌 低性能",
+    "goal_achieved": false
+  },
+  "timestamp": 1774864543
+}

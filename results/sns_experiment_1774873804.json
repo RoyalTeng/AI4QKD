@@ -1,0 +1,16 @@
+{
+  "experiment": "SNS Protocol Discovery",
+  "config": {
+    "generations": 80,
+    "population_size": 25,
+    "mutation_rate": 0.6,
+    "fitness_weights": "70% performance + 30% SNS similarity"
+  },
+  "results": {
+    "best_fitness": 0.20689832727272728,
+    "best_sns_similarity": 0.09090909090909091,
+    "best_base_performance": 0.256608,
+    "discovery_quality": "🔍 非SNS-like协议"
+  },
+  "timestamp": 1774873804
+}

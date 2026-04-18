@@ -1,0 +1,127 @@
+{
+  "experiment": "MDI-QKD Protocol Discovery (Quick)",
+  "mdi_protocol": {
+    "fitness": 0.256608,
+    "stats": {
+      "name": "MDI-QKD Protocol",
+      "node_count": 7,
+      "edge_count": 6,
+      "node_stats": {
+        "quantum_state_preparation": 2,
+        "quantum_channel": 2,
+        "quantum_measurement": 1,
+        "classical_channel": 1,
+        "classical_processing": 1
+      },
+      "party_stats": {
+        "alice": 2,
+        "bob": 1,
+        "charlie": 1
+      }
+    },
+    "features": {
+      "has_bell_measurement": true,
+      "has_two_senders": true,
+      "sender_parties": [
+        "alice",
+        "bob"
+      ],
+      "measurement_nodes": 1,
+      "joint_measurements": 1,
+      "mdi_score": 0.7999999999999999,
+      "is_mdi_like": true
+    }
+  },
+  "bb84_protocol": {
+    "fitness": 0.256608,
+    "stats": {
+      "name": "BB84 Protocol",
+      "node_count": 4,
+      "edge_count": 4,
+      "node_stats": {
+        "quantum_state_preparation": 1,
+        "quantum_channel": 1,
+        "quantum_measurement": 1,
+        "classical_channel": 1
+      },
+      "party_stats": {
+        "alice": 1,
+        "bob": 1
+      }
+    }
+  },
+  "ai_training": {
+    "best_fitness": 0.7066079999999999,
+    "best_protocol_stats": {
+      "name": "Random_Protocol_3912_mutated_mutated_mutated_mutated_mutated",
+      "node_count": 9,
+      "edge_count": 4,
+      "node_stats": {
+        "quantum_state_preparation": 3,
+        "quantum_measurement": 2,
+        "classical_processing": 2,
+        "quantum_channel": 2
+      },
+      "party_stats": {
+        "bob": 3,
+        "charlie": 2,
+        "alice": 2
+      }
+    },
+    "fitness_history": [
+      0.40660799999999997,
+      0.40660799999999997,
+      0.40660799999999997,
+      0.40660799999999997,
+      0.40660799999999997,
+      0.40660799999999997,
+      0.40660799999999997,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999,
+      0.7066079999999999
+    ],
+    "iterations": 50,
+    "population_size": 15
+  },
+  "timestamp": 1774857091
+}

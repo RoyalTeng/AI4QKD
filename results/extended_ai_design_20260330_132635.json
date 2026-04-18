@@ -1,0 +1,27 @@
+{
+  "experiment": "扩展AI设计",
+  "iterations": 100,
+  "training_time": 0.005731821060180664,
+  "best_fitness": 0.7128,
+  "best_protocol": {
+    "name": "BB84 Protocol",
+    "node_count": 4,
+    "edge_count": 4,
+    "node_stats": {
+      "quantum_state_preparation": 1,
+      "quantum_channel": 1,
+      "quantum_measurement": 1,
+      "classical_channel": 1
+    },
+    "party_stats": {
+      "alice": 1,
+      "bob": 1
+    }
+  },
+  "comparison_with_bb84": {
+    "bb84_nodes": 4,
+    "best_nodes": 4,
+    "bb84_edges": 4,
+    "best_edges": 4
+  }
+}

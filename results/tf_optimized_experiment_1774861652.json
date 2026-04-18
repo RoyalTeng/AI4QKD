@@ -1,0 +1,232 @@
+{
+  "experiment": "Optimized TF-QKD Experiment",
+  "config": {
+    "iterations": 120,
+    "population_size": 20,
+    "mutation_rate": 0.45,
+    "strategy": "MDI-inspired + specialized mutation + staged training"
+  },
+  "baseline_results": {
+    "tf_template": {
+      "fitness": 0.256608,
+      "tf_score": 0.72,
+      "core_complete": true,
+      "is_tf_like": true,
+      "stats": {
+        "name": "TF Template Simplified",
+        "node_count": 5,
+        "edge_count": 4,
+        "node_stats": {
+          "quantum_state_preparation": 2,
+          "quantum_channel": 2,
+          "quantum_gate": 1
+        },
+        "party_stats": {
+          "alice": 1,
+          "bob": 1,
+          "charlie": 1
+        }
+      }
+    },
+    "bb84": {
+      "fitness": 0.256608,
+      "stats": {
+        "name": "BB84 Protocol",
+        "node_count": 4,
+        "edge_count": 4,
+        "node_stats": {
+          "quantum_state_preparation": 1,
+          "quantum_channel": 1,
+          "quantum_measurement": 1,
+          "classical_channel": 1
+        },
+        "party_stats": {
+          "alice": 1,
+          "bob": 1
+        }
+      }
+    }
+  },
+  "ai_training_result": {
+    "best_fitness": 1.0,
+    "best_protocol_stats": {
+      "name": "Random_Protocol_1784_tf_mutated_tf_mutated_tf_mutated_mutated_tf_mutated_tf_mutated",
+      "node_count": 12,
+      "edge_count": 13,
+      "node_stats": {
+        "classical_processing": 2,
+        "quantum_measurement": 3,
+        "classical_channel": 2,
+        "quantum_channel": 1,
+        "quantum_state_preparation": 3,
+        "quantum_gate": 1
+      },
+      "party_stats": {
+        "bob": 5,
+        "charlie": 4,
+        "alice": 2
+      }
+    },
+    "tf_features": {
+      "core": {
+        "two_remote_senders": true,
+        "coherent_state_source": true,
+        "interference_measurement": true
+      },
+      "important": {
+        "phase_encoding": false,
+        "long_distance_channel": true
+      },
+      "advanced": {
+        "phase_stabilization": false,
+        "time_synchronization": false
+      },
+      "tf_score": 0.72,
+      "is_tf_like": true,
+      "core_complete": true,
+      "statistics": {
+        "senders": [
+          "alice",
+          "bob"
+        ],
+        "coherent_sources": 2,
+        "interferometers": 1,
+        "phase_modulators": 0,
+        "long_channels": 1,
+        "total_nodes": 12,
+        "total_edges": 13
+      }
+    },
+    "fitness_history": [
+      0.1796256,
+      0.5181168,
+      0.5181168,
+      0.6681168,
+      0.806608,
+      0.806608,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "iterations": 120
+  },
+  "comparison": {
+    "improvement_vs_tf_template": 289.69946377353784,
+    "improvement_vs_bb84": 289.69946377353784,
+    "tf_discovery_success": true,
+    "core_features_complete": true,
+    "vs_original_experiment": 231.19946377353784
+  },
+  "timestamp": 1774861652
+}

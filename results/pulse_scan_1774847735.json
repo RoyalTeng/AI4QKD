@@ -1,0 +1,49 @@
+{
+  "experiment": "脉冲数扫描",
+  "protocol": "BB84",
+  "results": [
+    {
+      "pulse_count": 1000,
+      "qber": 0.009722222222222222,
+      "gain": 0.72,
+      "key_rate": 0.36,
+      "simulation_time": 5.0067901611328125e-06
+    },
+    {
+      "pulse_count": 5000,
+      "qber": 0.01,
+      "gain": 0.72,
+      "key_rate": 0.36,
+      "simulation_time": 3.0994415283203125e-06
+    },
+    {
+      "pulse_count": 10000,
+      "qber": 0.01,
+      "gain": 0.72,
+      "key_rate": 0.36,
+      "simulation_time": 1.9073486328125e-06
+    },
+    {
+      "pulse_count": 20000,
+      "qber": 0.01,
+      "gain": 0.72,
+      "key_rate": 0.36,
+      "simulation_time": 1.1920928955078125e-06
+    },
+    {
+      "pulse_count": 50000,
+      "qber": 0.01,
+      "gain": 0.72,
+      "key_rate": 0.36,
+      "simulation_time": 1.9073486328125e-06
+    },
+    {
+      "pulse_count": 100000,
+      "qber": 0.01,
+      "gain": 0.72,
+      "key_rate": 0.36,
+      "simulation_time": 9.5367431640625e-07
+    }
+  ],
+  "timestamp": 1774847735
+}
