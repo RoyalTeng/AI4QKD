@@ -1,14 +1,14 @@
 # AI4QKD 项目重构方案(函数级详细版)
 
-**文档状态**:v3.1.3(codex 五轮评审字面统一,2026-04-18)
+**文档状态**:v3.1.4(codex 六轮评审字面统一 + PROSPECTUS v3.1 对齐,2026-04-18)
 **基准日期**:2026-04-18
-**作者**:基于 2026-04-17 与 2026-04-18 代码审查 + 2026-04-18 codex 五轮评审
+**作者**:基于 2026-04-17 与 2026-04-18 代码审查 + 2026-04-18 codex 六轮评审
 **目标读者**:项目负责人、实现者、codex 评审
 
 > **与 [PROSPECTUS.md](PROSPECTUS.md) 的关系**:
-> [PROSPECTUS.md](PROSPECTUS.md)(v3.0)是**研究地图**(WHY — 主问题"无中继无存储 DV-QKD 的信息论极限"、Sub-Q1→Sub-Q5 子问题序列、Gap 刻画方法);
+> [PROSPECTUS.md](PROSPECTUS.md)(v3.1)是**研究地图**(WHY — 主问题"无中继无存储 DV-QKD 的信息论极限"、Sub-Q1→Sub-Q4 子问题序列、Gap 刻画方法);
 > 本文档是**函数级实施规范**(HOW — 每个模块的 API、测试、里程碑硬验收、运营控制)。
-> 两者的映射:Sub-Q1 对应本文档 §5 的 M1-M3 + M4A/M4B(评估工具链),其中 M4B 可延至 Phase 0.5;Sub-Q3+ 的上界 SDP 在 Phase 2 建设,超出 Phase 0 范围。
+> 两者的映射:Sub-Q1(MS-EB 框架 + 评估工具链)对应本文档 §5 的 M1-M3 + M4A/M4B,其中 M4B 可延至 Phase 0.5;Sub-Q2 的 family sheet 跨 Phase 0-1;Sub-Q3 / Sub-Q4 的上界 SDP + gap 刻画在 Phase 2–3 建设,超出 Phase 0 范围。
 > 当工期/里程碑结构数字不一致时,**以本文档 §5 为准**(经 codex 六轮审计)。
 
 > **v2 → v3 变更摘要**:根据 codex 一轮评审(`/tmp/codex_review_final.md`,702 行,9 节 18 条 Verdict),
