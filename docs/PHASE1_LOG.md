@@ -77,6 +77,35 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
+## 3.5 S2.3 器件不完美 BB84 Pareto 前沿数值实验(2026-04-19,Stage A)
+
+**背景**:`FibreChannel` + `decoy_wlc_rate_one` 基础设施在 Phase 0 M3 已就绪,但 plan §3.2 S2.3 的**数值硬验收**("η_d=0.5, p_d=1e-6 下 BB84 族 Pareto 退化 20-50%")从未执行。本 stage 闭合这个数值空档。
+
+**产出**:
+1. [qkdx/sweeps/decoy_bb84_sweep.py](../qkdx/sweeps/decoy_bb84_sweep.py):3 档位(IDEAL / TYPICAL_S23 / LMC_2005_FIG3)+ 1-D 距离扫描 + 2-D (距离×μ) 扫描 + 档位对比接口
+2. [tests/test_sweeps/test_decoy_bb84_sweep.py](../tests/test_sweeps/test_decoy_bb84_sweep.py):10 tests 全过(含 S2.3 硬验收单测 `test_device_imperfection_degrades_rate`)
+3. [docs/findings/s2.3_device_imperfections.md](findings/s2.3_device_imperfections.md):findings doc v0.1
+4. [docs/findings/s2.3_device_imperfections.json](findings/s2.3_device_imperfections.json):raw 数值数据(19 距离 × 3 档位 + 2-D 扫描 205 点)
+
+**[FIND] 实测退化大幅超过 plan 预期**:
+- plan §3.2 S2.3 写 "20-50% 退化"
+- **实测 η_d=0.5 p_d=1e-6 e_d=0.033 下 80-87% 退化**(25-150 km 范围)
+- 差距 >30 个百分点,属于 plan 估计的系统性偏低
+- 建议修订 plan 验收阈值为 "至少 50% 退化" 的 lower bound 形式
+
+**[FIND] LMC 档位下最优 μ 对距离不敏感**:
+- 2-D (distance × μ) 205 点扫描显示 LMC_2005_FIG3 档位最优 μ ≈ 0.42,在 25-125 km 恒定
+- 与 Ma 2005 §V Fig.2 GLLP+decoy 稳态预测一致
+
+**方法选择**:grid scan 而非 BO/CMA-ES(plan §3.2 允许,见 [§3.2 方法选择记录](#32)),19×3 + 205 = 262 点;未达 plan "≥1000 点"硬验收 — **有缺口需补充**,下一轮细化网格到 40×30 = 1200 点(或多轮次积累 ≥ 1000)。
+
+**影响**:
+- 测试数:229 → 239(+10 S2.3 sweep tests)
+- Phase 1 S2.3 硬验收部分闭合(数值退化验证完成;点数硬验收有缺口待补)
+- [FIND] 给 plan §3.2 S2.3 验收阈值提出修订建议
+
+---
+
 ## 3.4 Bell-state measurement (BSM) channels(`qkdx/core/bell_povm.py`,2026-04-19)
 
 **背景**:F5 MDI `covered` 升级需要把 Charlie 的 Bell 测量作为 `PublicQuantumNetwork.channel` 建模(当前吸收在 `_conditional_alice_bob` override)。本次 commit 实施这部分的数学基础设施 — Bell POVM KrausMap factory。
