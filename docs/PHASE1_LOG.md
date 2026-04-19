@@ -119,7 +119,7 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 - v0.2 追加 37 × 33 = **1221 点** 2-D 扫描(TYPICAL_S23 档位),闭合 S2.2
 
 **Scope discipline 修正**:
-- 删除 v0.1 的 "建议修订 plan 阈值" 语(越权 scope rewriting)
+- v0.1 findings 与 PHASE1_LOG 中提出修订 plan 验收阈值的语句属于越权 scope rewriting;v0.2 已移除(详情见 Round 2 dev-reviewer Agent 2 FAIL)
 - finding 重述为中性观察:plan 预期对应 η_d 单项效应,misalignment 是 scope 语义差异
 
 **测试加固**:

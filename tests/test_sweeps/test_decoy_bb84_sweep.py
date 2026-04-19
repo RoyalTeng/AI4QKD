@@ -53,59 +53,80 @@ def test_sweep_produces_meta() -> None:
 
 # ---- S2.3 硬验收: η_d=0.5 vs η_d=1.0 ----------------------------------------
 
-@pytest.mark.parametrize("L", [25.0, 50.0, 100.0])
-def test_device_imperfection_degrades_rate(L: float) -> None:
-    """S2.3 硬验收(v0.2, dev-reviewer Round 2 response):
-    η_d=0.5, p_d=1e-6, e_d=0.033 下 TYPICAL_S23 vs IDEAL 退化 ≥ 50%.
+@pytest.mark.parametrize("L,expected_band", [
+    (25.0, (83.0, 85.5)),   # per-profile optimized: 84.25
+    (50.0, (83.0, 85.5)),   # 84.43
+    (100.0, (83.0, 86.0)),  # 84.73
+])
+def test_typical_s23_degradation_per_profile_optimized(
+    L: float, expected_band: tuple[float, float]
+) -> None:
+    """S2.3 硬验收 (dev-reviewer Round 3 response):
+    TYPICAL_S23 per-profile μ-optimized 退化应在 83-86% 带内.
 
-    实测机制分解(见 findings §3.4):
-      - η_d=0.5 alone: 50.0-51.4% degradation
-      - +misalignment e_d=0.033: +~34 pp (→ 83-87%)
-      - +dark count p_d=1e-6: +~0 pp at ≤100 km (negligible)
-
-    TYPICAL_S23 包含全部三项,距离 ≤100 km 时退化稳定在 83-85%.
-    本测试断言退化 ≥ 50% 以 guard 主要 finding(v0.2 tightened from >10%).
+    Mechanism decomposition confirmed by findings §3.4 and r2.json:
+      - η_d=0.5 alone: 50.0-51.4 %
+      - +misalignment e_d=0.033: +31.9-34.5 pp → ~84%
+      - +dark count p_d=1e-6: +0-0.3 pp at ≤100km (negligible)
     """
-    mu, nu = 0.5, 0.1
-    rates = compare_profiles_at_distance(
-        [IDEAL, TYPICAL_S23], distance_km=L, mu=mu, nu=nu,
+    mus = np.linspace(0.1, 0.9, 41)
+    # IDEAL μ-optimized
+    pts_ideal = sweep_decoy_bb84_mu_distance(IDEAL, [L], mus, nu_ratio=0.2)
+    r_ideal = max(p.objectives[0] for p in pts_ideal)
+    # TYPICAL μ-optimized
+    pts_typical = sweep_decoy_bb84_mu_distance(
+        TYPICAL_S23, [L], mus, nu_ratio=0.2,
     )
-    r_ideal = rates["ideal"]
-    r_typical = rates["S2.3_typical"]
-    assert r_ideal > 0, f"L={L}: ideal rate not positive: {r_ideal}"
-    assert r_typical > 0, f"L={L}: typical rate not positive: {r_typical}"
-    degradation_pct = (r_ideal - r_typical) / r_ideal * 100
-    assert degradation_pct >= 50.0, (
-        f"L={L}: expected ≥50% degradation, got {degradation_pct:.2f}%. "
-        f"ideal={r_ideal:.6f}, typical={r_typical:.6f}"
+    r_typical = max(p.objectives[0] for p in pts_typical)
+    assert r_ideal > 0 and r_typical > 0
+    deg = (r_ideal - r_typical) / r_ideal * 100
+    lo, hi = expected_band
+    assert lo <= deg <= hi, (
+        f"L={L} km: per-profile μ-optimized degradation {deg:.2f}%; "
+        f"expected band [{lo}, {hi}]. ideal={r_ideal:.6f}, typical={r_typical:.6f}"
     )
 
 
-@pytest.mark.parametrize("L", [25.0, 50.0, 100.0])
-def test_eta_d_only_degradation_matches_plan_estimate(L: float) -> None:
-    """Mechanism decomposition: η_d=0.5 单独效应应落在 plan 20-50% 范围内.
+@pytest.mark.parametrize("L,expected_band", [
+    (25.0, (50.0, 51.5)),   # per-profile optimized: 50.70
+    (50.0, (49.5, 51.0)),   # 50.24
+    (100.0, (49.5, 51.0)),  # 50.02
+])
+def test_eta_d_only_degradation_per_profile_optimized(
+    L: float, expected_band: tuple[float, float]
+) -> None:
+    """Mechanism: η_d=0.5 alone per-profile μ-optimized 退化在 50.0-51.5%.
 
-    Per-profile μ-optimized 比较显示 η_d=0.5 单项效应在 50.0-51.4%,
-    精确匹配 plan §3.2 S2.3 "20-50% 退化" 估计上端(略超 1-2 pp).
+    Precisely in plan §3.2 S2.3 "20-50%" upper range (slight over by ~1 pp).
     """
     from qkdx.sweeps.decoy_bb84_sweep import DeviceProfile
     eta_d_only = DeviceProfile(
         name="eta_d_only",
         eta_detector=0.5, p_dark=0.0, e_misalignment=0.0,
     )
-    mu, nu = 0.5, 0.1
+    mus = np.linspace(0.1, 0.9, 41)
+    pts_ideal = sweep_decoy_bb84_mu_distance(IDEAL, [L], mus, nu_ratio=0.2)
+    r_ideal = max(p.objectives[0] for p in pts_ideal)
+    pts_eta = sweep_decoy_bb84_mu_distance(eta_d_only, [L], mus, nu_ratio=0.2)
+    r_eta = max(p.objectives[0] for p in pts_eta)
+    deg = (r_ideal - r_eta) / r_ideal * 100
+    lo, hi = expected_band
+    assert lo <= deg <= hi, (
+        f"L={L}: η_d-only degradation {deg:.2f}%; expected [{lo}, {hi}]"
+    )
+
+
+@pytest.mark.parametrize("L", [25.0, 50.0, 100.0])
+def test_device_imperfection_degrades_rate_fixed_slice(L: float) -> None:
+    """Fixed (μ=0.5, ν=0.1) slice: TYPICAL vs IDEAL 退化 ≥ 50% (coarser guard)."""
     rates = compare_profiles_at_distance(
-        [IDEAL, eta_d_only], distance_km=L, mu=mu, nu=nu,
+        [IDEAL, TYPICAL_S23], distance_km=L, mu=0.5, nu=0.1,
     )
     r_ideal = rates["ideal"]
-    r_eta = rates["eta_d_only"]
-    assert r_ideal > 0 and r_eta > 0
-    degradation_pct = (r_ideal - r_eta) / r_ideal * 100
-    # Plan expects 20-50%; η_d alone gives ~50% (slight over-range is physics)
-    assert 40.0 <= degradation_pct <= 55.0, (
-        f"L={L}: η_d alone should give 40-55% degradation (plan says 20-50%), "
-        f"got {degradation_pct:.2f}%."
-    )
+    r_typical = rates["S2.3_typical"]
+    assert r_ideal > 0 and r_typical > 0
+    deg = (r_ideal - r_typical) / r_ideal * 100
+    assert deg >= 50.0, f"L={L}: fixed-slice deg {deg:.2f}% < 50% guard"
 
 
 def test_ge_1000_points_2d_sweep_TYPICAL_S23() -> None:
