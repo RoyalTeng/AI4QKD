@@ -163,6 +163,9 @@ KEEP_LIST=(
   "archive"                    # 归档目标自身
   "docs"                       # v2 项目文档层
   "scripts"                    # 本脚本所在
+  "README.md"                  # v2 README(2026-04-19 已重写为 qkdx 项目说明)
+  "conversations"              # v2 周研究日志(conversations/weekly/)
+  "logs"                       # v2 phase0/ 日志目录(scaffolding)
   # v2 新建(本次执行时还没创建,保留避免误移)
   "qkdx"
   "tests"
@@ -208,13 +211,17 @@ done
 
 tag ""
 tag "  archive (${#TO_ARCHIVE[@]} items):"
-for a in "${TO_ARCHIVE[@]}"; do
-  tag "    → $a  →  $ARCHIVE_DIR/"
-done
+if (( ${#TO_ARCHIVE[@]} == 0 )); then
+  tag "    (none — legacy already archived; script is idempotent)"
+else
+  for a in "${TO_ARCHIVE[@]}"; do
+    tag "    → $a  →  $ARCHIVE_DIR/"
+  done
+fi
 tag ""
 
 # 真跑时执行 git mv
-for item in "${TO_ARCHIVE[@]}"; do
+for item in ${TO_ARCHIVE[@]+"${TO_ARCHIVE[@]}"}; do
   if [[ "$DRY_RUN" == "1" ]]; then
     printf '[DRY] cmd: git mv -k -- %q %q\n' "$item" "$ARCHIVE_DIR/"
   else
