@@ -1,10 +1,24 @@
-# FINDINGS — 最终结论
+# FINDINGS — 最终结论 ❌ **[RETRACTED 2026-04-19]**
 
-**文档状态**:经 Phase R(Log 01-06)+ Phase V(V1-V4)全部通过,作为本轮研究的最终答案。
+> # 🛑 本文档已被正式撤回
+>
+> **撤回日期**:2026-04-19(落盘同日)
+> **撤回理由**:经项目负责人独立审查,本文档存在实质性**物理拓扑适用性误用 + 置信度越权 + 多层 AI 审计系统性盲点**三类问题。见 [RETRACTION.md](RETRACTION.md)。
+> **当前有效性**:**不得作为 PROSPECTUS v3.1 Sub-Q1 / §1 主问题的答案被引用**。
+> **PROSPECTUS 主问题状态**:**仍然开放**,归 Sub-Q3 Phase 2 精读 + Sub-Q4 归因分析严肃处理。
+> **保留原因**:审计历史完整 + 方法论教训载体。
+>
+> 阅读本文件下方的"原结论" 时,请默认**所有 [COROLLARY] 级分级都在实际上是 [SYN] 或 [CONJ] 级**。特别是 §1.1 定理陈述 R ≤ -log₂(1 - √η_AB) 在未做严格的 Pirandola 2019 untrusted-relay 适用性论证前,**是一个未被定理级支持的命题**。
+
+---
+
+**文档状态**(原):经 Phase R(Log 01-06)+ Phase V(V1-V4)全部通过,作为本轮研究的最终答案。**现已被 [RETRACTION.md](RETRACTION.md) 撤回**。
 **日期**:2026-04-19
-**作者**:Claude Opus 4.7,literature-informed analysis
+**作者**:Claude Opus 4.7,literature-informed analysis(**未经项目负责人审阅即 commit,违反 PROSPECTUS §9 授信边界**)
 
-**⚠️ 诚信声明**:本 FINDINGS 是**对 PROSPECTUS v3.1 §1 主问题的 literature-informed 分析**,**不是新定理**。所有核心结论依赖已发表文献(PLOB17, Pirandola19, Lucamarini18 等)。最高确定性级别为**条件化 COROLLARY**,具体条件见 §1.2。
+**⚠️ 诚信声明**(原):本 FINDINGS 是**对 PROSPECTUS v3.1 §1 主问题的 literature-informed 分析**,**不是新定理**。所有核心结论依赖已发表文献(PLOB17, Pirandola19, Lucamarini18 等)。最高确定性级别为**条件化 COROLLARY**,具体条件见 §1.2。
+
+**⚠️ 撤回补充**(2026-04-19):上述"条件化 COROLLARY"分级**实际越权**。真实的确定性级别应为 [SYN](文献共识支持的 scaling 预判)或 [CONJ](最可能但未定理级证成),**不得**作 [COROLLARY] 级被引用。
 
 ---
 

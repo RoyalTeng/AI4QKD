@@ -1,4 +1,14 @@
-# FINDINGS_DRAFT — 初稿,未经 Phase V 验证
+# FINDINGS_DRAFT — 初稿 ❌ **[RETRACTED 2026-04-19]**
+
+> # 🛑 本文档已被正式撤回
+>
+> 本 DRAFT 之后写成的 [FINDINGS.md](FINDINGS.md) 已被项目负责人撤回。本 DRAFT 作为其前身,同样**不得**作为 PROSPECTUS 主问题答案引用。
+>
+> 详见 [RETRACTION.md](RETRACTION.md)。
+>
+> 原文保留作审计历史。
+
+---
 
 > **⚠️ 本文件是 DRAFT,不是最终答案。必须经过 V1-V4 四轮验证后才允许 rename 为 `FINDINGS.md` 作为最终答案。本文件内容在验证过程中**随时可能被驳回或修订**。**
 

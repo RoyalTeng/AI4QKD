@@ -69,13 +69,31 @@
 | V3 | [V3_counterexample_hunt.md](V3_counterexample_hunt.md) | 反例搜索(主动搜文献找越界协议) | **PASS** + 多篇 2023-2025 年论文确认 stop-at-√η |
 | V4 | [V4_codex_independent.md](V4_codex_independent.md) | codex 独立评审(对抗立场 + 反驳尝试) | **NEEDS_REVISION**(7 findings,主结论保,细节修)→ 已应用修订 |
 
-**最终结论**:
+**最终结论(原)**:
 
-| F | 文件 | 主题 |
-|---|------|------|
-| **FINAL** | **[FINDINGS.md](FINDINGS.md)** | **最终答案:情况 A 成立(scaling 层面,条件化 COROLLARY 级)** |
+| F | 文件 | 主题 | 当前状态 |
+|---|------|------|----------|
+| FINDINGS | [FINDINGS.md](FINDINGS.md) | 原宣称"情况 A 成立" | **❌ [RETRACTED 2026-04-19]** |
+| FINDINGS_DRAFT | [FINDINGS_DRAFT.md](FINDINGS_DRAFT.md) | Phase R 初稿 | **❌ [RETRACTED 2026-04-19]** |
+| **RETRACTION** | **[RETRACTION.md](RETRACTION.md)** | **撤回声明 + 方法论教训** | **✅ 当前权威文件** |
 
-**主问题答案摘要**:$\sqrt{\eta_{AB}}$ 是两方 + 单 untrusted measurement relay + pure-loss 拓扑的紧 scaling;prefactor 开放。详见 [FINDINGS.md](FINDINGS.md) §0。
+---
+
+## 🛑 当前状态(2026-04-19 撤回后)
+
+- **PROSPECTUS v3.1 §1 主问题**:**仍然开放**,归 Sub-Q3 Phase 2 + Sub-Q4(PROSPECTUS 原计划)
+- **Sub-Q3 上界工作**:**完整开放,未开始**(原 FINDINGS 的"预先关闭"被撤回)
+- **Sub-Q4 gap 归因**:**撤回预判**,须在 Sub-Q3 完成后真实启动
+
+**撤回原因摘要**(完整见 [RETRACTION.md](RETRACTION.md)):
+
+1. Pirandola 2019 对 untrusted relay 适用性论证缺失(靠未显式写出的 capacity monotonicity 直觉)
+2. 公式表述读起来像 PLOB 误用(形式同构 "PLOB 的 η 替换为 √η_AB")
+3. 文献共识 ≠ 定理级 converse 证明
+4. Phase V 四轮审计未抓住物理拓扑误用 —— 与 AI4QKD v1 失败模式同构
+5. 越权"关闭"PROSPECTUS Sub-Q3 原本要做的 30-50 页精读工作
+
+**Logs 01-05 文献地图部分**仍保留作 Sub-Q3 起点价值,但**不作 Sub-Q1 答案**。
 
 ---
 

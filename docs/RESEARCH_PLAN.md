@@ -47,6 +47,19 @@
    - **MOSEK 主线**:`pytest.approx(rel=0.01, abs=5e-4)`,**不放宽**
    - **CLARABEL / SCS fallback**:`pytest.approx(rel=0.02, abs=1e-3)`,且必须在测试或 memo 中显式标注 `@pytest.mark.fallback_solver` 或文本 "(CLARABEL fallback)"
    - 其他阈值选择必须附 ADR(`docs/adr/NNNN-*.md`)
+
+**2b. 定理拓扑适用性核对**(**v1.1 补丁 2026-04-19,应 `docs/research/RETRACTION.md` §4.2 要求**):
+
+任何引用的上界 / 下界 / converse / achievability 定理,在 memo / 报告 / FINDINGS 中使用前,**必须**显式核对:
+
+- **(i) 拓扑前提**:定理的原始拓扑(点对点 / 单中继 / 网络 / 多端点)与当前应用的拓扑是否一致?不一致时,**继承需要独立论证**
+- **(ii) 信任假设**:定理对中间节点的信任要求(trusted / untrusted / semi-honest / adversarial)与应用情形是否一致?**不一致时不得直接引用**
+- **(iii) 协议自由度**:量子存储 / 仅 LOCC / 允许跨轮等前提是否一致?
+- **(iv) 定理编号 + 方程号 + 页码**:引用必须精确到论文中具体位置,不能只写论文标题
+
+**任何上述四条之一不匹配,必须有显式的"继承 / 单调性 / 适用性 lemma",不能靠直觉或 "capacity monotonicity implicit argument"**。
+
+违反本条的结论属于 [SYN] 或 [CONJ] 级,**不得**标 [THM] 或 [COROLLARY]。
 3. **独立复现**:关键数值结果应由第二套实现独立复现(可以是:另一个求解器、手动推导子情形、第三方代码)
 4. **Limitations 显式化**:任何 memo / 论文初稿都必须有 Limitations 小节,明确框架假设、数值精度、不 covered 的 cases
 
