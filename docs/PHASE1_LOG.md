@@ -111,6 +111,25 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 **300 tests pass**(276 → 300,+24 finite-key tests;10 MOSEK-skip)。
 
+### Round 1 Codex review FAIL 响应(commit 待提交)
+
+**3 MAJOR** 修复:
+
+1. **API 语义**:`bb84_finite_key_rate_analytic` 原为 `ℓ/(n+m)`,reviewer 指出这是 "per-accepted-round" 而非 repo-wide "per-signal"(后者需乘 `p_sift`)。修复:
+   - 新增 `bb84_finite_key_rate_per_block(n, m, e_x)` — 显式"每接受轮"
+   - 新增 `bb84_finite_key_rate_per_signal(n, m, e_x, p_sift=0.5)` — 显式"每信号",匹配 repo 约定
+   - `bb84_finite_key_rate_analytic` 保留为 `per_block` 别名(backward compat,内部 deprecation 注记)
+
+2. **Input validation**:`eps_EC` 和 `eps_PA` 未校验,负/零值导致 raw `ZeroDivisionError`,大于 1 静默得到乐观解。修复:添加 `(0, 1)` 校验。
+
+3. **Test coverage**:
+   - Pairwise monotone in N(跨 5 个 N 值比较,非独立检查)
+   - Near-threshold sign change(e=0.09 ℓ>0 / e=0.13 ℓ<0 at f_EC=1.0,BB84 11% 阈值区间)
+   - Invalid ε 参数(7 参数化点覆盖 ε_EC / ε_PA / ε_PE / ε_bar)
+   - `per_signal` p_sift 乘法 + 无效 p_sift 拒收
+
+**Round 2 完成度**:37 tests(24 → 37,+13 新);Round 1 三项 MAJOR 全部闭合。
+
 ---
 
 ## 3.7 Stage E(重定向):GLL-2021 Level 3 精读(2026-04-19 → 2026-04-20)

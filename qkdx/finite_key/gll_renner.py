@@ -162,6 +162,10 @@ def bb84_finite_key_length_analytic(
         raise ValueError(f"e_z must be in [0, 0.5], got {e_z}")
     if f_EC < 1.0:
         raise ValueError(f"f_EC must be ≥ 1.0, got {f_EC}")
+    for name, val in [("eps_PE", eps_PE), ("eps_bar", eps_bar),
+                       ("eps_EC", eps_EC), ("eps_PA", eps_PA)]:
+        if not (0.0 < val < 1.0):
+            raise ValueError(f"{name} must be in (0, 1), got {val}")
 
     mu = variation_bound(m, eps_PE, alphabet_size)
     delta = delta_smoothing(eps_bar, n, key_alphabet_size)
@@ -182,19 +186,60 @@ def bb84_finite_key_length_analytic(
     return ell
 
 
-def bb84_finite_key_rate_analytic(
+def bb84_finite_key_rate_per_block(
     n: int,
     m: int,
     e_x: float,
     **kwargs,
 ) -> float:
-    """Per-signal BB84 finite-key rate R = ℓ / N where N = n + m.
+    """Per-accepted-round BB84 finite-key rate R_block = ℓ / (n + m).
 
-    Convenience wrapper. Does NOT clip at 0 (return negative if key rate
-    infeasible, so caller can detect non-viable regime).
+    **API semantic note** (Round 1 reviewer):
+    n + m is the POSTSELECTED/ACCEPTED rounds count (key-gen + PE sample).
+    This rate is "bit per accepted round", NOT "bit per transmitted signal".
+    For "bit per signal" accounting (matching the rest of this repo's
+    convention), use `bb84_finite_key_rate_per_signal()` with an explicit
+    `p_sift` argument.
+
+    Does NOT clip at 0 (return negative if infeasible regime).
     """
     ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=e_x, **kwargs)
     return ell / (n + m)
+
+
+def bb84_finite_key_rate_per_signal(
+    n: int,
+    m: int,
+    e_x: float,
+    p_sift: float = 0.5,
+    **kwargs,
+) -> float:
+    """Per-transmitted-signal BB84 finite-key rate R = p_sift · ℓ / (n + m).
+
+    For standard BB84 with unbiased basis choice: p_sift = 0.5.
+    For Efficient BB84 (Lo-Chau-Ardehali 2005) with p_z bias:
+        p_sift = p_z² + (1-p_z)²  (approaches 1 as bias increases)
+
+    Matches the repo-wide "bit/signal" convention (shor_preskill_rate,
+    mdi_ideal_symmetric_rate, etc.).
+
+    Args:
+        n, m, e_x: same as bb84_finite_key_length_analytic
+        p_sift: sifting probability (∈ (0, 1])
+
+    Raises:
+        ValueError: p_sift not in (0, 1].
+    """
+    if not (0.0 < p_sift <= 1.0):
+        raise ValueError(f"p_sift must be in (0, 1], got {p_sift}")
+    return p_sift * bb84_finite_key_rate_per_block(
+        n=n, m=m, e_x=e_x, **kwargs,
+    )
+
+
+# Legacy alias for backward compat (flagged as deprecated).  Use
+# `bb84_finite_key_rate_per_block` or `bb84_finite_key_rate_per_signal` instead.
+bb84_finite_key_rate_analytic = bb84_finite_key_rate_per_block
 
 
 def total_security_parameter(

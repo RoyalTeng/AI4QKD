@@ -1,0 +1,501 @@
+diff --git a/docs/PHASE1_LOG.md b/docs/PHASE1_LOG.md
+index 46700e6..cd6b813 100644
+--- a/docs/PHASE1_LOG.md
++++ b/docs/PHASE1_LOG.md
+@@ -77,6 +77,42 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
+ 
+ ---
+ 
++## 3.8 Stage F(partial):qkdx/finite_key/ 基础设施(2026-04-20)
++
++**背景**:Plan §3.3 S2.5 Kamin 2025 复现需 PDF 不在库。退而求其次,实施 GLL-2021(Stage E memo 基础)的**分析公式**层作为 S2.5 基础设施。
++
++**Scope(诚实)**:
++- **实施**:Renner framework finite-key 的 analytic layer(variation bound μ / smoothing δ / BB84 unique-acceptance analytic ℓ)— 不依赖 SDP solver,作为任何 finite-key 计算的 "零成本" 底板
++- **未实施**:Finite-key SDP(GLL-2021 Eq. 14)全 WLC 集成 — 待 Kamin 2025 PDF 决定最终路径(GEAT vs Renner)
++- **未实施**:Kamin 2025 Fig.4 / Table 1 对照(plan §3.3 S2.5 硬验收)— PDF 未到
++
++**产出**:
++- [qkdx/finite_key/gll_renner.py](../qkdx/finite_key/gll_renner.py):
++  - `variation_bound(m, eps_PE, alphabet_size)`:GLL-2021 Eq. 4
++  - `delta_smoothing(eps_bar, n, key_alphabet_size)`:GLL-2021 Eq. 3
++  - `bb84_finite_key_length_analytic(n, m, e_x, e_z=None, ...)`:Eq. 19 完整形式(含 EC leakage 修正项,per Stage E reviewer v0.2 fix)
++  - `bb84_finite_key_rate_analytic`:per-signal wrapper
++  - `total_security_parameter`:ε 组合
++- [tests/test_finite_key/test_gll_renner.py](../tests/test_finite_key/test_gll_renner.py)(24 tests):
++  - μ 和 δ 公式的 scaling 验证(1/√m,1/√n)
++  - BB84 有限密钥长度的 asymptotic 收敛(N → ∞ 收敛到 Shor-Preskill)
++  - 阈值行为(e=0.20 > 11% 阈值时 ℓ < 0)
++  - EC leakage 修正项 presence(regression against Eq. 19 v0.1 misquote)
++  - Fig.3 style snapshot(N=10^8, e=0.05, rate ∈ [0.30, 0.38])
++  - Input validation
++
++**数值 sanity**(Fig. 3 style 在 N=10^8, e_x = e_z = 0.05, f_EC=1.2):
++- per-signal rate ≈ 0.344 bit/signal(与 asymptotic Shor-Preskill 差 ~3% 来自 finite-size 修正)
++- 作为 S2.5 后续 Kamin 2025 对比的 baseline
++
++**Plan 对齐**:
++- S2.5 "finite-key 实施" 基础设施约 **30% 就绪**(analytic layer 完成;SDP layer 待 PDF 决策)
++- 不触碰 §3.3 S2.5 **硬验收**(Kamin 2025 Fig.4 / Table 1 < 5% 误差)— 需 PDF 后专门 session
++
++**300 tests pass**(276 → 300,+24 finite-key tests;10 MOSEK-skip)。
++
++---
++
+ ## 3.7 Stage E(重定向):GLL-2021 Level 3 精读(2026-04-19 → 2026-04-20)
+ 
+ **背景**:Plan §3.3 S2.4 原定 Metger 2024 GEAT Level 4 精读,S2.5 Kamin 2025 复现。本 session 检查 PDF 可用性发现:
+diff --git a/qkdx/finite_key/__init__.py b/qkdx/finite_key/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/qkdx/finite_key/gll_renner.py b/qkdx/finite_key/gll_renner.py
+new file mode 100644
+index 0000000..728c07d
+--- /dev/null
++++ b/qkdx/finite_key/gll_renner.py
+@@ -0,0 +1,204 @@
++"""Finite-key analytic formulas (George-Lin-Lütkenhaus 2021 + Renner framework).
++
++Phase 1 S2.5 foundation (RESEARCH_PLAN §3.3):
++    Implements the analytic formulas from GLL-2021 (arXiv:2004.11865v2, §II)
++    that don't require SDP solving — these provide the "zero-ish cost"
++    baseline for any finite-key QKD analysis in the Renner framework.
++
++**Scope note**:
++    - Asymptotic numerical method (WLC 2018 SDP) + finite-key SDP (GLL 2021
++      Eq. 14) are NOT in this module.  That is full-SDP work deferred until
++      Kamin 2025 reproduction path is clarified.
++    - This module provides the *parameter-estimation* layer (variation bound
++      μ, smooth-entropy correction δ) that is common to any finite-key
++      method in Renner framework.
++
++References:
++    - George, Lin, Lütkenhaus 2021.  Numerical calculations of the finite
++      key rate for general QKD protocols.  PRR 3:013274.
++    - Renner 2005.  Security of QKD.  ETH Zürich PhD thesis, Ch. 6.
++    - docs/literature/GLL-2021.md §3 (Level 3 memo)
++"""
++from __future__ import annotations
++
++import math
++
++
++def variation_bound(
++    m: int,
++    eps_PE: float,
++    alphabet_size: int,
++) -> float:
++    """Variation-distance upper bound μ between measured frequency and true state.
++
++    GLL-2021 Eq. 4:
++        μ = √[ 2·(ln(1/ε_PE) + |Σ| · ln(m+1)) / m ]
++
++    Derived from Lemma 2 of Renner 2005 (via Chernoff-Hoeffding inequality
++    applied to the L1 distance of frequency estimates).  For sample size m
++    from alphabet of size |Σ|, with probability at least 1 - ε_PE,
++        || F_observed - Φ_𝒫(ρ) ||_1 ≤ μ
++    for the true state ρ.
++
++    Args:
++        m: parameter-estimation sample count (>= 1)
++        eps_PE: parameter-estimation failure probability (0 < ε < 1)
++        alphabet_size: |Σ| — number of distinct measurement outcomes
++
++    Returns:
++        μ > 0 in [0, 2] (variation distance is bounded above by 2)
++
++    Raises:
++        ValueError: invalid inputs
++    """
++    if m < 1:
++        raise ValueError(f"m must be ≥ 1, got {m}")
++    if not (0.0 < eps_PE < 1.0):
++        raise ValueError(f"eps_PE must be in (0, 1), got {eps_PE}")
++    if alphabet_size < 1:
++        raise ValueError(f"alphabet_size must be ≥ 1, got {alphabet_size}")
++    numerator = math.log(1.0 / eps_PE) + alphabet_size * math.log(m + 1.0)
++    return math.sqrt(2.0 * numerator / m)
++
++
++def delta_smoothing(
++    eps_bar: float,
++    n: int,
++    key_alphabet_size: int,
++) -> float:
++    """Smooth min-entropy vs von Neumann gap (GLL-2021 Eq. 3).
++
++        δ(ε̄) = 2 · log2(d + 3) · √(log2(2/ε̄) / n)
++
++    This term represents the gap (per signal) between the von Neumann
++    conditional entropy H(X|E) and the smooth min-entropy H_min^{ε̄}(X|E)
++    that actually appears in privacy amplification (Renner 2005 AEP).
++
++    Args:
++        eps_bar: smoothing parameter (0 < ε̄ < 1)
++        n: key-generation sample count (>= 1)
++        key_alphabet_size: d — Alice's key output alphabet size (e.g., BB84 → 2)
++
++    Returns:
++        δ ≥ 0 (units: bits per signal)
++
++    Raises:
++        ValueError: invalid inputs
++    """
++    if n < 1:
++        raise ValueError(f"n must be ≥ 1, got {n}")
++    if not (0.0 < eps_bar < 1.0):
++        raise ValueError(f"eps_bar must be in (0, 1), got {eps_bar}")
++    if key_alphabet_size < 1:
++        raise ValueError(f"key_alphabet_size must be ≥ 1, got {key_alphabet_size}")
++    d = key_alphabet_size
++    return 2.0 * math.log2(d + 3) * math.sqrt(math.log2(2.0 / eps_bar) / n)
++
++
++def _h(p: float) -> float:
++    """Binary entropy, 0 · log 0 = 0 convention."""
++    if p <= 0.0 or p >= 1.0:
++        return 0.0
++    return -p * math.log2(p) - (1.0 - p) * math.log2(1.0 - p)
++
++
++def bb84_finite_key_length_analytic(
++    n: int,
++    m: int,
++    e_x: float,
++    e_z: float | None = None,
++    eps_PE: float = 2.5e-9,
++    eps_bar: float = 2.5e-9,
++    eps_EC: float = 2.5e-9,
++    eps_PA: float = 2.5e-9,
++    f_EC: float = 1.2,
++    alphabet_size: int = 2,
++    key_alphabet_size: int = 2,
++) -> float:
++    """BB84 finite-key length ℓ (bits), analytic formula per GLL-2021 Eq. 19.
++
++        ℓ = n·[1 - h(e_x + μ/2) - f_EC · h(e_z) - δ(ε̄)]
++            - log2(2/ε_EC) - 2·log2(2/ε_PA)
++
++    where:
++        - e_x = phase-error rate (X-basis observed)
++        - e_z = bit-error rate (Z-basis observed); default e_z = e_x
++        - μ = variation bound (Eq. 4) evaluated at (m, ε_PE, alphabet_size)
++        - δ(ε̄) = smoothing correction (Eq. 3) evaluated at (ε̄, n, key_alphabet_size)
++        - total ε-security: ε = ε_PE + ε̄ + ε_EC + ε_PA ≈ 10^-8 for default args
++
++    Valid for BB84 unique-acceptance PM protocol with Z-basis key generation.
++    Phase-error coarse-graining + fine-grained agreement via phase-error POVM
++    (GLL-2021 §IV.A, Eq. 18).
++
++    Args:
++        n: key-generation sample count
++        m: parameter-estimation sample count
++        e_x: observed phase-error rate (∈ [0, 0.5])
++        e_z: observed bit-error rate (default = e_x, symmetric case)
++        eps_PE, eps_bar, eps_EC, eps_PA: ε-security sub-terms (default 2.5e-9
++            each → total ε = 10^-8)
++        f_EC: error-correction efficiency (≥ 1.0)
++        alphabet_size: |Σ| parameter-estimation alphabet (BB84: 2 phase-error bits)
++        key_alphabet_size: d Alice's key output alphabet (BB84: 2)
++
++    Returns:
++        ℓ in bits (can be negative; clip at 0 for operational use).
++
++    Raises:
++        ValueError: invalid input.
++
++    References:
++        GLL-2021 Eq. 19 (phase-error analytic formula, unique-acceptance BB84)
++        docs/literature/GLL-2021.md §4.1
++    """
++    if n < 1 or m < 1:
++        raise ValueError(f"n and m must be ≥ 1, got n={n}, m={m}")
++    if not (0.0 <= e_x <= 0.5):
++        raise ValueError(f"e_x must be in [0, 0.5], got {e_x}")
++    if e_z is None:
++        e_z = e_x
++    if not (0.0 <= e_z <= 0.5):
++        raise ValueError(f"e_z must be in [0, 0.5], got {e_z}")
++    if f_EC < 1.0:
++        raise ValueError(f"f_EC must be ≥ 1.0, got {f_EC}")
++
++    mu = variation_bound(m, eps_PE, alphabet_size)
++    delta = delta_smoothing(eps_bar, n, key_alphabet_size)
++
++    # Phase-error + μ/2 correction (Eq. 19)
++    e_x_adjusted = min(e_x + mu / 2.0, 0.5)
++    h_phase_error = _h(e_x_adjusted)
++    h_bit_error = _h(e_z)
++
++    # Per-signal key rate
++    per_signal = 1.0 - h_phase_error - f_EC * h_bit_error - delta
++
++    # Finite-key final-block terms
++    leak_EC_log = math.log2(2.0 / eps_EC)
++    PA_log = math.log2(2.0 / eps_PA)
++
++    ell = n * per_signal - leak_EC_log - 2.0 * PA_log
++    return ell
++
++
++def bb84_finite_key_rate_analytic(
++    n: int,
++    m: int,
++    e_x: float,
++    **kwargs,
++) -> float:
++    """Per-signal BB84 finite-key rate R = ℓ / N where N = n + m.
++
++    Convenience wrapper. Does NOT clip at 0 (return negative if key rate
++    infeasible, so caller can detect non-viable regime).
++    """
++    ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=e_x, **kwargs)
++    return ell / (n + m)
++
++
++def total_security_parameter(
++    eps_PE: float, eps_bar: float, eps_EC: float, eps_PA: float,
++) -> float:
++    """Total ε for composable security: ε = ε_PE + ε̄ + ε_EC + ε_PA."""
++    return eps_PE + eps_bar + eps_EC + eps_PA
+diff --git a/tests/test_finite_key/__init__.py b/tests/test_finite_key/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/tests/test_finite_key/test_gll_renner.py b/tests/test_finite_key/test_gll_renner.py
+new file mode 100644
+index 0000000..4cc54df
+--- /dev/null
++++ b/tests/test_finite_key/test_gll_renner.py
+@@ -0,0 +1,232 @@
++"""Tests for qkdx/finite_key/gll_renner.py (Phase 1 S2.5)."""
++from __future__ import annotations
++
++import math
++
++import numpy as np
++import pytest
++
++from qkdx.finite_key.gll_renner import (
++    variation_bound, delta_smoothing,
++    bb84_finite_key_length_analytic, bb84_finite_key_rate_analytic,
++    total_security_parameter, _h,
++)
++
++
++# ---- Variation bound μ -------------------------------------------------------
++
++def test_variation_bound_basic_scaling() -> None:
++    """μ ∝ 1/√m at fixed ε_PE, |Σ|."""
++    m1, m2 = 10**6, 4 * 10**6  # m2 = 4·m1 → μ2 ≈ μ1 / 2
++    mu1 = variation_bound(m1, eps_PE=1e-9, alphabet_size=2)
++    mu2 = variation_bound(m2, eps_PE=1e-9, alphabet_size=2)
++    ratio = mu1 / mu2
++    # Rough scaling √4 = 2, but log(m+1) term slightly distorts; expect 1.8-2.2
++    assert 1.8 < ratio < 2.2, f"μ scaling: ratio={ratio} (expected ~2)"
++
++
++def test_variation_bound_grows_with_log_alphabet() -> None:
++    """μ grows with |Σ|."""
++    m = 10**6
++    eps = 1e-9
++    mu_small = variation_bound(m, eps, alphabet_size=2)
++    mu_large = variation_bound(m, eps, alphabet_size=16)
++    assert mu_large > mu_small, (
++        f"μ should grow with alphabet: {mu_small} vs {mu_large}"
++    )
++
++
++@pytest.mark.parametrize("m", [100, 10000, 10**6])
++def test_variation_bound_always_nonneg_bounded(m: int) -> None:
++    mu = variation_bound(m, eps_PE=1e-9, alphabet_size=2)
++    assert mu > 0
++    # Variation distance bounded by 2 (L1 distance of prob distributions)
++    # For sensible inputs should be much smaller
++    assert mu < 2.0
++
++
++def test_variation_bound_invalid_inputs() -> None:
++    with pytest.raises(ValueError, match="m must be"):
++        variation_bound(0, 1e-9, 2)
++    with pytest.raises(ValueError, match="eps_PE"):
++        variation_bound(1000, 0.0, 2)
++    with pytest.raises(ValueError, match="eps_PE"):
++        variation_bound(1000, 1.0, 2)
++    with pytest.raises(ValueError, match="alphabet_size"):
++        variation_bound(1000, 1e-9, 0)
++
++
++# ---- Smoothing δ(ε̄) ---------------------------------------------------------
++
++def test_delta_smoothing_scales_as_1_over_sqrt_n() -> None:
++    """δ ∝ 1/√n."""
++    n1 = 10**6
++    n2 = 4 * 10**6
++    d1 = delta_smoothing(eps_bar=1e-9, n=n1, key_alphabet_size=2)
++    d2 = delta_smoothing(eps_bar=1e-9, n=n2, key_alphabet_size=2)
++    ratio = d1 / d2
++    assert 1.99 < ratio < 2.01, f"δ scaling: ratio={ratio} (expected 2)"
++
++
++def test_delta_smoothing_d_2_bb84() -> None:
++    """For BB84 (d=2), δ = 2·log2(5)·√(log2(2/ε̄)/n)."""
++    eps_bar = 1e-9
++    n = 10**6
++    expected = 2.0 * math.log2(5) * math.sqrt(math.log2(2.0 / eps_bar) / n)
++    got = delta_smoothing(eps_bar, n, key_alphabet_size=2)
++    assert abs(got - expected) < 1e-12
++
++
++def test_delta_smoothing_invalid_inputs() -> None:
++    with pytest.raises(ValueError, match="n must be"):
++        delta_smoothing(1e-9, n=0, key_alphabet_size=2)
++    with pytest.raises(ValueError, match="eps_bar"):
++        delta_smoothing(eps_bar=0.0, n=1000, key_alphabet_size=2)
++    with pytest.raises(ValueError, match="eps_bar"):
++        delta_smoothing(eps_bar=1.0, n=1000, key_alphabet_size=2)
++
++
++# ---- Binary entropy ----------------------------------------------------------
++
++def test_binary_entropy_boundary() -> None:
++    assert _h(0.0) == 0.0
++    assert _h(1.0) == 0.0
++    assert _h(0.5) == pytest.approx(1.0, abs=1e-12)
++
++
++@pytest.mark.parametrize("p,expected", [
++    (0.01, 0.0807931359),
++    (0.05, 0.2863969571),
++    (0.10, 0.4689955936),
++])
++def test_binary_entropy_values(p: float, expected: float) -> None:
++    assert abs(_h(p) - expected) < 1e-8
++
++
++# ---- BB84 finite-key length (Eq. 19) -----------------------------------------
++
++def test_bb84_finite_key_length_asymptotic_convergence() -> None:
++    """As n, m → ∞, ℓ/n → 1 - 2h(e) (Shor-Preskill at e_x = e_z)."""
++    e = 0.05
++    N = 10**10
++    # Assume m = 0.1·N for PE, n = 0.9·N for key
++    m = int(0.1 * N)
++    n = int(0.9 * N)
++    ell = bb84_finite_key_length_analytic(
++        n=n, m=m, e_x=e, e_z=e, f_EC=1.0,
++    )
++    per_signal = ell / n
++    asymptotic = 1.0 - 2.0 * _h(e)  # Shor-Preskill at f_EC=1
++    # Expect finite-size penalty small at N=1e10
++    assert abs(per_signal - asymptotic) < 0.01, (
++        f"per_signal={per_signal:.6f}, asymptotic={asymptotic:.6f}"
++    )
++
++
++def test_bb84_finite_key_length_positive_at_reasonable_params() -> None:
++    """At e_x = 0.02, N = 10^9: finite key length should be positive."""
++    N = 10**9
++    m = int(0.1 * N)
++    n = int(0.9 * N)
++    ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.02, f_EC=1.2)
++    assert ell > 0, f"At e=0.02, N=10^9: ℓ = {ell} (should be > 0)"
++
++
++def test_bb84_finite_key_length_negative_above_threshold() -> None:
++    """At e_x = 0.20 (well above 11% threshold): ℓ < 0."""
++    N = 10**9
++    m = int(0.1 * N)
++    n = int(0.9 * N)
++    ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.20, f_EC=1.2)
++    assert ell < 0, f"At e=0.20: ℓ = {ell} (should be < 0)"
++
++
++@pytest.mark.parametrize("N", [10**6, 10**8, 10**10])
++def test_bb84_finite_key_length_monotone_in_N(N: int) -> None:
++    """Per-signal rate monotonically increases with N (less finite-size penalty)."""
++    m = int(0.1 * N)
++    n = int(0.9 * N)
++    ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.03, f_EC=1.2)
++    per_sig = ell / (n + m)
++    asymptotic = (1.0 - _h(0.03) - 1.2 * _h(0.03)) * 0.9
++    # At larger N, per_sig should get closer to asymptotic
++    assert per_sig < asymptotic + 0.01
++    if N >= 10**8:
++        assert per_sig > 0
++
++
++def test_bb84_finite_key_length_includes_ec_leakage_correction() -> None:
++    """ℓ must include -log2(2/ε_EC) (GLL-2021 Eq. 19, full form).
++
++    Regression against v0.1 memo misquote that omitted this term.
++    Check: smaller ε_EC → larger penalty → smaller ℓ.
++    """
++    N = 10**8
++    m = int(0.1 * N)
++    n = int(0.9 * N)
++    ell_small_EC = bb84_finite_key_length_analytic(
++        n=n, m=m, e_x=0.05, eps_EC=1e-12,
++    )
++    ell_default = bb84_finite_key_length_analytic(
++        n=n, m=m, e_x=0.05, eps_EC=2.5e-9,
++    )
++    # With ε_EC = 1e-12 (stricter): penalty 2·log2(2e12) ≈ 80 bits more,
++    # so ℓ should be smaller
++    assert ell_small_EC < ell_default, (
++        f"ℓ with smaller ε_EC ({ell_small_EC}) should be smaller than "
++        f"default ({ell_default})"
++    )
++
++
++def test_bb84_finite_key_rate_wrapper() -> None:
++    """bb84_finite_key_rate_analytic = ℓ / (n + m)."""
++    N = 10**9
++    m = int(0.1 * N)
++    n = int(0.9 * N)
++    ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.03)
++    rate = bb84_finite_key_rate_analytic(n=n, m=m, e_x=0.03)
++    assert abs(rate - ell / (n + m)) < 1e-12
++
++
++def test_bb84_finite_key_invalid_inputs() -> None:
++    with pytest.raises(ValueError, match="n and m"):
++        bb84_finite_key_length_analytic(n=0, m=1000, e_x=0.05)
++    with pytest.raises(ValueError, match="e_x"):
++        bb84_finite_key_length_analytic(n=1000, m=1000, e_x=-0.01)
++    with pytest.raises(ValueError, match="e_x"):
++        bb84_finite_key_length_analytic(n=1000, m=1000, e_x=0.6)
++    with pytest.raises(ValueError, match="e_z"):
++        bb84_finite_key_length_analytic(n=1000, m=1000, e_x=0.05, e_z=-0.01)
++    with pytest.raises(ValueError, match="f_EC"):
++        bb84_finite_key_length_analytic(n=1000, m=1000, e_x=0.05, f_EC=0.5)
++
++
++# ---- Total security ----------------------------------------------------------
++
++def test_total_security_composes_additively() -> None:
++    eps = total_security_parameter(2.5e-9, 2.5e-9, 2.5e-9, 2.5e-9)
++    assert abs(eps - 1e-8) < 1e-15
++
++
++# ---- Snapshot: GLL-2021 Fig.3 style point ------------------------------------
++
++def test_bb84_finite_key_fig3_snapshot_n_1e8_e_0_05() -> None:
++    """Snapshot at N = 10^8, e_x = e_z = 0.05, f_EC = 1.2.
++
++    This corresponds to a point on GLL-2021 Fig. 3 (4-curve panel for
++    e_x ∈ {0.01, 0.03, 0.05, 0.07}). Without access to exact Fig. 3 data,
++    we pin the value for regression detection.
++    """
++    N = 10**8
++    m = (1 - 0.9) ** 2 * N  # m = (1-p_z)²·N (GLL-2021 §IV.A convention)
++    m = int(m) if m >= 1 else 1
++    n = N - m
++    ell = bb84_finite_key_length_analytic(
++        n=n, m=m, e_x=0.05, e_z=0.05, f_EC=1.2,
++    )
++    rate = ell / N
++    # Pin value — at e=0.05, f_EC=1.2, asymptotic R ≈ 0.5·(1 - 2.2h(0.05)) × (n/N)
++    # ≈ 0.9 · (1 - 2.2·0.286) = 0.9·0.37 = 0.337 at infinite N
++    # Finite-size penalty at N=10^8 brings it slightly below.
++    # Pin to observed regression bracket (Phase 1 S2.5 v0.1 snapshot).
++    assert 0.30 < rate < 0.38, f"N=10^8, e=0.05 rate: {rate}"

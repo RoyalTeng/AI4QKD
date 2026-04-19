@@ -8,7 +8,10 @@ import pytest
 
 from qkdx.finite_key.gll_renner import (
     variation_bound, delta_smoothing,
-    bb84_finite_key_length_analytic, bb84_finite_key_rate_analytic,
+    bb84_finite_key_length_analytic,
+    bb84_finite_key_rate_per_block,
+    bb84_finite_key_rate_per_signal,
+    bb84_finite_key_rate_analytic,  # legacy alias
     total_security_parameter, _h,
 )
 
@@ -141,18 +144,38 @@ def test_bb84_finite_key_length_negative_above_threshold() -> None:
     assert ell < 0, f"At e=0.20: ℓ = {ell} (should be < 0)"
 
 
-@pytest.mark.parametrize("N", [10**6, 10**8, 10**10])
-def test_bb84_finite_key_length_monotone_in_N(N: int) -> None:
-    """Per-signal rate monotonically increases with N (less finite-size penalty)."""
+def test_bb84_finite_key_length_pairwise_monotone_in_N() -> None:
+    """Per-signal rate pairwise increases monotonically with N."""
+    per_sig_rates = []
+    for N in [10**5, 10**6, 10**7, 10**8, 10**10]:
+        m = int(0.1 * N)
+        n = int(0.9 * N)
+        ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.03, f_EC=1.2)
+        per_sig_rates.append(ell / (n + m))
+    # Pairwise monotone increase (up to 1e-5 noise for finite precision)
+    for i in range(len(per_sig_rates) - 1):
+        assert per_sig_rates[i] < per_sig_rates[i+1] + 1e-5, (
+            f"Rate non-monotone at index {i}: {per_sig_rates}"
+        )
+
+
+def test_bb84_finite_key_near_threshold_sign_change() -> None:
+    """At N=10^10, ℓ changes sign around the BB84 asymptotic threshold.
+
+    At f_EC=1.0 (symmetric case): 1 - 2h(e) = 0 → e ≈ 0.11 (BB84 threshold).
+    Check ℓ > 0 at e=0.09, ℓ < 0 at e=0.13.
+    """
+    N = 10**10
     m = int(0.1 * N)
     n = int(0.9 * N)
-    ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.03, f_EC=1.2)
-    per_sig = ell / (n + m)
-    asymptotic = (1.0 - _h(0.03) - 1.2 * _h(0.03)) * 0.9
-    # At larger N, per_sig should get closer to asymptotic
-    assert per_sig < asymptotic + 0.01
-    if N >= 10**8:
-        assert per_sig > 0
+    ell_below = bb84_finite_key_length_analytic(
+        n=n, m=m, e_x=0.09, f_EC=1.0,
+    )
+    ell_above = bb84_finite_key_length_analytic(
+        n=n, m=m, e_x=0.13, f_EC=1.0,
+    )
+    assert ell_below > 0, f"e=0.09 f_EC=1.0 N=1e10: ℓ = {ell_below}"
+    assert ell_above < 0, f"e=0.13 f_EC=1.0 N=1e10: ℓ = {ell_above}"
 
 
 def test_bb84_finite_key_length_includes_ec_leakage_correction() -> None:
@@ -178,14 +201,46 @@ def test_bb84_finite_key_length_includes_ec_leakage_correction() -> None:
     )
 
 
-def test_bb84_finite_key_rate_wrapper() -> None:
-    """bb84_finite_key_rate_analytic = ℓ / (n + m)."""
+def test_bb84_finite_key_rate_per_block_wrapper() -> None:
+    """bb84_finite_key_rate_per_block = ℓ / (n + m) (per-accepted-round)."""
     N = 10**9
     m = int(0.1 * N)
     n = int(0.9 * N)
     ell = bb84_finite_key_length_analytic(n=n, m=m, e_x=0.03)
-    rate = bb84_finite_key_rate_analytic(n=n, m=m, e_x=0.03)
+    rate = bb84_finite_key_rate_per_block(n=n, m=m, e_x=0.03)
     assert abs(rate - ell / (n + m)) < 1e-12
+
+
+def test_bb84_finite_key_rate_per_signal_applies_p_sift() -> None:
+    """bb84_finite_key_rate_per_signal = p_sift · (ℓ / (n+m))."""
+    N = 10**9
+    m = int(0.1 * N)
+    n = int(0.9 * N)
+    rate_block = bb84_finite_key_rate_per_block(n=n, m=m, e_x=0.03)
+    rate_signal_default = bb84_finite_key_rate_per_signal(n=n, m=m, e_x=0.03)
+    # Default p_sift = 0.5
+    assert abs(rate_signal_default - 0.5 * rate_block) < 1e-12
+    # Explicit p_sift = 0.82 (efficient BB84 at p_z=0.9)
+    rate_signal_eff = bb84_finite_key_rate_per_signal(
+        n=n, m=m, e_x=0.03, p_sift=0.82,
+    )
+    assert abs(rate_signal_eff - 0.82 * rate_block) < 1e-12
+
+
+def test_bb84_finite_key_rate_per_signal_invalid_p_sift() -> None:
+    with pytest.raises(ValueError, match="p_sift"):
+        bb84_finite_key_rate_per_signal(n=1000, m=1000, e_x=0.05, p_sift=0.0)
+    with pytest.raises(ValueError, match="p_sift"):
+        bb84_finite_key_rate_per_signal(n=1000, m=1000, e_x=0.05, p_sift=1.5)
+
+
+def test_legacy_rate_analytic_alias() -> None:
+    """Backward-compat alias: bb84_finite_key_rate_analytic == per_block."""
+    N = 10**9
+    m, n = int(0.1 * N), int(0.9 * N)
+    r1 = bb84_finite_key_rate_analytic(n=n, m=m, e_x=0.03)
+    r2 = bb84_finite_key_rate_per_block(n=n, m=m, e_x=0.03)
+    assert abs(r1 - r2) < 1e-15
 
 
 def test_bb84_finite_key_invalid_inputs() -> None:
@@ -199,6 +254,33 @@ def test_bb84_finite_key_invalid_inputs() -> None:
         bb84_finite_key_length_analytic(n=1000, m=1000, e_x=0.05, e_z=-0.01)
     with pytest.raises(ValueError, match="f_EC"):
         bb84_finite_key_length_analytic(n=1000, m=1000, e_x=0.05, f_EC=0.5)
+
+
+@pytest.mark.parametrize("name,val", [
+    ("eps_EC", 0.0),
+    ("eps_EC", -1e-9),
+    ("eps_EC", 1.0),
+    ("eps_EC", 1.5),
+    ("eps_PA", 0.0),
+    ("eps_PA", 1.0),
+    ("eps_PA", 2.0),
+])
+def test_bb84_finite_key_eps_EC_PA_validation(name: str, val: float) -> None:
+    """Round 2 regression (dev-reviewer): ε_EC, ε_PA must be in (0, 1)."""
+    kwargs = {"n": 1000, "m": 1000, "e_x": 0.05, name: val}
+    with pytest.raises(ValueError, match=name):
+        bb84_finite_key_length_analytic(**kwargs)
+
+
+@pytest.mark.parametrize("name,val", [
+    ("eps_PE", 0.0), ("eps_PE", 1.0),
+    ("eps_bar", 0.0), ("eps_bar", 1.0),
+])
+def test_bb84_finite_key_eps_PE_bar_validation(name: str, val: float) -> None:
+    """ε_PE, ε_bar validation (already present via internal helpers)."""
+    kwargs = {"n": 1000, "m": 1000, "e_x": 0.05, name: val}
+    with pytest.raises(ValueError):
+        bb84_finite_key_length_analytic(**kwargs)
 
 
 # ---- Total security ----------------------------------------------------------
