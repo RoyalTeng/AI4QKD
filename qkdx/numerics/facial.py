@@ -1,10 +1,25 @@
-"""Facial reduction for WLC SDP (Hu-Im-Lin-Lütkenhaus-Wolkowicz 2022).
+"""Facial reduction for WLC SDP.
 
-Handles rank-deficient cases (e.g. QBER=0) where the SDP is not strictly feasible.
+Reference: Hu-Im-Lin-Lütkenhaus-Wolkowicz 2022. *Robust Interior Point Method
+for QKD Rate Computation.* Quantum 6:792. arXiv:2104.03847.
+
+Scope of this module (M3 Level 2-3):
+    * compute_face_projector: identify kernel of PSD equality constraints
+      Tr(A_k · ρ) = 0 with A_k ⪰ 0  ⇒  supp(ρ) ⊆ ker(A_k). The minimal face
+      is the PSD cone on the intersection of these kernels.
+    * FacialReductionResult: data container for the projector + rank.
+    * (legacy) detect_face / reduce_problem: pre-M3 stubs kept for
+      backward compatibility with wlc.py epsilon-regularisation fallback.
+
+Not in scope (deferred — see docs/literature/facial-reduction.md §6):
+    * Hu 2022 robust IPM full algorithm
+    * Dual LMI feasibility probe for implicit rank deficiency
+    * Integration with CVXPY warm-start
 """
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 import cvxpy as cp
 import numpy as np
@@ -12,42 +27,113 @@ import numpy as np
 from qkdx.core.hilbert import Matrix
 
 
+# ---------------------------------------------------------------------------
+# Primary API: explicit face projector from PSD equality constraints
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class FacialReductionResult:
+    """Result of facial reduction analysis."""
+    projector: Matrix  # d × r isometry P such that supp(ρ) ⊆ range(P)
+    rank: int          # r = dimension of the minimal face
+    ambient_dim: int   # d = original SDP variable dimension
+
+    def project(self, rho_full: Matrix) -> Matrix:
+        """Project ambient ρ onto the face: P† ρ P (r × r)."""
+        return self.projector.conj().T @ rho_full @ self.projector
+
+    def lift(self, rho_reduced: Matrix) -> Matrix:
+        """Lift r × r ρ back to ambient: P ρ_reduced P† (d × d)."""
+        return self.projector @ rho_reduced @ self.projector.conj().T
+
+
+def compute_face_projector(
+    constraint_matrices: list[Matrix],
+    targets: list[float],
+    ambient_dim: int,
+    atol: float = 1e-10,
+) -> FacialReductionResult:
+    """Compute the minimal-face projector for a set of PSD equality constraints.
+
+    For each (A_k, b_k) with A_k ⪰ 0 and b_k == 0, feasibility forces
+    supp(ρ) ⊆ ker(A_k).  The minimal face is the PSD cone restricted to the
+    intersection of all such kernels.
+
+    Constraints with b_k != 0 or A_k not PSD are skipped (they do not imply
+    a rank reduction via this mechanism — cf. Hu 2022 §III which handles
+    more general implicit reductions via dual LMI, deferred here).
+
+    Args:
+        constraint_matrices: list of d × d Hermitian matrices {A_k}
+        targets: list of scalar values {b_k}
+        ambient_dim: d (should match the square matrix size)
+        atol: tolerance for PSD check and kernel extraction
+
+    Returns:
+        FacialReductionResult with d × r isometry P (r = face rank).
+        When no constraint forces rank reduction, returns the identity
+        projector (P = I_d, rank = d).
+    """
+    d = ambient_dim
+    # Start with full space basis
+    current_kernel_basis = np.eye(d, dtype=np.complex128)
+    current_rank = d
+
+    for A, b in zip(constraint_matrices, targets):
+        if A.shape != (d, d):
+            raise ValueError(f"Constraint matrix shape {A.shape} != ({d},{d})")
+        if abs(b) > atol:
+            continue  # Only target-zero constraints induce face reduction
+        # Check A is Hermitian
+        if not np.allclose(A, A.conj().T, atol=atol):
+            continue
+        # Check A is PSD
+        eigvals = np.linalg.eigvalsh(A)
+        if np.any(eigvals < -atol):
+            continue  # Not PSD → skip
+        # supp(ρ) ⊆ ker(A): restrict current_kernel_basis to ker(A)
+        # Let B = current_kernel_basis (d × r_current).
+        # A restricted to range(B): B† A B  (r_current × r_current Hermitian PSD).
+        # Its kernel gives the new face subspace within range(B).
+        A_restricted = current_kernel_basis.conj().T @ A @ current_kernel_basis
+        eigvals_r, eigvecs_r = np.linalg.eigh(A_restricted)
+        # Keep eigenvectors with eigenvalue ≈ 0
+        kernel_mask = np.abs(eigvals_r) < atol
+        if not np.any(kernel_mask):
+            # A has no kernel within current face: contradicts b=0 constraint ⇒
+            # only ρ=0 satisfies, but Tr(ρ)=1 rules it out. Return current state;
+            # downstream solver should detect infeasibility.
+            continue
+        new_basis_in_current = eigvecs_r[:, kernel_mask]  # r_current × r_new
+        current_kernel_basis = current_kernel_basis @ new_basis_in_current
+        current_rank = current_kernel_basis.shape[1]
+        if current_rank == 0:
+            break
+
+    return FacialReductionResult(
+        projector=current_kernel_basis,
+        rank=current_rank,
+        ambient_dim=d,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Legacy stubs (kept for wlc.py epsilon-regularisation fallback)
+# ---------------------------------------------------------------------------
+
 def detect_face(
     constraints: list[cp.Constraint],
     variable: cp.Variable,
     atol: float = 1e-8,
 ) -> tuple[Matrix, int]:
-    """Detect the minimal face of the PSD cone containing any feasible ρ.
+    """DEPRECATED: heuristic face detection from CVXPY constraints.
 
-    For each positive-semidefinite constraint matrix A_k with target 0
-    (i.e., Tr(A_k ρ) = 0 with A_k ⪰ 0), feasibility forces supp(ρ) ⊂ ker(A_k).
-    The face is the intersection of all such kernels.
-
-    Returns:
-        projector: orthogonal projector onto the face subspace (shape d×d)
-        rank: dimension of the face subspace
+    Use compute_face_projector directly with explicit constraint matrices
+    for reliable results.  This stub is kept only to not break any
+    pre-M3 callers.
     """
     d = variable.shape[0]
-    face = np.eye(d, dtype=np.complex128)  # start with full space
-
-    for con in constraints:
-        # Look for equality constraints of the form Tr(Gamma @ rho) == 0
-        # where Gamma is PSD.
-        if not isinstance(con, cp.constraints.zero.Zero):
-            continue
-        expr = con.args[0]
-        # Try to extract the constant matrix from cp.real(cp.trace(A @ rho)) == 0
-        try:
-            val = con.dual_value
-        except Exception:
-            val = None
-        # Heuristic: check if the expression involves our variable with a PSD coefficient
-        # and the RHS is 0 (within atol).
-        # Since we can't easily extract the coefficient matrix pre-solve, we rely on
-        # the solve output and check which constraints are binding at boundary.
-        # This is a simplified implementation for M1.
-        pass
-
+    face = np.eye(d, dtype=np.complex128)
     rank = int(np.round(np.trace(face).real))
     return face, rank
 
@@ -56,37 +142,23 @@ def reduce_problem(
     prob: cp.Problem,
     variable: cp.Variable,
 ) -> tuple[cp.Problem, Callable[[], Matrix]]:
-    """Facial reduction: solve on a lower-rank subspace and lift back.
+    """Fallback Tikhonov regularisation: add ε·I to the SDP interior.
 
-    This implementation uses a small diagonal regularisation to make the
-    problem strictly feasible (Tikhonov / ε-regularisation approach),
-    which is simpler than full face detection for M1.
-
-    For M1 BB84 QBER=0: the regularisation is applied to the problem constraints
-    by perturbing qber_Z → ε.  The wlc_key_rate caller already handles this via
-    epsilon_regularization on the channel output; this function is the fallback.
-
-    Returns:
-        reduced_prob: the same problem with a small feasibility perturbation
-        lift: callable returning rho.value after solve (identity lift for this impl)
+    Used by wlc.py _wlc_mosek epsilon_regularization path.  For a principled
+    facial reduction, call compute_face_projector with the explicit
+    constraint data (see qkdx.numerics.wlc._init_feasible for the pattern).
     """
     d = variable.shape[0]
-
-    # Rebuild constraints, replacing any zero-RHS equality by a small ε > 0
     eps_feas = 1e-7
-    new_constraints: list[cp.Constraint] = []
-    for con in prob.constraints:
-        # Perturb all equality constraints (Tr(A_k @ rho) == 0) → == eps_feas
-        # Only do this if the RHS of the trace constraint is exactly 0.
-        new_constraints.append(con)
-
-    # Add a small identity term to make ρ strictly interior
+    new_constraints: list[cp.Constraint] = list(prob.constraints)
     identity_term = cp.Constant(eps_feas * np.eye(d, dtype=np.complex128))
     new_constraints_relaxed = [
         c for c in new_constraints if not _is_trace_zero_constraint(c)
     ]
-    # Keep rho >> 0 and trace constraint; add ρ ⪰ eps*I
-    relaxed_prob = cp.Problem(prob.objective, new_constraints_relaxed + [variable >> identity_term])
+    relaxed_prob = cp.Problem(
+        prob.objective,
+        new_constraints_relaxed + [variable >> identity_term],
+    )
 
     def lift() -> Matrix:
         return variable.value  # type: ignore[return-value]
@@ -95,10 +167,8 @@ def reduce_problem(
 
 
 def _is_trace_zero_constraint(con: cp.Constraint) -> bool:
-    """Heuristic: check if this constraint forces Tr(something) == 0."""
     try:
         if isinstance(con, cp.constraints.zero.Zero):
-            # expr == 0 where expr involves trace
             return True
     except Exception:
         pass
