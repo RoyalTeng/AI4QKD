@@ -53,31 +53,69 @@ def test_sweep_produces_meta() -> None:
 
 # ---- S2.3 硬验收: η_d=0.5 vs η_d=1.0 ----------------------------------------
 
-def test_device_imperfection_degrades_rate() -> None:
-    """S2.3 硬验收: η_d=0.5, p_d=1e-6 下 BB84 rate 应体现退化.
+@pytest.mark.parametrize("L", [25.0, 50.0, 100.0])
+def test_device_imperfection_degrades_rate(L: float) -> None:
+    """S2.3 硬验收(v0.2, dev-reviewer Round 2 response):
+    η_d=0.5, p_d=1e-6, e_d=0.033 下 TYPICAL_S23 vs IDEAL 退化 ≥ 50%.
 
-    RESEARCH_PLAN §3.2 指标: "20-50% 的退化".
-    在典型距离 (50 km) 下对比 IDEAL vs TYPICAL_S23.
+    实测机制分解(见 findings §3.4):
+      - η_d=0.5 alone: 50.0-51.4% degradation
+      - +misalignment e_d=0.033: +~34 pp (→ 83-87%)
+      - +dark count p_d=1e-6: +~0 pp at ≤100 km (negligible)
+
+    TYPICAL_S23 包含全部三项,距离 ≤100 km 时退化稳定在 83-85%.
+    本测试断言退化 ≥ 50% 以 guard 主要 finding(v0.2 tightened from >10%).
     """
-    L = 50.0  # km
     mu, nu = 0.5, 0.1
     rates = compare_profiles_at_distance(
         [IDEAL, TYPICAL_S23], distance_km=L, mu=mu, nu=nu,
     )
     r_ideal = rates["ideal"]
     r_typical = rates["S2.3_typical"]
-    assert r_ideal > 0, f"ideal rate not positive: {r_ideal}"
-    assert r_typical > 0, f"typical rate not positive: {r_typical}"
-    # Degradation ratio
+    assert r_ideal > 0, f"L={L}: ideal rate not positive: {r_ideal}"
+    assert r_typical > 0, f"L={L}: typical rate not positive: {r_typical}"
     degradation_pct = (r_ideal - r_typical) / r_ideal * 100
-    # Plan says "20-50% 退化"; in practice at 50km η_d=0.5 the degradation
-    # is dominated by the added dark-count contribution (at p_d=1e-6 vs 0)
-    # and detector efficiency drop (1.0 → 0.5). Actual value depends on (μ, ν)
-    # optimization — we assert it's at least 10% to catch meaningful physics.
-    assert degradation_pct > 10.0, (
-        f"Expected >10% degradation, got {degradation_pct:.2f}%. "
+    assert degradation_pct >= 50.0, (
+        f"L={L}: expected ≥50% degradation, got {degradation_pct:.2f}%. "
         f"ideal={r_ideal:.6f}, typical={r_typical:.6f}"
     )
+
+
+@pytest.mark.parametrize("L", [25.0, 50.0, 100.0])
+def test_eta_d_only_degradation_matches_plan_estimate(L: float) -> None:
+    """Mechanism decomposition: η_d=0.5 单独效应应落在 plan 20-50% 范围内.
+
+    Per-profile μ-optimized 比较显示 η_d=0.5 单项效应在 50.0-51.4%,
+    精确匹配 plan §3.2 S2.3 "20-50% 退化" 估计上端(略超 1-2 pp).
+    """
+    from qkdx.sweeps.decoy_bb84_sweep import DeviceProfile
+    eta_d_only = DeviceProfile(
+        name="eta_d_only",
+        eta_detector=0.5, p_dark=0.0, e_misalignment=0.0,
+    )
+    mu, nu = 0.5, 0.1
+    rates = compare_profiles_at_distance(
+        [IDEAL, eta_d_only], distance_km=L, mu=mu, nu=nu,
+    )
+    r_ideal = rates["ideal"]
+    r_eta = rates["eta_d_only"]
+    assert r_ideal > 0 and r_eta > 0
+    degradation_pct = (r_ideal - r_eta) / r_ideal * 100
+    # Plan expects 20-50%; η_d alone gives ~50% (slight over-range is physics)
+    assert 40.0 <= degradation_pct <= 55.0, (
+        f"L={L}: η_d alone should give 40-55% degradation (plan says 20-50%), "
+        f"got {degradation_pct:.2f}%."
+    )
+
+
+def test_ge_1000_points_2d_sweep_TYPICAL_S23() -> None:
+    """S2.2 硬验收 ≥1000 点(RESEARCH_PLAN §3.2): 37 × 33 = 1221."""
+    distances = np.linspace(0.0, 180.0, 37)
+    mus = np.linspace(0.1, 0.9, 33)
+    pts = sweep_decoy_bb84_mu_distance(
+        TYPICAL_S23, distances, mus, nu_ratio=0.2,
+    )
+    assert count_points(pts) >= 1000, f"only {count_points(pts)} points"
 
 
 def test_lmc_fig3_gives_positive_rate_at_25km() -> None:

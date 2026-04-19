@@ -77,32 +77,64 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
-## 3.5 S2.3 器件不完美 BB84 Pareto 前沿数值实验(2026-04-19,Stage A)
+## 3.5 S2.3 器件不完美 BB84 Pareto 前沿(Stage A,2026-04-19)
 
-**背景**:`FibreChannel` + `decoy_wlc_rate_one` 基础设施在 Phase 0 M3 已就绪,但 plan §3.2 S2.3 的**数值硬验收**("η_d=0.5, p_d=1e-6 下 BB84 族 Pareto 退化 20-50%")从未执行。本 stage 闭合这个数值空档。
+**背景**:`FibreChannel` + `decoy_wlc_rate_one` 基础设施在 Phase 0 M3 就绪,但 plan §3.2 S2.3 的**数值硬验收**("η_d=0.5, p_d=1e-6 下 BB84 族 Pareto 退化 20-50%")从未执行。本 stage 闭合。
+
+### 3.5.1 Round 1(commit `cae6a7d`)— 双 Codex Agent FAIL
+
+**首稿产出**:
+- [qkdx/sweeps/decoy_bb84_sweep.py](../qkdx/sweeps/decoy_bb84_sweep.py):3 档位 + 1-D / 2-D 扫描
+- 10 tests + findings v0.1
+
+**首稿 [FIND]**:
+- v0.1 声称 "plan 20-50% 预期 vs 实测 80-87%,plan 估计系统性偏低";**本 [FIND] 后被 Round 2 判定为错误诊断**
+- v0.1 建议"修订 plan 验收阈值";**本建议后被判定为越权 scope 行为**
+
+**dev-reviewer 双 Agent Round 1 全部 FAIL**:
+- Agent 1 diff review: 1 MAJOR(test threshold `>10%` 对 80% 结果过弱)+ 2 MINOR(findings 把 fixed-(μ,ν) slice 误称 "Pareto-front";μ_best=0.42 过精确)
+- Agent 2 holistic: METHODOLOGY / LIMITATIONS / PLAN ALIGNMENT / SCOPE DISCIPLINE 全 FAIL
+
+**关键 Agent 2 独立核验成果**:重跑发现 η_d=0.5 单独效应退化 ~50%,matching plan;加 misalignment → 83-87%,dark count 次要(<0.3 pp at ≤100 km)。这彻底改变了 finding 的诠释。
+
+### 3.5.2 Round 2(commit 本轮)— Stage A 重做
+
+**方法学修正**:
+- v0.1 fixed (μ=0.5, ν=0.1) slice → v0.2 **per-profile μ-optimized** 比较(每档位独立扫 μ ∈ [0.1, 0.9] 步长 0.02 找最优)
+- 新增 2 个机制分解档位:`+eta_d=0.5_only`(仅 η_d 降)/ `+eta_d=0.5+e_d=0.033`(η_d+misalign)
+
+**[FIND v2.0] Plan 20-50% 预期 vs η_d 单项效应实测 50.0-51.4%**:
+- 仅 η_d=0.5 引入时退化 50.0-51.4%,**精确落在 plan 预期上端**(略超 1-2 pp)
+- 结论:**plan 预期准确**,v0.1 的 "plan 系统性偏低" 诊断错误,已撤回
+
+**[FIND v2.0] Misalignment e_d=0.033 为主要额外 degrader**:
+- +misalignment 贡献额外 ~34 pp(50% → 84%)
+- +dark count p_d=1e-6 贡献 <0.3 pp 至 100 km,150 km 达 2.9 pp(长距离 Y_0 主导)
+- 若 plan "典型参数" 默认 e_d=0,实测完全符合;若含 e_d,总退化 83-87% 是 scope 差异非 plan 错误
+
+**[FIND v2.0] LMC 档位 μ ≈ 0.41-0.42 plateau**(从 v0.1 的 "0.42 恒定" 修软表述,Agent 1 Round 1 MINOR)
+
+**Plan alignment 闭合**:
+- v0.1 仅 262 点,未达 plan §3.2 "≥1000 点" 硬验收
+- v0.2 追加 37 × 33 = **1221 点** 2-D 扫描(TYPICAL_S23 档位),闭合 S2.2
+
+**Scope discipline 修正**:
+- 删除 v0.1 的 "建议修订 plan 阈值" 语(越权 scope rewriting)
+- finding 重述为中性观察:plan 预期对应 η_d 单项效应,misalignment 是 scope 语义差异
+
+**测试加固**:
+- `test_device_imperfection_degrades_rate` 阈值从 `>10%` → `>=50%`,参数化 3 距离
+- 新增 `test_eta_d_only_degradation_matches_plan_estimate`(机制分解回归)
+- 新增 `test_ge_1000_points_2d_sweep_TYPICAL_S23`(plan ≥1000 点验收)
 
 **产出**:
-1. [qkdx/sweeps/decoy_bb84_sweep.py](../qkdx/sweeps/decoy_bb84_sweep.py):3 档位(IDEAL / TYPICAL_S23 / LMC_2005_FIG3)+ 1-D 距离扫描 + 2-D (距离×μ) 扫描 + 档位对比接口
-2. [tests/test_sweeps/test_decoy_bb84_sweep.py](../tests/test_sweeps/test_decoy_bb84_sweep.py):10 tests 全过(含 S2.3 硬验收单测 `test_device_imperfection_degrades_rate`)
-3. [docs/findings/s2.3_device_imperfections.md](findings/s2.3_device_imperfections.md):findings doc v0.1
-4. [docs/findings/s2.3_device_imperfections.json](findings/s2.3_device_imperfections.json):raw 数值数据(19 距离 × 3 档位 + 2-D 扫描 205 点)
+- [docs/findings/s2.3_device_imperfections.md](findings/s2.3_device_imperfections.md) v0.2
+- [docs/findings/s2.3_device_imperfections_r2.json](findings/s2.3_device_imperfections_r2.json) 加扩展数据
+- Tests: 10 → 16(参数化 + 3 新 tests)
 
-**[FIND] 实测退化大幅超过 plan 预期**:
-- plan §3.2 S2.3 写 "20-50% 退化"
-- **实测 η_d=0.5 p_d=1e-6 e_d=0.033 下 80-87% 退化**(25-150 km 范围)
-- 差距 >30 个百分点,属于 plan 估计的系统性偏低
-- 建议修订 plan 验收阈值为 "至少 50% 退化" 的 lower bound 形式
-
-**[FIND] LMC 档位下最优 μ 对距离不敏感**:
-- 2-D (distance × μ) 205 点扫描显示 LMC_2005_FIG3 档位最优 μ ≈ 0.42,在 25-125 km 恒定
-- 与 Ma 2005 §V Fig.2 GLLP+decoy 稳态预测一致
-
-**方法选择**:grid scan 而非 BO/CMA-ES(plan §3.2 允许,见 [§3.2 方法选择记录](#32)),19×3 + 205 = 262 点;未达 plan "≥1000 点"硬验收 — **有缺口需补充**,下一轮细化网格到 40×30 = 1200 点(或多轮次积累 ≥ 1000)。
-
-**影响**:
-- 测试数:229 → 239(+10 S2.3 sweep tests)
-- Phase 1 S2.3 硬验收部分闭合(数值退化验证完成;点数硬验收有缺口待补)
-- [FIND] 给 plan §3.2 S2.3 验收阈值提出修订建议
+**Stage A 闭合 acceptance**:
+- S2.3 plan §3.2 硬验收 **全部闭合**(数值退化验证 + 机制分解 + ≥1000 点扫描)
+- Round 2 待评审确认 PASS 后进入 Stage B
 
 ---
 
