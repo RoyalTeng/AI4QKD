@@ -77,6 +77,42 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
+## 3.7 Stage E(重定向):GLL-2021 Level 3 精读(2026-04-19 → 2026-04-20)
+
+**背景**:Plan §3.3 S2.4 原定 Metger 2024 GEAT Level 4 精读,S2.5 Kamin 2025 复现。本 session 检查 PDF 可用性发现:
+- Metger 2024 PDF **不在** `docs/literature/pdfs/`
+- Kamin 2025 PDF **不在**
+- Ma-Razavi 2012 PDF **不在**(Stage C 前置也缺)
+- **在库**:CML-2016 / GLL-2021 / HILLW-2022 / Pirandola-2019 / TGW-2014 / WLC-2018 / WTB-2017
+
+**决策**(诚实且计划许可):重定向 Stage E 到 **GLL-2021 Level 3 精读**:
+- Plan §2.3 M3 R3.1 明列 "George-Lin-Lütkenhaus 2020/2021 Level 4 精读,**重点**"
+- Phase 0 M3 memo 只做 Level 2-3 混合(见 `docs/literature/decoy-state.md`),GLL-2021 单独 memo **延期**
+- 本次补足作为 Phase 1 S2.5 基础设施前置
+- **不属于计划外降级**:GLL-2021 本来就在 plan 精读清单里,且为 S2.5 finite-key 实施的直接参考
+
+**产出**:[docs/literature/GLL-2021.md](literature/GLL-2021.md)(v0.1,Level 3 精读,~400 行)
+
+**核心论证链**(本 memo §3):
+1. ε-security 组合:$\varepsilon = \varepsilon_{\text{PE}} + \bar{\varepsilon} + \varepsilon_{\text{EC}} + \varepsilon_{\text{PA}}$(Renner framework)
+2. 密钥长度下界:$\ell \leq n(H_\mu(X|E) - \delta(\bar{\varepsilon})) - \text{leak}_{\varepsilon_{\text{EC}}} - 2\log_2(2/\varepsilon_{\text{PA}})$
+3. Variation bound:$\mu = \sqrt{2[\ln(1/\varepsilon_{\text{PE}}) + |\Sigma|\ln(m+1)]/m}$
+4. Finite-key SDP(Eq. 14):WLC asymptotic SDP + trace-norm SDP reformulation + multi-coarse-graining
+5. Tightness(Thm 2, 4):严格紧 + numerical imprecision 下的保守下界
+
+**对 Phase 1 的 bearing**(本 memo §5):
+- **S2.5 finite-key 实施蓝图**:`qkdx/finite_key/` 模块结构 + BB84 Eq. 19 解析 anchor + Fig. 3 复现目标
+- **S2.4 GEAT**:GLL-2021 用 Renner framework,不含 GEAT;S2.4 独立 memo 仍需 Metger 2024 PDF
+- **Stage C/D Ma-Razavi Fig.3**:GLL-2021 §IV.C MDI-BB84 example 与我们 `build_mdi_bell_protocol` 架构同构,提供 finite-key MDI 基线
+
+**覆盖度**(§9 对齐表):GLL-2021 约占 S2.4-S2.5 计划的 **60%** 基础设施。余下 40% 由 GEAT memo + Kamin 复现 补齐(PDF 依赖)。
+
+**Stage E 拟定 next step**:
+1. 请求用户提供 Metger 2024 + Kamin 2025 PDF(或直接跳到 S2.5 的数值实施,用 GLL-2021 BB84 Eq. 19 作解析 anchor)
+2. 实施 `qkdx/finite_key/` 模块(Phase 1 S2.5 动工)
+
+---
+
 ## 3.6 Stage B F5 MDI Bell POVM 集成(2026-04-19,Stage B.1 完成,B.2 进行中)
 
 **背景**:Phase 0 retrospective review 把 MDI 降为 `partial`,原因"multi-source 未实施"。Stage 3.3 已关闭此因;Stage 3.4 准备了 Bell POVM 数学对象。本 Stage 把 Bell POVM 真正接入 `build_mdi_bell_protocol`。
