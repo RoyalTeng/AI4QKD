@@ -1,0 +1,59 @@
+diff --git a/docs/RESEARCH_PLAN.md b/docs/RESEARCH_PLAN.md
+index e265d96..b5cd372 100644
+--- a/docs/RESEARCH_PLAN.md
++++ b/docs/RESEARCH_PLAN.md
+@@ -134,7 +134,7 @@ Sub-Q3 的 PLOB 精读要求 Level 4;Sub-Q2 的已发表 family sheet 参考通
+   - `MSEBProtocol` 元数据字段扩展:`scope_tag: Literal["covered", "partial", "out_of_scope"]` + `scope_reason: str | None`(若非 covered)
+   - 拒收机制:`MSEBProtocol.__post_init__` 在 `scope_tag == "out_of_scope"` 时发 `OutOfScopeWarning`,阻止自动下游 SDP 派生
+ - 验收(硬):
+-  - BB84 / 六态 / MDI 标注 `covered`,TF-QKD 在 M4B 完成前标注 `partial`
++  - BB84 / 六态标注 `covered`;MDI 标注 `partial`(base-class multi-source state queries not implemented,WLC SDP via `_conditional_alice_bob` override works — see `qkdx/protocols/mdi.py` scope_reason);TF-QKD 在 M4B 完成前标注 `partial`
+   - 引入一个 toy "跨轮自适应协议"单测,确认 out_of_scope 被拒收并记录原因
+   - `framework_coverage.md` 对 Prospectus §4.2 的七个主流协议族每族标注至少一个代表性协议
+ 
+diff --git a/qkdx/numerics/wlc.py b/qkdx/numerics/wlc.py
+index 7f40552..a1561e2 100644
+--- a/qkdx/numerics/wlc.py
++++ b/qkdx/numerics/wlc.py
+@@ -170,10 +170,9 @@ def _wlc_mosek(
+     X_var = cp.Variable((d_out, d_out), hermitian=True)
+     Y_var = cp.Variable((d_out, d_out), hermitian=True)
+ 
+-    # X_var = G(rho) regularised: X_reg = (1-ε)G(ρ) + ε·τ  (G=identity here → G(ρ)=ρ)
++    # X_var = G(rho) regularised: X_reg = (1-ε)G(ρ) + ε·τ  (convex combo keeps Tr=1)
+     X_raw_expr = _apply_cvxpy_map(G.map, rho)
+-    # Use rho + const form to stay in Hermitian type where possible (G=identity case)
+-    X_reg_expr = X_raw_expr + cp.Constant(eps * tau)
++    X_reg_expr = (1.0 - eps) * X_raw_expr + cp.Constant(eps * tau)
+     constraints.append(X_var == X_reg_expr)
+ 
+     Y_raw_expr = _apply_cvxpy_map(Z_kraus, X_var)
+diff --git a/tests/test_protocols/test_mdi.py b/tests/test_protocols/test_mdi.py
+index 231d400..475a156 100644
+--- a/tests/test_protocols/test_mdi.py
++++ b/tests/test_protocols/test_mdi.py
+@@ -132,3 +132,24 @@ def test_invalid_p_sift() -> None:
+         build_mdi_protocol(qber=0.05, p_sift=0.0)
+     with pytest.raises(ValueError, match="p_sift"):
+         build_mdi_protocol(qber=0.05, p_sift=1.5)
++
++
++# ---- Announcement rule --------------------------------------------------------
++
++def test_mdi_sift_keep_same_basis() -> None:
++    """Sifting keeps rounds where Alice and Bob chose the same basis."""
++    from qkdx.protocols.mdi import _mdi_sift_keep
++    assert _mdi_sift_keep((0, 0)) is True
++    assert _mdi_sift_keep((1, 1)) is True
++
++
++def test_mdi_sift_keep_different_basis() -> None:
++    from qkdx.protocols.mdi import _mdi_sift_keep
++    assert _mdi_sift_keep((0, 1)) is False
++    assert _mdi_sift_keep((1, 0)) is False
++
++
++def test_mdi_sift_keep_too_few_outcomes() -> None:
++    from qkdx.protocols.mdi import _mdi_sift_keep
++    assert _mdi_sift_keep((0,)) is False
++    assert _mdi_sift_keep(()) is False

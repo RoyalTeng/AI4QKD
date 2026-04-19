@@ -1,0 +1,147 @@
+diff --git a/docs/PHASE0_REPORT.md b/docs/PHASE0_REPORT.md
+index b3f6843..4d6ee07 100644
+--- a/docs/PHASE0_REPORT.md
++++ b/docs/PHASE0_REPORT.md
+@@ -76,7 +76,7 @@
+ |--------|-----------|----------|
+ | BB84 | covered | ✅ [qkdx/protocols/bb84.py](../qkdx/protocols/bb84.py) |
+ | 六态 | covered | ✅ [qkdx/protocols/sixstate.py](../qkdx/protocols/sixstate.py) |
+-| MDI-QKD | covered(理想) | ✅ [qkdx/protocols/mdi.py](../qkdx/protocols/mdi.py) |
++| MDI-QKD | partial(理想;WLC SDP via `_conditional_alice_bob` override,base-class multi-source state 未实施) | ✅ [qkdx/protocols/mdi.py](../qkdx/protocols/mdi.py) |
+ | 诱骗 BB84 | covered(理想单光子)| ✅ [qkdx/numerics/decoy.py](../qkdx/numerics/decoy.py) |
+ | TF-QKD | partial(M4B pending) | ⏳ |
+ | 跨轮自适应协议 | out_of_scope | ✅ 自动 warning + 测试 |
+@@ -107,7 +107,7 @@
+ 
+ - [qkdx/core/](../qkdx/core/):Hilbert,Kraus,entropy 基础算子 — **完整**
+ - [qkdx/protocol/](../qkdx/protocol/):MS-EB 五元组数据类 + scope 机制 — **完整**
+-- [qkdx/protocols/](../qkdx/protocols/):BB84 + 六态 + MDI — **4 协议族 covered**
++- [qkdx/protocols/](../qkdx/protocols/):BB84 + 六态 + MDI — **BB84/六态 covered, MDI partial (multi-source state 未实施), 诱骗 BB84 covered (理想单光子)**
+ - [qkdx/analytic/](../qkdx/analytic/):Shor-Preskill + 六态 + GLLP + 诱骗态 + 信道模型 — **完整**
+ - [qkdx/numerics/](../qkdx/numerics/):WLC SDP + Frank-Wolfe + decoy + facial reduction — **完整**
+ - [qkdx/symmetry/](../qkdx/symmetry/):BB84 bilateral 群 + twirling — **完整**
+diff --git a/docs/framework_coverage.md b/docs/framework_coverage.md
+index 5c69bb9..dc6381f 100644
+--- a/docs/framework_coverage.md
++++ b/docs/framework_coverage.md
+@@ -33,7 +33,7 @@
+ 
+ | 条款 | 本文档 | `qkdx/protocol/base.py` | `tests/test_protocol/test_scope.py` |
+ |------|--------|-------------------------|--------------------------------------|
+-| BB84/六态/MDI 标 covered,TF partial | ✅ §3.1 | ✅ commit 9573aef | ✅ test_bb84_scope_tag_is_covered |
++| BB84/六态标 covered;MDI 标 partial(multi-source 状态查询未实施,见 `qkdx/protocols/mdi.py` scope_reason);TF partial | ✅ §3.1 | ✅ commit 9573aef (base) + 20f9029 (MDI 降级) | ✅ test_bb84_scope_tag_is_covered + test_mdi_has_two_sources |
+ | toy 跨轮自适应被拒收并记录原因 | ✅ §5 | ✅ OutOfScopeWarning | ✅ test_cross_round_adaptive_protocol_out_of_scope |
+ | 七族主表每族至少一代表协议 | ✅ §3.1 | N/A (文档层) | N/A |
+ 
+@@ -136,7 +136,7 @@ v0.1 §3.3 (3) 的 "Fock 截断属灰区" 表述**撤回**,改为本节明确分
+ | **F2 六态** | six-state(Bruss 1998) | `covered` | `not_started` | `benchmark_passed`(M2 R2.3) | $R = 1/3\cdot[1 - h(e) - e\log_2 3]$ bit/signal(含 $p_\text{sift}=1/3$) | MS-EB $\mathcal{P}$ 与 BB84 同构,$\mathcal{A}$ 增 Y 基筛选 |
+ | **F3 SARG04** | SARG04(Scarani-Acín-Ribordy-Gisin 2004) | `covered` | `not_started` | `builder_only`(Phase 1 Week 1-3 S2.1) | Koashi 2005:$R \leq \max(0, 1-2h(e))$,$e \lesssim 9.68\%$ | $\mathcal{A}$ 与 BB84 差异:公开两非正交态集合 |
+ | **F4 Efficient BB84** | Lo-Chau-Ardehali 2005 偏置基 | `covered` | `not_started` | `builder_only`(Phase 1 Week 1-3) | 同 BB84,$p_\text{sift} \to 1$ | 只改 $\mathcal{A}$ 的基概率 |
+-| **F5 MDI-QKD** | Lo-Curty-Qi 2012 | `covered` | `not_started` | `benchmark_passed`(M2 R2.3) | Ma-Razavi 2012 Fig.3 | 两 source parties;$\mathcal{E}$ 含 Charlie 的 Bell 态测量 |
++| **F5 MDI-QKD** | Lo-Curty-Qi 2012 | `partial` | `not_started` | `benchmark_passed`(M2 R2.3, 但 via 虚拟-EB 覆盖路径) | Ma-Razavi 2012 Fig.3 | 两 source parties;$\mathcal{E}$ 含 Charlie 的 Bell 态测量;**partial 原因**(Agent 1 retrospective 2026-04-19):`MSEBProtocol.joint_state()` / `executed_state()` 尚未实施 multi-source 张量 + 联合信道语义,WLC SDP 仅通过 `_conditional_alice_bob` 覆盖路径工作(见 `qkdx/protocols/mdi.py` scope_reason)。升级到 `covered` 需真正的 multi-source 状态构造(延后到 Phase 1 Sub-Q2 MDI family sheet)。 |
+ | **F6 TF-QKD(含 SNS、PM)** | Lucamarini 2018;Wang-Yu-Hu 2018(SNS);Ma-Zeng-Zhou 2018(PM)| `partial` | `not_started` | `builder_only`(M4B Phase 0.5 可选)| Lucamarini Fig.3 √η 标度 | **partial 原因**:phase reference 在 MS-EB 中以 $\mathcal{E}$ 的相位调制建模(workaround);M4B 验收后重新定级 |
+ | **F7 MP-QKD** | Zeng-Zhou-Wu-Ma 2022 | `out_of_scope`(v0.3) | `not_started` | N/A(待 ADR 后决定) | MP-QKD 原论文数值 | **v0.3 订正**:§2.2(c) 形式化判据明示"跨轮联合声明/配对"是 out-of-scope;v0.2 的 `partial` + 备注"多轮 mode-pair 聚合可能违反 H2"自相矛盾。M4B 期若给出形式化 workaround(如把多轮 pairing 拆成 single-round + classical merging),撰写 ADR 后重新定级。 |
+ 
+diff --git a/qkdx/numerics/wlc.py b/qkdx/numerics/wlc.py
+index a1561e2..76ac993 100644
+--- a/qkdx/numerics/wlc.py
++++ b/qkdx/numerics/wlc.py
+@@ -102,7 +102,14 @@ def wlc_key_rate(
+         ValueError: observations keys don't exactly match protocol.observation_keys.
+         cp.SolverError: SDP cannot be solved.
+     """
+-    # --- 0. Scope gate (R1.4 hard acceptance) ---
++    # --- 0a. Validate epsilon_regularization (convex-combo parameter) ---
++    if not (0.0 <= epsilon_regularization < 1.0):
++        raise ValueError(
++            f"epsilon_regularization must be in [0, 1) (convex-combination "
++            f"weight for X_reg = (1-ε)G(ρ) + ε·τ), got {epsilon_regularization}"
++        )
++
++    # --- 0b. Scope gate (R1.4 hard acceptance) ---
+     # Out-of-scope protocols must not silently produce a numeric key rate.
+     # See docs/framework_coverage.md and RESEARCH_PLAN §2.1 R1.4.
+     if protocol.scope_tag == "out_of_scope":
+diff --git a/qkdx/protocols/mdi.py b/qkdx/protocols/mdi.py
+index 3e0ec20..a558a00 100644
+--- a/qkdx/protocols/mdi.py
++++ b/qkdx/protocols/mdi.py
+@@ -80,7 +80,23 @@ def mdi_charlie_network(qber: float) -> PublicQuantumNetwork:
+ 
+ 
+ def _mdi_sift_keep(outcomes: tuple) -> bool:
+-    """Sift: Alice's basis = Bob's basis (ignore Charlie announcement detail)."""
++    """Sift helper: Alice-Bob basis match (virtual-EB reduction).
++
++    **Semantic note (Agent 2 retrospective review, Round 2, 2026-04-19):**
++    In the full Lo-Curty-Qi 2012 MDI protocol, sifting requires both
++    (i) Alice-Bob basis match AND (ii) Charlie announces a successful
++    Bell-state measurement (not 'fail').  This helper only encodes (i);
++    Charlie's success probability is **absorbed into the external
++    `p_sift=0.25`** (= 1/2 basis match × 1/2 ideal BSM success) and into
++    the post-announcement state returned by the `_conditional_alice_bob`
++    override (virtual-EB picture, Lo-Curty-Qi 2012 §II).
++
++    This is faithful for the WLC SDP computation in the ideal symmetric
++    case because the SDP consumes only `p_sift` and the conditional 4×4
++    state, not the raw outcome tuple.  A full multi-source MS-EB
++    formulation (deferred to Phase 1 Sub-Q2) would encode Charlie's
++    announcement as a third outcome component.
++    """
+     if len(outcomes) < 2:
+         return False
+     return outcomes[0] == outcomes[1]
+diff --git a/tests/test_numerics/test_wlc_bb84.py b/tests/test_numerics/test_wlc_bb84.py
+index 0a1039a..176ac7b 100644
+--- a/tests/test_numerics/test_wlc_bb84.py
++++ b/tests/test_numerics/test_wlc_bb84.py
+@@ -107,6 +107,49 @@ def test_wlc_observable_key_missing_raises() -> None:
+         wlc_key_rate(protocol, observations={"qber_Z": 0.05, "p_sift": 0.5})
+ 
+ 
++@pytest.mark.parametrize("eps", [-0.01, -1e-10, 1.0, 1.5, 2.0])
++def test_wlc_epsilon_regularization_out_of_range_raises(eps: float) -> None:
++    """epsilon_regularization must be in [0, 1) for convex-combo form."""
++    protocol = build_bb84_protocol(qber=0.05)
++    with pytest.raises(ValueError, match="epsilon_regularization must be in"):
++        wlc_key_rate(
++            protocol,
++            observations={"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5},
++            epsilon_regularization=eps,
++        )
++
++
++@pytestmark_mosek
++def test_wlc_regularization_uses_convex_combination() -> None:
++    """MOSEK path: X_reg = (1-ε)G(ρ)+ε·τ. Visible at moderate ε.
++
++    Regression: prior code did G(ρ)+ε·τ. For eps=0.05 on QBER=0.05, the
++    convex form yields a measurable shift; the old (additive) form would
++    further inflate the rate by ~0.05*log2 factors.  Pin the convex result.
++    """
++    protocol = build_bb84_protocol(qber=0.05)
++    r_small = wlc_key_rate(
++        protocol,
++        observations={"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5},
++        epsilon_regularization=1e-9,
++    ).key_rate
++    r_moderate = wlc_key_rate(
++        protocol,
++        observations={"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5},
++        epsilon_regularization=0.01,
++    ).key_rate
++    # Convex-combo: r_moderate should be close to but smaller than r_small
++    # (regularization pulls toward maximally mixed → reduces rate slightly).
++    # Additive (bug) form would let r_moderate drift more erratically.
++    assert r_moderate < r_small + 1e-3, (
++        f"Regularization not acting as convex combo: r_small={r_small}, "
++        f"r_moderate={r_moderate}"
++    )
++    assert r_moderate > r_small - 0.05, (
++        f"Regularization too aggressive: r_small={r_small}, r_moderate={r_moderate}"
++    )
++
++
+ def test_wlc_observable_key_unknown_raises() -> None:
+     protocol = build_bb84_protocol(qber=0.05)
+     with pytest.raises(ValueError, match="unknown observation"):
