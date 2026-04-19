@@ -60,16 +60,22 @@ $$\min(E_R) = -\log_2(1 - \min(\eta_A, \eta_B))$$
 
 综合 Steps 1-5,得定理 4.1。**QED**(in 知识合成意义下)。
 
-### B.3 证明中使用的所有外部定理清单
+### B.3 证明中使用的外部条目(v5 修订)
 
-为方便 V2 文献交叉核查,列出依赖的外部定理:
+分 [THM] 级已发表定理 与 [SYN/CONJ] 级未 lemma 化继承两类:
 
-1. **PLOB 主定理**:$E_R(\Phi_{\mathcal{N}_\eta}) = -\log_2(1-\eta)$ for pure-loss bosonic. 来源:PLOB17 Thm. 5.
-2. **Pirandola 2019 network min-cut bound**:end-to-end $K^{\leftrightarrow}$ ≤ min-cut sum of $E_R$. 来源:Pirandola19 Thm. 2.
+**[THM] 级(已发表)**:
+
+1. **PLOB 主结果**:$E_R(\Phi_{\mathcal{N}_\eta}) = -\log_2(1-\eta)$ for pure-loss bosonic. 来源:PLOB17(Thm. 编号 [?],最可能 Thm. 5,待 Sub-Q3 精读人类核)
+2. **Pirandola 2019 single-path network bound**:$K^{\leftrightarrow}_{s,t} \leq \min_C \max_{(i,j) \in C} E_R$. 来源:Pirandola19 Eq. (11)(v4 修订:**max-over-cut**,不是 sum;sum 是 Eq. (17) 的 multi-path 版本)
 3. **LOCC-simulation of pure-loss**:$\mathcal{N}_\eta(\rho) = \mathcal{L}_{BK}(\rho \otimes \Phi_\eta)$. 来源:Niset-Fiurášek-Cerf 2009 / PLOB17 Eq. (4).
-4. **Capacity 单调性 under 协议限制**:sup over smaller protocol set ≤ sup over larger set. 来源:capacity 定义 by Portmann-Renner 2022 + standard.
+4. **Capacity 单调性(sup over subset ≤ sup over superset)**:集合论初等推论,不依赖具体 QKD 定理。
 
-**所有四条都是 published theorems**,非猜测。V2 核查只需验定理号。
+**[SYN / CONJ] 级(未 lemma 化的推理)**:
+
+5. **Pirandola 2019 网络 bound 到 untrusted-relay 的继承**:条目 #2 的严格 converse 证明针对 trusted / cooperative internal node;到 untrusted Charlie 的继承需要 "untrusted 协议类族 ⊆ trusted 协议类族 → capacity sup 单调 ≤" 的定理级 lemma,**本文档未升级**。Sub-Q3 Phase 2 工作。
+
+**重要修正**(vs v1):原 B.3 结尾 "所有四条都是 published theorems,V2 核查只需验定理号" 是**错误陈述**,混淆了 [THM] 与 [SYN/CONJ] 继承。条目 #5 是真实的缺口,不是定理号核对问题。
 
 ### B.4 定理 4.1 的"紧"性讨论(是否情况 A 还是情况 C)
 

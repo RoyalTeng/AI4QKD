@@ -78,7 +78,7 @@ $$c_{\text{TF}}^{\text{opt}} \approx 0.1 \text{ to } 0.3 \quad \text{(in units o
 | **PM-QKD**(phase-matching) | $O(\sqrt{\eta})$ | $\sim 0.2-0.3$ | Ma-Zeng-Zhou 18 |
 | **MP-QKD**(mode-pairing) | $O(\sqrt{\eta})$ | $\sim 0.3+$ | Zeng-Zhou-Wu-Ma 22 |
 | PLOB 点对点上界 | $O(\eta)$ | $1.44$ | PLOB17 |
-| **Log 04 定理 4.1 对称上界** | $O(\sqrt{\eta})$ | $1.44$ | [COROLLARY] |
+| **Log 04 对称上界**(放宽版 bosonic-asymptotic) | $O(\sqrt{\eta})$ | $1.44$ | **[SYN / CONJ]** — untrusted-relay 继承未 lemma 化 |
 
 ### B.3 PM-QKD 的特殊性
 
@@ -116,15 +116,16 @@ $$R_{\text{LB}}(\mathcal{T}_{\text{umr}}^{+\text{-sym}}; \eta) \geq c_{\text{bes
 
 准确数字须由 Sub-Q2 的 Pareto 前沿扫描锁定(Phase 1 工作)。Phase 0 M4B 数值验证 TF-QKD prefactor。**注:所有后续 FINDINGS / 报告引用应明示使用哪个 $\mathcal{T}_{\text{umr}}$ 版本**。
 
-### B.6 Scaling 层面 gap = 0
+### B.6 Scaling 层面 gap = 0(**v5 限界**)
 
-对比 Log 04 命题 4.3(上界 scaling $O(\sqrt{\eta})$)与本日志 B.2(下界 scaling $O(\sqrt{\eta})$):
+对比 Log 04 命题 4.3(上界 scaling $O(\sqrt{\eta})$,**[SYN / CONJ]** 级,依赖未 lemma 化的 untrusted-relay 继承)与本日志 B.2(下界 scaling $O(\sqrt{\eta})$,**[THM]** 级):
 
-$$\boxed{\text{scaling gap} = O(\sqrt{\eta}) - O(\sqrt{\eta}) = 0}$$
+$$\text{scaling gap} = O(\sqrt{\eta}) - O(\sqrt{\eta}) = 0 \quad \text{(at [SYN] level,放宽 bosonic-asymptotic 下)}$$
 
-**即:$\mathcal{T}_{\text{umr}}$ 拓扑下,$\sqrt{\eta}$ scaling 是紧的 — 上下界同阶。**
-
-**这是对 PROSPECTUS 主问题情况 A 的强支持**。
+**重要限界**(vs v1):
+- 本结论**只在放宽版 $\mathcal{T}_{\text{umr}}^{\text{bosonic-asym}}$ 下**([FINDINGS.md v2 §0](FINDINGS.md) 范围),**不**覆盖 PROSPECTUS §3.1 H4(finite-dim) / H5(composable) / H6(DV 严格意义)
+- 继承 Log 04 上界 [SYN/CONJ] 分级,**非** [COROLLARY]
+- 对 PROSPECTUS 主问题"情况 A 成立"是 **[SYN] 级支持**,不是 [THM] 级证成
 
 ### B.7 可能破坏上述结论的假设
 
@@ -138,15 +139,32 @@ $$\boxed{\text{scaling gap} = O(\sqrt{\eta}) - O(\sqrt{\eta}) = 0}$$
 
 ---
 
-## C. 本日志的已证命题
+## C. 本日志的已证命题(**v5 修订**)
 
-**命题 5.1**(TF-QKD ∈ $\mathcal{T}_{\text{umr}}$)TF-QKD 及其变体(PM,SNS,MP)满足 H1-H5,属于 $\mathcal{T}_{\text{umr}}$ 拓扑。**[THM, by construction]**
+**命题 5.1**(TF-QKD / PM-QKD / SNS-TF ∈ 严格 $\mathcal{T}_{\text{umr}}$;MP-QKD ∈ 扩展 $\mathcal{T}_{\text{umr}}^+$)
 
-**命题 5.2**(TF-QKD 可达 $\sqrt{\eta}$)TF-QKD 达到 $R_{\text{TF}}(\eta) = c_{\text{TF}} \sqrt{\eta}$,$c_{\text{TF}} > 0$. **[THM, Lucamarini18 Eq. 2-3 + Fig. 2]**
+- **严格 $\mathcal{T}_{\text{umr}}$**(per-round announcement,符合 PROSPECTUS §3.1 S1):TF-QKD, PM-QKD, SNS-TF-QKD。**[THM, by construction]**
+- **扩展 $\mathcal{T}_{\text{umr}}^+$**(允许跨轮 pairing,**超出 S1 软约束范围**):MP-QKD 归此类;Log 01 §A.5 标为"近似属于 $\mathcal{T}_{\text{umr}}$"。**[THM, by construction]**
+- v1 把 MP-QKD 并入严格 $\mathcal{T}_{\text{umr}}$ 是错误,本版本更正。
 
-**命题 5.3**(Scaling gap 为零)$\mathcal{T}_{\text{umr}}^{\text{sym}}$ 下,上界(Log 04 Cmd 4.3)与下界(Cmd 5.2)scaling 同阶 $\sqrt{\eta}$. **[COROLLARY]**
+**命题 5.2**(TF 族可达 $\sqrt{\eta}$)TF-QKD 达 $R_{\text{TF}}(\eta) = c_{\text{TF}} \sqrt{\eta}$,$c_{\text{TF}} > 0$. **[THM, Lucamarini18 Eq. 2-3 + Fig. 2]**
 
-**命题 5.4**(Prefactor 区间)$0.1 \lesssim c_{\text{pub}} \lesssim 0.4$(已发表协议),$c_{\text{upper}} = 1.4427$(定理 4.1)。**Prefactor gap $\approx 1.1 - 1.3$**. **[SYN,from published TF/PM/MP numerics]**
+**命题 5.3**(放宽 bosonic-asym 下 scaling gap 消失,**[SYN]**)在 $\mathcal{T}_{\text{umr}}^{\text{bosonic-asym}}$(FINDINGS v2 §0.2 定义)下,上界(Log 04 Cmd 4.1,**[SYN / CONJ]**)与下界(本日志 Cmd 5.2,**[THM]**)scaling 同阶 $\sqrt{\eta}$。
+
+**重要限界**(vs v1):
+- 本命题分级为 **[SYN]**,非 [COROLLARY](v1 过分)
+- 只在放宽 bosonic-asymptotic 子问题下有效,**不**覆盖 PROSPECTUS §3.1 原始 H4/H5/H6
+- 严格化依赖 Sub-Q3 Phase 2 把 Log 04 Cmd 4.1 的 untrusted-relay 继承升到 [THM] 级
+
+**命题 5.4**(Prefactor 区间,**按严格 / 扩展 $\mathcal{T}_{\text{umr}}$ 分开**,**[SYN]**)
+
+- 严格 $\mathcal{T}_{\text{umr}}$(不含 MP-QKD):$c_{\text{strict}} \approx 0.2$(PM-QKD / SNS-TF)
+- 扩展 $\mathcal{T}_{\text{umr}}^+$(含 MP-QKD):$c_{\text{ext}} \approx 0.3$
+- 上界端:$c_{\text{upper}} = 1.4427$(Log 04 Cmd 4.2,[SYN / CONJ])
+- **Prefactor gap**:严格 $\approx 1.2$,扩展 $\approx 1.1$(**未严格化,Phase 2 Pareto 工作**)
+- v1 的"0.1-0.4 混合区间"是错用,此处更正按类别分开
+
+**[元元命题]**:Log 05 整体得出的"scaling gap = 0"结论分级为 **[SYN]**(而非 [COROLLARY]),只在放宽 bosonic-asymptotic 子问题有效。
 
 ---
 
