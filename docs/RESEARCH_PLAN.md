@@ -134,7 +134,7 @@ Sub-Q3 的 PLOB 精读要求 Level 4;Sub-Q2 的已发表 family sheet 参考通�
   - `MSEBProtocol` 元数据字段扩展:`scope_tag: Literal["covered", "partial", "out_of_scope"]` + `scope_reason: str | None`(若非 covered)
   - 拒收机制:`MSEBProtocol.__post_init__` 在 `scope_tag == "out_of_scope"` 时发 `OutOfScopeWarning`,阻止自动下游 SDP 派生
 - 验收(硬):
-  - BB84 / 六态 / MDI 标注 `covered`,TF-QKD 在 M4B 完成前标注 `partial`
+  - BB84 / 六态标注 `covered`;MDI 标注 `partial`(base-class multi-source state queries not implemented,WLC SDP via `_conditional_alice_bob` override works — see `qkdx/protocols/mdi.py` scope_reason);TF-QKD 在 M4B 完成前标注 `partial`
   - 引入一个 toy "跨轮自适应协议"单测,确认 out_of_scope 被拒收并记录原因
   - `framework_coverage.md` 对 Prospectus §4.2 的七个主流协议族每族标注至少一个代表性协议
 

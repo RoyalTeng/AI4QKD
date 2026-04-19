@@ -132,3 +132,24 @@ def test_invalid_p_sift() -> None:
         build_mdi_protocol(qber=0.05, p_sift=0.0)
     with pytest.raises(ValueError, match="p_sift"):
         build_mdi_protocol(qber=0.05, p_sift=1.5)
+
+
+# ---- Announcement rule --------------------------------------------------------
+
+def test_mdi_sift_keep_same_basis() -> None:
+    """Sifting keeps rounds where Alice and Bob chose the same basis."""
+    from qkdx.protocols.mdi import _mdi_sift_keep
+    assert _mdi_sift_keep((0, 0)) is True
+    assert _mdi_sift_keep((1, 1)) is True
+
+
+def test_mdi_sift_keep_different_basis() -> None:
+    from qkdx.protocols.mdi import _mdi_sift_keep
+    assert _mdi_sift_keep((0, 1)) is False
+    assert _mdi_sift_keep((1, 0)) is False
+
+
+def test_mdi_sift_keep_too_few_outcomes() -> None:
+    from qkdx.protocols.mdi import _mdi_sift_keep
+    assert _mdi_sift_keep((0,)) is False
+    assert _mdi_sift_keep(()) is False

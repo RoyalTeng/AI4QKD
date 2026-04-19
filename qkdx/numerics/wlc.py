@@ -170,10 +170,9 @@ def _wlc_mosek(
     X_var = cp.Variable((d_out, d_out), hermitian=True)
     Y_var = cp.Variable((d_out, d_out), hermitian=True)
 
-    # X_var = G(rho) regularised: X_reg = (1-ε)G(ρ) + ε·τ  (G=identity here → G(ρ)=ρ)
+    # X_var = G(rho) regularised: X_reg = (1-ε)G(ρ) + ε·τ  (convex combo keeps Tr=1)
     X_raw_expr = _apply_cvxpy_map(G.map, rho)
-    # Use rho + const form to stay in Hermitian type where possible (G=identity case)
-    X_reg_expr = X_raw_expr + cp.Constant(eps * tau)
+    X_reg_expr = (1.0 - eps) * X_raw_expr + cp.Constant(eps * tau)
     constraints.append(X_var == X_reg_expr)
 
     Y_raw_expr = _apply_cvxpy_map(Z_kraus, X_var)
