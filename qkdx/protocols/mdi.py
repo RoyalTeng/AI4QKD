@@ -33,7 +33,7 @@ from qkdx.protocol.base import (
     PublicQuantumNetwork, SourceParty,
 )
 from qkdx.protocols.bb84 import (
-    bb84_alice_source, _bb84_conditional_state,
+    bb84_alice_source, bb84_channel, _bb84_conditional_state,
     _gamma_qber_Z, _gamma_qber_X,
 )
 
@@ -220,6 +220,87 @@ def build_mdi_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:
             _observable_builders=observable_builders,  # type: ignore[arg-type]
         )
     return protocol
+
+
+def mdi_full_physical_channel(qber: float) -> PublicQuantumNetwork:
+    """Full physical MDI channel: depol ⊗ depol then Bell POVM.
+
+    Composition:
+        - `bb84_channel(qber)` on Alice's arm (2-dim → 2-dim depolarizing)
+        - `bb84_channel(qber)` on Bob's arm (2-dim → 2-dim depolarizing)
+        - `linear_optic_bell_bsm()` on combined 4-dim → 3-dim classical
+
+    Total channel:  (4 dim) → (3 dim) with 4 × 4 × 4 = 64 Kraus operators.
+    Trace-preserving (verified numerically).
+
+    **Convention caveat** (Phase 1 Sub-Q2 Stage B.2 finding):
+        `qber` here is the **per-arm depolarising parameter**, not the
+        effective Alice-Bob post-BSM QBER.  The per-arm Z-basis QBER is
+        `2·qber/3` (from `bb84_channel`'s `p = 4·qber/3` convention), and
+        the combined Alice-Bob effective QBER after BSM + bit-flip
+        correction differs from both (numerical mapping).
+
+        Specifically, at per-arm `qber = 0.05`, the default-path Werner
+        state has effective `e ≈ 0.064` vs the override convention `e = 0.05`.
+        This is a live convention question documented in PHASE1_LOG §3.6.2.
+    """
+    depol = bb84_channel(qber)  # 2 → 2
+    bsm = linear_optic_bell_bsm()  # 4 → 3
+    combined_kraus = []
+    for K_bsm in bsm.kraus:
+        for K_a in depol.kraus:
+            for K_b in depol.kraus:
+                combined_kraus.append(K_bsm @ np.kron(K_a, K_b))
+    return PublicQuantumNetwork(
+        channel=KrausMap(kraus=tuple(combined_kraus), dim_in=4, dim_out=3)
+    )
+
+
+def _mdi_bell_conditional_from_executed(
+    protocol: MSEBProtocol, qber_override: float | None = None,
+) -> Matrix:
+    """Compute 4×4 conditional state from full 48×48 executed_state.
+
+    Implements the MS-EB default path for MDI with Bell POVM channel:
+        1. Start from `executed_state` (48×48 on K_A ⊗ K_B ⊗ C)
+        2. Project onto basis-match (θ_A = θ_B) ∧ Charlie success (c ∈ {0, 1})
+        3. Apply classical bit-flip correction on Bob for c=Ψ-
+        4. Sum over basis index θ (classical uniform) and c (classical)
+        5. Renormalise by total sift probability
+
+    Returns: 4×4 density matrix on (bit_A ⊗ bit_B).
+
+    **Important convention note**: the Werner-form state produced by this
+    default path has effective QBER that is a specific function of the
+    per-arm channel parameter (`qber` passed to `bb84_channel`).  For the
+    composed channel with per-arm `qber`, the effective Alice-Bob post-BSM
+    QBER is empirically larger than `qber` itself (e.g. 0.064 vs 0.05).
+
+    This differs from the `_bb84_conditional_state(qber)` override
+    convention where `qber` is directly the effective QBER.  See
+    PHASE1_LOG §3.6.2 for discussion of the convention reconciliation.
+    """
+    rho = protocol.executed_state()  # 48×48
+    rho_out = np.zeros((4, 4), dtype=np.complex128)
+    total_p = 0.0
+    for theta in (0, 1):  # Z basis = 0, X basis = 1
+        for av in (0, 1):
+            for bv in (0, 1):
+                for c in (0, 1):  # Φ+=0, Ψ-=1 (success outcomes)
+                    a = 2 * theta + av  # K_A index
+                    b = 2 * theta + bv  # K_B index (basis-matched)
+                    idx = (a * 4 + b) * 3 + c
+                    p = rho[idx, idx].real
+                    if p < 0:
+                        continue  # negligible numerical noise
+                    # Classical bit-flip on Bob for Ψ- (c=1)
+                    b_aligned = bv ^ c
+                    out_idx = av * 2 + b_aligned
+                    rho_out[out_idx, out_idx] += p
+                    total_p += p
+    if total_p > 1e-12:
+        rho_out /= total_p
+    return rho_out
 
 
 def build_mdi_bell_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:

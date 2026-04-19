@@ -23,6 +23,8 @@ from qkdx.core.bell_povm import linear_optic_bell_bsm
 from qkdx.protocol.base import MSEBProtocol
 from qkdx.protocols.mdi import (
     build_mdi_bell_protocol, build_mdi_protocol, _mdi_bell_sift_keep,
+    mdi_full_physical_channel, _mdi_bell_conditional_from_executed,
+    mdi_alice_source, mdi_bob_source,
 )
 
 
@@ -181,4 +183,109 @@ def test_mdi_bell_wlc_rate_matches_legacy() -> None:
     r_legacy = wlc_key_rate(p_legacy, obs, f_ec=1.0).key_rate
     assert np.isclose(r_bell, r_legacy, rtol=1e-9, atol=1e-10), (
         f"MDI-Bell WLC rate {r_bell:.6f} != legacy {r_legacy:.6f}"
+    )
+
+
+# ---- Stage B.2: default-path (physical channel + sift + post-processing) -----
+
+def test_full_physical_channel_trace_preserving() -> None:
+    """64 composed Kraus (depol × depol × BSM) sum to identity."""
+    net = mdi_full_physical_channel(qber=0.05)
+    ch = net.channel
+    assert len(ch.kraus) == 64  # 4 (depol_A) × 4 (depol_B) × 4 (BSM)
+    total = np.zeros((4, 4), dtype=np.complex128)
+    for K in ch.kraus:
+        total += K.conj().T @ K
+    assert np.allclose(total, np.eye(4), atol=1e-12)
+
+
+def _build_mdi_bell_physical(qber: float) -> MSEBProtocol:
+    """Helper: MDI protocol with full physical channel (depol ⊗ depol → BSM)."""
+    from qkdx.protocol.base import AnnouncementRule, KeyMap
+    src_A = mdi_alice_source(qber)
+    src_B = mdi_bob_source(qber)
+    net = mdi_full_physical_channel(qber)  # includes per-arm depol
+    ann = AnnouncementRule(sift_keep=_mdi_bell_sift_keep)
+    km = KeyMap(key_party="Alice", bitmap={0: 0, 1: 1, 2: 0, 3: 1})
+    import warnings
+    from qkdx.protocol.base import OutOfScopeWarning
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", OutOfScopeWarning)
+        return MSEBProtocol(
+            name="MDI-Bell-physical",
+            sources=(src_A, src_B), network=net, announcement=ann, key_map=km,
+            observation_keys=("p_sift",),
+            scope_tag="partial", scope_reason="prototype full physical channel",
+            _observable_builders={"p_sift": lambda _p: np.eye(4, dtype=np.complex128)},
+        )
+
+
+def test_default_path_equals_override_at_qber_zero() -> None:
+    """At qber=0: default-path conditional = |Φ+⟩ pure state = override Werner."""
+    p = _build_mdi_bell_physical(qber=0.0)
+    rho_default = _mdi_bell_conditional_from_executed(p)
+    expected = np.diag([0.5, 0.0, 0.0, 0.5]).astype(np.complex128)
+    assert np.allclose(rho_default, expected, atol=1e-12), (
+        f"default path at qber=0: got diag={np.diag(rho_default).real}"
+    )
+
+
+@pytest.mark.parametrize("qber,expected_eff_qber", [
+    (0.02, 0.026),   # per-arm 0.02 → combined ~0.026
+    (0.05, 0.064),   # per-arm 0.05 → combined ~0.064
+    (0.08, 0.102),   # per-arm 0.08 → combined ~0.102
+])
+def test_default_path_effective_qber_nonlinear_mapping(
+    qber: float, expected_eff_qber: float
+) -> None:
+    """[FIND] At per-arm qber > 0, default-path's effective QBER > input qber.
+
+    This exposes the convention question: `build_mdi_bell_protocol(qber)`
+    uses qber as Alice-Bob effective QBER (via override); but using qber
+    as per-arm depolarizing parameter in the physical channel gives a
+    different effective QBER after BSM + bit-flip correction.
+
+    Empirical mapping (from this test): eff_qber ≈ 1.28 * per-arm qber
+    (approximately, for small qber). Full analytical derivation deferred
+    to Stage B.2 documentation.
+    """
+    p = _build_mdi_bell_physical(qber=qber)
+    rho = _mdi_bell_conditional_from_executed(p)
+    # Effective QBER read off from Werner form: diag[1] = e/2
+    eff_qber = rho[1, 1].real * 2
+    assert abs(eff_qber - expected_eff_qber) < 0.005, (
+        f"per-arm qber={qber}: eff QBER={eff_qber:.4f}, expected ~{expected_eff_qber}"
+    )
+
+
+def test_default_path_preserves_werner_form() -> None:
+    """Default-path result is always in Werner form: diag(a, b, b, a) with 2a+2b=1."""
+    for qber in [0.0, 0.02, 0.05, 0.08, 0.10]:
+        p = _build_mdi_bell_physical(qber=qber)
+        rho = _mdi_bell_conditional_from_executed(p)
+        d = np.diag(rho).real
+        # Check symmetry pattern
+        assert abs(d[0] - d[3]) < 1e-10, f"qber={qber}: d[0]={d[0]}, d[3]={d[3]}"
+        assert abs(d[1] - d[2]) < 1e-10, f"qber={qber}: d[1]={d[1]}, d[2]={d[2]}"
+        # Trace = 1
+        assert abs(sum(d) - 1.0) < 1e-10
+        # Off-diagonal elements should be ~0 (Werner form is diagonal)
+        off_diag = rho - np.diag(d)
+        assert np.max(np.abs(off_diag)) < 1e-10
+
+
+def test_default_path_reproduces_override_at_qber_zero_via_physical_channel() -> None:
+    """At qber=0: physical channel + default path gives exact override Werner.
+
+    Confirms that at zero noise, the MS-EB framework with full physical
+    channel + default sift-projector route is equivalent to the override.
+    (At qber > 0 they differ due to convention; see above tests.)
+    """
+    p_phys = _build_mdi_bell_physical(qber=0.0)
+    rho_default = _mdi_bell_conditional_from_executed(p_phys)
+    p_legacy = build_mdi_protocol(qber=0.0)
+    rho_override = p_legacy.conditional_alice_bob()
+    assert np.allclose(rho_default, rho_override, atol=1e-12), (
+        f"qber=0: default diag={np.diag(rho_default).real}, "
+        f"override diag={np.diag(rho_override).real}"
     )

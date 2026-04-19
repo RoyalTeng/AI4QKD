@@ -106,24 +106,59 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 - **Charlie 边缘正确** — 边缘密度矩阵 p(Φ+)+p(Ψ-) ≈ 0.5(理论为 0.5)
 - **Multi-source + Bell POVM 基础设施拼接成功**
 
-### 3.6.2 Stage B.2:Default-path sift_projector(进行中)
+### 3.6.2 Stage B.2:Default-path + **发现 MDI `qber` 约定问题**(2026-04-19)
 
-**目标**:实现 `conditional_alice_bob()` 默认路径(executed_state 48×48 → sift → classical post-processing → 4×4 Werner),数值上等于 `_conditional_alice_bob` override。通过后 scope_tag 升级到 `covered`。
+**目标**:实现 `conditional_alice_bob()` 默认路径(executed_state 48×48 → sift → classical post-processing → 4×4 Werner),与 `_conditional_alice_bob` override 数值等价。
 
-**设计**:
-1. `_mdi_bell_conditional_from_executed(protocol)` 函数:
-   - 从 48×48 executed_state 取 reshape (4, 4, 3, 4, 4, 3) tensor
-   - Sift 到 basis-match (θ_A == θ_B) ∧ Charlie success (c ∈ {0, 1}) 子空间
-   - Classical bit-flip correction:b_aligned = value(b) XOR (c == 1)
-   - Sum over (θ, c) → 4×4 state on (bit_A ⊗ bit_B)
-   - 归一化 by total sift probability
+**实施**(commit 待提交):
+1. `mdi_full_physical_channel(qber)`:composed 64-Kraus channel(depol ⊗ depol → BSM),trace-preserving
+2. `_mdi_bell_conditional_from_executed(protocol)`:默认路径提取器
+   - 从 executed_state (48×48) 按 (K_A ⊗ K_B ⊗ C) 索引 (a*4+b)*3+c 取诊断
+   - 筛 basis-match ∧ c ∈ {0, 1}
+   - 经典 bit-flip 校正:b_aligned = value(b) XOR (c==1)
+   - 汇总 → 4×4 Werner 形
 
-2. 验证:对 QBER ∈ {0, 0.02, 0.05, 0.08, 0.10},默认路径 vs override Werner `diag((1-e)/2, e/2, e/2, (1-e)/2)` 逐元误差 < 1e-12
+**[FIND] MDI `qber` 约定问题**(本 Stage 核心研究观察):
+- `build_mdi_protocol(qber)` 的 override 约定:`qber` = **Alice-Bob 有效 QBER**(Werner diag 直接用 e = qber)
+- 但用 `qber` 作为**每臂 depolarizing 参数**的物理 channel + 默认路径给出:
 
-3. 如通过:
-   - 替换 override 为默认路径(或保留 override 为 fast path)
-   - scope_tag: `partial` → `covered`
-   - 更新 [framework_coverage.md](framework_coverage.md) F5 + [mdi_family.md](families/mdi_family.md)
+| per-arm qber | 默认路径 eff QBER | override 约定(视 qber 为 eff) |
+|-------------:|------------------:|-------------------------------:|
+| 0.00         | 0.000             | 0.000 |
+| 0.02         | 0.026             | 0.020 |
+| 0.05         | 0.064             | 0.050 |
+| 0.08         | 0.102             | 0.080 |
+
+- 经验关系(小 qber 极限):eff_qber ≈ 4/3 · qber(复合 depol + BSM 的增长因子)
+- 两种约定对 **qber = 0 点一致**(此时 Werner 皆为 |Φ+⟩,无噪 → 无歧义)
+- qber > 0 处**不一致**:并非 bug,而是两种语义下同一数学对象的不同参数化
+
+**决策**(保守,保持 scope 诚实):
+- **不升级 scope_tag 到 covered**:两种约定给不同数值,若替换 override 为默认路径,会改变 `build_mdi_bell_protocol(qber=0.05)` 的 WLC rate(影响已有测试)
+- 本 Stage B.2 停留在 **实施 + 记录** 阶段,升级为 covered 需一次**正式约定决策**:
+  1. 选 "override 约定"(qber=effective,channel 仅作结构标注):保持现状
+  2. 选 "channel 约定"(qber=per-arm depol,effective 由 BSM 物理推导):更符合 Lo-Curty-Qi 2012 物理,但已有测试需修正
+- 决策需查 Lo-Curty-Qi 2012 原文 + Ma-Razavi 2012 约定,Stage D(Ma-Razavi Fig.3 对齐)时自然落地
+
+**Tests**([tests/test_protocols/test_mdi_bell.py](../tests/test_protocols/test_mdi_bell.py) 22 tests):
+- `test_full_physical_channel_trace_preserving`:64 Kraus 之 trace-preserving
+- `test_default_path_equals_override_at_qber_zero`:qber=0 两路径一致(atol 1e-12)
+- `test_default_path_effective_qber_nonlinear_mapping`(3 参数化点):记录 eff_qber 映射关系
+- `test_default_path_preserves_werner_form`:Werner 对称结构 at 5 QBER 点
+- `test_default_path_reproduces_override_at_qber_zero_via_physical_channel`:物理 channel 也一致 at qber=0
+
+**可视化**:
+```
+qber = 0.05 (per-arm) :
+  default:  diag ≈ [0.468, 0.032, 0.032, 0.468]  ← physical BSM composition
+  override: diag = [0.475, 0.025, 0.025, 0.475]  ← qber-as-effective
+```
+
+**本 Stage 产出**:
+- `mdi_full_physical_channel` + `_mdi_bell_conditional_from_executed` 函数体
+- 22 tests(7 新)
+- 本 Stage B.2 记录 + 约定问题被辨识作为 **Stage D 前置问题**
+- scope_tag 不变(partial),新 scope_reason 更新为"约定问题待 Stage D 决策"(下一 commit)
 
 ---
 
