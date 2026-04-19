@@ -77,6 +77,56 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
+## 3.6 Stage B F5 MDI Bell POVM 集成(2026-04-19,Stage B.1 完成,B.2 进行中)
+
+**背景**:Phase 0 retrospective review 把 MDI 降为 `partial`,原因"multi-source 未实施"。Stage 3.3 已关闭此因;Stage 3.4 准备了 Bell POVM 数学对象。本 Stage 把 Bell POVM 真正接入 `build_mdi_bell_protocol`。
+
+### 3.6.1 Stage B.1:Channel 替换(commit 待提交)
+
+**变更**:
+- `mdi_bell_charlie_network()`:返回 `linear_optic_bell_bsm()` channel(`dim_in=4, dim_out=3`)
+- `_mdi_bell_sift_keep(outcomes)`:3-tuple (θ_A, θ_B, c) 谓词,要求 basis match AND c ∈ {0, 1}
+- `build_mdi_bell_protocol(qber, p_sift=0.25)`:新 builder
+  - `name='MDI-QKD-Bell'`
+  - `executed_state()`:48×48 on (K_A ⊗ K_B ⊗ C)
+  - scope_tag 仍 `partial`,原因从"channel 未含 Bell POVM"改为"default path(sift_projector)未实现"
+  - `_conditional_alice_bob` override 保留为 fast path(WLC SDP 路径不变)
+
+**测试**([tests/test_protocols/test_mdi_bell.py](../tests/test_protocols/test_mdi_bell.py),15 tests):
+- Channel shape `(4→3)` + 4 Kraus
+- `executed_state` 48×48 + PSD/Hermitian/trace-1(3 QBER 点)
+- Charlie 边缘为 diagonal(classical announcement)
+- Charlie success probability ≈ 0.5(符合 linear-optic BSM 理论)
+- `sift_keep` 语义(basis match ∧ success)
+- Override Werner 与 legacy `build_mdi_protocol` 完全一致(atol=1e-12)
+- WLC SDP 在 Bell 版本 vs 原版给出相同 rate(rtol=1e-9)
+
+**Verified:**
+- **WLC SDP 通过 override 路径不变** — QBER=0.05 处 Bell vs legacy rate 完全一致
+- **Charlie 边缘正确** — 边缘密度矩阵 p(Φ+)+p(Ψ-) ≈ 0.5(理论为 0.5)
+- **Multi-source + Bell POVM 基础设施拼接成功**
+
+### 3.6.2 Stage B.2:Default-path sift_projector(进行中)
+
+**目标**:实现 `conditional_alice_bob()` 默认路径(executed_state 48×48 → sift → classical post-processing → 4×4 Werner),数值上等于 `_conditional_alice_bob` override。通过后 scope_tag 升级到 `covered`。
+
+**设计**:
+1. `_mdi_bell_conditional_from_executed(protocol)` 函数:
+   - 从 48×48 executed_state 取 reshape (4, 4, 3, 4, 4, 3) tensor
+   - Sift 到 basis-match (θ_A == θ_B) ∧ Charlie success (c ∈ {0, 1}) 子空间
+   - Classical bit-flip correction:b_aligned = value(b) XOR (c == 1)
+   - Sum over (θ, c) → 4×4 state on (bit_A ⊗ bit_B)
+   - 归一化 by total sift probability
+
+2. 验证:对 QBER ∈ {0, 0.02, 0.05, 0.08, 0.10},默认路径 vs override Werner `diag((1-e)/2, e/2, e/2, (1-e)/2)` 逐元误差 < 1e-12
+
+3. 如通过:
+   - 替换 override 为默认路径(或保留 override 为 fast path)
+   - scope_tag: `partial` → `covered`
+   - 更新 [framework_coverage.md](framework_coverage.md) F5 + [mdi_family.md](families/mdi_family.md)
+
+---
+
 ## 3.5 S2.3 器件不完美 BB84 Pareto 前沿(Stage A,2026-04-19)
 
 **背景**:`FibreChannel` + `decoy_wlc_rate_one` 基础设施在 Phase 0 M3 就绪,但 plan §3.2 S2.3 的**数值硬验收**("η_d=0.5, p_d=1e-6 下 BB84 族 Pareto 退化 20-50%")从未执行。本 stage 闭合。
