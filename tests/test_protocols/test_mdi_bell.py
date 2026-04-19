@@ -22,7 +22,8 @@ import pytest
 from qkdx.core.bell_povm import linear_optic_bell_bsm
 from qkdx.protocol.base import MSEBProtocol
 from qkdx.protocols.mdi import (
-    build_mdi_bell_protocol, build_mdi_protocol, _mdi_bell_sift_keep,
+    build_mdi_bell_protocol, build_mdi_physical_protocol, build_mdi_protocol,
+    _mdi_bell_sift_keep,
     mdi_full_physical_channel, _mdi_bell_conditional_from_executed,
     mdi_alice_source, mdi_bob_source,
 )
@@ -190,7 +191,7 @@ def test_mdi_bell_wlc_rate_matches_legacy() -> None:
 
 def test_full_physical_channel_trace_preserving() -> None:
     """64 composed Kraus (depol × depol × BSM) sum to identity."""
-    net = mdi_full_physical_channel(qber=0.05)
+    net = mdi_full_physical_channel(arm_depol_p=0.05)
     ch = net.channel
     assert len(ch.kraus) == 64  # 4 (depol_A) × 4 (depol_B) × 4 (BSM)
     total = np.zeros((4, 4), dtype=np.complex128)
@@ -200,11 +201,15 @@ def test_full_physical_channel_trace_preserving() -> None:
 
 
 def _build_mdi_bell_physical(qber: float) -> MSEBProtocol:
-    """Helper: MDI protocol with full physical channel (depol ⊗ depol → BSM)."""
+    """Helper: MDI protocol with full physical channel (depol ⊗ depol → BSM).
+
+    (Pre-dating public `build_mdi_physical_protocol`; retained for
+    test_default_path_* tests that verify the extractor internals.)
+    """
     from qkdx.protocol.base import AnnouncementRule, KeyMap
     src_A = mdi_alice_source(qber)
     src_B = mdi_bob_source(qber)
-    net = mdi_full_physical_channel(qber)  # includes per-arm depol
+    net = mdi_full_physical_channel(arm_depol_p=qber)
     ann = AnnouncementRule(sift_keep=_mdi_bell_sift_keep)
     km = KeyMap(key_party="Alice", bitmap={0: 0, 1: 1, 2: 0, 3: 1})
     import warnings
@@ -230,32 +235,56 @@ def test_default_path_equals_override_at_qber_zero() -> None:
     )
 
 
-@pytest.mark.parametrize("qber,expected_eff_qber", [
-    (0.02, 0.026),   # per-arm 0.02 → combined ~0.026
-    (0.05, 0.064),   # per-arm 0.05 → combined ~0.064
-    (0.08, 0.102),   # per-arm 0.08 → combined ~0.102
-])
-def test_default_path_effective_qber_nonlinear_mapping(
-    qber: float, expected_eff_qber: float
-) -> None:
-    """[FIND] At per-arm qber > 0, default-path's effective QBER > input qber.
+@pytest.mark.parametrize("q", [0.0, 0.02, 0.05, 0.08, 0.10, 0.15])
+def test_default_path_effective_qber_matches_quadratic_formula(q: float) -> None:
+    """[FIND,ADR] Effective QBER formula: e_eff = 4q/3 − 8q²/9.
 
-    This exposes the convention question: `build_mdi_bell_protocol(qber)`
-    uses qber as Alice-Bob effective QBER (via override); but using qber
-    as per-arm depolarizing parameter in the physical channel gives a
-    different effective QBER after BSM + bit-flip correction.
+    Derivation (for composition bb84_channel(q)⊗bb84_channel(q) then
+    linear-optic BSM + classical bit-flip correction):
+        - Per-arm single-qubit error rate in Z basis: 2q/3 (bb84_channel
+          convention p=4q/3, so Z-QBER = p/2 = 2q/3)
+        - Single-arm success probability: 1 − 2q/3
+        - Joint agreement prob after BSM post-correction:
+            P(both same OR both flipped) = (1-2q/3)² + (2q/3)²
+            = 1 − 4q/3 + 8q²/9
+        - Effective QBER = 1 − P(agreement) = 4q/3 − 8q²/9
 
-    Empirical mapping (from this test): eff_qber ≈ 1.28 * per-arm qber
-    (approximately, for small qber). Full analytical derivation deferred
-    to Stage B.2 documentation.
+    This test PINs the formula at 6 q values within `1e-4` absolute
+    (Round 2 dev-reviewer response to loose `5e-3` tolerance).
     """
-    p = _build_mdi_bell_physical(qber=qber)
+    p = build_mdi_physical_protocol(arm_depol_p=q)
     rho = _mdi_bell_conditional_from_executed(p)
-    # Effective QBER read off from Werner form: diag[1] = e/2
-    eff_qber = rho[1, 1].real * 2
-    assert abs(eff_qber - expected_eff_qber) < 0.005, (
-        f"per-arm qber={qber}: eff QBER={eff_qber:.4f}, expected ~{expected_eff_qber}"
+    eff_qber = rho[1, 1].real * 2  # Werner diag[1] = e/2
+    expected = 4 * q / 3 - 8 * q ** 2 / 9
+    assert abs(eff_qber - expected) < 1e-4, (
+        f"arm_depol_p={q}: eff QBER={eff_qber:.6f}, "
+        f"expected 4q/3-8q²/9 = {expected:.6f} (diff={eff_qber-expected:.2e})"
     )
+
+
+def test_build_mdi_physical_protocol_invalid_inputs() -> None:
+    """Input validation for the new physical builder."""
+    with pytest.raises(ValueError, match="arm_depol_p"):
+        build_mdi_physical_protocol(arm_depol_p=-0.01)
+    with pytest.raises(ValueError, match="arm_depol_p"):
+        build_mdi_physical_protocol(arm_depol_p=1.1)
+    with pytest.raises(ValueError, match="p_sift"):
+        build_mdi_physical_protocol(arm_depol_p=0.05, p_sift=0.0)
+
+
+def test_mdi_full_physical_channel_invalid_input() -> None:
+    with pytest.raises(ValueError, match="arm_depol_p"):
+        mdi_full_physical_channel(arm_depol_p=-0.01)
+    with pytest.raises(ValueError, match="arm_depol_p"):
+        mdi_full_physical_channel(arm_depol_p=1.5)
+
+
+def test_build_mdi_physical_protocol_default_path_matches_override_at_q_zero() -> None:
+    """At arm_depol_p=0: default path = |Φ+⟩ = override Werner."""
+    p = build_mdi_physical_protocol(arm_depol_p=0.0)
+    rho = p.conditional_alice_bob()
+    expected = np.diag([0.5, 0, 0, 0.5]).astype(np.complex128)
+    assert np.allclose(rho, expected, atol=1e-12)
 
 
 def test_default_path_preserves_werner_form() -> None:

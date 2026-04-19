@@ -222,29 +222,39 @@ def build_mdi_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:
     return protocol
 
 
-def mdi_full_physical_channel(qber: float) -> PublicQuantumNetwork:
+def mdi_full_physical_channel(arm_depol_p: float) -> PublicQuantumNetwork:
     """Full physical MDI channel: depol ⊗ depol then Bell POVM.
 
     Composition:
-        - `bb84_channel(qber)` on Alice's arm (2-dim → 2-dim depolarizing)
-        - `bb84_channel(qber)` on Bob's arm (2-dim → 2-dim depolarizing)
+        - `bb84_channel(arm_depol_p)` on Alice's arm (2-dim → 2-dim depolarizing)
+        - `bb84_channel(arm_depol_p)` on Bob's arm (2-dim → 2-dim depolarizing)
         - `linear_optic_bell_bsm()` on combined 4-dim → 3-dim classical
 
     Total channel:  (4 dim) → (3 dim) with 4 × 4 × 4 = 64 Kraus operators.
-    Trace-preserving (verified numerically).
+    Trace-preserving (verified numerically in test suite).
 
-    **Convention caveat** (Phase 1 Sub-Q2 Stage B.2 finding):
-        `qber` here is the **per-arm depolarising parameter**, not the
-        effective Alice-Bob post-BSM QBER.  The per-arm Z-basis QBER is
-        `2·qber/3` (from `bb84_channel`'s `p = 4·qber/3` convention), and
-        the combined Alice-Bob effective QBER after BSM + bit-flip
-        correction differs from both (numerical mapping).
+    Args:
+        arm_depol_p: **per-arm depolarising parameter** (not Alice-Bob
+            effective QBER).  `bb84_channel(p)` applies depolarising noise
+            whose Z-basis single-arm error rate is `2p/3`.  After BSM
+            composition and classical bit-flip correction, the effective
+            Alice-Bob QBER reads approximately
+                e_eff ≈ 4·arm_depol_p/3 - 8·arm_depol_p²/9
+            (exact for the current channel definition; see tests).
 
-        Specifically, at per-arm `qber = 0.05`, the default-path Werner
-        state has effective `e ≈ 0.064` vs the override convention `e = 0.05`.
-        This is a live convention question documented in PHASE1_LOG §3.6.2.
+    **API semantic note**(Agent 1/2 Round 1 review):
+        This parameter is deliberately named `arm_depol_p` to avoid the
+        ambiguity with `build_mdi_protocol(qber)` where `qber` is the
+        Alice-Bob effective QBER (reduced Werner model).  These two
+        parameters refer to different physical quantities that should not
+        be confused.
+
+    Raises:
+        ValueError: arm_depol_p not in [0, 1].
     """
-    depol = bb84_channel(qber)  # 2 → 2
+    if not (0.0 <= arm_depol_p <= 1.0):
+        raise ValueError(f"arm_depol_p must be in [0, 1], got {arm_depol_p}")
+    depol = bb84_channel(arm_depol_p)  # 2 → 2
     bsm = linear_optic_bell_bsm()  # 4 → 3
     combined_kraus = []
     for K_bsm in bsm.kraus:
@@ -373,15 +383,102 @@ def build_mdi_bell_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:
             observation_keys=("qber_Z", "qber_X", "p_sift"),
             scope_tag="partial",
             scope_reason=(
-                "Phase 1 Sub-Q2 Stage B: Charlie's Bell POVM now lives in "
-                "the `channel` (linear_optic_bell_bsm, dim_in=4, dim_out=3). "
-                "Remaining partial cause: the `conditional_alice_bob()` "
-                "default path (via `_sift_projector` on 48×48 executed_state) "
-                "has not been implemented; the `_conditional_alice_bob` "
-                "override is still the fast path for WLC SDP.  Upgrade to "
-                "`covered` requires implementing + numerically verifying "
-                "that the default path produces the same 4×4 Werner state "
-                "as the override (Stage B.2, follow-up)."
+                "Phase 1 Sub-Q2 Stage B.1/B.2: Charlie's Bell POVM is in the "
+                "channel (linear_optic_bell_bsm, dim 4→3) and a default-path "
+                "extractor `_mdi_bell_conditional_from_executed` has been "
+                "implemented (Stage B.2 code).  Remaining blockers (Agent 1/2 "
+                "Round 1 review findings):\n"
+                "  (i) sources do NOT encode qber noise in this builder; the "
+                "      channel is `linear_optic_bell_bsm` alone (no per-arm "
+                "      depolarizing).  Consequence: `executed_state` for this "
+                "      builder is qber-independent — running the default-path "
+                "      extractor on it returns the zero-noise Werner.\n"
+                "  (ii) the public `qber` argument here is kept as the "
+                "      Alice-Bob effective QBER (matches legacy "
+                "      `build_mdi_protocol` semantics) via the Werner "
+                "      override; a separate builder "
+                "      `build_mdi_physical_protocol(arm_depol_p)` uses the "
+                "      physical `mdi_full_physical_channel` with distinct "
+                "      `arm_depol_p` parameter (per-arm depol).\n"
+                "Upgrade to `covered` requires a formal decision on MDI "
+                "parametric API (effective-QBER reduced form vs physical "
+                "per-arm depol vs gain/QBER observables a la Ma-Razavi 2012) "
+                "— deferred to Stage D (Ma-Razavi Fig.3 alignment)."
+            ),
+            _observable_builders=observable_builders,  # type: ignore[arg-type]
+        )
+
+
+def build_mdi_physical_protocol(arm_depol_p: float, p_sift: float = 0.25) -> MSEBProtocol:
+    """MDI-QKD with FULL physical channel (depol ⊗ depol → BSM); experimental.
+
+    Unlike `build_mdi_protocol` (reduced Werner model via
+    `_bb84_conditional_state` override) and `build_mdi_bell_protocol`
+    (channel = Bell POVM only, no per-arm noise), this builder uses the
+    full `mdi_full_physical_channel(arm_depol_p)` + `_mdi_bell_sift_keep`
+    composition.  `executed_state()` returns a genuinely `arm_depol_p`-
+    dependent 48×48 state; default-path `_mdi_bell_conditional_from_executed`
+    on this protocol returns a Werner with effective QBER
+        e_eff ≈ 4·arm_depol_p/3 − 8·arm_depol_p²/9.
+
+    Args:
+        arm_depol_p: per-arm depolarising parameter, in [0, 1].  See
+            `mdi_full_physical_channel` docstring for the exact mapping.
+        p_sift: BB84 sifting probability before Bell success (0.25 ideal).
+
+    Returns:
+        MSEBProtocol with `scope_tag="partial"` (API semantic inconsistency
+        vs legacy `qber` = effective reading; ADR pending Stage D).
+
+    Raises:
+        ValueError: arm_depol_p not in [0, 1] or p_sift not in (0, 1].
+
+    References:
+        - qkdx/core/bell_povm.py linear_optic_bell_bsm
+        - docs/PHASE1_LOG.md §3.6.2 (API convention ADR pending Stage D)
+    """
+    if not (0.0 <= arm_depol_p <= 1.0):
+        raise ValueError(f"arm_depol_p must be in [0, 1], got {arm_depol_p}")
+    if not (0.0 < p_sift <= 1.0):
+        raise ValueError(f"p_sift must be in (0, 1], got {p_sift}")
+
+    src_A = mdi_alice_source(arm_depol_p)
+    src_B = mdi_bob_source(arm_depol_p)
+    net = mdi_full_physical_channel(arm_depol_p)
+    ann = AnnouncementRule(sift_keep=_mdi_bell_sift_keep)
+    km = KeyMap(key_party="Alice", bitmap={0: 0, 1: 1, 2: 0, 3: 1})
+
+    import warnings
+    from qkdx.protocol.base import OutOfScopeWarning
+
+    # For physical builder, we *do not* register the Werner override — the
+    # conditional state is computed from executed_state via the default path.
+    def conditional_override(protocol: MSEBProtocol) -> Matrix:
+        return _mdi_bell_conditional_from_executed(protocol)
+
+    observable_builders: dict[str, object] = {
+        "qber_Z": lambda _p: _gamma_qber_Z(),
+        "qber_X": lambda _p: _gamma_qber_X(),
+        "p_sift": lambda _p: np.eye(4, dtype=np.complex128) * p_sift,
+        "_conditional_alice_bob": conditional_override,
+        "_cond_dim": lambda _p: 4,
+    }
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", OutOfScopeWarning)
+        return MSEBProtocol(
+            name="MDI-QKD-Physical",
+            sources=(src_A, src_B),
+            network=net,
+            announcement=ann,
+            key_map=km,
+            observation_keys=("qber_Z", "qber_X", "p_sift"),
+            scope_tag="partial",
+            scope_reason=(
+                "API: `arm_depol_p` ≠ Alice-Bob effective QBER.  "
+                "Effective QBER e_eff ≈ 4·arm_depol_p/3 − 8·arm_depol_p²/9.  "
+                "Upgrade to `covered` pending Stage D (Ma-Razavi Fig.3) "
+                "which will resolve MDI parameter convention."
             ),
             _observable_builders=observable_builders,  # type: ignore[arg-type]
         )

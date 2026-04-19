@@ -118,27 +118,36 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
    - 经典 bit-flip 校正:b_aligned = value(b) XOR (c==1)
    - 汇总 → 4×4 Werner 形
 
-**[FIND] MDI `qber` 约定问题**(本 Stage 核心研究观察):
-- `build_mdi_protocol(qber)` 的 override 约定:`qber` = **Alice-Bob 有效 QBER**(Werner diag 直接用 e = qber)
-- 但用 `qber` 作为**每臂 depolarizing 参数**的物理 channel + 默认路径给出:
+**[ADR-pending] MDI 参数 API 命名不一致观察**(本 Stage B.2 核心,语言经 Round 1 dev-reviewer 调整):
 
-| per-arm qber | 默认路径 eff QBER | override 约定(视 qber 为 eff) |
-|-------------:|------------------:|-------------------------------:|
-| 0.00         | 0.000             | 0.000 |
-| 0.02         | 0.026             | 0.020 |
-| 0.05         | 0.064             | 0.050 |
-| 0.08         | 0.102             | 0.080 |
+- **这是 API 语义问题而非物理发现**:`build_mdi_protocol(qber)` 的 `qber` 表示 Alice-Bob 有效 QBER(Werner 约化模型约定);但 `mdi_full_physical_channel(qber)` 里同一个符号如果直接塞进去表示**每臂 depolarizing 参数**,两个符号同名但语义不同
+- Round 1 Agent 2 指出:"这是真实的 API semantic inconsistency,不仅是文献约定 split"
+- 数学关系:per-arm depol 参数 `q` 经 depol⊗depol → BSM + 经典 bit-flip 后的有效 QBER 为
 
-- 经验关系(小 qber 极限):eff_qber ≈ 4/3 · qber(复合 depol + BSM 的增长因子)
-- 两种约定对 **qber = 0 点一致**(此时 Werner 皆为 |Φ+⟩,无噪 → 无歧义)
-- qber > 0 处**不一致**:并非 bug,而是两种语义下同一数学对象的不同参数化
+    **$e_{\text{eff}} = \frac{4q}{3} - \frac{8q^2}{9}$**(精确公式,小 $q$ 极限 $\approx 4q/3$)
 
-**决策**(保守,保持 scope 诚实):
-- **不升级 scope_tag 到 covered**:两种约定给不同数值,若替换 override 为默认路径,会改变 `build_mdi_bell_protocol(qber=0.05)` 的 WLC rate(影响已有测试)
-- 本 Stage B.2 停留在 **实施 + 记录** 阶段,升级为 covered 需一次**正式约定决策**:
-  1. 选 "override 约定"(qber=effective,channel 仅作结构标注):保持现状
-  2. 选 "channel 约定"(qber=per-arm depol,effective 由 BSM 物理推导):更符合 Lo-Curty-Qi 2012 物理,但已有测试需修正
-- 决策需查 Lo-Curty-Qi 2012 原文 + Ma-Razavi 2012 约定,Stage D(Ma-Razavi Fig.3 对齐)时自然落地
+- 数值示例:
+
+| arm_depol_p (q) | e_eff(公式) | e_eff(数值测量) |
+|----------------:|------------:|-----------------:|
+| 0.00 | 0.000 | 0.000 |
+| 0.02 | 0.0263 | 0.0263 |
+| 0.05 | 0.0644 | 0.0644 |
+| 0.08 | 0.1010 | 0.1010 |
+
+- 两种参数化本质上是同一 Werner 家族的不同入口,非物理发现,**只是 API 规范问题**
+
+**响应(Round 1 两 Agent FAIL → Round 2 修复)**:
+1. **API 重命名**:`mdi_full_physical_channel(arm_depol_p)` 的参数从 `qber` → `arm_depol_p`,明示其为每臂去极化参数而非有效 QBER
+2. **添加公有 builder**:`build_mdi_physical_protocol(arm_depol_p)` 真正使用物理 channel;其 `_conditional_alice_bob` 用 default-path extractor,不使用 Werner override
+3. **添加输入验证**:`mdi_full_physical_channel` 和 `build_mdi_physical_protocol` 都验证 `arm_depol_p ∈ [0, 1]`
+4. **Scope reason 更新**:`build_mdi_bell_protocol` 的 scope_reason 改为真实 blocker — 公有 builder sources 未编码噪声,channel 也未含 per-arm depol;一次正式 API convention ADR 是 covered 的前提
+5. **Tests tight 公式 pin**:从 `5e-3` tolerance 升级到 `1e-4`,6 个 q 值全 pin 到 $4q/3 - 8q^2/9$
+
+**决策(保守,保持 scope 诚实)**:
+- **不升级 scope_tag 到 covered**:需要正式 ADR 决定 MDI 公有 API 应该暴露什么参数(effective QBER? per-arm depol? Ma-Razavi 的 gain + QBER 观测量?)
+- 本 Stage B.2 停在 **实施 + 记录 + Round 2 修复** 阶段
+- **Covered 决策天然融入 Stage D**(Ma-Razavi Fig.3 对齐):Ma-Razavi 用 `(μ, η_A, η_B, e_d, p_dark)` 物理参数,是 API 自然形式
 
 **Tests**([tests/test_protocols/test_mdi_bell.py](../tests/test_protocols/test_mdi_bell.py) 22 tests):
 - `test_full_physical_channel_trace_preserving`:64 Kraus 之 trace-preserving
