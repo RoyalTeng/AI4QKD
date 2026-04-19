@@ -348,7 +348,7 @@ Sub-Q3 的 PLOB 精读要求 Level 4;Sub-Q2 的已发表 family sheet 参考通�
 
 **研究动作 U3.5:Das-Khatri-Wilde 2020 Level 3 精读**
 
-- 输入:`Das, Khatri, Wilde 2020. Private communication with quantum channels. arXiv:2012.03262`
+- 输入:`Khatri, Wilde 2020. Principles of Quantum Communication Theory: A Modern Approach. arXiv:2011.04672`(综合 converse 框架教科书;替代此前误引 "DKW 2020 arXiv:2012.03262",该 ID 为不相关热力学论文)
 - 产出:`docs/literature/DKW-2020.md`,含最新的 converse 改进
 - 验收:能识别 DKW 相对 PLOB 的改进幅度及其对我们拓扑的可继承性
 
@@ -487,7 +487,7 @@ Sub-Q3 的 PLOB 精读要求 Level 4;Sub-Q2 的已发表 family sheet 参考通�
 [PLOB 2017] ──(重点!Level 4)──┼── Sub-Q3 上界工作
 [Wilde-Tomamichel-Berta 2017] ──┤
 [Pirandola 2019 网络] ──┤
-[Das-Khatri-Wilde 2020] ──┘
+[Khatri-Wilde 2020 textbook, arXiv:2011.04672] ──┘  # 替换此前误引 DKW 2020 / arXiv:2012.03262
 ```
 
 ---

@@ -116,7 +116,7 @@ Zotero 库里发现 **4 篇作者含 "Teng, Jun"** 的 USTC TF-QKD 实验组论�
 | **Pirandola 2019** "End-to-end capacities of a quantum communication network" (Commun. Phys. 2:51) | Log 03 / 04 上界 min-cut **核心依赖**,且本项目 FINDINGS v2 的 "untrusted-relay 继承" 需精读其 Eq. (11) / (17) | [1905.12674](https://arxiv.org/abs/1905.12674) |
 | **Takeoka-Guha-Wilde 2014** "Fundamental rate-loss tradeoff" (Nat. Commun. 5:5235) | 替代 converse 路线(squashed entanglement) | [arXiv:1504.06390](https://arxiv.org/abs/1504.06390) |
 | **Wilde-Tomamichel-Berta 2017** "Converse bounds for private comm." (IEEE TIT 63:1792) | PLOB 独立推导路线 | [arXiv:1602.08898](https://arxiv.org/abs/1602.08898) |
-| **Das-Khatri-Wilde 2020/2021** "Converse bounds for private comm. with quantum channels" | 最新 converse 综述 | [arXiv:2012.03262](https://arxiv.org/abs/2012.03262) |
+| **Khatri-Wilde 2020** *Principles of Quantum Communication Theory: A Modern Approach*(替代误引 "DKW 2020 arXiv:2012.03262";原 ID 实为不相关热力学论文)| 综合 converse 框架教科书 | [arXiv:2011.04672](https://arxiv.org/abs/2011.04672) |
 
 ### 2.2 高优(Sub-Q1 / M1 实施必读)
 
@@ -125,7 +125,7 @@ Zotero 库里发现 **4 篇作者含 "Teng, Jun"** 的 USTC TF-QKD 实验组论�
 | **Winick-Lütkenhaus-Coles 2018** "Reliable numerical key rates for QKD" (Quantum 2:77) | REFACTORING_PLAN §4.6 + 附录 B 核心实施参考(WLC SDP),PHASE0_M1_TECHNICAL_SPEC §4 第一性原理推导源 | [arXiv:1710.05511](https://arxiv.org/abs/1710.05511) |
 | **Coles-Metodiev-Lütkenhaus 2016** "Numerical approach for unstructured QKD" (Nat. Commun. 7:11712) | WLC 前传 | [arXiv:1510.01294](https://arxiv.org/abs/1510.01294) |
 | **Hu-Im-Lin-Lütkenhaus-Wolkowicz 2022** "Robust Interior Point Method for QKD Rate Computation" (Quantum 6:792) | REFACTORING_PLAN §4.7 facial reduction 直接依据 | [arXiv:2104.03847](https://arxiv.org/abs/2104.03847) |
-| **George-Lin-Lütkenhaus 2021** "Numerical calculations of finite key rate" (PRR 3:013274) | RESEARCH_PLAN §3.3 Sub-Q2.5 复现目标 | [arXiv:2011.06530](https://arxiv.org/abs/2011.06530) |
+| **George-Lin-Lütkenhaus 2021** "Numerical calculations of finite key rate for general QKD protocols" (PRR 3:013274) | RESEARCH_PLAN §3.3 Sub-Q2.5 复现目标 | [arXiv:2004.11865](https://arxiv.org/abs/2004.11865)(修正此前误引 2011.06530,后者实为不相关超图稀疏化论文)|
 
 ### 2.3 中优(Sub-Q2 Phase 0-1 参考)
 
@@ -179,14 +179,14 @@ M4B 数值 prefactor 验证时(REFACTORING_PLAN §5 "log-log 斜率 = 0.5 ± 0.0
 1. [Pirandola 2019 arXiv:1905.12674](https://arxiv.org/abs/1905.12674)
 2. [Takeoka-Guha-Wilde 2014 arXiv:1504.06390](https://arxiv.org/abs/1504.06390)
 3. [Wilde-Tomamichel-Berta 2017 arXiv:1602.08898](https://arxiv.org/abs/1602.08898)
-4. [Das-Khatri-Wilde 2020 arXiv:2012.03262](https://arxiv.org/abs/2012.03262)
+4. [Khatri-Wilde 2020 textbook arXiv:2011.04672](https://arxiv.org/abs/2011.04672)(替代此前误引的 "DKW 2020 arXiv:2012.03262")
 
 **Phase 0 M1 实施(优先)**:
 
 5. [Winick-Lütkenhaus-Coles 2018 arXiv:1710.05511](https://arxiv.org/abs/1710.05511)
 6. [Coles-Metodiev-Lütkenhaus 2016 arXiv:1510.01294](https://arxiv.org/abs/1510.01294)
 7. [Hu-Im-Lin-Lütkenhaus-Wolkowicz 2022 arXiv:2104.03847](https://arxiv.org/abs/2104.03847)
-8. [George-Lin-Lütkenhaus 2021 arXiv:2011.06530](https://arxiv.org/abs/2011.06530)
+8. [George-Lin-Lütkenhaus 2021 arXiv:2004.11865](https://arxiv.org/abs/2004.11865)(修正此前误引的 arXiv:2011.06530)
 
 **M2 实施**:
 

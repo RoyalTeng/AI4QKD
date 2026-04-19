@@ -130,7 +130,9 @@ $$K^{\leftrightarrow}(\mathcal{N}) \leq E_{sq}(\Phi_{\mathcal{N}})$$ **[THM, TGW
 
 ### B.8 Das-Khatri-Wilde 2020 的改进
 
-**DKW20**(arXiv:2012.03262)给了 **"converse bound for private communication with quantum channels"** 的最新综合。对 pure-loss 点对点,recovers PLOB;对 network,给了与 Pirandola 2019 相同的 min-cut 结构(有些细节推广到任意 LOCC-assisted distillation)。
+**Khatri-Wilde 2020 textbook**(arXiv:2011.04672,*Principles of Quantum Communication Theory: A Modern Approach*)在 Ch. 14+ 系统讲 converse bounds:对 pure-loss 点对点 recovers PLOB;对 network 给出与 Pirandola 2019 等价的 min-cut 结构(并把 Pirandola19 的 bosonic-specific 证明推到更广 channel classes)。
+
+**[v5 修正]**:此前误引 "DKW 2020 arXiv:2012.03262" 是错记忆 — 那个 arXiv ID 实为不相关热力学论文。本研究用到的 converse 综合参考替换为 Khatri-Wilde 2020 textbook。
 
 DKW20 的要点对我们:
 - 陈述更干净(technical streamlined)

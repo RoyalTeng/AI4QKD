@@ -135,7 +135,7 @@
 | Pirandola19 | Pirandola 2019 | Commun. Phys. 2:51 | 网络拓扑的端到端 capacity |
 | TGW14 | Takeoka-Guha-Wilde 2014 | Nat. Commun. 5:5235 | 基于 squashed entanglement 的上界 |
 | WTB17 | Wilde-Tomamichel-Berta 2017 | IEEE TIT 63:1792 | converse bound 独立推导 |
-| DKW20 | Das-Khatri-Wilde 2020 | arXiv:2012.03262 | 最新 converse bound |
+| KhatriWilde20 | Khatri-Wilde 2020 *Principles of QCT* | arXiv:2011.04672 | 现代 converse 框架教科书(**修正**:此前误引 "DKW 2020 arXiv:2012.03262",后者实为不相关的热力学论文)|
 | Lucamarini18 | Lucamarini-Yuan-Dynes-Shields 2018 | Nature 557:400 | TF-QKD 原论文,$\sqrt{\eta}$ 可达 |
 | MZZ18 | Ma-Zeng-Zhou 2018 | PRX 8:031043 | PM-QKD |
 | ZZWM22 | Zeng-Zhou-Wu-Ma 2022 | Nat. Commun. 13:3903 | MP-QKD |

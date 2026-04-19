@@ -397,7 +397,7 @@ AI 工具(Claude Anthropic Opus 4.7)在本项目规划阶段作为讨论伙伴�
 - Pirandola, Laurenza, Ottaviani, Banchi 2017, *Nat. Commun.* 8:15043 — PLOB 定理
 - Pirandola 2019, *Commun. Phys.* 2:51 — 网络推广
 - Wilde, Tomamichel, Berta 2017, *IEEE TIT* 63:1792 — PLOB 独立推导
-- Das, Khatri, Wilde 2020, arXiv:2012.03262 — converse bound 最新版
+- Khatri, Wilde 2020, arXiv:2011.04672 — *Principles of Quantum Communication Theory: A Modern Approach*(综合 converse bounds 的现代教科书;替代此前误引 "DKW 2020 arXiv:2012.03262",该 ID 实为不相关的热力学论文)
 - Takeoka, Guha, Wilde 2014, *Nat. Commun.* 5:5235 — PLOB 的前身
 
 **协议族原文**:
