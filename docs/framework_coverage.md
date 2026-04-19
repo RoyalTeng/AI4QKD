@@ -134,7 +134,7 @@ v0.1 §3.3 (3) 的 "Fock 截断属灰区" 表述**撤回**,改为本节明确分
 |----|---------|-------------|----------------|------------------------|----------|------|
 | **F1 BB84** | BB84(Bennett-Brassard 1984) | `covered` | `spec_only` | `benchmark_passed`(R1.3) | Shor-Preskill 2000 Thm 1:$R = 0.5\cdot(1 - 2h(\text{QBER}))$ bit/signal(含 $p_\text{sift}=0.5$ 外层) | R1.2 `docs/msen/bb84-formulation.md` v0.3 已落;R1.3 Week 2-3 实施 |
 | **F2 六态** | six-state(Bruss 1998) | `covered` | `not_started` | `benchmark_passed`(M2 R2.3) | $R = 1/3\cdot[1 - h(e) - e\log_2 3]$ bit/signal(含 $p_\text{sift}=1/3$) | MS-EB $\mathcal{P}$ 与 BB84 同构,$\mathcal{A}$ 增 Y 基筛选 |
-| **F3 SARG04** | SARG04(Scarani-Acín-Ribordy-Gisin 2004) | `partial` | `benchmark_passed`(Phase 1 S2.1 简化 Werner 模型) | `builder_only` → `benchmark_passed` Koashi 2005 需宣告 register | Koashi 2005:$R \leq \max(0, 1-2h(e))$,严格 $e \lesssim 9.68\%$;**简化模型阈值 $\lesssim 14.1\%$** | 本实施把宣告对折叠进 $p_\text{sift}=1/4+e/2$ + Werner conditional state($q=e/(1+2e)$);**partial 原因**(2026-04-19 Phase 1 S2.1):完整 SARG04 需 Alice 宣告对作为 classical register 显式编入 $\mathcal{A}$,Bob USD 筛选显式;升级到 `covered` 延后 Phase 1 Sub-Q2(见 `qkdx/protocols/sarg04.py` scope_reason) |
+| **F3 SARG04** | SARG04(Scarani-Acín-Ribordy-Gisin 2004) | `covered`(目标) | `spec_only` | Koashi 2005 严格口径(需 announcement classical register) | Koashi 2005:$R \leq \max(0, 1-2h(e))$,严格 $e \lesssim 9.68\%$ | **状态**:v0.5 简化 Werner 模型(commit `a6e8192`,阈值 14.1%)已回滚,作为前沿研究不保留计划外降级(见 [PHASE1_LOG.md §2.1](PHASE1_LOG.md))。F3 严格实施需扩展 `AnnouncementRule` 支持 classical register + USD 筛选谓词,与 F5 MDI multi-source 升级共享该基础设施(Phase 1 Sub-Q2)。 |
 | **F4 Efficient BB84** | Lo-Chau-Ardehali 2005 偏置基 | `covered` | `benchmark_passed`(Phase 1 S2.1 2026-04-19) | `builder_only` → `benchmark_passed` | 同 BB84 Shor-Preskill,$p_\text{sift} = p_Z^2 + (1-p_Z)^2 \to 1$ | 已实施:`qkdx/protocols/efficient_bb84.py`(commit 69a85e6),27 tests;只改 $\mathcal{A}$ 的基先验 + 相应重归一 source |
 | **F5 MDI-QKD** | Lo-Curty-Qi 2012 | `partial` | `not_started` | `benchmark_passed`(M2 R2.3, 但 via 虚拟-EB 覆盖路径) | Ma-Razavi 2012 Fig.3 | 两 source parties;$\mathcal{E}$ 含 Charlie 的 Bell 态测量;**partial 原因**(Agent 1 retrospective 2026-04-19):`MSEBProtocol.joint_state()` / `executed_state()` 尚未实施 multi-source 张量 + 联合信道语义,WLC SDP 仅通过 `_conditional_alice_bob` 覆盖路径工作(见 `qkdx/protocols/mdi.py` scope_reason)。升级到 `covered` 需真正的 multi-source 状态构造(延后到 Phase 1 Sub-Q2 MDI family sheet)。 |
 | **F6 TF-QKD(含 SNS、PM)** | Lucamarini 2018;Wang-Yu-Hu 2018(SNS);Ma-Zeng-Zhou 2018(PM)| `partial` | `not_started` | `builder_only`(M4B Phase 0.5 可选)| Lucamarini Fig.3 √η 标度 | **partial 原因**:phase reference 在 MS-EB 中以 $\mathcal{E}$ 的相位调制建模(workaround);M4B 验收后重新定级 |
@@ -460,9 +460,11 @@ v0.1 §6 叫"多角度交叉验证",但 A-D 四项均为内部检查(PROSPECTUS 
 
 ### 6.1 PROSPECTUS §4.3 "85-90% 覆盖率"的粗略对齐
 
-**v0.5 订正**(Phase 1 S2.1 2026-04-19):v0.4 写 "covered=4(F1-F4), partial=2(F5 MDI + F6 TF), out_of_scope=1(F7)";Phase 1 S2.1 把 F3 SARG04 从 `covered` 降级为 `partial`(简化 Werner 模型,非 Koashi 2005 严格)后,当前分布为 **covered=3(F1 BB84, F2 六态, F4 Efficient BB84), partial=3(F3 SARG04, F5 MDI, F6 TF), out_of_scope=1(F7 MP)**。
+**v0.6 订正**(Phase 1 S2.1 revert 2026-04-19):v0.5 曾把 F3 SARG04 降为 `partial`(简化 Werner 模型)。用户指出 "前沿研究尽可能不做计划外降级",v0.5 的 SARG04 partial 不在 RESEARCH_PLAN 许可列表,回滚 → F3 回到 `covered` (目标) + `spec_only` (impl),计划外简化模型不保留(见 [PHASE1_LOG.md §2.1](PHASE1_LOG.md))。
 
-**不作加权算术**(v0.1 "87% = 5/7 + 0.5×2/7" 是任意加权,codex F6):本对齐只定性说 "3/7 协议族完全表达 + 3/7 协议族有 workaround(F3 SARG04 简化宣告 + F5 MDI virtual-EB + F6 TF phase-ref),1/7 协议族 out_of_scope(F7 MP-QKD 待 ADR)",与 PROSPECTUS 85-90% 的**数量级**一致(若按严格 covered/7 = 43% 则略低;按 (covered+partial)/7 = 86% 则对齐)。具体覆盖率数字需要 Phase 1 结束后由 PHASE1_REPORT.md 重新刻画。
+当前分布:**scope_tag covered = 4 (F1 BB84, F2 六态, F3 SARG04 目标, F4 Eff-BB84), partial = 2 (F5 MDI multi-source, F6 TF phase-ref), out_of_scope = 1 (F7 MP)**。其中 F3 `impl.current = spec_only`(目标 `covered` 待 announcement register 基础设施);F5 `impl.current = benchmark_passed` 但仅经 virtual-EB override 覆盖;F6 `impl.current = builder_only`(M4B pending)。
+
+**不作加权算术**(v0.1 "87% = 5/7 + 0.5×2/7" 是任意加权,codex F6):本对齐只定性说 "按 scope_tag:covered = 4/7, partial = 2/7, out_of_scope = 1/7;按 impl.current 已有 benchmark 证据:3/7 (F1/F2/F4),4/7 若把 F5 MDI 虚拟-EB 计入";严格 PROSPECTUS 85-90% 数字对齐需 Phase 1 结束后由 PHASE1_REPORT 重新刻画。
 
 ### 6.2 Sub-Q1 验收产出对应关系
 
