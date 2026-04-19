@@ -141,19 +141,39 @@ DKW20 的要点对我们:
 
 ---
 
-## C. 本日志的已证命题
+## C. 本日志的已证命题(v4 修订后)
 
-**命题 3.1**(网络 min-cut bound)在 LOCC-simulable 信道网络上,end-to-end $K^{\leftrightarrow}_{s,t} \leq \min_C \sum_{(i,j) \in C} E_R(\Phi_{\mathcal{N}_{ij}})$. **[THM, Pirandola19 Thm. 2]**
+**命题 3.1**(网络 min-cut bound,**v4 修订**):在 LOCC-simulable 信道网络上,
 
-**命题 3.2**(线性网络的 min-cut)线性单路径网络退化为 $\min_i E_R(\Phi_{\mathcal{N}_i})$. **[COROLLARY of 3.1]**
+- **Single-path protocol**:$K^{\leftrightarrow}_{s,t} \leq \min_C \max_{(i,j) \in C} E_R(\Phi_{\mathcal{N}_{ij}})$ — **[THM, Pirandola19 Eq. (11)]**
+- **Multi-path protocol**:$K^{\leftrightarrow}_{s,t} \leq \min_C \sum_{(i,j) \in C} E_R(\Phi_{\mathcal{N}_{ij}})$ — **[THM, Pirandola19 Eq. (17)]**
 
-**命题 3.3**($\mathcal{T}_{\text{umr}}$ 上界)$K^{\leftrightarrow}_{A,B}(\mathcal{T}_{\text{umr}}) \leq -\log_2(1 - \min(\eta_A, \eta_B))$. **[COROLLARY,from 3.2 + pure-loss $E_R$ = $-\log_2(1-\eta)$]**
+**[v4 更正]**:之前写法(sum over cut + "Thm. 2")混淆了 single-path 与 multi-path 版本。对 $\mathcal{T}_{\text{umr}}$(线性 single-path 拓扑)应使用 Eq. (11)(max-over-cut);由于线性拓扑的 cut 只含 1 条边,max 与 sum 数值相同。
 
-**命题 3.4**(对称情形 scaling 上界)$\eta_A = \eta_B = \sqrt{\eta_{AB}}$ 时,$K^{\leftrightarrow}_{A,B} \leq -\log_2(1-\sqrt{\eta_{AB}}) \approx 1.44 \sqrt{\eta_{AB}}$. **[COROLLARY of 3.3]**
+**命题 3.2**(线性网络的 min-cut)线性单路径网络($s \to r_1 \to \cdots \to t$),每个 cut 含 1 条边,max-over-cut 与 sum-over-cut 重合,故 $K^{\leftrightarrow}_{s,t}(\text{linear}) \leq \min_i E_R(\Phi_{\mathcal{N}_i})$. **[COROLLARY of 3.1]**
 
-**命题 3.5**(Untrusted 不放松上界)Charlie 的 untrusted 身份不使上界比 trusted 情形更松;在 scaling 层面两者均为 $O(\sqrt{\eta_{AB}})$. **[COROLLARY from Pirandola19 model definition]**
+**命题 3.3**($\mathcal{T}_{\text{umr}}$ 上界,**[v4 限界]**):$K^{\leftrightarrow}_{A,B}(\mathcal{T}_{\text{umr}}) \leq -\log_2(1 - \min(\eta_A, \eta_B))$. **[COROLLARY,依赖命题 3.2 + pure-loss $E_R = -\log_2(1-\eta)$]**
+
+**注(v4 限界)**:命题 3.3 的严格推导基于 Pirandola 2019 Eq. (11) 的 **trusted / cooperative relay** 假设。在 $\mathcal{T}_{\text{umr}}$ 的 **untrusted Charlie** 情形,从 Eq. (11) 继承上界依赖 "capacity monotonicity"(untrusted 协议类族 ⊆ trusted 协议类族),**本论证未升级到定理级**,属 [SYN / CONJ] 级。严格化是 Sub-Q3 Phase 2 工作。
+
+**命题 3.4**(对称情形 scaling 上界,**[v4 限界]**):$\eta_A = \eta_B = \sqrt{\eta_{AB}}$ 时,$K^{\leftrightarrow}_{A,B} \leq -\log_2(1-\sqrt{\eta_{AB}}) \approx 1.44 \sqrt{\eta_{AB}}$. **[COROLLARY of 3.3,继承 3.3 的 [SYN / CONJ] 分级]**
+
+**命题 3.5**(Untrusted 不放松上界,**[v4 降级]**):Charlie 的 untrusted 身份**不应**放松上界(物理直觉 + 协议类族包含关系)。但严格陈述需定理级继承 lemma。**[SYN 级,非 COROLLARY]**
 
 **命题 3.6**(无存储约束的单调继承)PROSPECTUS §3.1 H2 禁用 Alice/Bob 量子存储的情形继承 Pirandola19 上界(方向单调性,Log 02 B.5)。**[COROLLARY]**
+
+---
+
+## C.bis 命题 3.1-3.6 的分级表(v4 后集中显示)
+
+| 命题 | v1 分级 | v4 修订后分级 | 降级理由 |
+|------|--------|--------------|----------|
+| 3.1(网络 min-cut) | [THM, Thm. 2] | [THM, Eq. (11)/(17)] | 公式形式更新,定理 ≠ 方程,依赖 Pirandola 2019 正文 |
+| 3.2(线性 min-cut) | [COROLLARY] | [COROLLARY] | 保持 |
+| 3.3($\mathcal{T}_{\text{umr}}$ 上界) | [COROLLARY] | **[SYN / CONJ]** | untrusted-relay 继承未 lemma 化 |
+| 3.4(对称 scaling 上界) | [COROLLARY] | **[SYN / CONJ]** | 继承 3.3 |
+| 3.5(Untrusted 不放松) | [COROLLARY] | **[SYN]** | 物理直觉 + 协议类族包含直觉,非定理 |
+| 3.6(无存储单调) | [COROLLARY] | [COROLLARY] | 保持(sup 单调性是初等) |
 
 ---
 

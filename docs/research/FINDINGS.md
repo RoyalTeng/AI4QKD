@@ -1,249 +1,171 @@
-# FINDINGS — 最终结论 ❌ **[RETRACTED 2026-04-19]**
+# INTERIM VERDICT — 放宽 bosonic-asymptotic 设定下的 scaling 判断
 
-> # 🛑 本文档已被正式撤回
->
-> **撤回日期**:2026-04-19(落盘同日)
-> **撤回理由**:经项目负责人独立审查,本文档存在实质性**物理拓扑适用性误用 + 置信度越权 + 多层 AI 审计系统性盲点**三类问题。见 [RETRACTION.md](RETRACTION.md)。
-> **当前有效性**:**不得作为 PROSPECTUS v3.1 Sub-Q1 / §1 主问题的答案被引用**。
-> **PROSPECTUS 主问题状态**:**仍然开放**,归 Sub-Q3 Phase 2 精读 + Sub-Q4 归因分析严肃处理。
-> **保留原因**:审计历史完整 + 方法论教训载体。
->
-> 阅读本文件下方的"原结论" 时,请默认**所有 [COROLLARY] 级分级都在实际上是 [SYN] 或 [CONJ] 级**。特别是 §1.1 定理陈述 R ≤ -log₂(1 - √η_AB) 在未做严格的 Pirandola 2019 untrusted-relay 适用性论证前,**是一个未被定理级支持的命题**。
-
----
-
-**文档状态**(原):经 Phase R(Log 01-06)+ Phase V(V1-V4)全部通过,作为本轮研究的最终答案。**现已被 [RETRACTION.md](RETRACTION.md) 撤回**。
+**文档状态**:修订版 v2 ·**scoped interim verdict** ·替代已撤回的 v1(over-claimed)
 **日期**:2026-04-19
-**作者**:Claude Opus 4.7,literature-informed analysis(**未经项目负责人审阅即 commit,违反 PROSPECTUS §9 授信边界**)
-
-**⚠️ 诚信声明**(原):本 FINDINGS 是**对 PROSPECTUS v3.1 §1 主问题的 literature-informed 分析**,**不是新定理**。所有核心结论依赖已发表文献(PLOB17, Pirandola19, Lucamarini18 等)。最高确定性级别为**条件化 COROLLARY**,具体条件见 §1.2。
-
-**⚠️ 撤回补充**(2026-04-19):上述"条件化 COROLLARY"分级**实际越权**。真实的确定性级别应为 [SYN](文献共识支持的 scaling 预判)或 [CONJ](最可能但未定理级证成),**不得**作 [COROLLARY] 级被引用。
+**作者**:Claude Opus 4.7,literature-informed synthesis(**仍需项目负责人签字才能作正式依据**)
+**前身**:v1(commit `df92de9`)以"覆盖 PROSPECTUS §1 主问题"的方式过度宣称,经 commit `2644317` + [RETRACTION.md](RETRACTION.md) 撤回
+**当前定位**:Sub-Q3 / Sub-Q4 的**研究起点(interim research judgment)**,**不是** PROSPECTUS v3.1 §1 主问题的最终答案
 
 ---
 
-## 0. TL;DR
+## 0. 重要范围界定(强约束)
 
-**PROSPECTUS.md v3.1 §1 主问题 — 关于 $\mathcal{T}_{\text{umr}}$(两方 + 至多一个 untrusted measurement relay + pure-loss bosonic + no quantum memory)渐近 secret-key rate 信息论极限 — 的答案是:**
+本文件 **明确不是** PROSPECTUS v3.1 §1 主问题的答案。它是**一个放宽版本**的 scaling verdict,相对原始 PROSPECTUS 的硬约束有以下差距:
 
-### 情况 A(scaling 层面),条件化 COROLLARY 级
+### 0.1 实际工作覆盖的假设 vs PROSPECTUS §3.1 硬约束
 
-在 **asymptotic collective attack + pure-loss bosonic channel + 单 untrusted measurement relay + no quantum memory** 假设下,
+| PROSPECTUS §3.1 硬约束 | 本 interim 实际覆盖 | 差距说明 |
+|----------------------|--------------------|----------|
+| **H1** 无量子中继($\|\mathcal{P}\| \in \{1,2\}$) | ✓ 满足 | — |
+| **H2** 无量子存储(源方制备后不做延迟操作) | ✓ 满足 | — |
+| **H3** 刻画式设备信任(Level 1-3,排除 DI) | ✓ 满足(Charlie untrusted measurement) | — |
+| **H4** 有限维(含 Fock 截断 $N_{\text{cut}} < \infty$) | ✗ **未覆盖** | PLOB / Pirandola19 上界用 bosonic(无穷维 Fock),finite-cutoff 对 scaling 的影响只停在 [SYN] 级(Log 05 B.7.3) |
+| **H5** 可组合安全性(Portmann-Renner AC 框架) | ✗ **未覆盖** | 本研究是 asymptotic collective attack + de Finetti 化简,**没有处理 composable finite-key**。Kamin 2025 / Metger 2024 GEAT 适用是 Phase 1 Sub-Q2.4/2.5 工作 |
+| **H6** 离散变量(密钥信息编码在离散寄存器) | ✗ **部分覆盖** | TF-QKD / PM-QKD / MP-QKD 使用 coherent states(bosonic),严格意义下不是 "pure DV"。下界引用这些协议作 achievability,属于 coherent-state/bosonic achievability,不是 "真 single-photon DV" achievability |
 
-$$R^\infty(\mathcal{T}_{\text{umr}}^{\text{sym}}; \eta_{AB}) \;\leq\; -\log_2(1-\sqrt{\eta_{AB}}) \;\approx\; 1.4427\,\sqrt{\eta_{AB}}\quad (\eta_{AB} \to 0)$$
+### 0.2 本 interim verdict 的**精确范围**
 
-且 TF-QKD / PM-QKD / MP-QKD 族**已构造性达到** $R \sim c\sqrt{\eta_{AB}}$,$c \in [0.1, 0.4]$。
+本文件的 scaling verdict 只在以下**放宽版 $\mathcal{T}_{\text{umr}}^{\text{bosonic-asym}}$** 上成立:
 
-**Scaling gap = 0** $\Rightarrow$ $\sqrt{\eta_{AB}}$ 是 scaling 级紧上界 $\Rightarrow$ **情况 A 成立**。
+- 两方 Alice + Bob,一个 untrusted measurement relay Charlie(H1/H3 满足)
+- 两段 **pure-loss bosonic channel**,透过率 $\eta_A, \eta_B$(**H4 放宽**:允许无穷维 Fock)
+- **asymptotic rate + collective attack**(**H5 放宽**:不做 finite-key 可组合处理)
+- Alice 和 Bob 的制备 **允许 coherent states**(**H6 放宽**:不是严格 single-photon DV)
+- Alice/Bob 无量子存储(H2 满足)
 
-**情况 B、C 均被排除**(见 §1.3 两种解读下的论证)。
-
-**Prefactor 开放**:$c^\star \in [0.3, 1.4427]$,精确值属 Phase 2-3 研究内容。
-
----
-
-## 1. 主问题答案
-
-### 1.1 正式陈述
-
-令 $\mathcal{T}_{\text{umr}}$ 为 PROSPECTUS §3.1 硬约束 H1-H6 定义的拓扑类族(见 [Log 01 §A](01_setup_and_literature_map.md) 的精确定义)。在对称 pure-loss 假设下 $\eta_A = \eta_B = \sqrt{\eta_{AB}}$,设 $R^\infty$ 为渐近 secret-key rate。
-
-**定理**(条件化 COROLLARY,v4 审后):
-
-$$R^\infty(\mathcal{T}_{\text{umr}}^{\text{sym}}; \eta_{AB}) \;\leq\; -\log_2(1 - \sqrt{\eta_{AB}})$$
-
-且存在 $\mathcal{T}_{\text{umr}}$-class 协议(TF-QKD 族)使 $R \geq c \sqrt{\eta_{AB}}$ for $c > 0$。故**scaling gap = 0**,**情况 A 成立**。
-
-### 1.2 "条件化 COROLLARY" 的含义(v4 精化)
-
-**本结论的确定性分级为 "条件化 COROLLARY"**,比 FINDINGS_DRAFT 的 [COROLLARY] 下调半档,条件如下:
-
-(C1) **定理号条件**:
-- PLOB17 主结果号码 **最可能 Thm. 5**,codex V4 memory 独立支持(**[LIKELY]**)
-- Pirandola19 min-cut 应引用 **Eq. (11)(single-path)** 或 **Eq. (17)(multi-path)**,不引具体 Thm 号(codex V4 建议)
-- 具体定理号的最终核对是 PROSPECTUS §6 Sub-Q3 Phase 2 的工作(30-50 页精读报告)
-
-(C2) **PROSPECTUS 约定条件**:
-- PROSPECTUS §1 情况 B "$1/2 < \alpha < 1$" 字面与物理直觉("比 $\sqrt{\eta}$ 更好"通常对应 $\alpha < 1/2$)不一致
-- 本 FINDINGS 在两种读法下均给出排除论证(见 §1.3)
-- 若 PROSPECTUS 原作者确认 $\alpha$ 方向,确定性可提升至 [COROLLARY]
-
-(C3) **技术范围条件**:
-- Scaling gap = 0 在 **asymptotic + pure-loss + 单中继** 假设下成立
-- finite-key 修正、非 IID 攻击、noisy channel 作为**外推风险**单列,不保 finite-key 下 scaling 仍 $\sqrt{\eta}$(虽然直觉期望如此)
-
-### 1.3 情况 B、C 的排除(两种 α 读法均排除)
-
-**读法 A(PROSPECTUS 字面 $\alpha \in (1/2, 1)$)**:
-
-- 情况 B 要求 "$\eta^\alpha$ 上界可达,$\alpha > 1/2$",等价 rate $\lesssim \eta^\alpha < \sqrt{\eta}$
-- 但 TF-QKD 已构造性达到 $R \geq c\sqrt{\eta}$(Lucamarini18 [VERIFIED in V2])
-- 矛盾 $\Rightarrow$ 情况 B 不成立
-- 情况 C "$\eta^\alpha$ 上界但不可达" 需 $\eta^\alpha$ 上界比 $\sqrt{\eta}$ **更紧**,即 $<\sqrt{\eta}$ — 但 TF-QKD 已达 $\sqrt{\eta}$,任何紧于 $\sqrt{\eta}$ 的上界与 TF-QKD 矛盾 $\Rightarrow$ 情况 C 不成立
-
-**读法 B(物理直觉 $\alpha \in (0, 1/2)$,"比 $\sqrt{\eta}$ 更好 scaling")**:
-
-- 情况 B 要求 "$\eta^\alpha$ 上界可达,$\alpha < 1/2$",等价 rate $\gtrsim \eta^\alpha > \sqrt{\eta}$
-- 由定理 4.1(Log 04)上界 $1.44\sqrt{\eta}$,无协议能达到 $> \sqrt{\eta}$ $\Rightarrow$ 情况 B 不成立
-- 情况 C 同理由上界排除
-
-**结论**:**无论 PROSPECTUS 作者 $\alpha$ 的意图是哪种,情况 B 和 C 均被排除**,情况 A 唯一成立。
+**原始 PROSPECTUS 主问题(H1-H6 全部)仍然开放**,归 Sub-Q3 Phase 2 + Sub-Q4 严肃处理。
 
 ---
 
-## 2. 支持证据链
+## 1. 核心 Interim Verdict
 
-### 2.1 [THM] 级外部定理(独立已核)
+### 1.1 Scaling 判断
 
-| 定理 | 引用 | 核查 |
+在 §0.2 的放宽版 $\mathcal{T}_{\text{umr}}^{\text{bosonic-asym}}$ 拓扑下,**最可能**的紧 scaling 为 $\sqrt{\eta_{AB}}$:
+
+- **可达性下界(构造性,[THM])**:在 **严格 $\mathcal{T}_{\text{umr}}$**(per-round announcement)下,TF-QKD + PM-QKD 达 $R \geq c_{\text{strict}} \sqrt{\eta_{AB}}$,$c_{\text{strict}} \approx 0.2$(Lucamarini 2018 + Ma-Zeng-Zhou 2018)。在 **扩展 $\mathcal{T}_{\text{umr}}^+$**(允许跨轮 pairing,PROSPECTUS §3.1 S1 软约束外)下,MP-QKD 达 $c_{\text{ext}} \approx 0.3$(Zeng-Zhou-Wu-Ma 2022)。见 [Log 05 §B.4-B.5](05_achievable_rates_tfqkd.md) 口径澄清,[VERIFIED] 于 [EVIDENCE_APPENDIX.md](EVIDENCE_APPENDIX.md) §A
+- **上界(尚待严格证成)**:$R \leq -\log_2(1 - \min(\eta_A, \eta_B))$,对称 $\approx 1.44 \sqrt{\eta_{AB}}$
+  - **来源**:Pirandola 2019 network min-cut,Eq. (11)(single-path)/ Eq. (17)(multi-path)
+  - **适用性间隙(严重)**:Pirandola 2019 严格 converse 针对 trusted / fully-cooperative relay nodes;**untrusted measurement relay 的 converse 继承依赖 "capacity monotonicity" 直觉**,本 interim 中**未升级到定理级继承 lemma**
+  - 因此本上界分级为 **[SYN + CONJ]**,不是 [COROLLARY],更不是 [THM]
+
+### 1.2 可信度评级
+
+| 命题 | 分级 | 理由 |
 |------|------|------|
-| PLOB pure-loss $E_R = -\log_2(1-\eta)$ | Pirandola-Laurenza-Ottaviani-Banchi 2017, Nat. Commun. 8:15043, **Thm. 5(主结果)[LIKELY]** | V2 多源 [VERIFIED] 公式;定理号 codex [LIKELY]; 详见 [Log 02](02_plob_dissection.md) |
-| Pirandola 2019 网络 min-cut | Pirandola 2019, Commun. Phys. 2:51, **Eq. (11) single-path** / **Eq. (17) multi-path** | V2 [VERIFIED]; codex V4 修订引用形式; 详见 [Log 03](03_network_extension.md) |
-| Pure-loss LOCC-simulation | Niset-Fiurášek-Cerf 2009 / PLOB17 Eq. (4) | V2 [VERIFIED];teleportation stretching 技术标准 |
-| TF-QKD $\sqrt{\eta}$ achievable | Lucamarini-Yuan-Dynes-Shields 2018, Nature 557:400 | V2 多源 [VERIFIED];多篇 follow-up 确认 |
+| TF-QKD 族可达 $\sqrt{\eta_{AB}}$(in bosonic-asymptotic) | **[THM]** | Lucamarini 18 + 多篇复现,[VERIFIED] |
+| $\sqrt{\eta_{AB}}$ 是最可能的紧 scaling | **[SYN]** | 文献共识("single-repeater bound"术语);无反例 |
+| $R \leq 1.44 \sqrt{\eta_{AB}}$ 严格上界 | **[CONJ]** | Pirandola19 在 untrusted-relay 下的严格继承 **open**,capacity monotonicity 需 Sub-Q3 定理级工作 |
+| 情况 A 在 PROSPECTUS 原始(H1-H6)意义下成立 | **[UNKNOWN]** | 本研究未处理 H4/H5/H6 的回归;**撤回覆盖宣称** |
 
-### 2.2 [COROLLARY] 级(本研究合成)
+**情况 B / C 的排除也退至 [SYN] 级**(而非原 FINDINGS 的 [COROLLARY]):
 
-| 结论 | 依赖 |
-|------|------|
-| **定理 4.1**:$R^\infty(\mathcal{T}_{\text{umr}}; \eta_A, \eta_B) \leq -\log_2(1 - \min(\eta_A, \eta_B))$ | §2.1 前三条 + Allowed($\mathcal{T}_{\text{umr}}$) ⊂ Allowed(Pirandola-network) 单调性 [V4 补] |
-| 对称 scaling $\leq 1.44\sqrt{\eta_{AB}}$ | 定理 4.1 + 展开 |
-| Scaling gap = 0 | 上界 $\sqrt{\eta}$ + 下界 $\sqrt{\eta}$ |
-| 情况 A 成立 | Scaling gap = 0 的直接推论 |
+- **情况 B(按 PROSPECTUS 字面 $\alpha \in (1/2, 1)$,即 rate 小于 $\sqrt{\eta}$)**:由 TF-QKD achievability [THM] 直接排除(这部分论证保持有效)
+- **情况 B(物理直觉 $\alpha < 1/2$,rate 大于 $\sqrt{\eta}$)**:依赖于 §1.1 的上界,**属 [CONJ] 级排除**
+- **情况 C**:同情况 B 的 [CONJ] 级排除
+- **情况 A**:**最可能成立**,但仅在 §0.2 放宽版本下,且上界为 [CONJ]
 
-### 2.3 [SYN] 级:文献共识术语
+### 1.3 结论一句话
 
-- **"single-repeater bound"** 是文献共识术语,等同于 $\sqrt{\eta}$ scaling,等同于定理 4.1 的对称上界(见 V2 §B.5)
-- **多篇 2023-2025 "surpassing repeaterless bound" 论文均 stop at $\sqrt{\eta}$**(V3 §A.1),进一步加强情况 A
-- **无文献中存在 $\mathcal{T}_{\text{umr}}$ 协议 beat $\sqrt{\eta}$ scaling**(V3 全面反例搜索)
+在 bosonic-asymptotic 的放宽版 $\mathcal{T}_{\text{umr}}$ 下,**$\sqrt{\eta_{AB}}$ 是**最可能的紧 scaling**(情况 A 方向);严格 converse 需要 Sub-Q3 精读工作把 untrusted-relay 适用性升级到 [THM] 级**。PROSPECTUS 原始 H1-H6 版本仍然开放。
 
 ---
 
-## 3. 显式声明的限界
+## 2. 证据链(更严格重新梳理)
 
-### 3.1 Prefactor 未锁定
+### 2.1 [THM] 级 — 已核实
 
-- 本 FINDINGS **不**宣称 $c^\star$ 精确值,仅给出 $c^\star \in [0.3, 1.44]$
-- 1.44 的上端 prefactor **对 DV-QKD 类内不紧**,因 PLOB achievability 依赖 CV + quantum memory(codex V4 finding 3)
-- **DV-QKD 类内的紧 prefactor** 须由 Phase 2 Sub-Q3 具体 converse 细化
+| 命题 | 引用 | 核查位置 |
+|------|------|----------|
+| PLOB pure-loss $E_R = -\log_2(1-\eta)$ | Pirandola-Laurenza-Ottaviani-Banchi 2017, Nat. Commun. 8:15043 | [EVIDENCE_APPENDIX.md](EVIDENCE_APPENDIX.md) §A.1 — **公式 [VERIFIED]**,定理号 **未直接核正文** |
+| TF-QKD $\sqrt{\eta}$ achievable | Lucamarini et al. 2018, Nature 557:400 | [EVIDENCE_APPENDIX.md](EVIDENCE_APPENDIX.md) §A.4 — **[VERIFIED]** via multiple secondary sources |
+| Pure-loss LOCC-simulation | Niset-Fiurášek-Cerf 2009 + PLOB17 Eq. (4) | [EVIDENCE_APPENDIX.md](EVIDENCE_APPENDIX.md) §A.3 — 教科书共识 |
 
-### 3.2 附加条件
+### 2.2 [SYN + CONJ] 级 — 未升级到定理
 
-- **asymptotic collective attack**:必要条件;finite-key 情形须 Sub-Q2/Sub-Q3 GEAT 分析
-- **pure-loss bosonic channel**:必要条件;noisy channel 的 scaling 预期仍 $\sqrt{\eta}$ 但未严格证明(外推风险)
-- **单 untrusted relay**:必要条件;多 relay 或 trusted relay 属于不同拓扑类
+| 命题 | 分级 | 依赖的 gap |
+|------|------|----------|
+| Pirandola 2019 网络 min-cut bound | [THM for trusted relay] + [CONJ for untrusted] | **untrusted-case 继承**没写成定理级 lemma(见 §1.1 关键 gap) |
+| "Scaling gap = 0" | [SYN] | 依赖于放宽版 $\mathcal{T}_{\text{umr}}^{\text{bosonic-asym}}$ 上界 [CONJ] |
+| 情况 A 成立(放宽版) | [SYN] | 同上 |
+| 情况 A 在原始 PROSPECTUS(H1-H6)下成立 | [UNKNOWN] | H4/H5/H6 未处理 |
 
-### 3.3 方法学限界
+### 2.3 证据审计
 
-- 本 FINDINGS 是 **literature-informed analysis**,不是新的严格证明
-- 所有 [COROLLARY] 均由已发表 [THM] 组合得出
-- 具体定理编号在 C1 条件下仍有核对空间 — 这是 Sub-Q3 Phase 2 的工作
-
----
-
-## 4. 剩余开放问题(Phase 2-3 研究)
-
-情况 A 内部尚未解决的子问题,供 PROSPECTUS Sub-Q3 + Sub-Q4 的实际研究:
-
-### A1 — 对称 prefactor 紧值 $c^\star$
-
-目前只有区间 $[0.3, 1.44]$。缩窄方向:
-
-- **上界改进**($\mathcal{T}_{\text{umr}}$-specific converse):利用 Charlie 必须 broadcast classical outcome 这一 constraint;可能 approach:DKW20 / TGW14 的 squashed entanglement 修订
-- **下界改进**(Pareto 优化 TF/PM/MP):Sub-Q2 Phase 0-1 工作
-- **DV-QKD 类内 converse**:由 PLOB achievability 对 DV 不紧(§3.1),可能有针对 DV 的更紧上界
-
-### A2 — 不对称 $\eta_A \neq \eta_B$
-
-上界已给(定理 4.1 用 $\min(\eta_A, \eta_B)$);下界 prefactor 在不对称情形的精确表达未研究。
-
-### A3 — 非 pure-loss 噪声修正
-
-加入相位噪声、探测器效率、dark count 后:
-
-- $E_R$ 解析值不再是 $-\log_2(1-\eta)$
-- scaling 预期仍 $\sqrt{\eta}$(direct argument:noise 不改变信道的 "最小 capacity cut" 结构)
-- 严格证明是 Sub-Q3 Phase 2 工作
-
-### A4 — finite-key 修正
-
-Kamin 2025 对 decoy-state BB84 给 finite-key 分析;对 $\mathcal{T}_{\text{umr}}$ 协议(TF/PM/MP)的 GEAT-based finite-key:
-
-- Metger-Fawzi-Sutter-Renner 2024 GEAT 适用性在 $\mathcal{T}_{\text{umr}}$ 下预期成立
-- 具体数值在 $n \sim 10^{10}$ 级别是否仍 $\sqrt{\eta}$ scaling 未严格验证
-- Sub-Q2 Phase 1 工作
-
-### A5 — 非 IID 攻击的鲁棒性
-
-GEAT 依赖 non-signalling Markov 条件;$\mathcal{T}_{\text{umr}}$ 下 Charlie 的 classical announcement 是否严格满足 non-signalling(每一轮 Charlie 的宣告不能依赖 Alice/Bob 在其他轮的选择)— 这在标准 QKD 假设下成立,但形式化证明属于 Sub-Q3 / Sub-Q4。
+所有外部文献引用的 URL、抓取日期、引用片段全部归档在 [EVIDENCE_APPENDIX.md](EVIDENCE_APPENDIX.md),供独立复核。
 
 ---
 
-## 5. 对 PHASE0_M1 的即时行动建议
+## 3. 撤回 v1 的关键错误清单(警示)
 
-### 5.1 M1-M4 验收策略确认
+见 [RETRACTION.md](RETRACTION.md)。本文件 v2 对 v1 错误的修正映射:
 
-本 FINDINGS 不改变 REFACTORING_PLAN §5 的 M1-M4 验收标准,但**加强数值基准**:
-
-- M1(BB84 WLC SDP):Shor-Preskill scaling 是 $1 - 2h(e)$,不是 $\sqrt{\eta}$。BB84 是点对点,归 PLOB,与 $\mathcal{T}_{\text{umr}}$ 不同。**M1 测 $R(e)$ 曲线形状**。
-- M2(MDI + 六态):MDI 归 $\mathcal{T}_{\text{umr}}$ 子集,**数值 scaling 应验证 $\eta^2$**(MDI 两光子 coincidence 要求,非 $\sqrt{\eta}$)
-- M3(数值诱骗):仍点对点 BB84 类
-- **M4B(TF-QKD):关键 $\mathcal{T}_{\text{umr}}$ 验证,log-log 斜率 = 0.5 ± 0.05 直接对应本 FINDINGS 情况 A**
-
-### 5.2 Sub-Q3 的工作重心调整
-
-由 §4.1 A1 分析,Sub-Q3 Phase 2 "上界精读"**不应重推 scaling**(已共识),而应聚焦:
-
-- $\mathcal{T}_{\text{umr}}$-specific prefactor converse
-- DV-QKD 类内的紧 prefactor 界(PLOB CV-based achievability 对 DV 不紧,有收窄空间)
-
-### 5.3 Sub-Q4 归因诊断提前
-
-基于本 FINDINGS,Sub-Q4 的 gap 归因诊断可**预先定位**到 γ(两端都松):
-
-- α(上界松):$1.44$ prefactor 对 DV 类不紧,可收窄,证据:§3.1
-- β(下界松):TF/PM/MP 未完全 Pareto 优化,收窄空间 1-2 倍
+| v1 错误 | v2 对应修正 |
+|---------|------------|
+| [COROLLARY] 级分级伪装 | §1.2 降为 [SYN] / [CONJ] / [UNKNOWN] 四级混合 |
+| 形式上像 PLOB 误用(-log₂(1-√η_AB)) | §1.1 明确为 "Pirandola19 min-cut 应用到 segment 层面",**不是** PLOB 直接应用;严格继承 gap 显式 |
+| 越权覆盖 PROSPECTUS §3.1 H4/H5/H6 | §0.1 显式表,承认三条硬约束未覆盖 |
+| "已关闭 Sub-Q3" | §0.2 + §4 明确主问题仍开放,本文是 Sub-Q3 **起点** |
+| Phase V 审计过信 | §5 对 V1-V4 的有效性做重新评估 |
 
 ---
 
-## 6. 诚信红线核对
+## 4. 对 Sub-Q3 / Sub-Q4 的研究建议
 
-按 PROSPECTUS §9 + RESEARCH_PLAN §9:
+### 4.1 Sub-Q3 的 Phase 2 精读重点(按本 interim 暴露的 gap)
 
-- [x] **密钥率数字基于 WLC SDP 或其严格扩展**:本 FINDINGS 未产出具体密钥率数字,仅 scaling 结论
-- [x] **安全性声明追溯到定理**:情况 A 结论追溯到 PLOB17 Thm. 5(主结果)[LIKELY] + Pirandola19 Eq. (11) [VERIFIED] + Lucamarini18 [VERIFIED]
-- [x] **新发现(如有)通过独立验证**:本 FINDINGS 不宣称新发现,仅合成已有定理;V4 codex 独立立场确认情况 A
-- [x] **Limitations 显式声明**:§3(显式限界)+ §4(开放问题)+ §1.2(条件化 COROLLARY 含义)
-- [x] **AI 协助范围**:Claude Opus 4.7 基于训练语料,V1-V4 独立审计(其中 V2/V4 使用 WebFetch + codex 外部工具)
-- [x] **文献引用核对**:PLOB / Pirandola19 / TF-QKD 均通过 WebSearch + 多源交叉 [VERIFIED] 核心陈述;定理号[?] 待 Sub-Q3 精读
+1. **untrusted-relay 的 converse 定理化**(**优先级最高**):
+   - 目标:把 capacity monotonicity 从 trusted 到 untrusted 的继承升级到定理级
+   - 文献起点:Pirandola 2019 Eq. (11) + 其证明细节;DKW 2020 converse bound;是否有文献已经处理 untrusted-measurement relay?
+   - 产出:**Lemma**:untrusted relay 协议类族 ⊆ trusted relay 协议类族,故 sup 单调 ≤。或给出**直接**的 untrusted-relay converse 证明。
+2. **bosonic → DV 的降级分析**:
+   - Fock 截断 $N_{\text{cut}}$ 如何影响上界?finite-dim + DV 载体下的 $\mathcal{T}_{\text{umr}}$ 上界是否仍 $\sqrt{\eta}$?
+   - 文献起点:George-Lin-Lütkenhaus 2020 数值诱饵 + Hu-Im-Lin-Lütkenhaus-Wolkowicz 2022 facial reduction
+3. **composable finite-key**:
+   - Metger 2024 GEAT 在 $\mathcal{T}_{\text{umr}}$ 的 NSP 兼容性 + finite-key scaling 是否仍 $\sqrt{\eta}$?
+   - 文献起点:Kamin et al. 2025 为 decoy BB84 已做(non-$\mathcal{T}_{\text{umr}}$),需扩到 TF-QKD family
+
+### 4.2 Sub-Q4 的 gap 归因重新定位
+
+本 interim 撤回"γ 预判"(两端都松)。Sub-Q4 的归因 α/β/γ 应在 Sub-Q3 完成**之后**基于定理级上界重新启动,**不以本 interim 为预定位**。
 
 ---
 
-## 7. 终结语
+## 5. 对 Phase V 审计流程本身的反省
 
-本 FINDINGS 完成 PROSPECTUS v3.1 §1 主问题的 **literature-informed 回答**。结论:
+### 5.1 V1-V4 未抓住的盲点
 
-> **情况 A 成立** — 在 asymptotic + pure-loss + 单 untrusted measurement relay 假设下,$\sqrt{\eta}$ 是 scaling 级紧上界。
+- **V1 逻辑自审**:检查符号 / 推理步 / 假设遗漏;**未检查"定理的原始拓扑是否匹配应用"**
+- **V2 文献交叉**:WebSearch 核公式,未深究 untrusted-vs-trusted 区分;未核正文定理编号
+- **V3 反例搜索**:搜超越 $\sqrt{\eta}$ 的协议(下界方向);**未反向搜 "untrusted-measurement upper bound" 专论**
+- **V4 codex 独立评审**:codex 共享 Claude 的训练偏差,没独立提出拓扑适用性质疑
 
-确定性级别:**条件化 COROLLARY**,条件包括 PROSPECTUS α 约定澄清与定理号精确核对。
+### 5.2 方法论补丁
 
-**不是**:新的数学定理、PROSPECTUS 替代品、Sub-Q3 Phase 2 精读报告替代品、定论。
+已写入 [RESEARCH_PLAN.md §1.2 补丁 2b](../RESEARCH_PLAN.md)(四条硬要求:拓扑 / 信任 / 协议自由度 / 精确编号)。
 
-**是**:从已发表文献到 PROSPECTUS 主问题框架的**严格桥接**,供 PHASE0_M1 实施者参考,供 PROSPECTUS Sub-Q3 / Sub-Q4 研究者作为起点,供外部审稿人作为方法学透明度的示例。
+**额外**:
 
-**下一步建议**(给人类研究者):
+- AI 结论性文档必须经**项目负责人显式 review + sign-off** 才能 commit 为"最终"状态(避免本 v1 自动 commit 的失误)
+- 多 AI cross-audit 不构成"独立验证"(RETRACTION.md §4.3)
 
-1. 按 REFACTORING_PLAN §5 启动 M1 实施(WLC SDP for BB84)
-2. Phase 0.5 做 M4B 后,把数值验证("log-log 斜率 = 0.5")与本 FINDINGS §5.1 的 TF-QKD 条目对齐
-3. Phase 2 Sub-Q3 的 30-50 页"上界接缝报告"作为本 FINDINGS 的 **严格证明升级**,核对 Thm 编号 + $\mathcal{T}_{\text{umr}}$-specific DV prefactor converse
-4. 若 Sub-Q3 研究者确认 α 约定,本 FINDINGS 确定性可从"条件化 COROLLARY"提升至"[COROLLARY]"
+---
+
+## 6. 授信边界再声明
+
+本 interim verdict v2:
+
+- **尚未经项目负责人正式签字**,**不得**作为正式对外依据
+- 作为 Sub-Q3 的**内部研究起点**,建议与 RESEARCH_PLAN §2.1 R1.1(WLC 2018 精读)Phase 2 工作同步启动
+- 本文件的任何 [SYN] / [CONJ] 命题**不得**在对外论文 / 展示 / 对其他研究组陈述 中被升级引用
 
 ---
 
 ## Changelog
 
-- **v1.0**(2026-04-19):首次落盘,经 Phase R(Log 01-06)+ Phase V(V1-V4)全部通过。
+- **v2**(2026-04-19):本版。替代 v1(over-claimed + retracted)。严格 scope 到 bosonic-asymptotic 放宽版;所有分级降档到 [SYN]/[CONJ]/[UNKNOWN];明确保留 PROSPECTUS 主问题开放;添加 EVIDENCE_APPENDIX.md 可审计证据。
+- **v1**(2026-04-19):原 FINDINGS,因过度宣称被撤回(详见 [RETRACTION.md](RETRACTION.md),commit `2644317`)。
 
 ---
 
-*FINDINGS 结束*
+*INTERIM VERDICT v2 结束。PROSPECTUS 主问题仍开放。*

@@ -90,22 +90,31 @@ Ma-Zeng-Zhou 2018 的 PM-QKD 是 TF-QKD 的一个**变体**,使用 **phase-match
 
 **[THM, MZZ18 Fig. 3]**:$R_{\text{PM}}(\eta) = c_{\text{PM}} \sqrt{\eta}$ with $c_{\text{PM}} \approx 0.2 - 0.4$(数值区间,具体取决于 decoy state 优化)。
 
-### B.4 MP-QKD 的提升
+### B.4 MP-QKD 的提升(**v5 口径澄清**)
 
-Zeng-Zhou-Wu-Ma 2022 的 MP-QKD 是进一步改进:
+Zeng-Zhou-Wu-Ma 2022 的 MP-QKD:
 
-- 跨轮 pairing(PROSPECTUS §3.1 S1 软约束范围):把两个时刻 click 的 signal 配对,降低 phase stability 要求
-- **理论 prefactor 更高**(数值约 $0.3$+),部分源于可以用更高强度 coherent state
+- 跨轮 pairing:把两个时刻 click 的 signal 配对,降低 phase stability 要求
+- **注意**(v5 澄清,修 Log 01 与 Log 05 不一致):MP-QKD 的跨轮 announcement **严格意义下违反** PROSPECTUS §3.1 S1(per-round announcement 软约束)。Log 01 把 MP-QKD 标为**"近似属于 $\mathcal{T}_{\text{umr}}$"**(§A.5 / Prop 1.5),本日志前版本误把它直接纳入 $\mathcal{T}_{\text{umr}}$,**此处更正**。
+- 因此 MP-QKD 的 prefactor **不**作为 $\mathcal{T}_{\text{umr}}$ **严格类内** 最佳 published 下界
 
-**[THM, ZZWM22 Fig. 4]**:$R_{\text{MP}}(\eta) \sim c_{\text{MP}} \sqrt{\eta}$ with $c_{\text{MP}} \gtrsim c_{\text{PM}}$.
+**[THM, ZZWM22 Fig. 4]**(独立性陈述):$R_{\text{MP}}(\eta) \sim c_{\text{MP}} \sqrt{\eta}$ with $c_{\text{MP}} \gtrsim c_{\text{PM}}$(but MP-QKD ∈ 扩展 $\mathcal{T}_{\text{umr}}^+$(允许跨轮),not strict $\mathcal{T}_{\text{umr}}$)
 
-### B.5 $\mathcal{T}_{\text{umr}}$ 当前最佳下界
+### B.5 $\mathcal{T}_{\text{umr}}$ 当前最佳下界(**v5 口径修正**)
 
-取文献已发表的 $\mathcal{T}_{\text{umr}}$ 协议中最好的 achievable rate:
+区分**严格 $\mathcal{T}_{\text{umr}}$**(per-round only,符合 PROSPECTUS S1)与**扩展 $\mathcal{T}_{\text{umr}}^+$**(允许跨轮 pairing,MP-QKD 归此类):
 
-$$R_{\text{LB}}(\mathcal{T}_{\text{umr}}^{\text{sym}}; \eta) \geq c_{\text{best-pub}} \sqrt{\eta}, \quad c_{\text{best-pub}} \approx 0.3 \text{ (conservative, empirical)}$$ **[SYN,from MP-QKD 22]**
+**严格 $\mathcal{T}_{\text{umr}}$ 已发表最佳下界**(TF-QKD + PM-QKD 族,不含 MP-QKD):
 
-准确数字须由 Sub-Q2 的 Pareto 前沿扫描锁定(Phase 1 工作)。Phase 0 的 M4B 数值验证能给 TF-QKD 数值 prefactor 到 5% 精度。
+$$R_{\text{LB}}(\mathcal{T}_{\text{umr}}^{\text{strict-sym}}; \eta) \geq c_{\text{best-strict}} \sqrt{\eta}, \quad c_{\text{best-strict}} \approx 0.2 \text{(from PM-QKD / SNS-TF)}$$
+
+**扩展 $\mathcal{T}_{\text{umr}}^+$ 已发表最佳下界**(含 MP-QKD):
+
+$$R_{\text{LB}}(\mathcal{T}_{\text{umr}}^{+\text{-sym}}; \eta) \geq c_{\text{best-ext}} \sqrt{\eta}, \quad c_{\text{best-ext}} \approx 0.3 \text{(from MP-QKD)}$$
+
+两个区间 **[SYN,from multiple TF/PM/MP publications]**。
+
+准确数字须由 Sub-Q2 的 Pareto 前沿扫描锁定(Phase 1 工作)。Phase 0 M4B 数值验证 TF-QKD prefactor。**注:所有后续 FINDINGS / 报告引用应明示使用哪个 $\mathcal{T}_{\text{umr}}$ 版本**。
 
 ### B.6 Scaling 层面 gap = 0
 

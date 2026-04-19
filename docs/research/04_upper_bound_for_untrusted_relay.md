@@ -34,19 +34,23 @@ $$\boxed{R^\infty(\mathcal{T}_{\text{umr}}; \eta_A, \eta_B) \;\leq\; -\log_2\!\b
 
 $$R^\infty(\mathcal{T}_{\text{umr}}^{\text{sym}}; \eta_{AB}) \;\leq\; -\log_2(1 - \sqrt{\eta_{AB}}) \;\approx\; 1.4427\sqrt{\eta_{AB}}\quad (\eta_{AB} \to 0)$$
 
-**状态**:**[COROLLARY,from Log 02 Cmd 2.1 + Log 03 Cmd 3.1-3.6]**
+**状态**(**v4/v5 修订**):**[SYN / CONJ]**(依赖 Log 02 Cmd 2.1 [THM] + Log 03 Cmd 3.1 [THM, Eq. (11)/(17)],但 untrusted-relay 继承 Log 03 Cmd 3.3-3.5 已降级为 [SYN / CONJ])
 
-### B.2 证明整合
+> **严重限界声明**:本定理的"上界可从 Pirandola 2019 min-cut 直接继承到 untrusted Charlie"的继承链**未升级到定理级**。Pirandola 2019 的严格 converse 针对 trusted / cooperative relay。对 untrusted relay 的上界继承依赖协议类族包含性("untrusted 协议 ⊆ trusted 协议,故 sup 单调 ≤"),这需要 Sub-Q3 Phase 2 严格化。
 
-**Step 1**:由 H1-H4 + Pirandola 2019 的定义,$\mathcal{T}_{\text{umr}}$ 是 Pirandola19 网络模型的一个实例(两边 + 三节点,Alice/Bob 为 s/t,Charlie 为 untrusted internal)。
+### B.2 证明整合(**v4/v5 修订**)
 
-**Step 2**:Log 03 Cmd 3.1(Pirandola19 Thm. 2)给 min-cut $E_R$ upper bound:
+**Step 1**(**v5 补**):**包含关系**。$\mathcal{T}_{\text{umr}}$ 允许的协议集合 ⊆ Pirandola 2019 网络模型中 "Alice/Bob + 1 internal node with arbitrary LOCC-simulable operations" 允许的协议集合(因为后者允许 Charlie 做更强操作,untrusted Charlie 是更弱约束)。**此 Step 在文档层面的形式化尚缺,属 capacity monotonicity 的 [SYN 级继承]**。
 
-$$R^\infty \leq \min_C \sum_{(i,j) \in C} E_R(\Phi_{\mathcal{N}_{ij}})$$
+**Step 2**:Log 03 Cmd 3.1(Pirandola19 **Eq. (11) single-path**,v4 修订后)给 min-cut $E_R$ upper bound(**single-path 是 max-over-cut**):
 
-**Step 3**:$\mathcal{T}_{\text{umr}}$ 的 cut 结构(Log 03 B.3)给 $\min_C \in \{C_1 = \{(A,C)\}, C_2 = \{(C,B)\}\}$,故
+$$R^\infty \leq \min_C \max_{(i,j) \in C} E_R(\Phi_{\mathcal{N}_{ij}})$$
 
-$$\min_C \sum_{(i,j) \in C} E_R = \min(E_R(\Phi_{\mathcal{N}_A}), E_R(\Phi_{\mathcal{N}_B}))$$
+**注(v4)**:原 Log 04 写的 `sum` 是 multi-path 版本(Eq. (17))。$\mathcal{T}_{\text{umr}}$ 是 linear single-path,cut 只含 1 条 edge,max 与 sum 数值相同,**但形式应统一为 Eq. (11)**。
+
+**Step 3**:$\mathcal{T}_{\text{umr}}$ 的 cut 结构(Log 03 B.3)给 $\min_C \in \{C_1 = \{(A,C)\}, C_2 = \{(C,B)\}\}$,每个 cut 只含 1 条边,故
+
+$$\min_C \max_{(i,j) \in C} E_R = \min(E_R(\Phi_{\mathcal{N}_A}), E_R(\Phi_{\mathcal{N}_B}))$$
 
 **Step 4**:Log 02 Cmd 2.1 给 pure-loss 的 $E_R = -\log_2(1-\eta)$,故
 
@@ -110,15 +114,31 @@ $$\min(E_R) = -\log_2(1 - \min(\eta_A, \eta_B))$$
 
 ---
 
-## C. 本日志的已证命题
+## C. 本日志的已证命题(**v4/v5 修订后**)
 
-**命题 4.1**(完整上界定理,复述)在 H1-H6 下,$R^\infty(\mathcal{T}_{\text{umr}}; \eta_A, \eta_B) \leq -\log_2(1 - \min(\eta_A, \eta_B))$. **[COROLLARY,依赖 Log 02 Cmd 2.1 + Log 03 Cmd 3.1]**
+**命题 4.1**(上界命题,v5 限界版)在 Log 04 §B.1 的 H1-H3 + H4 **放宽为 bosonic pure-loss** + H5 **放宽为 asymptotic collective attack** 下,
 
-**命题 4.2**(对称情形)对称 $\eta_A = \eta_B = \sqrt{\eta_{AB}}$ 时 $R^\infty \leq -\log_2(1 - \sqrt{\eta_{AB}}) \approx 1.44 \sqrt{\eta_{AB}}$. **[COROLLARY of 4.1]**
+$$R^\infty(\mathcal{T}_{\text{umr}}^{\text{bosonic-asym}}; \eta_A, \eta_B) \leq -\log_2(1 - \min(\eta_A, \eta_B))$$
 
-**命题 4.3**(scaling $O(\sqrt{\eta})$)在对称拓扑 + pure-loss channel 下,$\mathcal{T}_{\text{umr}}$ 上界的 scaling 是 $O(\sqrt{\eta})$. **[COROLLARY of 4.2]**
+**[SYN / CONJ]**,依赖:
+- Log 02 Cmd 2.1 [THM]:PLOB 点对点 pure-loss 的 $E_R$
+- Log 03 Cmd 3.1 [THM, Eq. (11)]:Pirandola 2019 **single-path** min-cut(**v4 修订**,前 "sum + Thm. 2" 写法已更正)
+- **untrusted-relay 继承** [SYN / CONJ]:capacity monotonicity 继承链未升级到定理级,是本命题降级的关键原因
 
-**命题 4.4**(证明依赖的外部定理清单)命题 4.1 的证明**完全依赖** 4 条已发表定理,无新数学贡献,属于 [SYN] 级整合工作。**[元元命题]**
+> **明示**:本命题**不**覆盖 PROSPECTUS §3.1 原始 H4(finite-dim Fock)、H5(composable finite-key)、H6(DV)。仅在 §B.1 放宽后的 bosonic-asymptotic 子问题下有效。
+
+**命题 4.2**(对称情形,**[SYN / CONJ]**)对称 $\eta_A = \eta_B = \sqrt{\eta_{AB}}$ 时 $R^\infty \leq -\log_2(1 - \sqrt{\eta_{AB}}) \approx 1.44 \sqrt{\eta_{AB}}$. 继承命题 4.1 分级。
+
+**命题 4.3**(scaling $O(\sqrt{\eta})$,**[SYN]**)在放宽版拓扑 + bosonic pure-loss channel 下,$\mathcal{T}_{\text{umr}}$ 上界的 scaling 最可能为 $O(\sqrt{\eta})$. 
+
+**命题 4.4**(证明依赖的外部定理清单)命题 4.1 的证明**依赖** 3 条已发表定理 + 1 条未 lemma 化的 capacity monotonicity 直觉:
+
+- [THM] PLOB 2017 pure-loss $E_R$
+- [THM] Pirandola 2019 Eq. (11) single-path min-cut
+- [THM] Niset-Fiurášek-Cerf 2009 LOCC-simulation
+- **[SYN / CONJ]** untrusted-relay 协议类族 ⊆ trusted-relay 协议类族 → capacity 单调继承
+
+**[元元命题]**:本日志的综合结论分级为 **[SYN / CONJ]**,**非 [COROLLARY]**(v1 误分级,v4/v5 降级)。
 
 ---
 

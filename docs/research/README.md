@@ -111,9 +111,20 @@
 
 ---
 
-## 3. 使用的文献清单
+## 3. 使用的文献清单(**v5 修正 web-access 口径**)
 
-本次工作**没有 Web 访问**,所有文献引用来自训练语料中的已知内容。引用时标注 [VERIFIED]([有训练语料中可对应的明确记忆])或 [RECALLED]([记忆中存在但具体数字/编号可能不准])。
+**原 README 自相矛盾声明修正**:原文本称"本次工作没有 Web 访问",但 V2 实际使用了 WebSearch + WebFetch 工具(见 [V2_literature_crosscheck.md](V2_literature_crosscheck.md))。**正确的描述为**:
+
+- **Phase R 写作(Log 01-06)**:仅使用训练语料中的已知内容,不做 web 访问
+- **Phase V 验证(V1-V4)**:
+  - V1(逻辑自审)无 web 访问
+  - **V2(文献交叉核查)使用 WebSearch + WebFetch** 独立核查外部定理
+  - V3(反例搜索)使用 WebSearch
+  - V4(codex 独立评审)通过 `codex exec` 子进程调用 OpenAI codex,与 Claude 共享训练偏差(见 RETRACTION §4.3)
+
+**所有 web 访问的证据(URL / 抓取日期 / 引用片段)归档在 [EVIDENCE_APPENDIX.md](EVIDENCE_APPENDIX.md)**,供独立复核。
+
+引用时标注 [VERIFIED](web 独立核查通过)、[RECALLED](记忆中存在但未核)、[SYN](文献共识合成)。
 
 **Phase 0-2 核心文献(按引用密度排)**:
 
