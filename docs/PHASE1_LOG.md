@@ -77,6 +77,35 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
+## 3.4 Bell-state measurement (BSM) channels(`qkdx/core/bell_povm.py`,2026-04-19)
+
+**背景**:F5 MDI `covered` 升级需要把 Charlie 的 Bell 测量作为 `PublicQuantumNetwork.channel` 建模(当前吸收在 `_conditional_alice_bob` override)。本次 commit 实施这部分的数学基础设施 — Bell POVM KrausMap factory。
+
+**产出**:[qkdx/core/bell_povm.py](../qkdx/core/bell_povm.py):
+- `_bell_ket(label)`:构造 4 个 Bell 态的 ket(`Phi+`, `Phi-`, `Psi+`, `Psi-`)
+- `ideal_bell_bsm()`:4-outcome 理想投影测量 KrausMap,`dim_in=4, dim_out=4`;$K_k = |k\rangle_C \langle\psi_k|$,共 4 个 Kraus 算子
+- `linear_optic_bell_bsm()`:realistic 3-outcome 线性光学 BSM,`dim_in=4, dim_out=3`;只区分 $\{|\Phi^+\rangle, |\Psi^-\rangle\}$ 为 success(classical label 0, 1),$\{|\Phi^-\rangle, |\Psi^+\rangle\}$ 合并为 fail(label 2)。共 4 个 Kraus 算子(fail 用 2 个映到同一 classical label),trace-preserving $\sum_k K_k^\dagger K_k = I_4$
+
+**测试**:[tests/test_core/test_bell_povm.py](../tests/test_core/test_bell_povm.py),21 tests:
+- 4 个 Bell ket 单位长 + 正交规范
+- 未知 label raise
+- ideal BSM:trace-preserving,4 Kraus,4 Bell 输入确定性输出,最大混合态均匀分布
+- linear-optic BSM:trace-preserving,`dim_out=3`,每个 Bell 输入映到正确 classical label,最大混合态给出 $1/4, 1/4, 1/2$
+
+**与 F5 MDI 升级的关系**:
+- 本次是独立可验证的基础设施 — 任何 MDI 变体都可以引用 `linear_optic_bell_bsm()` 作为 channel 的一部分
+- 下一步:在 `build_mdi_protocol` 里用 `linear_optic_bell_bsm` 替代当前 `KrausMap.identity(4)`,然后设计 `_sift_projector` 处理 classical announcement;这需要:
+  1. Channel 输出 3-dim 而不是 4-dim → `executed_state()` 返回维度变化
+  2. Sift 逻辑:保留 Charlie success(classical label 0 或 1)+ Alice/Bob 基匹配
+  3. 验证:新 conditional_alice_bob() 默认路径数值上等于当前 override 的 Werner 态
+- 此升级还需要 `AnnouncementRule` 扩展,分步推进,本次不做
+
+**影响**:
+- 测试数:208 → 229(+21 Bell POVM tests)
+- F5 MDI scope 状态不变(`partial`),但 `covered` 升级所需的"数学对象"已就绪,剩余工作是协议层集成
+
+---
+
 ## 3.3 Multi-source `executed_state` / `joint_state` 实施(2026-04-19)
 
 **背景**:Phase 0 retrospective review (`20f9029`) 引入 `MultiSourceNotImplementedError`,任何 `len(sources) > 1` 的协议调用 `joint_state()` / `executed_state()` 即 raise。这是 F5 MDI `partial` 的直接原因。F3 SARG04 严格 Koashi 口径也依赖 multi-source 类基础设施(announcement register)。
