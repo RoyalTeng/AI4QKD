@@ -58,3 +58,6 @@ Thumbs.db
 
 # Binary large artifacts that should not be tracked
 # (keep PDFs/PNGs for now as historical record, exclude virtualenvs only)
+
+# Literature PDFs — downloaded for local Zotero attach,不进 git
+docs/literature/pdfs/
