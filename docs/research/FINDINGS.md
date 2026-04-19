@@ -114,10 +114,17 @@
 
 ### 4.1 Sub-Q3 的 Phase 2 精读重点(按本 interim 暴露的 gap)
 
-1. **untrusted-relay 的 converse 定理化**(**优先级最高**):
-   - 目标:把 capacity monotonicity 从 trusted 到 untrusted 的继承升级到定理级
-   - 文献起点:Pirandola 2019 Eq. (11) + 其证明细节;DKW 2020 converse bound;是否有文献已经处理 untrusted-measurement relay?
-   - 产出:**Lemma**:untrusted relay 协议类族 ⊆ trusted relay 协议类族,故 sup 单调 ≤。或给出**直接**的 untrusted-relay converse 证明。
+**[v3 更新 2026-04-19]**:本小节原规划被 [Log 07 Pirandola 2019 技术审计](07_pirandola_2019_technical_audit.md) 取代。Log 07 由项目负责人直接精读 Pirandola 2019 §II + §IV 得出,已经:
+
+1. 定位失效点在 **§II-C 安全模型定义** + **§IV Proof Step C(cut partition)**,不是定理编号或公式推广
+2. 提出三条修复路径:
+   - **路径 α**(monotonicity reduction):三条 lemma(协议嵌入 / 安全归约 / rate 定义对接)待形式化
+   - **路径 β**(direct channel-reduction converse):把 umr 建模为 effective channel,直接应用 PLOB + WTB
+   - **路径 γ**(PLOB + data-processing,最小可信 baseline):只用 PLOB on single edge $\mathcal{E}_1$ + "Eve 对 Charlie mode 的任意后续操作不增加 Alice-Bob correlation" 的 data-processing 形式化
+
+3. 推荐 **Sub-Q3 优先尝试路径 γ**,作为 "低风险可信 baseline",失败再回到 α/β
+
+**对 Sub-Q3 人类研究者**:参见 [Log 07 §3.1](07_pirandola_2019_technical_audit.md) 与 §4.5 的 30-50 页精读报告起点。
 2. **bosonic → DV 的降级分析**:
    - Fock 截断 $N_{\text{cut}}$ 如何影响上界?finite-dim + DV 载体下的 $\mathcal{T}_{\text{umr}}$ 上界是否仍 $\sqrt{\eta}$?
    - 文献起点:George-Lin-Lütkenhaus 2020 数值诱饵 + Hu-Im-Lin-Lütkenhaus-Wolkowicz 2022 facial reduction

@@ -50,13 +50,14 @@
 
 | # | 文件 | 主题 | 状态 |
 |---|------|------|------|
-| 01 | [01_setup_and_literature_map.md](01_setup_and_literature_map.md) | 设置与文献地图 | ✅ 完成 |
-| 02 | [02_plob_dissection.md](02_plob_dissection.md) | PLOB 2017 定理结构剖析 | ✅ 完成 |
-| 03 | [03_network_extension.md](03_network_extension.md) | Pirandola 2019 网络推广 + DKW 2020(V4 修订为 Eq. (11)/(17)) | ✅ 完成 |
-| 04 | [04_upper_bound_for_untrusted_relay.md](04_upper_bound_for_untrusted_relay.md) | untrusted measurement relay 拓扑的上界 | ✅ 完成 |
-| 05 | [05_achievable_rates_tfqkd.md](05_achievable_rates_tfqkd.md) | TF-QKD / MP-QKD 可达率(下界端) | ✅ 完成 |
-| 06 | [06_gap_structure.md](06_gap_structure.md) | Gap 结构分析(scaling vs prefactor) | ✅ 完成 |
-| DRAFT | [FINDINGS_DRAFT.md](FINDINGS_DRAFT.md) | 结论初稿 | ✅ 完成,经 V4 修订为 FINDINGS |
+| 01 | [01_setup_and_literature_map.md](01_setup_and_literature_map.md) | 设置与文献地图 | ✅ AI 合成 |
+| 02 | [02_plob_dissection.md](02_plob_dissection.md) | PLOB 2017 定理结构剖析 | ✅ AI 合成 |
+| 03 | [03_network_extension.md](03_network_extension.md) | Pirandola 2019 网络推广 + DKW 2020 | ⚠️ AI 合成,核心论述被 Log 07 取代 |
+| 04 | [04_upper_bound_for_untrusted_relay.md](04_upper_bound_for_untrusted_relay.md) | untrusted measurement relay 拓扑的上界 | ⚠️ AI 合成,适用性诊断被 Log 07 取代 |
+| 05 | [05_achievable_rates_tfqkd.md](05_achievable_rates_tfqkd.md) | TF-QKD / MP-QKD 可达率(下界端) | ✅ AI 合成,v5 修订 |
+| 06 | [06_gap_structure.md](06_gap_structure.md) | Gap 结构分析(scaling vs prefactor) | ⚠️ AI 合成,结论依赖被 Log 07 取代的 Log 04 |
+| **07** | **[07_pirandola_2019_technical_audit.md](07_pirandola_2019_technical_audit.md)** | **Pirandola 2019 §II+§IV 逐步核查 + 修复路径 α/β/γ** | **✅ 人类精读(项目负责人),[THM-LEVEL AUDIT]** |
+| DRAFT | [FINDINGS_DRAFT.md](FINDINGS_DRAFT.md) | 结论初稿 | ❌ 撤回 |
 
 ### Phase V:反复验证(Verification Loop)
 
@@ -79,11 +80,11 @@
 
 ---
 
-## 🛑 当前状态(2026-04-19 撤回后)
+## 🛑 当前状态(2026-04-19 撤回后 + Log 07 技术审计后)
 
-- **PROSPECTUS v3.1 §1 主问题**:**仍然开放**,归 Sub-Q3 Phase 2 + Sub-Q4(PROSPECTUS 原计划)
-- **Sub-Q3 上界工作**:**完整开放,未开始**(原 FINDINGS 的"预先关闭"被撤回)
-- **Sub-Q4 gap 归因**:**撤回预判**,须在 Sub-Q3 完成后真实启动
+- **PROSPECTUS v3.1 §1 主问题**:**仍然开放**,归 Sub-Q3 Phase 2 + Sub-Q4
+- **Sub-Q3 上界工作**:**技术起点已由 Log 07 建立**(项目负责人人类精读),失效诊断(Step C)+ 三条修复路径(α 单调归约 / β 直接 channel converse / γ 最小 PLOB + data-processing baseline)已写清。Sub-Q3 接下来的工作是**把路径 γ 形式化**或按 α/β 推进。
+- **Sub-Q4 gap 归因**:**撤回预判**,等 Sub-Q3 的 Step C 替换论证完成后启动
 
 **撤回原因摘要**(完整见 [RETRACTION.md](RETRACTION.md)):
 
