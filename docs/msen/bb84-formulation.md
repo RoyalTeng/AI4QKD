@@ -370,7 +370,7 @@ wlc_key_rate(
 **M1 需要知道的最少信息**(用于 `_construct_G_map`/`_construct_Z_pinching` 占位):
 - $\mathcal{G}: \mathcal{L}(\mathcal{H}_A \otimes \mathcal{H}_B) \to \mathcal{L}(\mathcal{H}_{A_{\text{key}}} \otimes \mathcal{H}_{B_{\text{side}}})$,$d' = d_{A_{\text{key}}} \cdot d_{B_{\text{side}}} \leq 4$
 - $\mathcal{Z}$ pinches $A_{\text{key}}$ in computational basis
-- Devetak-Winter 拼装:$R = p_{\text{sift}}[\log_2 d_{A_{\text{key}}} - \min_\rho D(\mathcal{G}(\rho) \| \mathcal{Z}(\mathcal{G}(\rho))) / \ln 2 - f_{\text{ec}} h(e)]$(nat ↔ bit 转换;注意 v0.1 §10.3 的公式漏了 $\log_2 d_{A_{\text{key}}}$ 项,v0.2 本节修正)
+- Devetak-Winter 拼装(v0.4 订正,见 `docs/literature/WLC-2018.md` v0.4 §5.2 PDF VERIFIED):$R = \min_\rho D(\mathcal{G}(\rho) \| \mathcal{Z}(\mathcal{G}(\rho))) - p_{\text{sift}} \cdot f_{\text{ec}} \cdot h(e)$([bit/signal];$p_\text{pass}$ 已通过 $\mathcal{G}$ 内 $\Pi$ projector 并入第一项。WLC Eq. 49-54 结论:$H = D$ 直接相等、同在 bit 单位,无 $\log_2 d$ 项、无 $/\ln 2$ 转换。v0.1 / v0.2 / v0.3 的 "$\log_2 d - D/\ln 2$" 写法**错误**,最终数值偶然自消所以 R 值不变)
 
 **为什么 v0.1 §10 必须降级**:v0.1 写的 `K^G_{x,\theta_B} = \proj x_{A_{\text{key}}} \otimes \bra{x,\theta_B}_A \otimes \text{(sift)}_{?} \otimes \proj{\theta_B}_{B_{\text{side}}}` 在维度上就说不通 —— $\bra{x,\theta_B}$ 要求 $A$ 维度 4,但 §1.1 的 SDP 约定 $d_A = 2$。精确 G 需要完整 WLC §IV-B 对 BB84 的展开,M1 week 1 人类未完成 PDF 精读,故 deferred。
 
@@ -378,7 +378,7 @@ wlc_key_rate(
 
 ## 10. Hand calculation 作为 **lower-bound sanity check**(v0.3 降级,codex round 2 F3 订正)
 
-**v0.3 降级说明**(codex round 2 F3):v0.2 把本节称为"独立证据链给出精确闭合"。这一声明过强 —— 本节 §10.2 只通过 entropic UR 给出 $H(A_Z|E) \geq 1-h(e)$ 的**下界**,未严格证明在量子侧信息 $B$ 下的等式 $H(A_X|B) = h(e)$ 或 BCKR 不等式的取等条件。故 $\min_\rho D(\mathcal{G}(\rho)\|\mathcal{Z}(\mathcal{G}(\rho))) = h(e)\ln 2$ 的**精确闭合**留给 R1.3 SDP 数值验证 + 人类 PDF 对齐 WLC Eq. (46)–(56)。
+**v0.3 降级说明**(codex round 2 F3)+ **v0.4 口径订正**(2026-04-19 PDF 核对):v0.2 把本节称为"独立证据链给出精确闭合"。这一声明过强 —— 本节 §10.2 只通过 entropic UR 给出 $H(A_Z|E) \geq 1-h(e)$ 的**下界**,未严格证明在量子侧信息 $B$ 下的等式 $H(A_X|B) = h(e)$ 或 BCKR 不等式的取等条件。**v0.4**:WLC PDF Eq. 54 直接给 $\min_\rho D(\mathcal{G}(\rho)\|\mathcal{Z}(\mathcal{G}(\rho))) = p_\text{sift}(1-h(e)) = 0.3568$ bit(非 $h(e)\ln 2 = 0.1985$ nat),见 `WLC-2018.md` v0.4 §5.2 / §6.4。**精确闭合**仍留 R1.3 SDP 数值验证(解析解 0.3568 bit 作为 SDP 最优值的参考)。
 
 本节保留的意义:在 QBER=0 / QBER=0.05 两点,用本文件 §7-§8 的 $\rho_{AB}, \Gamma$ 对象给出**与 Shor-Preskill 数值一致的 lower bound**,作为 R1.3 SDP 求解器的 **sanity reference**(SDP 返回值 $\geq$ 本节 lower bound 即合理)。
 
@@ -500,7 +500,7 @@ $R \geq p_{\text{sift}}[H_{\text{LB}}(A_{\text{key}} | E) - f_{\text{ec}} h(e)]$
 4. **对称深极化假设**:本文件只处理对称 Pauli 去极化;一般 Eve 策略会造成非对称错误,WLC SDP 处理一般情况,但 §7-§8 的 Bell-diag 显式形式不再适用(SDP 变量变为一般 Hermitian 半正定 $\rho_{AB}$)。
 5. **无限维 / Fock 截断**:本文件不涉及。PROSPECTUS §3.1 H4 约束下,BB84 天然是 qubit 协议,截断问题不出现。但 decoy-state BB84(Phase 1 Sub-Q2)需要显式 Fock 截断误差界。
 6. **Reverse reconciliation vs direct**:本文件假设 Alice → Bob 正向 EC(direct reconciliation)。Bob → Alice 逆向 EC 会交换 $\mathcal{K}$ 的 key party + 不同 $\Gamma$ 组装,不在 M1 scope。
-7. **§10 只给 lower bound,不给精确闭合**(v0.3 降级):§10 用 BCKR 不等式得 $H(A|E) \geq 1-h(e)$,但 BCKR 取等条件未在本文件证明。R1.3 SDP 数值验证 $\min D = h(e)\ln 2$ 才构成精确闭合。
+7. **§10 只给 lower bound,不给精确闭合**(v0.3 降级 + v0.4 口径订正):§10 用 BCKR 不等式得 $H(A|E) \geq 1-h(e)$,但 BCKR 取等条件未在本文件证明。R1.3 SDP 数值验证 $\min_\rho D(\mathcal{G}\|\mathcal{Z}(\mathcal{G})) = p_\text{sift}(1-h(e)) = 0.3568$ bit(v0.4 口径,non-nat,见 `WLC-2018.md` v0.4 §5.2)才构成精确闭合。
 8. **§4 的非 signaling 假设**:`scope_tag = "covered"` 仅在 PROSPECTUS §3.1 H1-H3 + source-characterized 下成立,未涵盖 DI 或 MDI 的 Bell violation 证书。
 
 ---
