@@ -16,7 +16,7 @@
 | **BB84** | F1 | [`build_bb84_protocol`](../../qkdx/protocols/bb84.py) | `covered` — Phase 0 M1 闭合 |
 | **Six-state** | F2 | [`build_sixstate_protocol`](../../qkdx/protocols/sixstate.py) | `covered` — Phase 0 M2 闭合 |
 | **SARG04** | F3 | 未实施 | `spec_only` — Phase 1 S2.1 Week 1-3 本 sheet 起稿,Phase 1 Week 1-3 内实施 |
-| **Efficient BB84**(Lo-Chau-Ardehali 偏置基) | F4 | 未实施 | `spec_only` — Phase 1 S2.1 Week 1-3 起稿 |
+| **Efficient BB84**(Lo-Chau-Ardehali 偏置基) | F4 | [`build_efficient_bb84_protocol`](../../qkdx/protocols/efficient_bb84.py) | `covered` — Phase 1 S2.1 Week 1-3 已实施(commit 本轮) |
 
 ### 0.2 不包含的变体(Out-of-scope)
 
@@ -56,12 +56,12 @@
 | `qber` | `float` | `[0.0, 0.0968]` | — | 来自 Koashi 2005 $R \leq \max(0, 1-2h(e))$ 对应 $e \lesssim 9.68\%$ 阈值 | ✗ 待实施 |
 | `basis_reveal_set` | `str` | `{"non-orthogonal-pair"}` | `"non-orthogonal-pair"` | Alice 公开两个非正交态集合而非基选择 | ✗ 待实施 |
 
-### 1.4 Efficient BB84(F4)— 拟实施
+### 1.4 Efficient BB84(F4)
 
 | name | type | range | default | physical meaning | validated? |
 |------|------|-------|---------|------------------|-----------|
-| `qber` | `float` | `[0.0, 1.0]` | — | 同 BB84 | ✗ 待实施 |
-| `p_Z` | `float` | `(0.5, 1.0)` | `0.9` | Z 基概率(效率 BB84 偏置 Z);$p_X = 1 - p_Z$ | ✗ 待实施 |
+| `qber` | `float` | `[0.0, 1.0]` | — | 同 BB84 | ✓ `build_efficient_bb84_protocol` line 92 |
+| `p_Z` | `float` | `(0.5, 1.0)` **strict** | `0.9` | Z 基概率(效率 BB84 偏置 Z);$p_X = 1 - p_Z$ | ✓ `build_efficient_bb84_protocol` line 94 |
 
 ---
 
@@ -72,13 +72,14 @@
 | `0.0 <= qber <= 1.0` | F1 | `ValueError("QBER must be in [0, 1], got <x>")` | `build_bb84_protocol` | `qber=-0.01`, `qber=1.1`, `qber=np.nan` |
 | `0.0 <= qber <= 2/3` | F2 | `ValueError("QBER must be in [0, 2/3] for six-state, got <x>")` | `build_sixstate_protocol` | `qber=0.7`, `qber=-0.01` |
 | `0.0 <= qber <= 0.0968` | F3(pending) | `ValueError("QBER exceeds SARG04 threshold ~9.68%")` | `build_sarg04_protocol`(待实施) | `qber=0.11` |
-| `0.5 < p_Z < 1.0` | F4(pending) | `ValueError("p_Z must be in (0.5, 1.0), got <x>")` | `build_efficient_bb84_protocol`(待实施) | `p_Z=0.5`, `p_Z=1.0` |
+| `0.5 < p_Z < 1.0` strict | F4 | `ValueError("p_Z must be in (0.5, 1.0) strictly, got <x>")` | `build_efficient_bb84_protocol` | `p_Z=0.0`, `p_Z=0.3`, `p_Z=0.5`, `p_Z=1.0`, `p_Z=1.5` |
 
 **已有测试覆盖**:
 
 - F1: [`tests/test_protocols/test_bb84.py`](../../tests/test_protocols/test_bb84.py)
 - F2: [`tests/test_protocols/test_sixstate.py`](../../tests/test_protocols/test_sixstate.py)
-- F3 / F4: 待 TDD 先写测试
+- F4: [`tests/test_protocols/test_efficient_bb84.py`](../../tests/test_protocols/test_efficient_bb84.py)(27 tests,含 parametric QBER × p_Z 扫描 + input validation + source purity)
+- F3: 待 TDD 先写测试(Phase 1 S2.1 续)
 
 ---
 
@@ -113,13 +114,15 @@
 - **$\mathcal{T}$**:`observation_keys = ("qber_pair_{ij}", "p_sift")`(4 pair 组合,需 4 个 $\Gamma$)
 - **$\mathcal{K}$**:Alice 保留态索引 → 1 bit
 
-### 3.4 Efficient BB84(F4)— 拟实施草稿
+### 3.4 Efficient BB84(F4)
 
-- **$\mathcal{P}$**:**权重** EB 态 $|\psi\rangle = \sqrt{p_Z}|\psi_Z\rangle + \sqrt{1-p_Z}|\psi_X\rangle$
-- **$\mathcal{E}$**:同 BB84
-- **$\mathcal{A}$**:基匹配 `o[0] == o[1]`,但**概率权重** $P(Z,Z) = p_Z^2$
-- **$\mathcal{T}$**:同 BB84,`p_sift = p_Z^2 + (1-p_Z)^2`
-- **$\mathcal{K}$**:同 BB84
+- **$\mathcal{P}$**:**偏置权重**纯 EB 态,8-dim 列向量幅值 $\sqrt{p_Z/2}$(Z 分量)+ $\sqrt{(1-p_Z)/4}$(X 分量),确保基匹配 $P(Z)=p_Z$、$P(X)=1-p_Z$;见 [efficient_bb84.py:32-55](../../qkdx/protocols/efficient_bb84.py#L32-L55)
+- **$\mathcal{E}$**:同 BB84(`bb84_channel(qber)` 对称去极化)
+- **$\mathcal{A}$**:基匹配 `outcomes[0] == outcomes[1]`,但先验概率偏置,导致 $p_{\text{sift}} = p_Z^2 + (1-p_Z)^2$
+- **$\mathcal{T}$**:复用 BB84 的 $\Gamma_Z, \Gamma_X$;`p_sift` observable 缩放为 $p_{\text{sift}} \cdot I/4$
+- **$\mathcal{K}$**:同 BB84 `bitmap = {0:0, 1:1, 2:0, 3:1}`
+- **conditional_alice_bob override**:**复用** BB84 的 Werner 形式 $\rho = \mathrm{diag}((1-e)/2, e/2, e/2, (1-e)/2)$;**bias 在条件化(Z-sifting)时被吸收,不影响条件分布**
+- **Key rate**:$R = p_{\text{sift}} \cdot (1 - h(e) - f_{\text{ec}} \cdot h(e))$,$p_Z \to 1$ 时 $p_{\text{sift}} \to 1$ 达 BB84 两倍
 
 ---
 
@@ -166,11 +169,35 @@ def build_sixstate_protocol(qber: float) -> MSEBProtocol:
     """
 ```
 
-### 4.2 F3 / F4 — TDD 目标签名
+### 4.2 F4(已实施)
+
+```python
+def build_efficient_bb84_protocol(qber: float, p_Z: float = 0.9) -> MSEBProtocol:
+    """Construct the Efficient BB84 (F4) MS-EB protocol.
+
+    Args:
+        qber: Symmetric depolarising QBER (Z = X basis), in [0, 1].
+        p_Z: Z-basis selection probability, must be in (0.5, 1.0) strictly.
+             Default 0.9 (typical efficient BB84 bias).
+
+    Returns:
+        MSEBProtocol with scope_tag='covered';
+        p_sift = p_Z^2 + (1-p_Z)^2;
+        observation_keys = ("qber_Z", "qber_X", "p_sift").
+
+    Raises:
+        ValueError: qber not in [0, 1], or p_Z not in (0.5, 1.0).
+
+    References:
+        Lo-Chau-Ardehali 2005, J. Cryptology 18:133.
+    """
+```
+
+### 4.3 F3 — TDD 目标签名(待实施)
 
 ```python
 def build_sarg04_protocol(qber: float) -> MSEBProtocol:
-    """Placeholder — Phase 1 S2.1 Week 1-3.
+    """Placeholder — Phase 1 S2.1 Week 1-3 续.
 
     Args:
         qber: Effective error rate, in [0, 0.0968] (Koashi 2005 threshold).
@@ -178,18 +205,6 @@ def build_sarg04_protocol(qber: float) -> MSEBProtocol:
     References:
         Scarani-Acín-Ribordy-Gisin 2004, PRL 92:057901;
         Koashi 2005, quant-ph/0507154.
-    """
-
-def build_efficient_bb84_protocol(qber: float, p_Z: float = 0.9) -> MSEBProtocol:
-    """Placeholder — Phase 1 S2.1 Week 1-3.
-
-    Args:
-        qber: Symmetric depolarising QBER, in [0, 1].
-        p_Z: Z-basis selection probability, in (0.5, 1.0). Default 0.9
-             (typical efficient BB84 bias).
-
-    References:
-        Lo-Chau-Ardehali 2005, JoC 18:133.
     """
 ```
 
@@ -206,10 +221,18 @@ def build_efficient_bb84_protocol(qber: float, p_Z: float = 0.9) -> MSEBProtocol
 | F1 BB84 | `test_wlc_bb84.py::test_wlc_regularization_uses_convex_combination` | 正则化 convex-combo 回归 | — | ✅(MOSEK) |
 | F2 Six-state | `test_sixstate.py::test_wlc_sixstate_matches_analytic` | Lo 2001 + Scarani 2009 | 同上 | ✅ |
 
-### 5.2 待补(F3, F4)
+### 5.2 F4 已补(commit 本轮)
+
+| 测试 | 对照 | 阈值 | 状态 |
+|------|------|------|------|
+| `test_wlc_efficient_bb84_matches_analytic` | $R = p_{\text{sift}} \cdot (1-h-f_{\text{ec}}h)$;5 (QBER,p_Z) 点 | MOSEK `5e-4`;CLARABEL `1e-3` | ✅ |
+| `test_efficient_bb84_beats_bb84_at_p_Z_09` | ratio $\approx p_{\text{sift}}/0.5 = 1.64$ | `rel=0.02` | ✅ |
+| `test_source_state_basis_weights` | 基边缘 $P(Z)=p_Z, P(X)=1-p_Z$(4 个 p_Z 点) | `1e-10` | ✅ |
+| `test_source_state_is_pure_normalized` | trace=1, rank=1(4 个 p_Z 点) | `1e-10` | ✅ |
+
+### 5.3 待补(F3)
 
 - F3: vs Koashi 2005 解析 $R \leq 1 - 2h(e)$;阈值 $e \lesssim 9.68\%$
-- F4: vs BB84(取 $p_Z \to 0.5$ 退化)在同 QBER 下密钥率一致,$p_Z \to 1$ 下 $p_{\text{sift}} \to 1$ 带来的密钥率提升
 
 ---
 
@@ -249,18 +272,19 @@ def build_efficient_bb84_protocol(qber: float, p_Z: float = 0.9) -> MSEBProtocol
 
 | 章节 | 项 | F1 | F2 | F3 | F4 |
 |------|------|----|----|----|----|
-| §0 基本元信息 | 标题/scope/out-of-scope/代码引用 | ✓ | ✓ | ✓(pending 标注) | ✓(pending 标注) |
-| §1 参数边界表 | 完整/类型/range/default | ✓ | ✓ | ✓(待验证) | ✓(待验证) |
-| §2 合法性约束 | 表达式/错误类型/位置/反例 | ✓ | ✓ | ✓(pending) | ✓(pending) |
-| §3 MS-EB 映射 | 五分量显式映射 | ✓ | ✓ | ✓(草稿) | ✓(草稿) |
-| §4 签名规范 | 签名 + docstring + scope_tag | ✓ | ✓ | ✓(目标) | ✓(目标) |
-| §5 数值锚点 | 回归测试 + 阈值 | ✓ | ✓ | ✗ 待实施 | ✗ 待实施 |
+| §0 基本元信息 | 标题/scope/out-of-scope/代码引用 | ✓ | ✓ | ✓(pending 标注) | ✓ |
+| §1 参数边界表 | 完整/类型/range/default | ✓ | ✓ | ✓(待验证) | ✓ |
+| §2 合法性约束 | 表达式/错误类型/位置/反例 | ✓ | ✓ | ✓(pending) | ✓ |
+| §3 MS-EB 映射 | 五分量显式映射 | ✓ | ✓ | ✓(草稿) | ✓ |
+| §4 签名规范 | 签名 + docstring + scope_tag | ✓ | ✓ | ✓(目标) | ✓ |
+| §5 数值锚点 | 回归测试 + 阈值 | ✓ | ✓ | ✗ 待实施 | ✓(27 tests) |
 | §6 Bearing | 文献 + 模块 + Sub-Q3 | ✓ | ✓ | ✓ | ✓ |
 
-**通过门槛**:F1, F2 全部项 ✓;F3, F4 实施层 ✗ 是预期的 Phase 1 S2.1 工作产出。本 sheet v0.1 作为 S2.1 的起稿,在 F3/F4 实施后升级 v0.2。
+**通过门槛**:F1, F2, F4 全部项 ✓;F3 实施层 ✗ 是 Phase 1 S2.1 剩余产出。本 sheet v0.2:F4 Efficient BB84 从 spec_only 升级到 covered。
 
 ---
 
 ## 9. 变更日志
 
 - **v0.1** (2026-04-19):初稿。F1/F2 对齐 Phase 0 已实施代码;F3/F4 作为 Phase 1 S2.1 Week 1-3 spec_only 占位。
+- **v0.2** (2026-04-19):F4 Efficient BB84 实施完成(commit 本轮)。`qkdx/protocols/efficient_bb84.py` + `tests/test_protocols/test_efficient_bb84.py`(27 tests),scope_tag 从 spec_only → covered。
