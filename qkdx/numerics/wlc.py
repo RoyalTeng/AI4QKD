@@ -25,6 +25,7 @@ from qkdx.core.hilbert import Matrix
 from qkdx.core.operators import KrausMap
 from qkdx.protocol.base import MSEBProtocol
 from qkdx.utils.logging import get_logger
+from qkdx.utils.solvers import preferred_solver
 
 logger = get_logger(__name__)
 
@@ -78,7 +79,7 @@ def wlc_key_rate(
     protocol: MSEBProtocol,
     observations: Mapping[str, float],
     *,
-    solver: str = "MOSEK",
+    solver: str | None = None,
     epsilon_regularization: float = 1e-9,
     f_ec: float = 1.16,
     max_iters: int = 1000,
@@ -88,6 +89,11 @@ def wlc_key_rate(
 
     MOSEK path: one-shot SDP via cp.quantum_rel_entr (fast).
     CLARABEL/SCS path: Frank-Wolfe conditional gradient (WLC 2018 Algorithm 1).
+
+    Args:
+        solver: "MOSEK" | "CLARABEL" | "SCS" | None. If None, auto-selects via
+            qkdx.utils.solvers.preferred_solver() (MOSEK if installed, else
+            CLARABEL, else SCS).
 
     Raises:
         ValueError: observations keys don't exactly match protocol.observation_keys.
@@ -102,6 +108,9 @@ def wlc_key_rate(
     unknown = provided - known
     if unknown:
         raise ValueError(f"unknown observation: {sorted(unknown)}")
+
+    if solver is None:
+        solver = preferred_solver()
 
     if solver == "MOSEK":
         return _wlc_mosek(protocol, observations, epsilon_regularization, f_ec,
