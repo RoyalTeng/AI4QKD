@@ -292,23 +292,38 @@ def test_total_security_composes_additively() -> None:
 
 # ---- Snapshot: GLL-2021 Fig.3 style point ------------------------------------
 
-def test_bb84_finite_key_fig3_snapshot_n_1e8_e_0_05() -> None:
-    """Snapshot at N = 10^8, e_x = e_z = 0.05, f_EC = 1.2.
+def test_bb84_finite_key_fig3_snapshot_n_1e8_e_0_05_per_signal() -> None:
+    """Snapshot at N_total = 10^8, p_z = 0.9, e_x = e_z = 0.05, f_EC = 1.2.
 
-    This corresponds to a point on GLL-2021 Fig. 3 (4-curve panel for
-    e_x ∈ {0.01, 0.03, 0.05, 0.07}). Without access to exact Fig. 3 data,
-    we pin the value for regression detection.
+    **Per-signal semantics (Round 2 reviewer fix)**:
+    - p_z = 0.9 ⇒ n ≈ p_z² · N = 8.1e7 (key-gen),
+                m ≈ (1-p_z)² · N = 1.0e6 (PE)
+    - p_sift = p_z² + (1-p_z)² = 0.82
+    - rate_per_signal = p_sift · ℓ / (n + m) (or equivalently ℓ / N_total scaled)
+
+    Corresponds to GLL-2021 Fig. 3 e=0.05 curve at N=10^8 signals.
+    Pinned bracket prevents regression while allowing small finite-size drift.
     """
-    N = 10**8
-    m = (1 - 0.9) ** 2 * N  # m = (1-p_z)²·N (GLL-2021 §IV.A convention)
-    m = int(m) if m >= 1 else 1
-    n = N - m
+    p_z = 0.9
+    N_total = 10**8
+    n = int(p_z ** 2 * N_total)  # 81,000,000
+    m = int((1 - p_z) ** 2 * N_total)  # 1,000,000
+    p_sift = p_z ** 2 + (1 - p_z) ** 2  # 0.82
+
     ell = bb84_finite_key_length_analytic(
         n=n, m=m, e_x=0.05, e_z=0.05, f_EC=1.2,
     )
-    rate = ell / N
-    # Pin value — at e=0.05, f_EC=1.2, asymptotic R ≈ 0.5·(1 - 2.2h(0.05)) × (n/N)
-    # ≈ 0.9 · (1 - 2.2·0.286) = 0.9·0.37 = 0.337 at infinite N
-    # Finite-size penalty at N=10^8 brings it slightly below.
-    # Pin to observed regression bracket (Phase 1 S2.5 v0.1 snapshot).
-    assert 0.30 < rate < 0.38, f"N=10^8, e=0.05 rate: {rate}"
+    rate_per_block = ell / (n + m)
+    rate_per_signal = p_sift * rate_per_block
+
+    # Per-signal expected bracket: p_sift=0.82, per-block ≈ 0.343
+    # → per-signal ≈ 0.82 * 0.343 = 0.281
+    assert 0.25 < rate_per_signal < 0.32, (
+        f"per-signal rate: {rate_per_signal:.6f}"
+    )
+
+    # Sanity: match per-signal wrapper API
+    rate_api = bb84_finite_key_rate_per_signal(
+        n=n, m=m, e_x=0.05, e_z=0.05, f_EC=1.2, p_sift=p_sift,
+    )
+    assert abs(rate_api - rate_per_signal) < 1e-12

@@ -91,7 +91,9 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
   - `variation_bound(m, eps_PE, alphabet_size)`:GLL-2021 Eq. 4
   - `delta_smoothing(eps_bar, n, key_alphabet_size)`:GLL-2021 Eq. 3
   - `bb84_finite_key_length_analytic(n, m, e_x, e_z=None, ...)`:Eq. 19 完整形式(含 EC leakage 修正项,per Stage E reviewer v0.2 fix)
-  - `bb84_finite_key_rate_analytic`:per-signal wrapper
+  - `bb84_finite_key_rate_per_block(n, m, e_x, ...)`:per-accepted-round(`ℓ/(n+m)`)
+  - `bb84_finite_key_rate_per_signal(n, m, e_x, p_sift, ...)`:per-transmitted-signal(匹配 repo 约定,`p_sift · ℓ/(n+m)`)
+  - `bb84_finite_key_rate_analytic`:**legacy 别名**,与 `per_block` 同义(Round 1 reviewer 命名修复,见 Round 1 响应 block)
   - `total_security_parameter`:ε 组合
 - [tests/test_finite_key/test_gll_renner.py](../tests/test_finite_key/test_gll_renner.py)(24 tests):
   - μ 和 δ 公式的 scaling 验证(1/√m,1/√n)
@@ -101,9 +103,11 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
   - Fig.3 style snapshot(N=10^8, e=0.05, rate ∈ [0.30, 0.38])
   - Input validation
 
-**数值 sanity**(Fig. 3 style 在 N=10^8, e_x = e_z = 0.05, f_EC=1.2):
-- per-signal rate ≈ 0.344 bit/signal(与 asymptotic Shor-Preskill 差 ~3% 来自 finite-size 修正)
-- 作为 S2.5 后续 Kamin 2025 对比的 baseline
+**数值 sanity**(Fig. 3 style 在 N_total=10^8, p_z=0.9, e_x = e_z = 0.05, f_EC=1.2):
+- per-block rate ≈ 0.343 bit/accepted-round(`ℓ/(n+m)` 原始口径)
+- **per-signal rate ≈ 0.281 bit/signal**(含 `p_sift = p_z² + (1-p_z)² = 0.82` 因子,匹配 repo 约定,Round 2 reviewer 修正)
+- 两者关系:`per_signal = p_sift × per_block`
+- 作为 S2.5 后续 Kamin 2025 对比的 baseline(对比时注意两者约定一致)
 
 **Plan 对齐**:
 - S2.5 "finite-key 实施" 基础设施约 **30% 就绪**(analytic layer 完成;SDP layer 待 PDF 决策)
