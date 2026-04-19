@@ -1,14 +1,23 @@
 """MS-EB framework data types: Π = (P, E, A, T, K)."""
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Literal
 
 import numpy as np
 
 from qkdx.core.hilbert import Matrix
 from qkdx.core.operators import KrausMap
+
+
+class OutOfScopeWarning(UserWarning):
+    """Raised when an MS-EB protocol is marked out-of-scope.
+
+    Protocols tagged scope_tag="out_of_scope" cannot be automatically fed into
+    the WLC SDP pipeline.  Callers must explicitly handle or suppress this warning.
+    """
 
 
 @dataclass(frozen=True)
@@ -73,6 +82,8 @@ class MSEBProtocol:
     key_map: KeyMap
     observation_keys: tuple[str, ...]
     symmetry_group: str | None = None
+    scope_tag: Literal["covered", "partial", "out_of_scope"] = "covered"
+    scope_reason: str | None = None  # required when scope_tag != "covered"
     # Internal: observable builder registry injected by protocols.
     _observable_builders: dict[str, Callable[["MSEBProtocol"], Matrix]] = field(
         default_factory=dict, compare=False, hash=False, repr=False
@@ -92,6 +103,24 @@ class MSEBProtocol:
             )
         if not self.observation_keys:
             raise ValueError("observation_keys must be non-empty")
+
+        valid_tags = {"covered", "partial", "out_of_scope"}
+        if self.scope_tag not in valid_tags:
+            raise ValueError(f"scope_tag must be one of {valid_tags}, got {self.scope_tag!r}")
+
+        if self.scope_tag != "covered" and self.scope_reason is None:
+            raise ValueError(
+                f"scope_reason is required when scope_tag={self.scope_tag!r}"
+            )
+
+        if self.scope_tag == "out_of_scope":
+            warnings.warn(
+                f"Protocol {self.name!r} is out_of_scope for MS-EB WLC SDP: "
+                f"{self.scope_reason}. "
+                "Automatic SDP derivation is blocked.",
+                OutOfScopeWarning,
+                stacklevel=2,
+            )
 
     # ------------------------------------------------------------------
     # State queries

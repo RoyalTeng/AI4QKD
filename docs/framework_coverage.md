@@ -1,10 +1,10 @@
-# Framework Coverage Report (draft spec, v0.3)
+# Framework Coverage Report (v0.4 — R1.4 Implementation Complete)
 
 **研究动作**:R1.4(RESEARCH_PLAN §2.1)
 **关联 Sub-Q**:Sub-Q1(d)PROSPECTUS v3.1 §6
 **里程碑**:Phase 0 M1 Week 3(并行于 R1.3 实施期)
-**日期**:2026-04-19(v0.3 响应 codex round 2 FAIL;v0.2 响应 round 1 FAIL)
-**状态**:**draft spec, R1.4 硬验收尚未闭合**(`qkdx/protocol/base.py` 字段未实现 + `tests/test_protocol/test_scope_tag.py` 未落地)
+**日期**:2026-04-19(v0.4 = 实现闭合版;v0.3 响应 codex round 2 FAIL;v0.2 响应 round 1 FAIL)
+**状态**: **✅ R1.4 硬验收已闭合** (`qkdx/protocol/base.py` v0.4 实现 `scope_tag`/`scope_reason`/`OutOfScopeWarning` + `tests/test_protocol/test_scope.py` 9 tests passed)
 
 **v0.3 差量**(response to codex round 2):
 - §3.1 主表:F7 MP-QKD 从 `partial` 改为 `out_of_scope`(既有形式化判据已把跨轮联合声明/配对列为 out_of_scope,不自洽)
@@ -31,13 +31,14 @@
 
 **R1.4 验收三条硬指标**(RESEARCH_PLAN §2.1):
 
-| 条款 | 本文档 | `qkdx/protocol/base.py` | `tests/test_protocol/test_scope_tag.py` |
-|------|--------|-------------------------|------------------------------------------|
-| BB84/六态/MDI 标 covered,TF partial | ✓ spec(§3.1) | ⏳ R1.3 实施期 | N/A |
-| toy 跨轮自适应被拒收并记录原因 | ✓ spec(§5)| ⏳ R1.3 | ⏳ R1.3 |
-| 七族主表每族至少一代表协议 | ✓ spec(§3.1) | N/A | N/A |
+| 条款 | 本文档 | `qkdx/protocol/base.py` | `tests/test_protocol/test_scope.py` |
+|------|--------|-------------------------|--------------------------------------|
+| BB84/六态/MDI 标 covered,TF partial | ✅ §3.1 | ✅ commit 9573aef | ✅ test_bb84_scope_tag_is_covered |
+| toy 跨轮自适应被拒收并记录原因 | ✅ §5 | ✅ OutOfScopeWarning | ✅ test_cross_round_adaptive_protocol_out_of_scope |
+| 七族主表每族至少一代表协议 | ✅ §3.1 | N/A (文档层) | N/A |
 
-**本文档不宣称 R1.4 完成**,只是 R1.4 的 spec。代码 + 测试落地后才升级为 v1.0。
+**v0.4 更新**:R1.4 全部硬指标已闭合。`scope_tag` 默认值设为 `"covered"` (便于现有 builder),
+但 `out_of_scope` 和 `partial` 必须提供 `scope_reason`。`OutOfScopeWarning` 在 `__post_init__` 自动触发。
 
 ---
 
