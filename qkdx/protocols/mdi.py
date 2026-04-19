@@ -80,7 +80,23 @@ def mdi_charlie_network(qber: float) -> PublicQuantumNetwork:
 
 
 def _mdi_sift_keep(outcomes: tuple) -> bool:
-    """Sift: Alice's basis = Bob's basis (ignore Charlie announcement detail)."""
+    """Sift helper: Alice-Bob basis match (virtual-EB reduction).
+
+    **Semantic note (Agent 2 retrospective review, Round 2, 2026-04-19):**
+    In the full Lo-Curty-Qi 2012 MDI protocol, sifting requires both
+    (i) Alice-Bob basis match AND (ii) Charlie announces a successful
+    Bell-state measurement (not 'fail').  This helper only encodes (i);
+    Charlie's success probability is **absorbed into the external
+    `p_sift=0.25`** (= 1/2 basis match × 1/2 ideal BSM success) and into
+    the post-announcement state returned by the `_conditional_alice_bob`
+    override (virtual-EB picture, Lo-Curty-Qi 2012 §II).
+
+    This is faithful for the WLC SDP computation in the ideal symmetric
+    case because the SDP consumes only `p_sift` and the conditional 4×4
+    state, not the raw outcome tuple.  A full multi-source MS-EB
+    formulation (deferred to Phase 1 Sub-Q2) would encode Charlie's
+    announcement as a third outcome component.
+    """
     if len(outcomes) < 2:
         return False
     return outcomes[0] == outcomes[1]

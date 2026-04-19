@@ -102,7 +102,14 @@ def wlc_key_rate(
         ValueError: observations keys don't exactly match protocol.observation_keys.
         cp.SolverError: SDP cannot be solved.
     """
-    # --- 0. Scope gate (R1.4 hard acceptance) ---
+    # --- 0a. Validate epsilon_regularization (convex-combo parameter) ---
+    if not (0.0 <= epsilon_regularization < 1.0):
+        raise ValueError(
+            f"epsilon_regularization must be in [0, 1) (convex-combination "
+            f"weight for X_reg = (1-ε)G(ρ) + ε·τ), got {epsilon_regularization}"
+        )
+
+    # --- 0b. Scope gate (R1.4 hard acceptance) ---
     # Out-of-scope protocols must not silently produce a numeric key rate.
     # See docs/framework_coverage.md and RESEARCH_PLAN §2.1 R1.4.
     if protocol.scope_tag == "out_of_scope":

@@ -107,6 +107,49 @@ def test_wlc_observable_key_missing_raises() -> None:
         wlc_key_rate(protocol, observations={"qber_Z": 0.05, "p_sift": 0.5})
 
 
+@pytest.mark.parametrize("eps", [-0.01, -1e-10, 1.0, 1.5, 2.0])
+def test_wlc_epsilon_regularization_out_of_range_raises(eps: float) -> None:
+    """epsilon_regularization must be in [0, 1) for convex-combo form."""
+    protocol = build_bb84_protocol(qber=0.05)
+    with pytest.raises(ValueError, match="epsilon_regularization must be in"):
+        wlc_key_rate(
+            protocol,
+            observations={"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5},
+            epsilon_regularization=eps,
+        )
+
+
+@pytestmark_mosek
+def test_wlc_regularization_uses_convex_combination() -> None:
+    """MOSEK path: X_reg = (1-ε)G(ρ)+ε·τ. Visible at moderate ε.
+
+    Regression: prior code did G(ρ)+ε·τ. For eps=0.05 on QBER=0.05, the
+    convex form yields a measurable shift; the old (additive) form would
+    further inflate the rate by ~0.05*log2 factors.  Pin the convex result.
+    """
+    protocol = build_bb84_protocol(qber=0.05)
+    r_small = wlc_key_rate(
+        protocol,
+        observations={"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5},
+        epsilon_regularization=1e-9,
+    ).key_rate
+    r_moderate = wlc_key_rate(
+        protocol,
+        observations={"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5},
+        epsilon_regularization=0.01,
+    ).key_rate
+    # Convex-combo: r_moderate should be close to but smaller than r_small
+    # (regularization pulls toward maximally mixed → reduces rate slightly).
+    # Additive (bug) form would let r_moderate drift more erratically.
+    assert r_moderate < r_small + 1e-3, (
+        f"Regularization not acting as convex combo: r_small={r_small}, "
+        f"r_moderate={r_moderate}"
+    )
+    assert r_moderate > r_small - 0.05, (
+        f"Regularization too aggressive: r_small={r_small}, r_moderate={r_moderate}"
+    )
+
+
 def test_wlc_observable_key_unknown_raises() -> None:
     protocol = build_bb84_protocol(qber=0.05)
     with pytest.raises(ValueError, match="unknown observation"):

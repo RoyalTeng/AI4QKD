@@ -76,7 +76,7 @@
 |--------|-----------|----------|
 | BB84 | covered | ✅ [qkdx/protocols/bb84.py](../qkdx/protocols/bb84.py) |
 | 六态 | covered | ✅ [qkdx/protocols/sixstate.py](../qkdx/protocols/sixstate.py) |
-| MDI-QKD | covered(理想) | ✅ [qkdx/protocols/mdi.py](../qkdx/protocols/mdi.py) |
+| MDI-QKD | partial(理想;WLC SDP via `_conditional_alice_bob` override,base-class multi-source state 未实施) | ✅ [qkdx/protocols/mdi.py](../qkdx/protocols/mdi.py) |
 | 诱骗 BB84 | covered(理想单光子)| ✅ [qkdx/numerics/decoy.py](../qkdx/numerics/decoy.py) |
 | TF-QKD | partial(M4B pending) | ⏳ |
 | 跨轮自适应协议 | out_of_scope | ✅ 自动 warning + 测试 |
@@ -107,7 +107,7 @@
 
 - [qkdx/core/](../qkdx/core/):Hilbert,Kraus,entropy 基础算子 — **完整**
 - [qkdx/protocol/](../qkdx/protocol/):MS-EB 五元组数据类 + scope 机制 — **完整**
-- [qkdx/protocols/](../qkdx/protocols/):BB84 + 六态 + MDI — **4 协议族 covered**
+- [qkdx/protocols/](../qkdx/protocols/):BB84 + 六态 + MDI — **BB84/六态 covered, MDI partial (multi-source state 未实施), 诱骗 BB84 covered (理想单光子)**
 - [qkdx/analytic/](../qkdx/analytic/):Shor-Preskill + 六态 + GLLP + 诱骗态 + 信道模型 — **完整**
 - [qkdx/numerics/](../qkdx/numerics/):WLC SDP + Frank-Wolfe + decoy + facial reduction — **完整**
 - [qkdx/symmetry/](../qkdx/symmetry/):BB84 bilateral 群 + twirling — **完整**

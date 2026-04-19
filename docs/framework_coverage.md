@@ -33,7 +33,7 @@
 
 | 条款 | 本文档 | `qkdx/protocol/base.py` | `tests/test_protocol/test_scope.py` |
 |------|--------|-------------------------|--------------------------------------|
-| BB84/六态/MDI 标 covered,TF partial | ✅ §3.1 | ✅ commit 9573aef | ✅ test_bb84_scope_tag_is_covered |
+| BB84/六态标 covered;MDI 标 partial(multi-source 状态查询未实施,见 `qkdx/protocols/mdi.py` scope_reason);TF partial | ✅ §3.1 | ✅ commit 9573aef (base) + 20f9029 (MDI 降级) | ✅ test_bb84_scope_tag_is_covered + test_mdi_has_two_sources |
 | toy 跨轮自适应被拒收并记录原因 | ✅ §5 | ✅ OutOfScopeWarning | ✅ test_cross_round_adaptive_protocol_out_of_scope |
 | 七族主表每族至少一代表协议 | ✅ §3.1 | N/A (文档层) | N/A |
 
@@ -136,7 +136,7 @@ v0.1 §3.3 (3) 的 "Fock 截断属灰区" 表述**撤回**,改为本节明确分
 | **F2 六态** | six-state(Bruss 1998) | `covered` | `not_started` | `benchmark_passed`(M2 R2.3) | $R = 1/3\cdot[1 - h(e) - e\log_2 3]$ bit/signal(含 $p_\text{sift}=1/3$) | MS-EB $\mathcal{P}$ 与 BB84 同构,$\mathcal{A}$ 增 Y 基筛选 |
 | **F3 SARG04** | SARG04(Scarani-Acín-Ribordy-Gisin 2004) | `covered` | `not_started` | `builder_only`(Phase 1 Week 1-3 S2.1) | Koashi 2005:$R \leq \max(0, 1-2h(e))$,$e \lesssim 9.68\%$ | $\mathcal{A}$ 与 BB84 差异:公开两非正交态集合 |
 | **F4 Efficient BB84** | Lo-Chau-Ardehali 2005 偏置基 | `covered` | `not_started` | `builder_only`(Phase 1 Week 1-3) | 同 BB84,$p_\text{sift} \to 1$ | 只改 $\mathcal{A}$ 的基概率 |
-| **F5 MDI-QKD** | Lo-Curty-Qi 2012 | `covered` | `not_started` | `benchmark_passed`(M2 R2.3) | Ma-Razavi 2012 Fig.3 | 两 source parties;$\mathcal{E}$ 含 Charlie 的 Bell 态测量 |
+| **F5 MDI-QKD** | Lo-Curty-Qi 2012 | `partial` | `not_started` | `benchmark_passed`(M2 R2.3, 但 via 虚拟-EB 覆盖路径) | Ma-Razavi 2012 Fig.3 | 两 source parties;$\mathcal{E}$ 含 Charlie 的 Bell 态测量;**partial 原因**(Agent 1 retrospective 2026-04-19):`MSEBProtocol.joint_state()` / `executed_state()` 尚未实施 multi-source 张量 + 联合信道语义,WLC SDP 仅通过 `_conditional_alice_bob` 覆盖路径工作(见 `qkdx/protocols/mdi.py` scope_reason)。升级到 `covered` 需真正的 multi-source 状态构造(延后到 Phase 1 Sub-Q2 MDI family sheet)。 |
 | **F6 TF-QKD(含 SNS、PM)** | Lucamarini 2018;Wang-Yu-Hu 2018(SNS);Ma-Zeng-Zhou 2018(PM)| `partial` | `not_started` | `builder_only`(M4B Phase 0.5 可选)| Lucamarini Fig.3 √η 标度 | **partial 原因**:phase reference 在 MS-EB 中以 $\mathcal{E}$ 的相位调制建模(workaround);M4B 验收后重新定级 |
 | **F7 MP-QKD** | Zeng-Zhou-Wu-Ma 2022 | `out_of_scope`(v0.3) | `not_started` | N/A(待 ADR 后决定) | MP-QKD 原论文数值 | **v0.3 订正**:§2.2(c) 形式化判据明示"跨轮联合声明/配对"是 out-of-scope;v0.2 的 `partial` + 备注"多轮 mode-pair 聚合可能违反 H2"自相矛盾。M4B 期若给出形式化 workaround(如把多轮 pairing 拆成 single-round + classical merging),撰写 ADR 后重新定级。 |
 
