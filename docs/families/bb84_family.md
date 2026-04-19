@@ -15,7 +15,7 @@
 |------|------|------|------|
 | **BB84** | F1 | [`build_bb84_protocol`](../../qkdx/protocols/bb84.py) | `covered` — Phase 0 M1 闭合 |
 | **Six-state** | F2 | [`build_sixstate_protocol`](../../qkdx/protocols/sixstate.py) | `covered` — Phase 0 M2 闭合 |
-| **SARG04** | F3 | 未实施 | `spec_only` — Phase 1 S2.1 Week 1-3 本 sheet 起稿,Phase 1 Week 1-3 内实施 |
+| **SARG04** | F3 | [`build_sarg04_protocol`](../../qkdx/protocols/sarg04.py) | **`partial`** — Phase 1 S2.1 实施完成(简化 Werner 模型;详见 §0.4) |
 | **Efficient BB84**(Lo-Chau-Ardehali 偏置基) | F4 | [`build_efficient_bb84_protocol`](../../qkdx/protocols/efficient_bb84.py) | `covered` — Phase 1 S2.1 Week 1-3 已实施(commit 本轮) |
 
 ### 0.2 不包含的变体(Out-of-scope)
@@ -23,6 +23,15 @@
 - **Decoy-state BB84**:归入 `decoy` 横切族(见 [qkdx/numerics/decoy.py](../../qkdx/numerics/decoy.py)),可与任何离散 BB84 变体组合
 - **Device-independent BB84**:违反 MS-EB "单一固定 $\mathcal{E}$" 假设(见 [framework_coverage.md §2.2](../framework_coverage.md#22-out-of-scope-判据))
 - **连续变量 BB84**(CV-BB84 Grosshans-Grangier):违反"离散有限维 $\mathcal{P}$"假设
+
+### 0.4 F3 SARG04 `partial` 简化模型说明
+
+SARG04 的 Alice 宣告非正交态对(4 对),Bob 做 USD (unambiguous state discrimination)筛选。本实施把宣告语义**折叠**进:
+- `p_sift(e) = 1/4 + e/2`(从枚举 4 状态 × 2 宣告 × 2 Bob 基 × 2 结果推导)
+- 筛后错误率 `q(e) = e / (1 + 2e)`
+- Conditional state:`diag((1-q)/2, q/2, q/2, (1-q)/2)` Werner 形式
+
+**简化代价**:阈值 $e \leq 14.1\%$(本模型) vs Koashi 2005 严格阈值 $\sim 9.68\%$。升级到 `covered` 需把宣告对作为 classical register 显式编入 $\mathcal{A}$(Phase 1 Sub-Q2 延后工作)。详见 [qkdx/protocols/sarg04.py](../../qkdx/protocols/sarg04.py) scope_reason。
 
 ### 0.3 共同 MS-EB 结构
 
@@ -49,12 +58,11 @@
 |------|------|-------|---------|------------------|-----------|
 | `qber` | `float` | `[0.0, 2/3]` | — | 对称去极化 QBER(Z = X = Y 基);上限 2/3 = 完全去极化 | ✓ `build_sixstate_protocol` line 140 |
 
-### 1.3 SARG04(F3)— 拟实施
+### 1.3 SARG04(F3,简化 Werner 模型,partial)
 
 | name | type | range | default | physical meaning | validated? |
 |------|------|-------|---------|------------------|-----------|
-| `qber` | `float` | `[0.0, 0.0968]` | — | 来自 Koashi 2005 $R \leq \max(0, 1-2h(e))$ 对应 $e \lesssim 9.68\%$ 阈值 | ✗ 待实施 |
-| `basis_reveal_set` | `str` | `{"non-orthogonal-pair"}` | `"non-orthogonal-pair"` | Alice 公开两个非正交态集合而非基选择 | ✗ 待实施 |
+| `qber` | `float` | `[0.0, 1.0]`(阈值检查 via WLC 输出) | — | 信道 QBER;简化模型阈值 $\lesssim 14.1\%$(Koashi 2005 严格阈值 9.68%,见 §0.4) | ✓ `build_sarg04_protocol` line 100 |
 
 ### 1.4 Efficient BB84(F4)
 
@@ -71,15 +79,15 @@
 |---|---|---|---|---|
 | `0.0 <= qber <= 1.0` | F1 | `ValueError("QBER must be in [0, 1], got <x>")` | `build_bb84_protocol` | `qber=-0.01`, `qber=1.1`, `qber=np.nan` |
 | `0.0 <= qber <= 2/3` | F2 | `ValueError("QBER must be in [0, 2/3] for six-state, got <x>")` | `build_sixstate_protocol` | `qber=0.7`, `qber=-0.01` |
-| `0.0 <= qber <= 0.0968` | F3(pending) | `ValueError("QBER exceeds SARG04 threshold ~9.68%")` | `build_sarg04_protocol`(待实施) | `qber=0.11` |
+| `0.0 <= qber <= 1.0` | F3(构造不阻断) | `ValueError("QBER must be in [0, 1]")` | `build_sarg04_protocol` line 100 | `qber=-0.01, qber=1.1`(阈值本身 via WLC 输出 ≤ 0 判定) |
 | `0.5 < p_Z < 1.0` strict | F4 | `ValueError("p_Z must be in (0.5, 1.0) strictly, got <x>")` | `build_efficient_bb84_protocol` | `p_Z=0.0`, `p_Z=0.3`, `p_Z=0.5`, `p_Z=1.0`, `p_Z=1.5` |
 
 **已有测试覆盖**:
 
 - F1: [`tests/test_protocols/test_bb84.py`](../../tests/test_protocols/test_bb84.py)
 - F2: [`tests/test_protocols/test_sixstate.py`](../../tests/test_protocols/test_sixstate.py)
+- F3: [`tests/test_protocols/test_sarg04.py`](../../tests/test_protocols/test_sarg04.py)(24 tests,含 q(e)/p_sift(e) 公式 + WLC 阈值行为 + Werner 公式对照)
 - F4: [`tests/test_protocols/test_efficient_bb84.py`](../../tests/test_protocols/test_efficient_bb84.py)(27 tests,含 parametric QBER × p_Z 扫描 + input validation + source purity)
-- F3: 待 TDD 先写测试(Phase 1 S2.1 续)
 
 ---
 
@@ -106,13 +114,15 @@
 
 **conditional_alice_bob override**:**复用** BB84 的 4-dim Werner 态(对称去极化信道下 Z-sifted 态形式相同,仅 SDP 约束集增 $\Gamma_Y$)
 
-### 3.3 SARG04(F3)— 拟实施草稿
+### 3.3 SARG04(F3,简化 Werner 模型)
 
-- **$\mathcal{P}$**:同 BB84(4-dim key × 2-dim signal)
+- **$\mathcal{P}$**:复用 BB84 的 8-dim 纯 EB 态(4-dim key × 2-dim signal);**全 SARG04 需要把宣告对作为额外 classical register**,简化模型省略
 - **$\mathcal{E}$**:同 BB84 去极化信道
-- **$\mathcal{A}$**:**不同** — Alice 公开一对非正交态集合 $\{|\psi_i\rangle, |\psi_j\rangle\}$,Bob 在 2 个 MUB 中任选,仅当 Bob 的测量结果**排除**其中之一时 sift_keep
-- **$\mathcal{T}$**:`observation_keys = ("qber_pair_{ij}", "p_sift")`(4 pair 组合,需 4 个 $\Gamma$)
-- **$\mathcal{K}$**:Alice 保留态索引 → 1 bit
+- **$\mathcal{A}$**:**简化**为基匹配(BB84-style);**真实 SARG04** 的 USD 筛选 + Alice 宣告对被折叠进下面的 p_sift 标量 + conditional state
+- **$\mathcal{T}$**:复用 BB84 的 $\Gamma_Z, \Gamma_X$;`p_sift` scaled 到 $1/4 + e/2$
+- **$\mathcal{K}$**:`bitmap = {0:0, 1:1, 2:0, 3:1}` — SARG04 "sign" convention($|0\rangle, |+\rangle \to$ bit 0;$|1\rangle, |-\rangle \to$ bit 1)
+- **conditional_alice_bob override**:Werner 态 $\mathrm{diag}((1-q)/2, q/2, q/2, (1-q)/2)$,$q(e) = e/(1+2e)$
+- **推导**:见 [qkdx/protocols/sarg04.py](../../qkdx/protocols/sarg04.py) docstring,基于枚举 4 状态 × 2 宣告对 × 2 Bob 基 × 2 Bob 结果,应用 USD 筛选条件
 
 ### 3.4 Efficient BB84(F4)
 
@@ -193,18 +203,29 @@ def build_efficient_bb84_protocol(qber: float, p_Z: float = 0.9) -> MSEBProtocol
     """
 ```
 
-### 4.3 F3 — TDD 目标签名(待实施)
+### 4.3 F3(已实施,simplified partial)
 
 ```python
 def build_sarg04_protocol(qber: float) -> MSEBProtocol:
-    """Placeholder — Phase 1 S2.1 Week 1-3 续.
+    """Construct the SARG04 (F3) MS-EB protocol (simplified, partial scope).
 
     Args:
-        qber: Effective error rate, in [0, 0.0968] (Koashi 2005 threshold).
+        qber: Symmetric depolarising channel QBER (Z = X), in [0, 1].
+
+    Returns:
+        MSEBProtocol with scope_tag='partial':
+            - conditional_alice_bob_dim() = 4
+            - Conditional state Werner(q) with q = e/(1+2e)
+            - p_sift = 1/4 + e/2
+            - Simplified threshold ~14.1% (Koashi 2005 exact ~9.68%)
+
+    Raises:
+        ValueError: if qber not in [0, 1].
 
     References:
         Scarani-Acín-Ribordy-Gisin 2004, PRL 92:057901;
-        Koashi 2005, quant-ph/0507154.
+        Koashi 2005, quant-ph/0507154;
+        Fung-Tamaki-Lo 2006, PRA 73:012337.
     """
 ```
 
@@ -230,9 +251,20 @@ def build_sarg04_protocol(qber: float) -> MSEBProtocol:
 | `test_source_state_basis_weights` | 基边缘 $P(Z)=p_Z, P(X)=1-p_Z$(4 个 p_Z 点) | `1e-10` | ✅ |
 | `test_source_state_is_pure_normalized` | trace=1, rank=1(4 个 p_Z 点) | `1e-10` | ✅ |
 
-### 5.3 待补(F3)
+### 5.3 F3 已补(commit 本轮,简化模型)
 
-- F3: vs Koashi 2005 解析 $R \leq 1 - 2h(e)$;阈值 $e \lesssim 9.68\%$
+| 测试 | 对照 | 阈值 | 状态 |
+|------|------|------|------|
+| `test_sarg04_sifted_qber_formula` | $q(e) = e/(1+2e)$(4 点) | `1e-12` | ✅ |
+| `test_sarg04_p_sift_formula` | $p_s(e) = 1/4 + e/2$(4 点) | `1e-12` | ✅ |
+| `test_wlc_sarg04_gives_positive_rate_below_threshold` | WLC R > 0 @ qber ∈ {0, 0.02, 0.05, 0.08} | — | ✅ |
+| `test_wlc_sarg04_above_simplified_threshold_gives_zero` | qber=0.16 → R ≤ 5e-4 | — | ✅ |
+| `test_wlc_sarg04_matches_werner_formula` | WLC vs $p_s \cdot (1 - 2h(q))$ | `rel=0.02, abs=1e-3` | ✅ |
+| `test_source_state_is_pure_normalized` | rank-1 + trace-1(5 QBER 点) | `1e-10` | ✅ |
+
+### 5.4 待补(F3 完整版)
+
+- F3 Koashi 2005 完整验证:需要宣告对显式 register + USD 筛选(Phase 1 Sub-Q2 延后)
 
 ---
 
@@ -272,15 +304,15 @@ def build_sarg04_protocol(qber: float) -> MSEBProtocol:
 
 | 章节 | 项 | F1 | F2 | F3 | F4 |
 |------|------|----|----|----|----|
-| §0 基本元信息 | 标题/scope/out-of-scope/代码引用 | ✓ | ✓ | ✓(pending 标注) | ✓ |
-| §1 参数边界表 | 完整/类型/range/default | ✓ | ✓ | ✓(待验证) | ✓ |
-| §2 合法性约束 | 表达式/错误类型/位置/反例 | ✓ | ✓ | ✓(pending) | ✓ |
-| §3 MS-EB 映射 | 五分量显式映射 | ✓ | ✓ | ✓(草稿) | ✓ |
-| §4 签名规范 | 签名 + docstring + scope_tag | ✓ | ✓ | ✓(目标) | ✓ |
-| §5 数值锚点 | 回归测试 + 阈值 | ✓ | ✓ | ✗ 待实施 | ✓(27 tests) |
+| §0 基本元信息 | 标题/scope/out-of-scope/代码引用 | ✓ | ✓ | ✓(partial 说明 §0.4) | ✓ |
+| §1 参数边界表 | 完整/类型/range/default | ✓ | ✓ | ✓ | ✓ |
+| §2 合法性约束 | 表达式/错误类型/位置/反例 | ✓ | ✓ | ✓ | ✓ |
+| §3 MS-EB 映射 | 五分量显式映射 | ✓ | ✓ | ✓(简化模型) | ✓ |
+| §4 签名规范 | 签名 + docstring + scope_tag | ✓ | ✓ | ✓(partial) | ✓ |
+| §5 数值锚点 | 回归测试 + 阈值 | ✓ | ✓ | ✓(24 tests, 简化 Werner) | ✓(27 tests) |
 | §6 Bearing | 文献 + 模块 + Sub-Q3 | ✓ | ✓ | ✓ | ✓ |
 
-**通过门槛**:F1, F2, F4 全部项 ✓;F3 实施层 ✗ 是 Phase 1 S2.1 剩余产出。本 sheet v0.2:F4 Efficient BB84 从 spec_only 升级到 covered。
+**通过门槛**:F1, F2, F3, F4 全部项 ✓(F3 为 `partial` 简化模型,完整 Koashi 2005 验证延后);本 sheet v0.3:F3 SARG04 从 spec_only 升级到 partial。
 
 ---
 
@@ -288,3 +320,4 @@ def build_sarg04_protocol(qber: float) -> MSEBProtocol:
 
 - **v0.1** (2026-04-19):初稿。F1/F2 对齐 Phase 0 已实施代码;F3/F4 作为 Phase 1 S2.1 Week 1-3 spec_only 占位。
 - **v0.2** (2026-04-19):F4 Efficient BB84 实施完成(commit 本轮)。`qkdx/protocols/efficient_bb84.py` + `tests/test_protocols/test_efficient_bb84.py`(27 tests),scope_tag 从 spec_only → covered。
+- **v0.3** (2026-04-19):F3 SARG04 简化 Werner 模型实施(commit 本轮)。`qkdx/protocols/sarg04.py` + `tests/test_protocols/test_sarg04.py`(24 tests),scope_tag 从 spec_only → **partial**。阈值 14.1%(简化模型) vs Koashi 2005 严格 9.68%,完整 SARG04 的宣告 register 延后到 Phase 1 Sub-Q2 升级。

@@ -134,8 +134,8 @@ v0.1 §3.3 (3) 的 "Fock 截断属灰区" 表述**撤回**,改为本节明确分
 |----|---------|-------------|----------------|------------------------|----------|------|
 | **F1 BB84** | BB84(Bennett-Brassard 1984) | `covered` | `spec_only` | `benchmark_passed`(R1.3) | Shor-Preskill 2000 Thm 1:$R = 0.5\cdot(1 - 2h(\text{QBER}))$ bit/signal(含 $p_\text{sift}=0.5$ 外层) | R1.2 `docs/msen/bb84-formulation.md` v0.3 已落;R1.3 Week 2-3 实施 |
 | **F2 六态** | six-state(Bruss 1998) | `covered` | `not_started` | `benchmark_passed`(M2 R2.3) | $R = 1/3\cdot[1 - h(e) - e\log_2 3]$ bit/signal(含 $p_\text{sift}=1/3$) | MS-EB $\mathcal{P}$ 与 BB84 同构,$\mathcal{A}$ 增 Y 基筛选 |
-| **F3 SARG04** | SARG04(Scarani-Acín-Ribordy-Gisin 2004) | `covered` | `not_started` | `builder_only`(Phase 1 Week 1-3 S2.1) | Koashi 2005:$R \leq \max(0, 1-2h(e))$,$e \lesssim 9.68\%$ | $\mathcal{A}$ 与 BB84 差异:公开两非正交态集合 |
-| **F4 Efficient BB84** | Lo-Chau-Ardehali 2005 偏置基 | `covered` | `not_started` | `builder_only`(Phase 1 Week 1-3) | 同 BB84,$p_\text{sift} \to 1$ | 只改 $\mathcal{A}$ 的基概率 |
+| **F3 SARG04** | SARG04(Scarani-Acín-Ribordy-Gisin 2004) | `partial` | `benchmark_passed`(Phase 1 S2.1 简化 Werner 模型) | `builder_only` → `benchmark_passed` Koashi 2005 需宣告 register | Koashi 2005:$R \leq \max(0, 1-2h(e))$,严格 $e \lesssim 9.68\%$;**简化模型阈值 $\lesssim 14.1\%$** | 本实施把宣告对折叠进 $p_\text{sift}=1/4+e/2$ + Werner conditional state($q=e/(1+2e)$);**partial 原因**(2026-04-19 Phase 1 S2.1):完整 SARG04 需 Alice 宣告对作为 classical register 显式编入 $\mathcal{A}$,Bob USD 筛选显式;升级到 `covered` 延后 Phase 1 Sub-Q2(见 `qkdx/protocols/sarg04.py` scope_reason) |
+| **F4 Efficient BB84** | Lo-Chau-Ardehali 2005 偏置基 | `covered` | `benchmark_passed`(Phase 1 S2.1 2026-04-19) | `builder_only` → `benchmark_passed` | 同 BB84 Shor-Preskill,$p_\text{sift} = p_Z^2 + (1-p_Z)^2 \to 1$ | 已实施:`qkdx/protocols/efficient_bb84.py`(commit 69a85e6),27 tests;只改 $\mathcal{A}$ 的基先验 + 相应重归一 source |
 | **F5 MDI-QKD** | Lo-Curty-Qi 2012 | `partial` | `not_started` | `benchmark_passed`(M2 R2.3, 但 via 虚拟-EB 覆盖路径) | Ma-Razavi 2012 Fig.3 | 两 source parties;$\mathcal{E}$ 含 Charlie 的 Bell 态测量;**partial 原因**(Agent 1 retrospective 2026-04-19):`MSEBProtocol.joint_state()` / `executed_state()` 尚未实施 multi-source 张量 + 联合信道语义,WLC SDP 仅通过 `_conditional_alice_bob` 覆盖路径工作(见 `qkdx/protocols/mdi.py` scope_reason)。升级到 `covered` 需真正的 multi-source 状态构造(延后到 Phase 1 Sub-Q2 MDI family sheet)。 |
 | **F6 TF-QKD(含 SNS、PM)** | Lucamarini 2018;Wang-Yu-Hu 2018(SNS);Ma-Zeng-Zhou 2018(PM)| `partial` | `not_started` | `builder_only`(M4B Phase 0.5 可选)| Lucamarini Fig.3 √η 标度 | **partial 原因**:phase reference 在 MS-EB 中以 $\mathcal{E}$ 的相位调制建模(workaround);M4B 验收后重新定级 |
 | **F7 MP-QKD** | Zeng-Zhou-Wu-Ma 2022 | `out_of_scope`(v0.3) | `not_started` | N/A(待 ADR 后决定) | MP-QKD 原论文数值 | **v0.3 订正**:§2.2(c) 形式化判据明示"跨轮联合声明/配对"是 out-of-scope;v0.2 的 `partial` + 备注"多轮 mode-pair 聚合可能违反 H2"自相矛盾。M4B 期若给出形式化 workaround(如把多轮 pairing 拆成 single-round + classical merging),撰写 ADR 后重新定级。 |
@@ -460,9 +460,9 @@ v0.1 §6 叫"多角度交叉验证",但 A-D 四项均为内部检查(PROSPECTUS 
 
 ### 6.1 PROSPECTUS §4.3 "85-90% 覆盖率"的粗略对齐
 
-**v0.4 订正**(Agent 2 retrospective review 2026-04-19):v0.3 写 "covered=5(F1-F5), partial=1(F6), out_of_scope=1(F7)";Agent 1 retrospective review 把 F5 MDI-QKD 从 `covered` 降级为 `partial`(multi-source state 查询未实施)后,当前分布为 **covered=4(F1-F4), partial=2(F5 MDI + F6 TF), out_of_scope=1(F7)**。
+**v0.5 订正**(Phase 1 S2.1 2026-04-19):v0.4 写 "covered=4(F1-F4), partial=2(F5 MDI + F6 TF), out_of_scope=1(F7)";Phase 1 S2.1 把 F3 SARG04 从 `covered` 降级为 `partial`(简化 Werner 模型,非 Koashi 2005 严格)后,当前分布为 **covered=3(F1 BB84, F2 六态, F4 Efficient BB84), partial=3(F3 SARG04, F5 MDI, F6 TF), out_of_scope=1(F7 MP)**。
 
-**不作加权算术**(v0.1 "87% = 5/7 + 0.5×2/7" 是任意加权,codex F6):本对齐只定性说 "4/7 协议族完全表达,2/7 协议族有 workaround(F5 MDI virtual-EB + F6 TF),1/7 协议族 out_of_scope(F7 MP-QKD 待 ADR)",与 PROSPECTUS 85-90% 的**数量级**一致(若按严格 covered/7 = 57% 则略低;按 (covered+partial)/7 = 86% 则对齐)。具体覆盖率数字需要 Phase 0 结束后由 PHASE0_REPORT.md 重新刻画。
+**不作加权算术**(v0.1 "87% = 5/7 + 0.5×2/7" 是任意加权,codex F6):本对齐只定性说 "3/7 协议族完全表达 + 3/7 协议族有 workaround(F3 SARG04 简化宣告 + F5 MDI virtual-EB + F6 TF phase-ref),1/7 协议族 out_of_scope(F7 MP-QKD 待 ADR)",与 PROSPECTUS 85-90% 的**数量级**一致(若按严格 covered/7 = 43% 则略低;按 (covered+partial)/7 = 86% 则对齐)。具体覆盖率数字需要 Phase 1 结束后由 PHASE1_REPORT.md 重新刻画。
 
 ### 6.2 Sub-Q1 验收产出对应关系
 
