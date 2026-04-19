@@ -8,7 +8,7 @@
 
 ## 0. 执行摘要(TL;DR)
 
-- **5 个里程碑(M1, M2, M3, M4A, Phase 0 集成)**全部满足 [RESEARCH_PLAN §2.1-§2.5](RESEARCH_PLAN.md) 硬验收
+- **5 个里程碑(M1, M2, M3, M4A, Phase 0 集成)**满足 [RESEARCH_PLAN §2.1-§2.5](RESEARCH_PLAN.md) **M2 核心硬验收**(六态 + MDI ideal GLLP + `wlc.py` 加法修改);**M2 Ma-Razavi 2012 Fig.3 对齐延后到 Phase 1 Sub-Q2**(见 §1.2 与 RESEARCH_PLAN §2.2 "延后验收" 分段,Agent 2 retrospective review 2026-04-19)
 - **6 个 MS-EB 协议族**在 4-dim SDP 空间内可编程:BB84, 六态, MDI(理想), 诱骗 BB84, Werner 对称 reduction
 - **131 个测试通过,9 个 MOSEK-only skip**;所有数值与解析基线误差远低于验收阈值
 - **主问题(PROSPECTUS §1)状态**:Sub-Q1(MS-EB 框架工具层)✅ 闭合;Sub-Q2/Sub-Q3/Sub-Q4 已具备工具层支撑,进入 Phase 1

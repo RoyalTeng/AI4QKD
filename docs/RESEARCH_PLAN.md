@@ -162,7 +162,12 @@ Sub-Q3 的 PLOB 精读要求 Level 4;Sub-Q2 的已发表 family sheet 参考通�
   - `docs/msen/mdi-formulation.md` + `docs/msen/sixstate-formulation.md`
   - `qkdx/protocols/mdi.py` + `qkdx/protocols/sixstate.py` + `qkdx/analytic/six_state.py` + `qkdx/analytic/gllp.py`
   - `notebooks/m2_wlc_mdi_sixstate.ipynb` 含数值对比图
-- 验收(硬):六态数值 vs 解析误差 `rel=0.01, abs=5e-4`;MDI 数值 vs Ma-Razavi 2012 Fig.3 误差 `rel=0.01, abs=5e-4`;`numerics/wlc.py` 仅**加法式**修改(只新增可观测算子 builder,BB84 基线零回归)
+- 验收(硬):
+  - 六态数值 vs 解析误差 `rel=0.01, abs=5e-4`
+  - MDI 理想 vs GLLP ideal symmetric 误差 `rel=0.01, abs=5e-4`(**M2 范围**)
+  - `numerics/wlc.py` 仅**加法式**修改(只新增可观测算子 builder,BB84 基线零回归)
+- 延后验收(**M2 不闭合,Phase 1 Sub-Q2 / M3+ 承接**):
+  - **Ma-Razavi 2012 Fig.3 对齐**:依赖 decoy + asymmetric loss,需要 Phase 1 Sub-Q2 MDI family sheet + 完整 decoy + channel loss 模型;M2 仅交付 ideal GLLP baseline,不解锁 Ma-Razavi 距离扫描对比(Agent 2 retrospective review 2026-04-19 findings)
 
 ### 2.3 M3(3 周):数值诱骗态分析
 
