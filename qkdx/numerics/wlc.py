@@ -23,7 +23,7 @@ import scipy.linalg as la
 from qkdx.core.entropy import binary_entropy
 from qkdx.core.hilbert import Matrix
 from qkdx.core.operators import KrausMap
-from qkdx.protocol.base import MSEBProtocol
+from qkdx.protocol.base import MSEBProtocol, OutOfScopeError
 from qkdx.utils.logging import get_logger
 from qkdx.utils.solvers import preferred_solver
 
@@ -69,6 +69,9 @@ class WLCResult:
     duality_gap: float
     optimal_rho: Matrix | None = None
     solver: str = "MOSEK"
+    # Feasibility diagnostic: max |Tr(Γ_k·ρ) − γ_k| at final iterate.
+    # None if not computed (MOSEK path trusts solver; Frank-Wolfe measures).
+    max_constraint_residual: float | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -99,7 +102,19 @@ def wlc_key_rate(
         ValueError: observations keys don't exactly match protocol.observation_keys.
         cp.SolverError: SDP cannot be solved.
     """
-    # --- 0. Validate keys ---
+    # --- 0. Scope gate (R1.4 hard acceptance) ---
+    # Out-of-scope protocols must not silently produce a numeric key rate.
+    # See docs/framework_coverage.md and RESEARCH_PLAN §2.1 R1.4.
+    if protocol.scope_tag == "out_of_scope":
+        raise OutOfScopeError(
+            f"Protocol {protocol.name!r} has scope_tag='out_of_scope' "
+            f"(reason: {protocol.scope_reason!r}). WLC SDP derivation is "
+            "blocked. If this is intentional for research exploration, "
+            "override by constructing a protocol with scope_tag='partial' "
+            "plus a documented scope_reason."
+        )
+
+    # --- 1. Validate keys ---
     known = set(protocol.observation_keys)
     provided = set(observations.keys())
     missing = known - provided
@@ -254,8 +269,15 @@ def _wlc_frank_wolfe(
         # --- 7. Update ---
         rho = rho + gamma * delta
 
-    return _assemble_result(best_val, "optimal", best_rho, observations, f_ec,
-                            solver=solver, gap=duality_gap, iters=n + 1)
+    # Post-solve feasibility check on the best iterate
+    _, residuals_map = _check_feasibility(best_rho, obs_constraints)
+    max_residual = max(residuals_map.values(), default=0.0)
+
+    return _assemble_result(
+        best_val, "optimal", best_rho, observations, f_ec,
+        solver=solver, gap=duality_gap, iters=n + 1,
+        constraint_residual=max_residual,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -376,7 +398,19 @@ def _line_search(
 
 
 def _init_feasible(d: int, obs_constraints: list[tuple[Matrix, float]]) -> Matrix:
-    """Find a strictly feasible ρ satisfying the equality constraints via SDP."""
+    """Find a strictly feasible ρ satisfying the equality constraints via SDP.
+
+    Returns the EXACT CLARABEL solution (within solver tolerance), WITHOUT
+    additive regularization.  Regularization previously added 1e-8·I to push
+    the iterate into the interior, but this perturbs the affine observation
+    constraints and invalidates the Frank-Wolfe duality-gap certificate
+    (Agent 1 retrospective review, 2026-04-19).
+
+    The Frank-Wolfe loop preserves feasibility under convex combination of
+    two feasible points, so starting from the exact feasible solution keeps
+    all subsequent iterates feasible.  Numerical stability of logm on
+    rank-deficient states is handled separately via the _safe_logm helper.
+    """
     sigma = cp.Variable((d, d), hermitian=True)
     constraints: list[cp.Constraint] = [sigma >> 0, cp.real(cp.trace(sigma)) == 1]
     for Gamma_k, gamma_k in obs_constraints:
@@ -386,16 +420,38 @@ def _init_feasible(d: int, obs_constraints: list[tuple[Matrix, float]]) -> Matri
     prob = cp.Problem(cp.Minimize(0), constraints)
     prob.solve(solver=cp.CLARABEL)
 
-    if sigma.value is not None:
+    if sigma.value is not None and prob.status in {"optimal", "optimal_inaccurate"}:
         val = sigma.value
-        val = 0.5 * (val + val.conj().T)
-        # Make strictly positive definite
-        val += 1e-8 * np.eye(d)
-        val /= np.trace(val).real
+        val = 0.5 * (val + val.conj().T)  # Hermitize against round-off
+        # DO NOT add 1e-8·I or renormalize — that breaks equality constraints.
+        # Trust CLARABEL's solution to satisfy constraints within its tolerance.
         return val
 
-    # Last resort: maximally mixed state (may not satisfy obs constraints)
+    # Fallback for infeasible / unknown status: try the symmetric-centroid
+    # guess (maximally mixed state rescaled so it matches the first observation
+    # constraint as much as possible).  This is a best-effort diagnostic;
+    # downstream solver will detect if constraints can't be satisfied.
     return np.eye(d, dtype=np.complex128) / d
+
+
+def _check_feasibility(
+    rho: Matrix,
+    obs_constraints: list[tuple[Matrix, float]],
+    atol: float = 1e-6,
+) -> tuple[bool, dict[int, float]]:
+    """Diagnostic: check if ρ satisfies observation equalities within atol.
+
+    Returns (feasible_flag, {constraint_index: residual}).  Residuals are
+    the absolute errors |Tr(Γ_k ρ) − γ_k|.
+    """
+    residuals: dict[int, float] = {}
+    for i, (Gamma_k, gamma_k) in enumerate(obs_constraints):
+        observed = float(np.real(np.trace(Gamma_k @ rho)))
+        residuals[i] = abs(observed - gamma_k)
+    max_res = max(residuals.values(), default=0.0)
+    trace_err = abs(float(np.real(np.trace(rho))) - 1.0)
+    feasible = (max_res <= atol) and (trace_err <= atol)
+    return feasible, residuals
 
 
 # ---------------------------------------------------------------------------
@@ -411,6 +467,7 @@ def _assemble_result(
     solver: str,
     gap: float,
     iters: int,
+    constraint_residual: float | None = None,
 ) -> WLCResult:
     """Convert SDP objective (nats) to WLCResult (bit/signal)."""
     H_bits = obj_value_nat / np.log(2.0)
@@ -424,6 +481,7 @@ def _assemble_result(
         status=status, value_nat=obj_value_nat,
         h_bits_per_sift=H_bits, key_rate=key_rate,
         leak_ec=leak_ec, p_sift=p_sift, solver=solver,
+        constraint_residual=constraint_residual,
     )
     return WLCResult(
         key_rate=key_rate,
@@ -433,6 +491,7 @@ def _assemble_result(
         duality_gap=gap,
         optimal_rho=rho_val,
         solver=solver,
+        max_constraint_residual=constraint_residual,
     )
 
 

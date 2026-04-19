@@ -7,7 +7,7 @@ import pytest
 from qkdx.analytic.gllp import mdi_ideal_symmetric_rate
 from qkdx.analytic.shor_preskill import shor_preskill_rate
 from qkdx.numerics.wlc import wlc_key_rate
-from qkdx.protocol.base import MSEBProtocol
+from qkdx.protocol.base import MSEBProtocol, MultiSourceNotImplementedError
 from qkdx.protocols.bb84 import build_bb84_protocol
 from qkdx.protocols.mdi import build_mdi_protocol
 from qkdx.utils.solvers import has_mosek
@@ -19,10 +19,37 @@ def test_mdi_has_two_sources() -> None:
     p = build_mdi_protocol(qber=0.05)
     assert isinstance(p, MSEBProtocol)
     assert p.name == "MDI-QKD"
-    assert p.scope_tag == "covered"
+    # Downgraded to partial per Agent 1 review finding (2026-04-19):
+    # base-class state queries don't support multi-source.
+    assert p.scope_tag == "partial"
+    assert p.scope_reason is not None
+    assert "multi-source" in p.scope_reason.lower()
     assert len(p.sources) == 2
     assert p.sources[0].name == "Alice"
     assert p.sources[1].name == "Bob"
+
+
+def test_mdi_joint_state_raises_multi_source() -> None:
+    """Multi-source protocols must not silently use sources[0] for joint_state."""
+    p = build_mdi_protocol(qber=0.05)
+    with pytest.raises(MultiSourceNotImplementedError, match="MDI"):
+        p.joint_state()
+
+
+def test_mdi_executed_state_raises_multi_source() -> None:
+    """executed_state() must raise, not silently use a wrong dimension."""
+    p = build_mdi_protocol(qber=0.05)
+    with pytest.raises(MultiSourceNotImplementedError, match="MDI"):
+        p.executed_state()
+
+
+def test_mdi_conditional_alice_bob_still_works_via_override() -> None:
+    """WLC SDP path uses the conditional_alice_bob override → must still work."""
+    p = build_mdi_protocol(qber=0.05)
+    rho = p.conditional_alice_bob()
+    assert rho.shape == (4, 4)
+    # Should match BB84 Z-basis sifted state (per virtual-EB picture)
+    assert np.isclose(np.trace(rho).real, 1.0, atol=1e-12)
 
 
 def test_mdi_has_bb84_conditional_dim() -> None:

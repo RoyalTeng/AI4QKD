@@ -7,11 +7,16 @@ import numpy as np
 import pytest
 
 from qkdx.protocol.base import (
-    AnnouncementRule, KeyMap, MSEBProtocol, OutOfScopeWarning,
+    AnnouncementRule, KeyMap, MSEBProtocol,
+    OutOfScopeError, OutOfScopeWarning,
     PublicQuantumNetwork, SourceParty,
 )
 from qkdx.core.operators import KrausMap
-from qkdx.protocols.bb84 import build_bb84_protocol
+from qkdx.numerics.wlc import wlc_key_rate
+from qkdx.protocols.bb84 import (
+    bb84_alice_source, bb84_channel, build_bb84_protocol,
+    _bb84_conditional_state, _gamma_qber_Z, _gamma_qber_X,
+)
 
 
 def _dummy_protocol(scope_tag: str, scope_reason: str | None = None) -> MSEBProtocol:
@@ -105,3 +110,63 @@ def test_partial_protocol_no_error() -> None:
         warnings.simplefilter("error", OutOfScopeWarning)
         p = _dummy_protocol("partial", scope_reason="TF-QKD support pending M4B implementation")
     assert p.scope_tag == "partial"
+
+
+# ---- HARD GATE: wlc_key_rate must refuse out_of_scope protocols ------------
+
+def _solvable_oos_protocol(tag: str, reason: str) -> MSEBProtocol:
+    """Construct a BB84-equivalent protocol but with non-covered scope_tag.
+
+    The protocol is numerically solvable (WLC would succeed) — the only
+    reason it must be refused is its scope_tag.
+    """
+    qber = 0.05
+    builders = {
+        "qber_Z": lambda _p: _gamma_qber_Z(),
+        "qber_X": lambda _p: _gamma_qber_X(),
+        "p_sift": lambda _p: np.eye(4, dtype=np.complex128) / 2.0,
+        "_conditional_alice_bob": lambda _p: _bb84_conditional_state(qber),
+        "_cond_dim": lambda _p: 4,
+    }
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", OutOfScopeWarning)
+        return MSEBProtocol(
+            name=f"Dummy-{tag}",
+            sources=(bb84_alice_source(qber),),
+            network=PublicQuantumNetwork(channel=bb84_channel(qber)),
+            announcement=AnnouncementRule(sift_keep=lambda outcomes: True),
+            key_map=KeyMap(key_party="Alice", bitmap={0: 0, 1: 1, 2: 0, 3: 1}),
+            observation_keys=("qber_Z", "qber_X", "p_sift"),
+            scope_tag=tag,  # type: ignore[arg-type]
+            scope_reason=reason,
+            _observable_builders=builders,  # type: ignore[arg-type]
+        )
+
+
+def test_wlc_key_rate_rejects_out_of_scope() -> None:
+    """CRITICAL: a solvable out_of_scope protocol must raise OutOfScopeError.
+
+    Regression guard for the bug Agent 1 identified in the retrospective
+    review: WLC previously ran and returned a numeric key rate for any
+    out_of_scope protocol, silently violating R1.4.
+    """
+    p = _solvable_oos_protocol(
+        tag="out_of_scope",
+        reason="cross-round adaptive E (violates single-E MS-EB assumption)",
+    )
+    with pytest.raises(OutOfScopeError, match="out_of_scope"):
+        wlc_key_rate(p, {"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5})
+
+
+def test_wlc_key_rate_allows_partial_protocol() -> None:
+    """A 'partial' protocol is NOT blocked — allowed for research exploration.
+
+    Partial protocols emit no construction warning and solve normally, so
+    researchers can still probe them (e.g. TF-QKD before M4B).  Only
+    out_of_scope is hard-gated.
+    """
+    p = _solvable_oos_protocol(tag="partial", reason="TF-QKD pending M4B")
+    result = wlc_key_rate(p, {"qber_Z": 0.05, "qber_X": 0.05, "p_sift": 0.5})
+    # Should match BB84 at QBER=0.05, f_ec=1.16 (default)
+    assert result.key_rate > 0.0
+    assert result.primal_status == "optimal"

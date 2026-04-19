@@ -117,3 +117,38 @@ def test_wlc_observable_key_unknown_raises() -> None:
                 "typo_key": 0.5,
             },
         )
+
+
+# ---------------------------------------------------------------------------
+# Frank-Wolfe feasibility invariant (Agent 1 retrospective review fix)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("qber", [0.0, 0.02, 0.05, 0.08, 0.10])
+@pytest.mark.fallback_solver
+def test_frank_wolfe_keeps_iterate_feasible(qber: float) -> None:
+    """FW iterate must remain on the affine observation constraint set.
+
+    Previously `_init_feasible` added 1e-8·I + renormalized, perturbing the
+    equality constraints to ~1e-8 residual; then the FW loop mixed that
+    infeasible point with feasible subproblem solutions, making the
+    duality_gap a non-certificate.  After the fix, residuals should be at
+    CLARABEL tolerance (~1e-10 to 1e-14) and duality_gap >= -tol.
+    """
+    protocol = build_bb84_protocol(qber=qber)
+    result = wlc_key_rate(
+        protocol,
+        observations={"qber_Z": qber, "qber_X": qber, "p_sift": 0.5},
+        solver="CLARABEL",
+    )
+    # Constraint residual must be tight (machine precision from CLARABEL)
+    assert result.max_constraint_residual is not None, (
+        "FW path must report constraint residual"
+    )
+    assert result.max_constraint_residual < 1e-6, (
+        f"QBER={qber}: residual={result.max_constraint_residual:.2e} too large; "
+        "FW iterate off feasible set"
+    )
+    # Duality gap should be near zero (allowing small negative roundoff at exit)
+    assert result.duality_gap > -1e-6, (
+        f"QBER={qber}: duality_gap={result.duality_gap:.2e} unacceptably negative"
+    )

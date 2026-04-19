@@ -15,8 +15,33 @@ from qkdx.core.operators import KrausMap
 class OutOfScopeWarning(UserWarning):
     """Raised when an MS-EB protocol is marked out-of-scope.
 
-    Protocols tagged scope_tag="out_of_scope" cannot be automatically fed into
-    the WLC SDP pipeline.  Callers must explicitly handle or suppress this warning.
+    Emitted at protocol construction time.  Solvers (e.g. wlc_key_rate) must
+    additionally HARD-BLOCK out_of_scope protocols via `OutOfScopeError`;
+    see RESEARCH_PLAN §2.1 R1.4 hard-acceptance.
+    """
+
+
+class OutOfScopeError(RuntimeError):
+    """Raised by solvers when an out_of_scope protocol is submitted for analysis.
+
+    The construction-time OutOfScopeWarning is informational; this error is
+    the hard gate that prevents an out_of_scope protocol from silently
+    producing a numeric key rate.  R1.4 requires that automatic SDP
+    derivation be blocked for out_of_scope tags.
+    """
+
+
+class MultiSourceNotImplementedError(NotImplementedError):
+    """Raised when a state-query method encounters len(sources) > 1.
+
+    The baseline joint_state() / executed_state() methods assume a single
+    source (Alice).  Multi-source protocols (e.g. MDI with Alice + Bob)
+    need explicit tensor + joint-channel semantics not yet implemented
+    in the base class.  Such protocols must either:
+      (a) register a '_conditional_alice_bob' override that returns the
+          post-announcement reduced state directly (the current MDI strategy), OR
+      (b) upgrade to explicit multi-source state construction (future M3+
+          or Phase 1 work).
     """
 
 
@@ -127,8 +152,17 @@ class MSEBProtocol:
     # ------------------------------------------------------------------
 
     def joint_state(self) -> Matrix:
-        """Return the normalised joint EB state |ψ⟩_{AA'} as a column vector."""
-        # For a single source, return its purification (dominant eigenvector of source_state)
+        """Return the normalised joint EB state |ψ⟩_{AA'} as a column vector.
+
+        Single-source only.  Raises MultiSourceNotImplementedError for
+        protocols with len(sources) > 1 (e.g. MDI).
+        """
+        if len(self.sources) > 1:
+            raise MultiSourceNotImplementedError(
+                f"joint_state() not implemented for {len(self.sources)}-source "
+                f"protocol {self.name!r}. Use conditional_alice_bob() for the "
+                "post-announcement reduced state when an override is registered."
+            )
         src = self.sources[0]
         rho = src.source_state
         # rho = |ψ⟩⟨ψ| for a pure source; extract ket
@@ -140,7 +174,18 @@ class MSEBProtocol:
         return psi
 
     def executed_state(self) -> Matrix:
-        """Full density matrix ρ_{AB} after channel, before sifting."""
+        """Full density matrix ρ_{AB} after channel, before sifting.
+
+        Single-source only.  Raises MultiSourceNotImplementedError for
+        protocols with len(sources) > 1 (e.g. MDI).  Those must use
+        conditional_alice_bob() via their registered override.
+        """
+        if len(self.sources) > 1:
+            raise MultiSourceNotImplementedError(
+                f"executed_state() not implemented for {len(self.sources)}-source "
+                f"protocol {self.name!r}. The multi-source tensor + joint-channel "
+                "semantics are deferred (see docs/msen/mdi-formulation.md §1.2)."
+            )
         src = self.sources[0]
         d_a = src.key_register_dim
         d_signal = src.signal_register_dim

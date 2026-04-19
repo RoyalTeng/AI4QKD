@@ -6,7 +6,7 @@ import pytest
 
 from qkdx.core.hilbert import HADAMARD
 from qkdx.numerics.facial import (
-    FacialReductionResult, compute_face_projector,
+    FacialReductionResult, InfeasibleConstraintError, compute_face_projector,
 )
 from qkdx.protocols.bb84 import _gamma_qber_Z, _gamma_qber_X
 
@@ -91,6 +91,51 @@ def test_non_psd_constraint_is_skipped() -> None:
     ], dtype=np.complex128)
     result = compute_face_projector([non_psd], [0.0], ambient_dim=4)
     assert result.rank == 4  # no reduction because A not PSD
+
+
+# ---- Infeasibility detection (regression for codex review finding) ---------
+
+def test_identity_with_zero_target_is_infeasible() -> None:
+    """Constraint A=I with target 0 means Tr(I·ρ)=Tr(ρ)=0, contradicts Tr(ρ)=1.
+
+    compute_face_projector must NOT silently return the full-rank projector.
+    Default behaviour: raise InfeasibleConstraintError.
+    """
+    I4 = np.eye(4, dtype=np.complex128)
+    with pytest.raises(InfeasibleConstraintError, match="infeasible|no kernel"):
+        compute_face_projector([I4], [0.0], ambient_dim=4)
+
+
+def test_identity_zero_target_on_infeasible_return_mode() -> None:
+    """With on_infeasible='return', we get feasible=False instead of raising."""
+    I4 = np.eye(4, dtype=np.complex128)
+    result = compute_face_projector(
+        [I4], [0.0], ambient_dim=4, on_infeasible="return",
+    )
+    assert result.feasible is False
+    assert result.rank == 0
+    assert result.projector.shape == (4, 0)
+
+
+def test_invalid_on_infeasible_raises() -> None:
+    I4 = np.eye(4, dtype=np.complex128)
+    with pytest.raises(ValueError, match="on_infeasible"):
+        compute_face_projector(
+            [I4], [0.0], ambient_dim=4, on_infeasible="ignore",
+        )
+
+
+def test_two_constraints_combined_infeasibility() -> None:
+    """Two PSD zero-target constraints whose kernels have trivial intersection.
+
+    E.g., A1 = diag(0,1,1,0) forces supp ⊆ span{|00⟩,|11⟩};
+         A2 = diag(1,0,0,1) forces supp ⊆ span{|01⟩,|10⟩}.
+    Intersection = {0} ⇒ infeasible.
+    """
+    A1 = np.diag([0, 1, 1, 0]).astype(np.complex128)
+    A2 = np.diag([1, 0, 0, 1]).astype(np.complex128)
+    with pytest.raises(InfeasibleConstraintError):
+        compute_face_projector([A1, A2], [0.0, 0.0], ambient_dim=4)
 
 
 # ---- Lift and project are inverse on the face -------------------------------

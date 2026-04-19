@@ -104,7 +104,14 @@ def build_mdi_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:
             - Network: identity on 4-dim (channel absorbed into override)
             - conditional_alice_bob_dim() = 4  (A_key ⊗ B_effective-bit)
             - observation_keys = ("qber_Z", "qber_X", "p_sift")
-            - scope_tag = "covered"
+            - **scope_tag = "partial"**: WLC SDP path works via the
+              `_conditional_alice_bob` override, but the base-class
+              `joint_state()` and `executed_state()` methods are not
+              implemented for multi-source protocols.  Downgraded from
+              "covered" per retrospective-review Agent 1 MAJOR #2 finding
+              (2026-04-19).  Upgrade to "covered" requires implementing
+              true multi-source state construction (Phase 1 Sub-Q2 MDI
+              family sheet or earlier dedicated work).
     """
     if not (0.0 <= qber <= 1.0):
         raise ValueError(f"QBER must be in [0, 1], got {qber}")
@@ -130,13 +137,28 @@ def build_mdi_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:
         "_cond_dim": lambda _p: 4,
     }
 
-    protocol = MSEBProtocol(
-        name="MDI-QKD",
-        sources=(src_A, src_B),
-        network=net,
-        announcement=ann,
-        key_map=km,
-        observation_keys=("qber_Z", "qber_X", "p_sift"),
-        _observable_builders=observable_builders,  # type: ignore[arg-type]
-    )
+    import warnings
+    from qkdx.protocol.base import OutOfScopeWarning
+    with warnings.catch_warnings():
+        # Partial construction intentionally avoids out_of_scope warnings
+        # (MDI WLC path works via override; base-class state queries raise).
+        warnings.simplefilter("ignore", OutOfScopeWarning)
+        protocol = MSEBProtocol(
+            name="MDI-QKD",
+            sources=(src_A, src_B),
+            network=net,
+            announcement=ann,
+            key_map=km,
+            observation_keys=("qber_Z", "qber_X", "p_sift"),
+            scope_tag="partial",
+            scope_reason=(
+                "Multi-source MS-EB: base-class joint_state() and "
+                "executed_state() are not implemented for len(sources) > 1. "
+                "WLC SDP works via the _conditional_alice_bob override. "
+                "Upgrade to scope_tag='covered' after implementing proper "
+                "tensor + joint-channel semantics (deferred — Phase 1 "
+                "Sub-Q2 MDI family sheet)."
+            ),
+            _observable_builders=observable_builders,  # type: ignore[arg-type]
+        )
     return protocol

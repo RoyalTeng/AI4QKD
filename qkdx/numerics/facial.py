@@ -33,10 +33,16 @@ from qkdx.core.hilbert import Matrix
 
 @dataclass(frozen=True)
 class FacialReductionResult:
-    """Result of facial reduction analysis."""
-    projector: Matrix  # d × r isometry P such that supp(ρ) ⊆ range(P)
-    rank: int          # r = dimension of the minimal face
+    """Result of facial reduction analysis.
+
+    When `feasible` is False, no nonzero PSD ρ can satisfy the given
+    zero-target PSD equality constraints; the projector attribute is the
+    zero d × 0 matrix and rank = 0.
+    """
+    projector: Matrix  # d × r isometry P such that supp(ρ) ⊆ range(P); d × 0 if infeasible
+    rank: int          # r = dimension of the minimal face; 0 if infeasible
     ambient_dim: int   # d = original SDP variable dimension
+    feasible: bool = True
 
     def project(self, rho_full: Matrix) -> Matrix:
         """Project ambient ρ onto the face: P† ρ P (r × r)."""
@@ -47,11 +53,16 @@ class FacialReductionResult:
         return self.projector @ rho_reduced @ self.projector.conj().T
 
 
+class InfeasibleConstraintError(RuntimeError):
+    """Raised when zero-target PSD constraints imply no nonzero feasible ρ."""
+
+
 def compute_face_projector(
     constraint_matrices: list[Matrix],
     targets: list[float],
     ambient_dim: int,
     atol: float = 1e-10,
+    on_infeasible: str = "raise",
 ) -> FacialReductionResult:
     """Compute the minimal-face projector for a set of PSD equality constraints.
 
@@ -68,18 +79,26 @@ def compute_face_projector(
         targets: list of scalar values {b_k}
         ambient_dim: d (should match the square matrix size)
         atol: tolerance for PSD check and kernel extraction
+        on_infeasible: "raise" (default) → raise InfeasibleConstraintError when
+            a PSD zero-target constraint has empty kernel inside the current
+            face (implying only ρ=0 satisfies, incompatible with Tr(ρ)=1);
+            "return" → return FacialReductionResult(feasible=False, rank=0).
 
     Returns:
         FacialReductionResult with d × r isometry P (r = face rank).
         When no constraint forces rank reduction, returns the identity
         projector (P = I_d, rank = d).
+
+    Raises:
+        InfeasibleConstraintError: if the constraints imply an empty
+            feasible set and on_infeasible="raise".
     """
     d = ambient_dim
     # Start with full space basis
     current_kernel_basis = np.eye(d, dtype=np.complex128)
     current_rank = d
 
-    for A, b in zip(constraint_matrices, targets):
+    for idx, (A, b) in enumerate(zip(constraint_matrices, targets)):
         if A.shape != (d, d):
             raise ValueError(f"Constraint matrix shape {A.shape} != ({d},{d})")
         if abs(b) > atol:
@@ -91,6 +110,9 @@ def compute_face_projector(
         eigvals = np.linalg.eigvalsh(A)
         if np.any(eigvals < -atol):
             continue  # Not PSD → skip
+        # Edge case: rank-0 face already (from prior constraints)
+        if current_rank == 0:
+            break
         # supp(ρ) ⊆ ker(A): restrict current_kernel_basis to ker(A)
         # Let B = current_kernel_basis (d × r_current).
         # A restricted to range(B): B† A B  (r_current × r_current Hermitian PSD).
@@ -100,10 +122,26 @@ def compute_face_projector(
         # Keep eigenvectors with eigenvalue ≈ 0
         kernel_mask = np.abs(eigvals_r) < atol
         if not np.any(kernel_mask):
-            # A has no kernel within current face: contradicts b=0 constraint ⇒
-            # only ρ=0 satisfies, but Tr(ρ)=1 rules it out. Return current state;
-            # downstream solver should detect infeasibility.
-            continue
+            # A has NO kernel within current face: Tr(A ρ) = 0 with A ⪰ 0
+            # positive-definite on range(current_kernel_basis) forces ρ = 0
+            # inside that face, contradicting Tr(ρ) = 1.  INFEASIBLE.
+            msg = (
+                f"Zero-target PSD constraint #{idx} (min eigenvalue inside "
+                f"current face = {eigvals_r[0]:.3e}) has no kernel; "
+                "combined constraints are infeasible (only ρ=0 satisfies, "
+                "incompatible with Tr(ρ)=1)."
+            )
+            if on_infeasible == "raise":
+                raise InfeasibleConstraintError(msg)
+            elif on_infeasible == "return":
+                return FacialReductionResult(
+                    projector=np.zeros((d, 0), dtype=np.complex128),
+                    rank=0, ambient_dim=d, feasible=False,
+                )
+            else:
+                raise ValueError(
+                    f"on_infeasible must be 'raise' or 'return', got {on_infeasible!r}"
+                )
         new_basis_in_current = eigvecs_r[:, kernel_mask]  # r_current × r_new
         current_kernel_basis = current_kernel_basis @ new_basis_in_current
         current_rank = current_kernel_basis.shape[1]
@@ -114,6 +152,7 @@ def compute_face_projector(
         projector=current_kernel_basis,
         rank=current_rank,
         ambient_dim=d,
+        feasible=(current_rank > 0),
     )
 
 
