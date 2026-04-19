@@ -32,16 +32,17 @@ class OutOfScopeError(RuntimeError):
 
 
 class MultiSourceNotImplementedError(NotImplementedError):
-    """Raised when a state-query method encounters len(sources) > 1.
+    """Reserved for future use — multi-source state construction is now implemented.
 
-    The baseline joint_state() / executed_state() methods assume a single
-    source (Alice).  Multi-source protocols (e.g. MDI with Alice + Bob)
-    need explicit tensor + joint-channel semantics not yet implemented
-    in the base class.  Such protocols must either:
-      (a) register a '_conditional_alice_bob' override that returns the
-          post-announcement reduced state directly (the current MDI strategy), OR
-      (b) upgrade to explicit multi-source state construction (future M3+
-          or Phase 1 work).
+    Phase 0 retrospective review (2026-04-19) introduced this exception to
+    gate multi-source `joint_state()` / `executed_state()`.  Phase 1 Sub-Q2
+    (commit — 2026-04-19) replaces the raises with a proper tensor-product
+    + joint-channel implementation; see `MSEBProtocol.executed_state`.
+
+    The class is retained because downstream code may still need to signal
+    *other* multi-source limitations (e.g. when a specific channel model
+    doesn't support the joint-signal dimension mismatch).  Currently not
+    raised from the base class itself.
     """
 
 
@@ -152,55 +153,79 @@ class MSEBProtocol:
     # ------------------------------------------------------------------
 
     def joint_state(self) -> Matrix:
-        """Return the normalised joint EB state |ψ⟩_{AA'} as a column vector.
+        """Return the normalised joint EB state |ψ⟩ as a column vector.
 
-        Single-source only.  Raises MultiSourceNotImplementedError for
-        protocols with len(sources) > 1 (e.g. MDI).
+        For N pure sources:  |ψ⟩ = |ψ_1⟩ ⊗ |ψ_2⟩ ⊗ ... ⊗ |ψ_N⟩
+
+        The per-source ket is extracted as the max-eigenvalue eigenvector of
+        each ρ_i (pure state → rank-1 → one eigenvalue ≈ 1).
         """
-        if len(self.sources) > 1:
-            raise MultiSourceNotImplementedError(
-                f"joint_state() not implemented for {len(self.sources)}-source "
-                f"protocol {self.name!r}. Use conditional_alice_bob() for the "
-                "post-announcement reduced state when an override is registered."
-            )
-        src = self.sources[0]
-        rho = src.source_state
-        # rho = |ψ⟩⟨ψ| for a pure source; extract ket
-        eigvals, eigvecs = np.linalg.eigh(rho)
-        idx = np.argmax(eigvals)
-        psi = eigvecs[:, idx : idx + 1]
-        # Normalise
-        psi = psi / np.linalg.norm(psi)
-        return psi
+        psis = []
+        for src in self.sources:
+            eigvals, eigvecs = np.linalg.eigh(src.source_state)
+            idx = np.argmax(eigvals)
+            psi_i = eigvecs[:, idx : idx + 1]
+            psi_i = psi_i / np.linalg.norm(psi_i)
+            psis.append(psi_i)
+        psi_joint = psis[0]
+        for psi_i in psis[1:]:
+            psi_joint = np.kron(psi_joint, psi_i)
+        # Renormalise (tensor of unit vectors should already be unit, but be safe)
+        return psi_joint / np.linalg.norm(psi_joint)
 
     def executed_state(self) -> Matrix:
-        """Full density matrix ρ_{AB} after channel, before sifting.
+        """Full density matrix after channel, before sifting.
 
-        Single-source only.  Raises MultiSourceNotImplementedError for
-        protocols with len(sources) > 1 (e.g. MDI).  Those must use
-        conditional_alice_bob() via their registered override.
+        For N sources with key dims (k_1..k_N) and signal dims (s_1..s_N):
+            1. Form ρ_joint = ρ_1 ⊗ ρ_2 ⊗ ... ⊗ ρ_N on
+               (K_1 ⊗ S_1 ⊗ K_2 ⊗ S_2 ⊗ ... ⊗ K_N ⊗ S_N)
+            2. Permute tensor axes to (K_1 ⊗ K_2 ⊗ ... ⊗ K_N) ⊗ (S_1 ⊗ ... ⊗ S_N)
+            3. Apply (I_{K_all} ⊗ ℰ) to map combined signal register → B
+
+        Returns ρ of shape (prod(k_i) * d_B, prod(k_i) * d_B).
+
+        Phase 1 Sub-Q2 implementation (2026-04-19) — replaces earlier
+        MultiSourceNotImplementedError path.  See docs/PHASE1_LOG.md §3.
         """
-        if len(self.sources) > 1:
-            raise MultiSourceNotImplementedError(
-                f"executed_state() not implemented for {len(self.sources)}-source "
-                f"protocol {self.name!r}. The multi-source tensor + joint-channel "
-                "semantics are deferred (see docs/msen/mdi-formulation.md §1.2)."
-            )
-        src = self.sources[0]
-        d_a = src.key_register_dim
-        d_signal = src.signal_register_dim
+        # 1. Tensor-product source states
+        rho_joint = self.sources[0].source_state
+        for src in self.sources[1:]:
+            rho_joint = np.kron(rho_joint, src.source_state)
+        # rho_joint shape: (prod k_i s_i, prod k_i s_i)
 
-        rho_aa_prime = src.source_state  # (d_a * d_signal, d_a * d_signal)
+        # 2. Reorder tensor axes: (K_1 S_1 K_2 S_2 ...) → (K_1 K_2 ... S_1 S_2 ...)
+        N = len(self.sources)
+        dims_per_source = []
+        for src in self.sources:
+            dims_per_source.extend([src.key_register_dim, src.signal_register_dim])
+        # Reshape matrix to 4N-rank tensor
+        # Full shape: (dims_per_source) ⊕ (dims_per_source) for ρ and ρ†
+        rho_tensor = rho_joint.reshape(dims_per_source + dims_per_source)
+        # Axis permutation: interleave (K, S, K, S, ...) → (K, K, ..., S, S, ...)
+        key_axes = list(range(0, 2 * N, 2))      # 0, 2, 4, ..., 2N-2
+        signal_axes = list(range(1, 2 * N, 2))   # 1, 3, 5, ..., 2N-1
+        perm_row = key_axes + signal_axes
+        perm_col = [p + 2 * N for p in perm_row]
+        perm = perm_row + perm_col
+        rho_perm = rho_tensor.transpose(perm)
+        # Flatten back to matrix with (keys, signals) ordering
+        d_keys = int(np.prod([s.key_register_dim for s in self.sources]))
+        d_signals = int(np.prod([s.signal_register_dim for s in self.sources]))
+        rho_matrix = rho_perm.reshape(d_keys * d_signals, d_keys * d_signals)
+
+        # 3. Apply (I_{K_all} ⊗ ℰ): signal registers → B
         ch = self.network.channel
-
-        # Partial trace over A' then apply channel: keep A, map A' → B
-        # ρ_{AB} = (I_A ⊗ ℰ)(ρ_{AA'})
+        if ch.dim_in != d_signals:
+            raise ValueError(
+                f"channel.dim_in ({ch.dim_in}) != prod(signal_register_dim) "
+                f"({d_signals})"
+            )
         d_b = ch.dim_out
-        out = np.zeros((d_a * d_b, d_a * d_b), dtype=np.complex128)
+        out = np.zeros((d_keys * d_b, d_keys * d_b), dtype=np.complex128)
+        I_keys = np.eye(d_keys, dtype=np.complex128)
         for K in ch.kraus:
-            # (I_A ⊗ K) ρ_{AA'} (I_A ⊗ K†)
-            IK = np.kron(np.eye(d_a, dtype=np.complex128), K)
-            out += IK @ rho_aa_prime @ IK.conj().T
+            IK = np.kron(I_keys, K)
+            out += IK @ rho_matrix @ IK.conj().T
         return out
 
     def conditional_alice_bob(self) -> Matrix:

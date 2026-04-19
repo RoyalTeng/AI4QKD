@@ -7,7 +7,7 @@ import pytest
 from qkdx.analytic.gllp import mdi_ideal_symmetric_rate
 from qkdx.analytic.shor_preskill import shor_preskill_rate
 from qkdx.numerics.wlc import wlc_key_rate
-from qkdx.protocol.base import MSEBProtocol, MultiSourceNotImplementedError
+from qkdx.protocol.base import MSEBProtocol
 from qkdx.protocols.bb84 import build_bb84_protocol
 from qkdx.protocols.mdi import build_mdi_protocol
 from qkdx.utils.solvers import has_mosek
@@ -23,24 +23,43 @@ def test_mdi_has_two_sources() -> None:
     # base-class state queries don't support multi-source.
     assert p.scope_tag == "partial"
     assert p.scope_reason is not None
-    assert "multi-source" in p.scope_reason.lower()
+    # Phase 1 Sub-Q2: scope reason narrowed from "multi-source" (now implemented)
+    # to "Bell POVM" (Charlie's measurement still absorbed in override).
+    assert "bell povm" in p.scope_reason.lower()
     assert len(p.sources) == 2
     assert p.sources[0].name == "Alice"
     assert p.sources[1].name == "Bob"
 
 
-def test_mdi_joint_state_raises_multi_source() -> None:
-    """Multi-source protocols must not silently use sources[0] for joint_state."""
+def test_mdi_joint_state_multi_source_works() -> None:
+    """Phase 1 Sub-Q2: multi-source joint_state() now implemented (tensor product).
+
+    Previously (Phase 0) raised MultiSourceNotImplementedError; replaced by
+    proper tensor-product implementation in base.py (PHASE1_LOG §3).
+    """
     p = build_mdi_protocol(qber=0.05)
-    with pytest.raises(MultiSourceNotImplementedError, match="MDI"):
-        p.joint_state()
+    psi = p.joint_state()
+    # Each MDI source: 4-dim key × 2-dim signal → 8-dim ket
+    # Joint: 8 × 8 = 64-dim
+    assert psi.shape == (64, 1)
+    assert np.isclose(np.linalg.norm(psi), 1.0, atol=1e-10)
 
 
-def test_mdi_executed_state_raises_multi_source() -> None:
-    """executed_state() must raise, not silently use a wrong dimension."""
+def test_mdi_executed_state_multi_source_works() -> None:
+    """Phase 1 Sub-Q2: multi-source executed_state() now implemented.
+
+    Returns 64×64 joint density matrix after identity channel (Charlie's
+    Bell POVM is still in the `_conditional_alice_bob` override, not the
+    channel — see MDI family sheet §0.4 for upgrade path to full covered).
+    """
     p = build_mdi_protocol(qber=0.05)
-    with pytest.raises(MultiSourceNotImplementedError, match="MDI"):
-        p.executed_state()
+    rho = p.executed_state()
+    # d_keys * d_B = 16 * 4 = 64
+    assert rho.shape == (64, 64)
+    assert np.isclose(np.trace(rho).real, 1.0, atol=1e-10)
+    assert np.allclose(rho, rho.conj().T, atol=1e-10)
+    eigvals = np.linalg.eigvalsh(rho)
+    assert np.all(eigvals > -1e-10)
 
 
 def test_mdi_conditional_alice_bob_still_works_via_override() -> None:

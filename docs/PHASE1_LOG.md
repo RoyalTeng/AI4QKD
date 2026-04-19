@@ -77,11 +77,42 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
+## 3.3 Multi-source `executed_state` / `joint_state` 实施(2026-04-19)
+
+**背景**:Phase 0 retrospective review (`20f9029`) 引入 `MultiSourceNotImplementedError`,任何 `len(sources) > 1` 的协议调用 `joint_state()` / `executed_state()` 即 raise。这是 F5 MDI `partial` 的直接原因。F3 SARG04 严格 Koashi 口径也依赖 multi-source 类基础设施(announcement register)。
+
+**决策**:作为前沿研究质量,这是计划内的 `partial` 升级工作(非降级)。本次 commit 实施完毕 multi-source 张量 + 联合信道语义:
+
+1. `MSEBProtocol.joint_state()`:对每个 source 取 purity 最大特征向量,按 `np.kron` 顺序张量积返回 `|ψ_joint⟩`
+2. `MSEBProtocol.executed_state()`:
+   - 步骤 A:`ρ_joint = ⊗_i ρ_i`(N-source tensor product)
+   - 步骤 B:reshape 为 4N-rank tensor,轴置换从 $(K_1, S_1, K_2, S_2, ...)$ 到 $(K_1, K_2, ..., S_1, S_2, ...)$
+   - 步骤 C:应用 $(I_{K_{\text{all}}} \otimes \mathcal{E})$,channel 作用于 combined signal registers
+   - 返回 shape `(prod(k_i) * d_B, prod(k_i) * d_B)`
+3. `MultiSourceNotImplementedError` 类保留但不再从 base 类 raise(docstring 更新说明)
+
+**测试**:新文件 [tests/test_protocol/test_multi_source.py](../tests/test_protocol/test_multi_source.py),8 tests:
+- 2-source joint_state 是 tensor product(对比显式 kron)
+- 2-source executed_state 形状/正定/迹-1/Hermitian
+- MDI(2-source)的 executed_state 返回 64×64 合法密度矩阵
+- 3-source toy 协议通用性
+- 单源回归(BB84)不变
+
+**影响**:
+- 测试数:200 → 208 (+8 multi-source tests)
+- 2 个 Phase 0 断言"MDI 必 raise"的测试反转为"MDI 返回合法态",作为 scope 升级的证据,不是回归
+- MDI scope_reason 从"multi-source 未实施"收窄到"Charlie Bell POVM 未作为 channel 建模" — 升级到 `covered` 的剩余门槛详见 [mdi_family.md §0.4](families/mdi_family.md)
+- **F5 MDI scope_tag 仍是 `partial`** — 这不是本次 commit 能闭合的,只是 gap 收窄 + 责任清晰化
+
+**共享基础设施验证**:multi-source executed_state 对 F3 SARG04 严格实施(需要 announcement classical register)亦为前置;本次基础设施完备后,F3 严格口径与 F5 Bell POVM channel 可并入同一 PR 推进。
+
+---
+
 ## 4. 尚未处理的计划内 partial(非降级,合法)
 
 以下 `partial` 标签是 RESEARCH_PLAN 许可范围内的,不是本次回滚对象,也不会自动降级:
 
-- **F5 MDI multi-source**:Phase 0 retrospective review 引入(commit `20f9029`),原因是 `MSEBProtocol.joint_state()` / `executed_state()` 未实施 multi-source 张量 + 联合信道语义。作为"识别实际 gap 后降档"的 legitimate partial,保留
+- **F5 MDI Bell POVM**:Phase 0 retrospective review 引入(commit `20f9029`),v0.1 原因"multi-source 未实施"在本次 commit(§3.3)关闭;v0.2 原因收窄到"Charlie Bell POVM 未作为 `channel` 建模",作为"识别实际 gap 后降档"的 legitimate partial,保留
 - **F6 TF-QKD phase reference**:RESEARCH_PLAN §3.1 F6 行明列"M4B 完成前 `partial`",是 plan 明文允许的
 
 ---

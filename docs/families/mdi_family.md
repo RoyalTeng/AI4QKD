@@ -34,17 +34,25 @@
 - **$\mathcal{T}$**:$\Gamma_Z, \Gamma_X$ 对应 Alice-Bob effective QBER
 - **$\mathcal{K}$**:Alice 持 key(Bob 在 sifting 后做 bit flip 对齐,等效表达由 bitmap 吸收)
 
-### 0.4 `partial` 的原因(关键)
+### 0.4 `partial` 的原因(演化)
 
-(Agent 1 retrospective review 2026-04-19,commit `20f9029`)
+**v0.1 阶段(Phase 0 retrospective review,2026-04-19,commit `20f9029`)**:
+- symptom:`MSEBProtocol.joint_state()` / `executed_state()` 对 `len(sources) > 1` 的 MDI 直接 raise `MultiSourceNotImplementedError`
+- workaround:`build_mdi_protocol` 注册 `_conditional_alice_bob` override 绕过
 
-- **symptom**:`MSEBProtocol.joint_state()` / `executed_state()` 对 `len(sources) > 1` 的 MDI 直接 raise `MultiSourceNotImplementedError`
-- **workaround**:`build_mdi_protocol` 注册 `_conditional_alice_bob` override,返回与 BB84 同形的 4×4 Werner 状态,**绕过** base-class 状态构造;WLC SDP 仅消费 override + `_cond_dim`,不访问 `joint_state`
-- **数值正确性**:理想对称情况下 WLC vs GLLP ideal symmetric 误差 `8.33e-08`,优于 MOSEK 阈值(见 [tests/test_protocols/test_mdi.py](../../tests/test_protocols/test_mdi.py))
-- **升级路径**(Phase 1 S2.1 目标):
-  1. 在 [qkdx/protocol/base.py](../../qkdx/protocol/base.py) 实施真正的 multi-source `executed_state`:对每个 source 的 `source_state` 做 tensor product,对组合 `(dim_A_signal × dim_B_signal)` → 应用 `network.channel`(Charlie 的 Bell-POVM Kraus)
-  2. 把 `_mdi_sift_keep` 升级为 3-tuple(Alice 基,Bob 基,Charlie 声明)
-  3. 将 `scope_tag` 从 `partial` → `covered`,同步 [framework_coverage.md](../framework_coverage.md) + [docs/PHASE0_REPORT.md](../PHASE0_REPORT.md)
+**v0.2 阶段(Phase 1 Sub-Q2,2026-04-19,本次 commit)**:
+- multi-source 张量 + 联合信道语义**已实施**(见 [PHASE1_LOG §3](../PHASE1_LOG.md) + [base.py](../../qkdx/protocol/base.py) `executed_state`),8 tests 全过
+- **剩余 gap 收窄到**:Charlie 的 Bell POVM + 宣告仍吸收在 `_conditional_alice_bob` override 里,不是 `PublicQuantumNetwork.channel`;导致 `executed_state()` 返回 pre-POVM 的 64×64 态而非 post-announcement Werner 形式
+- 数值正确性未受影响:WLC SDP 走 override,理想对称情形误差 `8.33e-08`
+
+**升级到 `covered` 的剩余门槛**:
+1. ~~Multi-source tensor + joint-channel semantics~~(v0.2 已完成)
+2. 把 Charlie 的 Bell POVM 作为 `PublicQuantumNetwork.channel` 建模(classical announcement 输出)
+3. 扩展 `AnnouncementRule.sift_keep` 消费 Charlie 的宣告 outcome(3-tuple:Alice 基、Bob 基、Charlie 声明)
+4. 移除 `_conditional_alice_bob` override(或保留为 fast path);`conditional_alice_bob()` 默认路径给出 Werner 态
+5. 同步 [framework_coverage.md](../framework_coverage.md) + [docs/PHASE0_REPORT.md](../PHASE0_REPORT.md) + 本 sheet
+
+**共享基础设施**:步骤 2-3 的 `AnnouncementRule` classical register 扩展同样是 F3 SARG04 严格实施所需,两项合并规划。
 
 ---
 
@@ -284,3 +292,4 @@ def build_polarization_mdi_protocol(
 ## 10. 变更日志
 
 - **v0.1** (2026-04-19):初稿。Ideal symmetric 对齐 Phase 0 M2 已实施代码(含 `partial` scope 说明);decoy/asymmetric/encoding 作为 Phase 1 S2.1 占位。
+- **v0.2** (2026-04-19):Phase 1 Sub-Q2 multi-source 基础设施实施。`MSEBProtocol.joint_state` / `executed_state` 支持 `len(sources) > 1`(tensor product + joint-channel 语义,8 tests 全过);scope_reason 收窄到"Charlie Bell POVM 未作为 channel 建模",升级到 `covered` 的剩余门槛见 §0.4。详见 [PHASE1_LOG §3](../PHASE1_LOG.md)。

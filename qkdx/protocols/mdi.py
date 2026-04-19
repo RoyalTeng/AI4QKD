@@ -168,12 +168,18 @@ def build_mdi_protocol(qber: float, p_sift: float = 0.25) -> MSEBProtocol:
             observation_keys=("qber_Z", "qber_X", "p_sift"),
             scope_tag="partial",
             scope_reason=(
-                "Multi-source MS-EB: base-class joint_state() and "
-                "executed_state() are not implemented for len(sources) > 1. "
-                "WLC SDP works via the _conditional_alice_bob override. "
-                "Upgrade to scope_tag='covered' after implementing proper "
-                "tensor + joint-channel semantics (deferred — Phase 1 "
-                "Sub-Q2 MDI family sheet)."
+                "Charlie's Bell POVM + announcement is absorbed into the "
+                "`_conditional_alice_bob` override (virtual-EB picture, "
+                "Lo-Curty-Qi 2012 §II) rather than modelled as the network "
+                "channel.  Base-class `executed_state()` and `joint_state()` "
+                "ARE implemented (Phase 1 Sub-Q2, 2026-04-19) and return the "
+                "pre-POVM joint 64×64 state; but `conditional_alice_bob()` "
+                "without the override would fall back to this state (wrong "
+                "for MDI).  Upgrade to scope_tag='covered' requires modelling "
+                "Charlie's Bell measurement as the `PublicQuantumNetwork.channel` "
+                "with classical announcement output + extending `sift_keep` "
+                "to consume Charlie's outcome (deferred — shared infrastructure "
+                "with F3 SARG04 announcement register, Phase 1 Sub-Q2)."
             ),
             _observable_builders=observable_builders,  # type: ignore[arg-type]
         )
