@@ -237,7 +237,7 @@ def test_default_path_equals_override_at_qber_zero() -> None:
 
 @pytest.mark.parametrize("q", [0.0, 0.02, 0.05, 0.08, 0.10, 0.15])
 def test_default_path_effective_qber_matches_quadratic_formula(q: float) -> None:
-    """[FIND,ADR] Effective QBER formula: e_eff = 4q/3 − 8q²/9.
+    """[ADR] Effective QBER formula: e_eff = 4q/3 − 8q²/9.
 
     Derivation (for composition bb84_channel(q)⊗bb84_channel(q) then
     linear-optic BSM + classical bit-flip correction):
@@ -263,13 +263,15 @@ def test_default_path_effective_qber_matches_quadratic_formula(q: float) -> None
 
 
 def test_build_mdi_physical_protocol_invalid_inputs() -> None:
-    """Input validation for the new physical builder."""
+    """Input validation for the new physical builder (all 4 boundary cases)."""
     with pytest.raises(ValueError, match="arm_depol_p"):
         build_mdi_physical_protocol(arm_depol_p=-0.01)
     with pytest.raises(ValueError, match="arm_depol_p"):
         build_mdi_physical_protocol(arm_depol_p=1.1)
     with pytest.raises(ValueError, match="p_sift"):
         build_mdi_physical_protocol(arm_depol_p=0.05, p_sift=0.0)
+    with pytest.raises(ValueError, match="p_sift"):
+        build_mdi_physical_protocol(arm_depol_p=0.05, p_sift=1.5)
 
 
 def test_mdi_full_physical_channel_invalid_input() -> None:

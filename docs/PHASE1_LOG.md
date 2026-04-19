@@ -106,7 +106,7 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 - **Charlie 边缘正确** — 边缘密度矩阵 p(Φ+)+p(Ψ-) ≈ 0.5(理论为 0.5)
 - **Multi-source + Bell POVM 基础设施拼接成功**
 
-### 3.6.2 Stage B.2:Default-path + **发现 MDI `qber` 约定问题**(2026-04-19)
+### 3.6.2 Stage B.2:Default-path + MDI 参数 API 命名 ADR(2026-04-19)
 
 **目标**:实现 `conditional_alice_bob()` 默认路径(executed_state 48×48 → sift → classical post-processing → 4×4 Werner),与 `_conditional_alice_bob` override 数值等价。
 
@@ -163,11 +163,12 @@ qber = 0.05 (per-arm) :
   override: diag = [0.475, 0.025, 0.025, 0.475]  ← qber-as-effective
 ```
 
-**本 Stage 产出**:
-- `mdi_full_physical_channel` + `_mdi_bell_conditional_from_executed` 函数体
-- 22 tests(7 新)
-- 本 Stage B.2 记录 + 约定问题被辨识作为 **Stage D 前置问题**
-- scope_tag 不变(partial),新 scope_reason 更新为"约定问题待 Stage D 决策"(下一 commit)
+**本 Stage 产出**(Round 1+2 后):
+- `mdi_full_physical_channel(arm_depol_p)` + `_mdi_bell_conditional_from_executed` 函数体
+- `build_mdi_physical_protocol(arm_depol_p)` 公有 builder(物理路径 + 默认 extractor)
+- 28 tests(Round 2 后,原 15 + Stage B.2 原 7 + Round 2 补 6)
+- 本 Stage B.2 记录 + 约定问题归档为 **Stage D 前置 ADR**
+- scope_tag 不变(partial),scope_reason 已更新明示真实 blocker
 
 ---
 
