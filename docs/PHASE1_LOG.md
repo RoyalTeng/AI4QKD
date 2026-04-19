@@ -77,6 +77,42 @@ F4 Efficient BB84 本身是 Lo-Chau-Ardehali 2005 标准协议,RESEARCH_PLAN §3
 
 ---
 
+## 3.8 Stage F(partial):qkdx/finite_key/ 基础设施(2026-04-20)
+
+**背景**:Plan §3.3 S2.5 Kamin 2025 复现需 PDF 不在库。退而求其次,实施 GLL-2021(Stage E memo 基础)的**分析公式**层作为 S2.5 基础设施。
+
+**Scope(诚实)**:
+- **实施**:Renner framework finite-key 的 analytic layer(variation bound μ / smoothing δ / BB84 unique-acceptance analytic ℓ)— 不依赖 SDP solver,作为任何 finite-key 计算的 "零成本" 底板
+- **未实施**:Finite-key SDP(GLL-2021 Eq. 14)全 WLC 集成 — 待 Kamin 2025 PDF 决定最终路径(GEAT vs Renner)
+- **未实施**:Kamin 2025 Fig.4 / Table 1 对照(plan §3.3 S2.5 硬验收)— PDF 未到
+
+**产出**:
+- [qkdx/finite_key/gll_renner.py](../qkdx/finite_key/gll_renner.py):
+  - `variation_bound(m, eps_PE, alphabet_size)`:GLL-2021 Eq. 4
+  - `delta_smoothing(eps_bar, n, key_alphabet_size)`:GLL-2021 Eq. 3
+  - `bb84_finite_key_length_analytic(n, m, e_x, e_z=None, ...)`:Eq. 19 完整形式(含 EC leakage 修正项,per Stage E reviewer v0.2 fix)
+  - `bb84_finite_key_rate_analytic`:per-signal wrapper
+  - `total_security_parameter`:ε 组合
+- [tests/test_finite_key/test_gll_renner.py](../tests/test_finite_key/test_gll_renner.py)(24 tests):
+  - μ 和 δ 公式的 scaling 验证(1/√m,1/√n)
+  - BB84 有限密钥长度的 asymptotic 收敛(N → ∞ 收敛到 Shor-Preskill)
+  - 阈值行为(e=0.20 > 11% 阈值时 ℓ < 0)
+  - EC leakage 修正项 presence(regression against Eq. 19 v0.1 misquote)
+  - Fig.3 style snapshot(N=10^8, e=0.05, rate ∈ [0.30, 0.38])
+  - Input validation
+
+**数值 sanity**(Fig. 3 style 在 N=10^8, e_x = e_z = 0.05, f_EC=1.2):
+- per-signal rate ≈ 0.344 bit/signal(与 asymptotic Shor-Preskill 差 ~3% 来自 finite-size 修正)
+- 作为 S2.5 后续 Kamin 2025 对比的 baseline
+
+**Plan 对齐**:
+- S2.5 "finite-key 实施" 基础设施约 **30% 就绪**(analytic layer 完成;SDP layer 待 PDF 决策)
+- 不触碰 §3.3 S2.5 **硬验收**(Kamin 2025 Fig.4 / Table 1 < 5% 误差)— 需 PDF 后专门 session
+
+**300 tests pass**(276 → 300,+24 finite-key tests;10 MOSEK-skip)。
+
+---
+
 ## 3.7 Stage E(重定向):GLL-2021 Level 3 精读(2026-04-19 → 2026-04-20)
 
 **背景**:Plan §3.3 S2.4 原定 Metger 2024 GEAT Level 4 精读,S2.5 Kamin 2025 复现。本 session 检查 PDF 可用性发现:
