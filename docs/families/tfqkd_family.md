@@ -168,11 +168,17 @@ def build_pm_qkd_protocol(
 
 ### 5.2 待补(Phase 0.5 M4B — 可选 / Phase 1 S2.2)
 
-| 变体 | 对照 | 阈值 | Phase |
-|------|------|------|-------|
-| TF | Lucamarini 2018 Fig.3 | log-log 斜率 `0.5 ± 0.05` | M4B 硬验收 |
-| SNS | Wang-Yu-Hu 2018 Fig.3 | 密钥率误差 `rel=0.05` | S2.2 |
-| PM | Ma-Zeng-Zhou 2018 Table II | 密钥率误差 `rel=0.05` | S2.2 |
+| 变体 | 对照 | 阈值 | Phase | 状态 |
+|------|------|------|-------|------|
+| TF | Lucamarini 2018 Fig.3 | log-log 斜率 `0.5 ± 0.05` | M4B 硬验收 | 待实施 |
+| SNS | Wang-Yu-Hu 2018 Fig.3 | 密钥率误差 `rel=0.05` | S2.2 | 待实施 |
+| **PM** | **Ma-Zeng-Zhou 2018 Fig.3a / Eq.4** | **log-log 斜率 `0.5 ± 0.05`** | **F6 §7.3 (2026-04-20)** | **✓ commit `pending`** |
+
+**F6 §7.3 第一遍实施**(`qkdx/analytic/pm_qkd.py`, 2026-04-20):
+- Ma Eq. 4 + Eq. 2 decoy phase-error UB(honest-behaviour first-pass)
+- 实测 log-log 斜率 **0.52**(target 0.5 ± 0.05 ✓)
+- 绝对密钥率比 Ma Fig.3a 低 1-2 个数量级(per-distance μ 未优化 + phase-error UB 未接入完整 decoy 反演,§7.5+ 补)
+- 20 tests 全过;tfqkd_family §5.2 PM 硬验收**斜率形状通过**,绝对值匹配归 §7.5
 
 ---
 

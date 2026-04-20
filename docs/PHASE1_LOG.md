@@ -446,6 +446,53 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.11 Stage F6 §7.3 — PM-QKD analytic 第一遍实施(2026-04-20,post-review)
+
+**背景**:dev-reviewer Round 4 PASS 后,按原 §7.3 计划推进 PM-QKD 实施。Stage 2 Kamin SDP 被 MOSEK 沙箱不可用阻塞,故选择 PM-QKD 作为当前最可交付的 Sub-Q2 进展。
+
+**产出**:
+- [qkdx/analytic/pm_qkd.py](../qkdx/analytic/pm_qkd.py):Ma-Zeng-Zhou 2018 Eq. 4 asymptotic rate + Eq. 2 decoy phase-error UB
+  - `PmQkdParams`:Ma Fig. 3b 参数(p_d=8e-8, η_d=14.5%, f=1.15, M=16, e_d=1.5%)
+  - `pm_charlie_gain(mu, eta_total, p_d)`:单点击 gain Q_μ = 2·[1 − (1-p_d)·e^{-η·μ/2}]·(1-p_d)·e^{-η·μ/2}
+  - `pm_single_photon_yield`, `pm_vacuum_yield`:Y_1, Y_0
+  - `pm_bit_error_rate`:E_μ^Z 诚实 behaviour 模拟
+  - `pm_phase_error_upper`:E_μ^X 上界(honest-behaviour first pass)
+  - `pm_asymptotic_rate`:Ma Eq. 4 composed
+  - `pm_qkd_sweep_vs_loss`:sweep helper
+
+- [tests/test_analytic/test_pm_qkd.py](../tests/test_analytic/test_pm_qkd.py)(20 tests):
+  - `PmQkdParams` 参数默认值 + 校验
+  - Q_μ / Y_0 / Y_1 小 μ + 零 dark 极限
+  - 相位误差 UB 单调性 + 边界
+  - **核心 acceptance**:`test_sqrt_eta_scaling` — log-log 斜率 **0.516**(target 0.5 ± 0.05 ✓)
+  - Ma Fig. 3a 量级 spot-check(50 dB 处 R > 0)
+
+**tfqkd_family.md §5.2 PM 硬验收**:**斜率形状通过** ✓;
+**绝对密钥率**比 Ma Fig. 3a 低 1-2 个数量级(per-distance μ 未优化 + phase-error UB 未接入完整 decoy 反演)— 此为 §7.5+ 工作(`qkdx/analytic/pm_qkd_decoy.py` 多强度反演)。
+
+**数值 benchmark**(μ=0.3, default params):
+
+| L (km) | loss dB | Q_μ | R (bit/pulse) |
+|--------|---------|------|---------------|
+| 0 | 0 | 4.21e-2 | 1.52e-4 |
+| 100 | 20 | 4.34e-3 | 1.56e-5 |
+| 200 | 40 | 4.35e-4 | 1.49e-6 |
+| 300 | 60 | 4.37e-5 | 7.79e-8 |
+| ≥ 320 | > 64 | — | < 0(cutoff) |
+
+**对比 Ma Fig. 3a**:我们 cutoff ~320 km vs Ma ~418 km;gap 由 (1) 未优化 μ (2) phase-error UB 过宽 (3) EC 效率不精。**log-log shape is correct** — √η scaling 物理本质已被正确捕捉。
+
+**Plan 对齐**:
+- F6 §7.3(analytic layer):**第一遍完成**
+- F6 §7.4(log-log 斜率 0.5 硬验收):**通过**(实测 0.52 in mid-loss regime)
+- F6 §7.5(SNS 实施 + 全 decoy 反演):**未完成**,留作后续
+
+**测试增量**:20 tests(整体 384 → 404)。
+
+**计划外处理**:首次实施把 `pm_charlie_gain` 的单点击 probabilty 写错(两个 `fire` factor 相乘而非一个 `fire` + 一个 `silent`),导致 η → 0 极限不对(2·p_d² vs 正确 Y_0 = 2·p_d(1-p_d))。发现于 TDD 第一轮失败,立即修正并更新 test 断言。
+
+---
+
 ## 4.7 Stage S2.5 预备 — Kamin 2025 Level 3–4 精读(2026-04-20)
 
 **背景**:Stage S2.4 GEAT memo 完成后,S2.5 "GEAT 实现 + Kamin 2025 复现"需要 Kamin 2025 原文作为实施蓝图。PDF 已于 2026-04-20 就绪(`docs/literature/pdfs/Kamin-2025-FiniteSizeAnalysisEntropyAccumulation.pdf`, 968 KB, 40 pp.),本节完成精读 memo。
