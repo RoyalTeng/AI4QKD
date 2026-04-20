@@ -446,6 +446,50 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.15 Sub-Q3 §4.4 补读 — TGW 2014 + WTB 2017(2026-04-20 autonomous, 用户返回后)
+
+**背景**:用户返回后指示 "把原本计划做完",继续 Sub-Q3 §4.4 literature stack 补读。两篇 PDF 已在库。
+
+### §4.15a TGW 2014 Level 3 精读
+
+**产出**:[docs/literature/TGW-2014.md](literature/TGW-2014.md)(v0.1, Level 3, ~280 行)
+
+**关键发现**:
+- TGW 2014 是 **首个 single-letter 上界** 对 $P_2(\mathcal{N})$,用 squashed entanglement $E_\text{sq}(\mathcal{N}) = \max_\psi E_\text{sq}(A;B)_{\mathcal{N}(\psi)}$
+- 主定理:$P_2(\mathcal{N}) \leq E_\text{sq}(\mathcal{N})$
+- Pure-loss specific bound(Eq. 1):$P_2(N_\eta) \leq \log_2[(1+\eta)/(1-\eta)]$,高损耗 $\approx 2.88\eta$
+- **与 PLOB 对比**:PLOB 给 $\approx 1.44\eta$,**2× 更紧**;TGW 被 PLOB 超越 for lossy channels
+- **TGW 当前价值**:对 non-distillable channels(amplitude damping / thermal-loss),squashed-E 框架可能给更紧上界 — Sub-Q3 §4.4 可用 `min{E_R, E_sq}`
+
+### §4.15b WTB 2017 Level 3 精读
+
+**产出**:[docs/literature/WTB-2017.md](literature/WTB-2017.md)(v0.1, Level 3, ~280 行)
+
+**关键发现**:
+- **升级 PLOB weak converse 为 strong converse**:对 tele-simulable channels,rate > $E_R(\mathcal{N})$ ⇒ ε → 1 **指数衰减**(not just "not → 0")
+- 技术核心:**meta-converse + privacy test**(Def 8 + Lemma 9/10)
+- **Thm 26**:$P_\leftrightarrow^\dagger(\mathcal{N}) \leq E_R(\mathcal{N})$ for tele-simulable
+- **对 pure-loss + QL amplifier**:PLOB bound 实际上是 strong converse + finite-blocklength strong converse
+- **Second-order expansion**(§6):对 covariant channels,$\hat{P}(n, \varepsilon) \leq E_R(\mathcal{N}) + \sqrt{V/n}\Phi^{-1}(\varepsilon) + O(\log n/n)$ — 与 Kamin 2025 GEAT achievable 形成 finite-blocklength sandwich
+
+**对 Sub-Q3 §4.4 数值工具的贡献**:
+- PLOB / Pirandola bound 是 **strong converse** → 超过 bound 必然失败(工程 implications 强)
+- Second-order expansion 给 finite-n converse,配合 Kamin 2025 lower bound 做 **finite-blocklength gap 量化**
+- API 建议见 WTB-2017.md §10.1 (`qkdx/numerics/e_r_upper.py`)
+
+### Sub-Q3 文献栈完整度
+
+| 论文 | Level | 状态 |
+|------|-------|------|
+| PLOB 2017 | 4 | ✅ PLOB-2017.md |
+| Pirandola 2019 | 4 | ✅ Pirandola-2019.md |
+| TGW 2014 | 3 | ✅ TGW-2014.md |
+| WTB 2017 | 3 | ✅ WTB-2017.md |
+
+**Sub-Q3 §4.1-§4.3 literature prep 完成**。**§4.4 数值工具**(`qkdx/numerics/e_r_upper.py`)待实施。
+
+---
+
 ## 4.14 Sub-Q3 前置 — Pirandola 2019 Level 4 精读(2026-04-20 autonomous session)
 
 **背景**:PLOB 2017 memo 完成后,按 Sub-Q3 §4 后续精读 Pirandola 2019 end-to-end capacities,这是 TF-QKD / relay-assisted QKD 拓扑的**正确**上界来源。PDF 在库(`docs/literature/pdfs/Pirandola-2019-EndToEndCapacities.pdf`, 1.0 MB)。
