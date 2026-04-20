@@ -477,3 +477,153 @@ def kamin_choi_sdp_qubit_bb84(
     if return_J:
         result["J"] = np.array(J_var.value, dtype=np.complex128)
     return result
+
+
+# ---------------------------------------------------------------------------
+# Stage 2 A2: Dual extraction (Thm 4 Lagrange multiplier g*)
+# ---------------------------------------------------------------------------
+
+def kamin_choi_sdp_qubit_bb84_with_dual(
+    qber: float,
+    gamma: float = 0.01,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Kamin Choi-state SDP + Lagrange dual extraction (S2.5 Stage 2 A2).
+
+    Extends `kamin_choi_sdp_qubit_bb84` to also return the Lagrange
+    multipliers (g*_Z, g*_X) of the QBER equality constraints.
+
+    Per Kamin 2025 Thm 4 (§5.2.1), the optimal crossover min-tradeoff
+    function g* has gradient equal to the Lagrange dual of the constraint
+    q^hon − Φ[ρ_J^t] − λ = 0 in the Eq. 49 SDP.  For our BB84
+    specialization with only QBER equalities (no λ slack), the dual of
+    each `Tr(Γ_k · ρ_J) = q_k` directly gives g*_k:
+
+        g*_k = ∂(rate) / ∂q_k  (at q_k = q_k^hon)
+
+    This gives the **subgradient** of the rate function (which is convex
+    in q by construction of the inf over J).
+
+    Sign convention (CVXPY): for an equality constraint `lhs == rhs`, the
+    dual corresponds to ∂(objective_min) / ∂(rhs).  Here the objective is
+    W(ρ_J^g) in nats (to be converted to bits/sift later).
+
+    Args:
+        qber, gamma, solver, epsilon_regularization, verbose: same as
+            kamin_choi_sdp_qubit_bb84.
+
+    Returns:
+        dict with keys:
+            h_per_sift, status, value_nat, solver   (same as A1)
+            g_star                                   : {"g_star_Z", "g_star_X"}
+            J                                        : optimal Choi matrix
+    """
+    if not (0.0 <= qber < 0.5):
+        raise ValueError(f"qber must be in [0, 0.5), got {qber}")
+    if not (0.0 < gamma < 1.0):
+        raise ValueError(f"gamma must be in (0, 1), got {gamma}")
+
+    dim_A = dim_A_prime = dim_B = 2
+
+    # Source state |ξ⟩ = (|00⟩ + |11⟩)/√2
+    xi = np.zeros(dim_A * dim_A_prime, dtype=np.complex128)
+    xi[0] = 1.0 / math.sqrt(2)
+    xi[3] = 1.0 / math.sqrt(2)
+    xi_xi = np.outer(xi, xi.conj())
+    xi_xi_T = partial_transpose_A_prime(xi_xi, dim_A=dim_A,
+                                        dim_A_prime=dim_A_prime)
+    xi_xi_T_kron_I = np.kron(xi_xi_T, np.eye(dim_B, dtype=np.complex128))
+
+    D_J = dim_A_prime * dim_B  # = 4
+    J_var = cp.Variable((D_J, D_J), hermitian=True)
+
+    constraints_named: dict[str, cp.Constraint] = {}
+
+    # PSD + trace-preserving
+    constraints_named["psd"] = J_var >> 0
+    tr_B_J = partial_trace_B_cvxpy(J_var, dim_A=dim_A_prime, dim_B=dim_B)
+    constraints_named["tp"] = tr_B_J == np.eye(dim_A_prime, dtype=np.complex128)
+
+    # rho_J expression
+    rho_J_expr = rho_J_from_choi_cvxpy(
+        J_expr=J_var,
+        xi_xi_T_kron_I_const=xi_xi_T_kron_I,
+        dim_A=dim_A, dim_A_prime=dim_A_prime, dim_B=dim_B,
+    )
+
+    # QBER constraints — named so we can query their dual values
+    from qkdx.protocols.bb84 import _gamma_qber_Z, _gamma_qber_X
+    Gamma_Z = _gamma_qber_Z()
+    Gamma_X = _gamma_qber_X()
+    constraints_named["qber_Z"] = (
+        cp.real(cp.trace(cp.Constant(Gamma_Z) @ rho_J_expr)) == float(qber)
+    )
+    constraints_named["qber_X"] = (
+        cp.real(cp.trace(cp.Constant(Gamma_X) @ rho_J_expr)) == float(qber)
+    )
+
+    # Objective
+    d_X = dim_A * dim_B  # = 4
+    tau_I = np.eye(d_X, dtype=np.complex128) / d_X
+    X_expr, Y_expr = _bb84_G_Z_expressions(rho_J_expr)
+    X_reg = (1.0 - epsilon_regularization) * X_expr + cp.Constant(
+        epsilon_regularization * tau_I
+    )
+    X_aux = cp.Variable((d_X, d_X), hermitian=True)
+    Y_aux = cp.Variable((d_X, d_X), hermitian=True)
+    constraints_named["X_aux"] = X_aux == X_reg
+    constraints_named["Y_aux"] = Y_aux == Y_expr
+
+    objective = cp.Minimize(cp.quantum_rel_entr(X_aux, Y_aux))
+
+    prob = cp.Problem(objective, list(constraints_named.values()))
+    mosek_params = {
+        "MSK_DPAR_INTPNT_CO_TOL_REL_GAP": 1e-8,
+        "MSK_DPAR_INTPNT_CO_TOL_PFEAS": 1e-8,
+        "MSK_DPAR_INTPNT_CO_TOL_DFEAS": 1e-8,
+        "MSK_IPAR_INTPNT_MAX_ITERATIONS": 1000,
+    }
+    prob.solve(solver=solver, verbose=verbose,
+               mosek_params=mosek_params if solver == "MOSEK" else {})
+
+    if prob.status not in {"optimal", "optimal_inaccurate"}:
+        raise cp.SolverError(
+            f"Kamin dual SDP failed: status={prob.status}"
+        )
+
+    value_nat = float(prob.value)
+    h_per_sift = value_nat / math.log(2.0)
+
+    # Extract duals of QBER constraints.
+    #
+    # CVXPY sign convention (verified empirically against analytic d(1-H₂)/dq
+    # at q=0.01/0.05/0.1): for equality constraint `cp.real(trace(Γ·ρ)) == q`,
+    # CVXPY's dual_value has OPPOSITE sign to ∂(objective*)/∂q.  That is:
+    #     CVXPY_dual = −∂W*/∂q    (in nats)
+    #
+    # For Kamin's min-tradeoff function g(q) = ∂(rate)/∂q · q + const (with
+    # rate = h_per_sift in bits), we want g_star = +∂(rate)/∂q.  Therefore:
+    #     g_star_bits = −CVXPY_dual / ln(2)
+    #
+    # Structural physics check (BB84 Werner, symmetric qber):
+    #     g_star_Z ≈ 0       (Z-basis observation doesn't bound privacy)
+    #     g_star_X ≈ rate'(q) = −log₂((1−q)/q)
+    #                           ≈ −4.25 at q=0.05
+    dual_qber_Z_nats = float(constraints_named["qber_Z"].dual_value)
+    dual_qber_X_nats = float(constraints_named["qber_X"].dual_value)
+    g_star_Z = -dual_qber_Z_nats / math.log(2.0)
+    g_star_X = -dual_qber_X_nats / math.log(2.0)
+
+    return {
+        "h_per_sift": h_per_sift,
+        "status": prob.status,
+        "value_nat": value_nat,
+        "solver": solver,
+        "J": np.array(J_var.value, dtype=np.complex128),
+        "g_star": {
+            "g_star_Z": g_star_Z,
+            "g_star_X": g_star_X,
+        },
+    }
