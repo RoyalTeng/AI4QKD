@@ -1,0 +1,180 @@
+diff --git a/qkdx/analytic/pm_qkd_decoy.py b/qkdx/analytic/pm_qkd_decoy.py
+index 777ee4e..e342c57 100644
+--- a/qkdx/analytic/pm_qkd_decoy.py
++++ b/qkdx/analytic/pm_qkd_decoy.py
+@@ -142,6 +142,14 @@ def pm_decoy_phase_error_upper(
+     (arbitrary multi-intensity inversion can in principle extract Y_k for each
+     k); for finite-decoy bounds see §7.5 future work.
+ 
++    **Internal Q_μ convention (Round-2 fix for Codex §7.5a review)**:
++        `Q_μ` used inside this function is the **truncated exact** form
++        `Σ_{k=0}^{N_ph} P^μ(k)·Y_k`, which satisfies Ma A34/A35 self-consistency
++        (`Σ_k q_k = 1` up to truncation error).  It is NOT `pm_charlie_gain`
++        (Ma B14 approximation), which carries an extra `(1-p_d)` factor coming
++        from B14's further approximation step and breaks A34 normalization at
++        non-zero p_d (e.g., `Σ q_k ≈ 1/(1-p_d) > 1` at moderate p_d).
++
+     **Physical interpretation of A33**:
+         - Odd-photon components (k = 2m+1) carry phase information faithfully
+           (Ma Lemma 1); their Z-basis error rate e_{2m+1}^Z bounds the X-basis
+@@ -177,15 +185,20 @@ def pm_decoy_phase_error_upper(
+     p_d = params.p_d
+     e_delta = params.e_delta
+ 
+-    Q_mu = pm_charlie_gain(mu=mu, eta_total=eta_total, p_d=p_d)
+-    if Q_mu <= 0.0:
++    # Precompute Y_k and P^μ(k) over the truncation window.
++    Y_ks = [pm_k_photon_yield(k=k, eta_total=eta_total, p_d=p_d) for k in range(N_ph_cutoff + 1)]
++    # P^μ(k) = e^{-μ} μ^k / k!
++    p_mu = [math.exp(-mu) * mu ** k / math.factorial(k) for k in range(N_ph_cutoff + 1)]
++
++    # Ma A35 exact (truncated) Q_μ: Σ P^μ(k)·Y_k
++    Q_mu_truncated = sum(p_k * Y_k for p_k, Y_k in zip(p_mu, Y_ks))
++    if Q_mu_truncated <= 0.0:
+         return 0.5
+ 
+-    # Accumulate A33 sum truncated at N_ph_cutoff
++    # Accumulate A33 sum using self-consistent q_k (so Σ q_k = 1 exactly).
+     total = 0.0
+     for k in range(N_ph_cutoff + 1):
+-        Y_k = pm_k_photon_yield(k=k, eta_total=eta_total, p_d=p_d)
+-        q_k = pm_decoy_q_k_fraction(k=k, mu=mu, Y_k=Y_k, Q_mu=Q_mu)
++        q_k = p_mu[k] * Y_ks[k] / Q_mu_truncated
+         e_k = pm_k_photon_error_rate_honest(
+             k=k, eta_total=eta_total, p_d=p_d, e_delta=e_delta,
+         )
+@@ -199,6 +212,35 @@ def pm_decoy_phase_error_upper(
+     return min(max(total, 0.0), 0.5)
+ 
+ 
++def pm_decoy_q_mu_exact(
++    mu: float,
++    eta_total: float,
++    p_d: float,
++    N_ph_cutoff: int = 20,
++) -> float:
++    """Ma A35 exact (truncated) total gain: Q_μ = Σ_{k=0}^{N_ph} P^μ(k)·Y_k.
++
++    This differs from `pm_charlie_gain` (Ma B14 approximation form) by a factor
++    (1-p_d) coming from B14's further approximation.  Use this form for any
++    A34-consistent decoy calculation where Σ_k q_k = 1 must hold exactly.
++
++    Returns:
++        Q_μ ∈ [0, 1].
++    """
++    if mu < 0.0:
++        raise ValueError(f"mu must be ≥ 0, got {mu}")
++    if not (0.0 <= eta_total <= 1.0):
++        raise ValueError(f"eta_total must be in [0, 1], got {eta_total}")
++    if N_ph_cutoff < 1:
++        raise ValueError(f"N_ph_cutoff must be ≥ 1, got {N_ph_cutoff}")
++    total = 0.0
++    for k in range(N_ph_cutoff + 1):
++        Y_k = pm_k_photon_yield(k=k, eta_total=eta_total, p_d=p_d)
++        P_k = math.exp(-mu) * mu ** k / math.factorial(k)
++        total += P_k * Y_k
++    return min(max(total, 0.0), 1.0)
++
++
+ def pm_rate_with_decoy_phase_error(
+     mu: float,
+     eta_channel: float,
+@@ -212,6 +254,16 @@ def pm_rate_with_decoy_phase_error(
+     Replaces the heuristic `pm_phase_error_upper` fallback with the tighter
+     decoy-state `pm_decoy_phase_error_upper` evaluation (Ma Eq. A33).
+ 
++    **Round-2 fix**:  Q_μ in this path is the exact truncated Σ P^μ(k)·Y_k
++    (via `pm_decoy_q_mu_exact`), self-consistent with the q_k normalization
++    in `pm_decoy_phase_error_upper`.  Earlier version used the B14 approximation
++    from `pm_charlie_gain`, which is off by a factor (1-p_d) from the A35 exact
++    form.  For the default p_d=8e-8 the numerical difference is <10^{-7}, but
++    at higher p_d the gap grows.  The bit-error rate `E_μ^Z` still uses the
++    Ma B22 closed-form approximation (a known heuristic noted in Ma §V); full
++    self-consistency here would require a matching A35 reformulation for E_Z,
++    which is §7.5+ follow-up.
++
+     Args:
+         mu: intensity.
+         eta_channel: total Alice-Bob channel transmittance (per-arm = √η_channel).
+@@ -232,7 +284,10 @@ def pm_rate_with_decoy_phase_error(
+     eta_arm = math.sqrt(eta_channel)
+     eta_eff = eta_arm * params.eta_det
+ 
+-    Q_mu = pm_charlie_gain(mu=mu, eta_total=eta_eff, p_d=params.p_d)
++    # Self-consistent Q_μ matching A34/A35 (Round-2 fix): exact truncated sum
++    Q_mu = pm_decoy_q_mu_exact(
++        mu=mu, eta_total=eta_eff, p_d=params.p_d, N_ph_cutoff=N_ph_cutoff,
++    )
+     E_Z = pm_bit_error_rate(
+         mu=mu, eta_total=eta_eff, p_d=params.p_d, e_delta=params.e_delta,
+     )
+diff --git a/tests/test_analytic/test_pm_qkd_decoy.py b/tests/test_analytic/test_pm_qkd_decoy.py
+index 3f8ae46..52496bc 100644
+--- a/tests/test_analytic/test_pm_qkd_decoy.py
++++ b/tests/test_analytic/test_pm_qkd_decoy.py
+@@ -23,10 +23,13 @@ import math
+ 
+ import pytest
+ 
+-from qkdx.analytic.pm_qkd import PmQkdParams, pm_asymptotic_rate, pm_k_photon_yield
++from qkdx.analytic.pm_qkd import (
++    PmQkdParams, pm_asymptotic_rate, pm_charlie_gain, pm_k_photon_yield,
++)
+ from qkdx.analytic.pm_qkd_decoy import (
+     pm_decoy_phase_error_upper,
+     pm_decoy_q_k_fraction,
++    pm_decoy_q_mu_exact,
+     pm_k_photon_error_rate_honest,
+     pm_rate_with_decoy_phase_error,
+ )
+@@ -90,6 +93,50 @@ class TestPmDecoyQKFraction:
+         assert q0 == pytest.approx(expected, rel=1e-12)
+ 
+ 
++class TestPmDecoyQMuExact:
++    """Ma A35 exact Q_μ = Σ P^μ(k)·Y_k (self-consistent with A34 q_k).
++
++    Differs from `pm_charlie_gain` (Ma B14 approximation) by factor (1-p_d):
++        pm_charlie_gain  = (1-p_d)·[1 − (1-2p_d)·e^{-η·μ}]
++        pm_decoy_q_mu_exact = [1 − (1-2p_d)·e^{-η·μ}]  (at N_ph → ∞)
++    Round-2 fix: Round 1 used pm_charlie_gain inside pm_decoy_phase_error_upper
++    which broke A34 normalization (Σ q_k = 1/(1-p_d) ≠ 1).
++    """
++
++    def test_exact_limit_matches_closed_form(self):
++        # At large N_ph_cutoff, Q_μ_exact = 1 - (1-2p_d)·e^{-η·μ}
++        eta, p_d, mu = 0.01, 1e-5, 0.3
++        got = pm_decoy_q_mu_exact(mu=mu, eta_total=eta, p_d=p_d, N_ph_cutoff=40)
++        closed_form = 1.0 - (1.0 - 2.0 * p_d) * math.exp(-eta * mu)
++        assert got == pytest.approx(closed_form, rel=1e-10)
++
++    def test_differs_from_pm_charlie_gain_by_factor(self):
++        # pm_charlie_gain = (1-p_d) · pm_decoy_q_mu_exact at large N_ph
++        eta, mu = 0.01, 0.3
++        for p_d in [1e-6, 0.01, 0.1]:
++            exact = pm_decoy_q_mu_exact(mu=mu, eta_total=eta, p_d=p_d, N_ph_cutoff=40)
++            approx = pm_charlie_gain(mu=mu, eta_total=eta, p_d=p_d)
++            assert approx == pytest.approx((1.0 - p_d) * exact, rel=1e-10), (
++                f"At p_d={p_d}: pm_charlie_gain={approx:.6e} vs "
++                f"(1-p_d)·exact={(1-p_d)*exact:.6e}"
++            )
++
++    def test_self_consistency_sum_q_k_equals_one(self):
++        # Regression test for Round 1 bug: Σ_k q_k must = 1 with self-consistent Q_μ.
++        # Use a non-trivial p_d (not default 8e-8) to expose any (1-p_d) factor bugs.
++        mu, eta, p_d = 0.3, 0.01, 0.01
++        Q_mu_exact = pm_decoy_q_mu_exact(mu=mu, eta_total=eta, p_d=p_d, N_ph_cutoff=40)
++        q_sum = sum(
++            pm_decoy_q_k_fraction(
++                k=k, mu=mu,
++                Y_k=pm_k_photon_yield(k=k, eta_total=eta, p_d=p_d),
++                Q_mu=Q_mu_exact,
++            )
++            for k in range(41)
++        )
++        assert q_sum == pytest.approx(1.0, abs=1e-10)
++
++
+ class TestPmDecoyPhaseErrorUpper:
+     """Ma Eq. A33 direct evaluation with honest Y_k / e_k^Z (infinite-decoy limit)."""
+ 

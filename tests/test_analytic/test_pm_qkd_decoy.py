@@ -23,10 +23,13 @@ import math
 
 import pytest
 
-from qkdx.analytic.pm_qkd import PmQkdParams, pm_asymptotic_rate, pm_k_photon_yield
+from qkdx.analytic.pm_qkd import (
+    PmQkdParams, pm_asymptotic_rate, pm_charlie_gain, pm_k_photon_yield,
+)
 from qkdx.analytic.pm_qkd_decoy import (
     pm_decoy_phase_error_upper,
     pm_decoy_q_k_fraction,
+    pm_decoy_q_mu_exact,
     pm_k_photon_error_rate_honest,
     pm_rate_with_decoy_phase_error,
 )
@@ -88,6 +91,50 @@ class TestPmDecoyQKFraction:
         q0 = pm_decoy_q_k_fraction(k=0, mu=mu, Y_k=Y_0, Q_mu=Q_mu)
         expected = math.exp(-mu) * 1 * Y_0 / Q_mu
         assert q0 == pytest.approx(expected, rel=1e-12)
+
+
+class TestPmDecoyQMuExact:
+    """Ma A35 exact Q_μ = Σ P^μ(k)·Y_k (self-consistent with A34 q_k).
+
+    Differs from `pm_charlie_gain` (Ma B14 approximation) by factor (1-p_d):
+        pm_charlie_gain  = (1-p_d)·[1 − (1-2p_d)·e^{-η·μ}]
+        pm_decoy_q_mu_exact = [1 − (1-2p_d)·e^{-η·μ}]  (at N_ph → ∞)
+    Round-2 fix: Round 1 used pm_charlie_gain inside pm_decoy_phase_error_upper
+    which broke A34 normalization (Σ q_k = 1/(1-p_d) ≠ 1).
+    """
+
+    def test_exact_limit_matches_closed_form(self):
+        # At large N_ph_cutoff, Q_μ_exact = 1 - (1-2p_d)·e^{-η·μ}
+        eta, p_d, mu = 0.01, 1e-5, 0.3
+        got = pm_decoy_q_mu_exact(mu=mu, eta_total=eta, p_d=p_d, N_ph_cutoff=40)
+        closed_form = 1.0 - (1.0 - 2.0 * p_d) * math.exp(-eta * mu)
+        assert got == pytest.approx(closed_form, rel=1e-10)
+
+    def test_differs_from_pm_charlie_gain_by_factor(self):
+        # pm_charlie_gain = (1-p_d) · pm_decoy_q_mu_exact at large N_ph
+        eta, mu = 0.01, 0.3
+        for p_d in [1e-6, 0.01, 0.1]:
+            exact = pm_decoy_q_mu_exact(mu=mu, eta_total=eta, p_d=p_d, N_ph_cutoff=40)
+            approx = pm_charlie_gain(mu=mu, eta_total=eta, p_d=p_d)
+            assert approx == pytest.approx((1.0 - p_d) * exact, rel=1e-10), (
+                f"At p_d={p_d}: pm_charlie_gain={approx:.6e} vs "
+                f"(1-p_d)·exact={(1-p_d)*exact:.6e}"
+            )
+
+    def test_self_consistency_sum_q_k_equals_one(self):
+        # Regression test for Round 1 bug: Σ_k q_k must = 1 with self-consistent Q_μ.
+        # Use a non-trivial p_d (not default 8e-8) to expose any (1-p_d) factor bugs.
+        mu, eta, p_d = 0.3, 0.01, 0.01
+        Q_mu_exact = pm_decoy_q_mu_exact(mu=mu, eta_total=eta, p_d=p_d, N_ph_cutoff=40)
+        q_sum = sum(
+            pm_decoy_q_k_fraction(
+                k=k, mu=mu,
+                Y_k=pm_k_photon_yield(k=k, eta_total=eta, p_d=p_d),
+                Q_mu=Q_mu_exact,
+            )
+            for k in range(41)
+        )
+        assert q_sum == pytest.approx(1.0, abs=1e-10)
 
 
 class TestPmDecoyPhaseErrorUpper:
