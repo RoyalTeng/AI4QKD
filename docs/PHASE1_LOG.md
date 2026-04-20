@@ -444,6 +444,38 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+---
+
+## 4.6 Stage S2.4 — Metger 2024 GEAT Level 4 精读(2026-04-19)
+
+**背景**:Plan §3.3 S2.4 要求 Metger 2024 GEAT Level 4 精读。PDF 已于本 session 前半段下载就绪(`docs/literature/pdfs/Metger-2024-GeneralisedEntropyAccumulation.pdf`, 510 KB, 38 pp.)。Stage E 原先重定向到 GLL-2021;本节补全 S2.4 正式完成。
+
+**精读范围**(Level 4):
+- §1 Introduction + Thm 1.1 + Lemma 1.2:完整精读(前 session)
+- §2 Preliminaries:Rényi 散度, $H_\alpha$, $H_\alpha^\dagger$, spectral pinching — 概念层(前 session)
+- §3 技术引理:channel divergence, Lemma 3.5–3.6 — Level 2 浏览
+- §4.1 简单 GEAT (Thm 4.1):完整精读(显式 Eq. 4.1 second-order term)
+- §4.2 带 testing GEAT (Thm 4.3):完整精读(Eq. 4.4 主定理 + Cor 4.6 显式 $c_1, c_0$ + Lemma 4.7 min-tradeoff 构造)
+- §5.2 E91 QKD 应用:完整精读(与 [DFR20] 的对比分析)
+
+**核心产出**:[docs/literature/GEAT-2024.md](literature/GEAT-2024.md)(v0.1, Level 4, ~330 行)
+
+**关键发现**:
+1. **Non-signalling 条件对 PM-QKD trivially 满足**:无需 $R_i$ 系统;Eve 的量子 side info $E_i$ 可在每轮更新,不破坏 non-signalling
+2. **GEAT 等价 tight bound**:Cor 4.6 给出 $H_\text{min}^\varepsilon(A^n|E_n) \geq nh - c_1\sqrt{n} - c_0$;second-order 误差与 [DFR20] 相同阶
+3. **Chain rule 惩罚消除**:原始 EAT [DFR20] 需加 $\bar{A}_i$ 辅助系统满足 Markov,导致 $H_\text{max}(\bar{A}^n|\cdot)$ 罚项;GEAT 不需要
+4. **Min-tradeoff function 实施路径**:Lemma 4.7 + [BFF21] 数值 SDP → 构造 $g(p)$ → 自动提升为 $f$ → 代入 Thm 4.3
+
+**ADR-B bearing**(GEAT vs Renner 框架选择):
+- GEAT 路径:直接处理 coherent attack,适用 PM-QKD / MDI / TF-QKD,via [MR22]
+- Renner 路径(GLL-2021):需 de Finetti 提升到 coherent,i.i.d. 为主
+- 推荐:S2.5 analytic anchor 用 GLL-2021 Renner path(基础设施已有);完整 Kamin 2025 实施用 GEAT 路径
+- 两条路径可并行 sanity check:BB84 Eq. 19 vs GEAT Cor 4.6 数值对比
+
+**计划外处理**:无降级。GEAT PDF 获取是本 session 新增依赖,已解决。
+
+---
+
 ## 5. 本次 commit 的文件清单
 
 **删除**:
