@@ -446,6 +446,59 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.7 Stage S2.5 预备 — Kamin 2025 Level 3–4 精读(2026-04-20)
+
+**背景**:Stage S2.4 GEAT memo 完成后,S2.5 "GEAT 实现 + Kamin 2025 复现"需要 Kamin 2025 原文作为实施蓝图。PDF 已于 2026-04-20 就绪(`docs/literature/pdfs/Kamin-2025-FiniteSizeAnalysisEntropyAccumulation.pdf`, 968 KB, 40 pp.),本节完成精读 memo。
+
+**精读范围**(Level 3–4):
+- §1 Introduction + §3 Protocol 1:完整精读
+- §4 GEAT channel + Thm 1 + 密钥长度 Thm 3:完整精读
+- §5 Key rate computation techniques(Thm 4 SDP + completeness LP + ε 优化):**完整精读**
+- §6 Qubit BB84 with loss(Fig. 1, 2):完整精读
+- §7 Decoy-state with improved analysis(Thm 6 + Fig. 3, 4):Level 3
+- §8 Coherent attack 扩展(Thm 5):完整精读
+- Appendix A/B/C:浏览
+
+**产出**:[docs/literature/Kamin-2025.md](literature/Kamin-2025.md)(v0.1, Level 3–4, ~400 行)
+
+**关键发现**:
+
+1. **密钥长度公式(Thm 3, Eq. 16)**:
+   $\ell \leq nh + nT_\alpha(f) - n((\alpha-1)/(2-\alpha))^2 K(\alpha) - \lambda_\text{EC} - \lceil \log(1/\varepsilon_\text{EV}) \rceil - (\alpha/(\alpha-1))\log(1/\varepsilon_\text{PA}) + 2$
+   (单个 $\varepsilon_\text{PA}$ 项 via Rényi PA [Dup23];比 [GLH+22] 结构简洁)
+
+2. **Choi-state 参数化 + Thm 4**(**本文核心数值技术**):
+   - Rate function 重写为 $\inf_J W(\rho_J^g)$ s.t. $\gamma \Phi[\rho_J^t] = \mathbf{p}_{\backslash\perp}$(Eq. 30)
+   - 最优 crossover min-tradeoff $\mathbf{g}^*$ = Frank-Wolfe SDP 的 **Lagrange 对偶乘子**(Eq. 49-51)
+   - 消除了 [GLH+22] 的 Fenchel 对偶实施困难
+
+3. **Decoy-state 单步 convex optimization**(Thm 6, Eq. 80):
+   - 合并两步法([WL22, NUL23, KL24, KTL25] = 先 yield LP + 再 entropy SDP)为单步 Choi-state 块对角 SDP
+   - Photon cut-off $N_\text{ph} = 10$ + yield 向量 + slack $\boldsymbol{\delta}^\mu$
+
+4. **Coherent attack 独立成立(Thm 5)**:[FKR+25, AT25] 证明移除 [MR23] 的 "Eve single-signal interaction" 条件,本文所有结果对任意 coherent attack 成立
+
+5. **数值 benchmark**:
+   - Fig. 1(qubit BB84, $p^\text{depol} = 0.01$): $n = 10^{10}$ 下 cutoff ≈ 25 dB
+   - Fig. 3(decoy BB84, $\mu_\text{sig} = 0.9, \mu_2 = 2e{-}2, \mu_3 = 1e{-}3$, $\theta^\text{misalign} = \sin^{-1}(0.1)$):$n = 10^{12}$ cutoff ≈ 25 dB
+   - $\varepsilon^\text{secure} = 10^{-8}$, $\varepsilon^\text{com} = 10^{-3}$
+
+**S2.5 实施建议**(三阶段,落实 ADR-B):
+
+| Stage | 难度 | 产出 | Plan 验收口径 |
+|-------|------|------|--------------|
+| 1(1 周)| 低 | asymptotic anchor(qubit BB84 Fig. 1 $n{=}10^{12}$ 0 dB)| asymptotic rate ≈ 0.91·(1-γ)² |
+| 2(3-4 周)| 中 | qubit BB84 full GEAT + Thm 4 SDP + FW | Fig. 1 四曲线 < 5% |
+| 3(6-8 周)| 高 | decoy-state BB84(Fig. 3)| Fig. 3 四曲线 < 5% |
+
+**Plan 对齐修订**:
+- RESEARCH_PLAN §3.3 S2.5 引用 "Kamin 2025 Table 1" **不存在**(论文只有 Fig. 1-4);**Fig. 3 作为 decoy-state 硬验收替代**
+- Plan 未明确 qubit vs decoy;**qubit Fig. 1 亦可满足 "BB84 < 5%" 的字面约束**
+
+**计划外处理**:无降级。Kamin 2025 PDF 是本 session 新获依赖,已就绪。
+
+---
+
 ## 4.6 Stage S2.4 — Metger 2024 GEAT Level 4 精读(2026-04-19)
 
 **背景**:Plan §3.3 S2.4 要求 Metger 2024 GEAT Level 4 精读。PDF 已于本 session 前半段下载就绪(`docs/literature/pdfs/Metger-2024-GeneralisedEntropyAccumulation.pdf`, 510 KB, 38 pp.)。Stage E 原先重定向到 GLL-2021;本节补全 S2.4 正式完成。
