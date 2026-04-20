@@ -823,6 +823,209 @@ def _kamin_ell_from_sdp_result(
     )
 
 
+def kamin_full_key_length_bb84_loss(
+    qber: float,
+    n: int,
+    loss_dB: float,
+    gamma: float,
+    alpha: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Kamin Eq. 16 key length for qubit BB84 WITH LOSS (§6 model).
+
+    Loss model (Kamin §6.3 Eq. 58):
+        - Channel: ε_depol with p_depol = 2·qber  (Kamin Fig.1 uses 0.01 → qber=0.005)
+        - Loss: qubit lost with probability 1 − η_det, η_det = 10^{−L/10}
+        - p_sift per round = (1-γ)² · η_det  (gen basis-match Z⊗Z × detection)
+        - λ_EC per round  = p_sift · f_EC · H₂(qber)
+
+    The underlying SDP (h_per_sift, g_star) is computed conditional on
+    detection (dim_B=2, no-detect absorbed into classical announcement).
+    Per-round quantities scale by η_det.
+
+    Kamin Eq. 44 V² UB: V² ≤ (log(1+2d_A^κ) + √(2+(1/γ)·(max(g)-min(g))²))²
+    is independent of η_det (gap is set by detected-outcome g gradients +
+    g_{no-detect}=0; adding no-detect with g=0 widens gap to include 0 but
+    since my SDP already has max(g_Z, g_X) = 0, the gap is unchanged).
+
+    Args:
+        qber, n, gamma, alpha, eps_secure, f_EC, solver, epsilon_regularization:
+            as for kamin_full_key_length_bb84 (no-loss version).
+        loss_dB: channel loss in dB.  0 = no loss (η_det = 1).
+
+    Returns:
+        dict as for kamin_full_key_length_bb84, plus "eta_det".
+    """
+    if loss_dB < 0.0:
+        raise ValueError(f"loss_dB must be ≥ 0, got {loss_dB}")
+    eta_det = 10.0 ** (-loss_dB / 10.0)
+
+    # Solve SDP (same as no-loss) — result conditional on detection
+    sdp = kamin_choi_sdp_qubit_bb84_with_dual(
+        qber=qber, gamma=gamma, solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+    )
+    h_per_sift = sdp["h_per_sift"]
+    g_Z = sdp["g_star"]["g_star_Z"]
+    g_X = sdp["g_star"]["g_star_X"]
+
+    # Loss-scaled per-round quantities
+    h_per_round = (1.0 - gamma) ** 2 * eta_det * h_per_sift
+
+    d_A = 2
+    kappa = 1
+    g_max = max(g_Z, g_X)
+    g_min = min(g_Z, g_X)
+    gap = g_max - g_min
+    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+        2.0 + (1.0 / gamma) * gap ** 2
+    )
+    V_squared = V_inner ** 2
+
+    from qkdx.finite_key.kamin_geat import (
+        kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
+    )
+    max_f = max(g_max, 0.0)
+    min_sigma_f = min(g_min, 0.0)
+    K_val = kamin_K_alpha(
+        alpha=alpha, d_A=d_A, max_f=max_f, min_sigma_f=min_sigma_f, kappa=kappa,
+    )
+    eps_PA, eps_EV = optimal_eps_parameters(eps_secure=eps_secure, alpha=alpha)
+
+    if qber <= 0.0 or qber >= 1.0:
+        H_qber = 0.0
+    else:
+        H_qber = -qber * math.log2(qber) - (1 - qber) * math.log2(1 - qber)
+    lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * H_qber
+
+    ell = kamin_heuristic_key_length(
+        n=n, h=h_per_round, V_squared=V_squared, K_alpha=K_val,
+        alpha=alpha, lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
+    )
+
+    return {
+        "ell": ell,
+        "h_per_sift": h_per_sift,
+        "h_per_round": h_per_round,
+        "eta_det": eta_det,
+        "g_star": sdp["g_star"],
+        "V_squared": V_squared,
+        "K_alpha": K_val,
+        "lambda_EC": lambda_EC,
+        "eps_PA": eps_PA,
+        "eps_EV": eps_EV,
+        "sdp_status": sdp["status"],
+    }
+
+
+def kamin_full_key_length_bb84_loss_optimized(
+    qber: float,
+    n: int,
+    loss_dB: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    gamma_grid: tuple[float, ...] = (
+        0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+    ),
+    alpha_grid: tuple[float, ...] | None = None,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Loss-variant of kamin_full_key_length_bb84_optimized.
+
+    Grid-search (γ, α) with η_det = 10^(−loss_dB/10) scaling applied to
+    per-round privacy and EC leak.  SDP solved once (result is η_det-
+    independent).
+    """
+    if not (0.0 <= qber < 0.5):
+        raise ValueError(f"qber must be in [0, 0.5), got {qber}")
+    if n < 1:
+        raise ValueError(f"n must be ≥ 1, got {n}")
+    if loss_dB < 0.0:
+        raise ValueError(f"loss_dB must be ≥ 0, got {loss_dB}")
+    eta_det = 10.0 ** (-loss_dB / 10.0)
+
+    sdp = kamin_choi_sdp_qubit_bb84_with_dual(
+        qber=qber, gamma=gamma_grid[0], solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+    )
+    h_per_sift = sdp["h_per_sift"]
+    g_Z = sdp["g_star"]["g_star_Z"]
+    g_X = sdp["g_star"]["g_star_X"]
+
+    if alpha_grid is None:
+        inv_sqrt_n = 1.0 / math.sqrt(n)
+        alpha_grid = tuple(
+            1.0 + scale * inv_sqrt_n
+            for scale in (0.1, 0.3, 1.0, 3.0, 10.0, 30.0)
+            if 1.0 + scale * inv_sqrt_n < 1.5
+        )
+
+    best_ell = -math.inf
+    best_gamma = gamma_grid[0]
+    best_alpha = alpha_grid[0]
+
+    from qkdx.finite_key.kamin_geat import (
+        kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
+    )
+    d_A = 2
+    kappa = 1
+    g_max = max(g_Z, g_X)
+    g_min = min(g_Z, g_X)
+    gap = g_max - g_min
+    max_f = max(g_max, 0.0)
+    min_sigma_f = min(g_min, 0.0)
+
+    if qber <= 0.0 or qber >= 1.0:
+        H_qber = 0.0
+    else:
+        H_qber = -qber * math.log2(qber) - (1 - qber) * math.log2(1 - qber)
+
+    for gamma in gamma_grid:
+        h_per_round = (1.0 - gamma) ** 2 * eta_det * h_per_sift
+        V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+            2.0 + (1.0 / gamma) * gap ** 2
+        )
+        V_squared = V_inner ** 2
+        lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * H_qber
+
+        for alpha in alpha_grid:
+            try:
+                K_val = kamin_K_alpha(
+                    alpha=alpha, d_A=d_A, max_f=max_f,
+                    min_sigma_f=min_sigma_f, kappa=kappa,
+                )
+                eps_PA, eps_EV = optimal_eps_parameters(
+                    eps_secure=eps_secure, alpha=alpha,
+                )
+                ell = kamin_heuristic_key_length(
+                    n=n, h=h_per_round, V_squared=V_squared, K_alpha=K_val,
+                    alpha=alpha, lambda_EC=lambda_EC,
+                    eps_EV=eps_EV, eps_PA=eps_PA,
+                )
+            except (ValueError, OverflowError):
+                continue
+            if ell > best_ell:
+                best_ell = ell
+                best_gamma = gamma
+                best_alpha = alpha
+
+    return {
+        "ell_star": best_ell,
+        "gamma_star": best_gamma,
+        "alpha_star": best_alpha,
+        "eta_det": eta_det,
+        "h_per_sift": h_per_sift,
+        "g_star": sdp["g_star"],
+        "sdp_status": sdp["status"],
+    }
+
+
 def kamin_full_key_length_bb84_optimized(
     qber: float,
     n: int,
