@@ -499,6 +499,49 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.9 Stage F6 TF-QKD Level 3 精读(2026-04-20)
+
+**背景**:F6 TF-QKD family sheet([tfqkd_family.md](families/tfqkd_family.md) v0.1)的 §9 升级路径 §9.1 第一步是 "docs/literature/TF-QKD.md Level 3 精读(Lucamarini 2018 + SNS + PM + MP)"。三份原始 PDF 均已在库(Lucamarini-2018, WangYuHu-2018, MaZengZhou-2018)。本节闭合该精读。
+
+**精读范围**(Level 3):
+- Lucamarini 2018(Nature 557:400):TF-QKD 原版,phase-slicing + decoy
+- Wang-Yu-Hu 2018(PRA 98:062323):SNS-TF-QKD,信号无筛 + tagged-model 证明
+- Ma-Zeng-Zhou 2018(PRX 8:031043):PM-QKD,optical-mode EDP 证明
+- 主文 + 关键公式:完整精读;安全证明细节:Level 2 浏览
+
+**产出**:[docs/literature/TF-QKD.md](literature/TF-QKD.md)(v0.1, Level 3, ~330 行)
+
+**关键发现**:
+
+1. **共同骨架**:三变体同拓扑(Alice/Bob/Charlie + BS 干涉 + 单光子检测),密钥率均 $\propto \sqrt{\eta}$
+2. **变体区别**:
+   - Lucamarini:原方案,无完整安全证明,phase-slicing 信号筛选
+   - SNS:"发或不发" 回避信号筛 → traditional decoy 直接适用,tolerate 35-45% misalignment
+   - PM:optical-mode EDP + Fock truncation + 奇偶光子数分解 → **最完整证明**,MS-EB 适配度最高
+3. **MS-EB 实施推荐顺序**:**PM-QKD → SNS → Lucamarini 原版**(后者建议保持 `spec_only`)
+4. **Plan 对齐 ADR**:F6 首先实施 **PM-QKD** 作为 `covered` 目标;SNS 可作 Phase 1 S2.1 广度扩展;Lucamarini 原版因无完整安全证明保持 spec_only
+
+**MS-EB 映射难度评估**:
+
+| 变体 | 难度 | 门槛 |
+|------|------|------|
+| PM-QKD | 中 | Fock 截断 + Ma Lemma 1 奇偶分解 + decoy Eq.2 phase-error 上界 |
+| SNS-TF | 中 | `source_state` 的二元混合(发/不发)→ 依赖 Phase 0 multi-source 基础设施 |
+| Lucamarini 原版 | 高 | Phase slicing post-selection + 无完整安全证明(自承) |
+
+**未解决点**(ADR 备选):
+- Fock 截断 $N_\text{fock}$ 选择的 truncation error bound
+- Phase reference 的 MS-EB 表达(已在 tfqkd_family.md §9.4 列降级预案)
+- 与 Kamin 2025 GEAT 的兼容性(Kamin 只做 BB84-class,TF optical-mode 结构待评估)
+
+**Plan 对齐**:
+- F6 实施路径六子阶段(本 memo §7):7.1 完成 → 下一步 7.2 MS-EB formulation doc 或 7.3 PM-QKD 实施
+- Sub-Q2 覆盖完成 F6 后,三大协议族(F1 BB84 / F5 MDI / F6 TF)全 `covered`
+
+**计划外处理**:无。三篇 PDF 本 session 前半已下载,本节补齐文献精读层。
+
+---
+
 ## 4.8 Stage S2.5 Stage 1 — qubit BB84 asymptotic anchor(2026-04-20)
 
 **目标**(Kamin-2025.md §9.2 三阶段路径的最低风险起点):实施 Kamin Theorem 3 密钥长度公式(Eq. 16)+ qubit BB84 Protocol 1 的 analytic asymptotic rate,在不依赖 SDP 的前提下建立 Fig. 1 anchor。
