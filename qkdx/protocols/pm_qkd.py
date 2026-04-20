@@ -40,6 +40,7 @@ from qkdx.protocol.base import (
     AnnouncementRule, KeyMap, MSEBProtocol,
     PublicQuantumNetwork, SourceParty,
 )
+from qkdx.protocols.bb84 import _bb84_conditional_state, _gamma_qber_Z, _gamma_qber_X
 
 
 # ---------------------------------------------------------------------------
@@ -142,12 +143,22 @@ def build_pm_qkd_protocol(
     ann = AnnouncementRule(sift_keep=_pm_qkd_sift_keep)
     km = KeyMap(key_party="Alice", bitmap={0: 0, 1: 1})
 
-    # Parameter-bearing observables are attached via _observable_builders;
-    # for this shell we expose Q_μ and E_μ^Z via the registry (identity 4×4).
+    # Round-3 fix (aligned with MDI protocol pattern): observation_keys only
+    # contains (qber_Z, qber_X, p_sift) — the MDI/BB84 WLC-SDP triple.
+    # Placeholder Werner state + BB84 observables supply structural compatibility;
+    # the authoritative PM-QKD rate remains the analytic pm_qkd_rate() path.
+    eff_qber_placeholder = min(0.5, 0.02 + 2.0 * p.e_delta)
+    # p_sift placeholder: PM-QKD true sift is (2/M)·Q_μ (distance-dependent);
+    # use the upper bound 2/M (at Q_μ → 1) for WLC SDP placeholder purposes.
+    p_sift_placeholder = 2.0 / p.M
     observable_builders: dict[str, object] = {
-        "Q_mu": lambda _p: np.eye(4, dtype=np.complex128),
-        "E_Z": lambda _p: np.eye(4, dtype=np.complex128),
-        # Protocol metadata for pm_qkd_rate dispatch
+        "qber_Z": lambda _p: _gamma_qber_Z(),
+        "qber_X": lambda _p: _gamma_qber_X(),
+        "p_sift": lambda _p: np.eye(4, dtype=np.complex128) * p_sift_placeholder,
+        "_conditional_alice_bob": lambda _p: _bb84_conditional_state(eff_qber_placeholder),
+        "_cond_dim": lambda _p: 4,
+        # Protocol metadata for pm_qkd_rate dispatch (underscore-prefixed:
+        # exposed via observable() only, not an observation_key for WLC SDP)
         "_mu": lambda _p: mu,
         "_eta_channel": lambda _p: eta_channel,
         "_pm_params": lambda _p: p,
@@ -160,9 +171,12 @@ def build_pm_qkd_protocol(
         "mixture on key register only); the full Fock-truncated + phase-register-"
         "purified EB source state from docs/msen/pm_qkd_formulation.md §1.1 is "
         "deferred.  Charlie BS + single-click detection is placeholder "
-        "(KrausMap.identity(4)).  Rate computation uses the analytic "
-        "pm_qkd_rate() → pm_rate_with_decoy_phase_error() path, NOT WLC SDP "
-        "(the latter is not meaningful without full Hilbert-space source/channel). "
+        "(KrausMap.identity(4)).  The `_conditional_alice_bob` override returns "
+        "a BB84-style 4x4 Werner state at a representative effective QBER "
+        "(= 0.02 + 2·e_delta), purely for WLC SDP dim-check compatibility — "
+        "the WLC SDP path is NOT authoritative for this protocol.  "
+        "Rate computation uses the analytic pm_qkd_rate() → "
+        "pm_rate_with_decoy_phase_error() path (Ma Eq. 4 + A33). "
         "Upgrade to scope_tag='covered' requires: (1) Fock-truncated source state, "
         "(2) phase register R_A of dimension M, (3) Charlie BS as KrausMap, "
         "(4) conditional_alice_bob override consistent with Ma Lemma 1 reduction."
@@ -175,7 +189,7 @@ def build_pm_qkd_protocol(
             network=net,
             announcement=ann,
             key_map=km,
-            observation_keys=("Q_mu", "E_Z"),
+            observation_keys=("qber_Z", "qber_X", "p_sift"),
             scope_tag="partial",
             scope_reason=scope_reason,
             _observable_builders=observable_builders,  # type: ignore[arg-type]

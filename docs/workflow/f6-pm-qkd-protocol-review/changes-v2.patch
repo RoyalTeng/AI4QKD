@@ -1,0 +1,109 @@
+diff --git a/qkdx/protocols/pm_qkd.py b/qkdx/protocols/pm_qkd.py
+index d661e14..510b7fa 100644
+--- a/qkdx/protocols/pm_qkd.py
++++ b/qkdx/protocols/pm_qkd.py
+@@ -40,6 +40,7 @@ from qkdx.protocol.base import (
+     AnnouncementRule, KeyMap, MSEBProtocol,
+     PublicQuantumNetwork, SourceParty,
+ )
++from qkdx.protocols.bb84 import _bb84_conditional_state, _gamma_qber_Z, _gamma_qber_X
+ 
+ 
+ # ---------------------------------------------------------------------------
+@@ -142,11 +143,22 @@ def build_pm_qkd_protocol(
+     ann = AnnouncementRule(sift_keep=_pm_qkd_sift_keep)
+     km = KeyMap(key_party="Alice", bitmap={0: 0, 1: 1})
+ 
+-    # Parameter-bearing observables are attached via _observable_builders;
+-    # for this shell we expose Q_μ and E_μ^Z via the registry (identity 4×4).
++    # Round-2 fix: provide _conditional_alice_bob + _cond_dim overrides so that
++    # the WLC SDP integration path (if invoked) has structurally-valid 4×4
++    # objects.  The numerical value is a placeholder BB84-style Werner state at
++    # a representative effective QBER; the authoritative PM-QKD rate remains
++    # the analytic pm_qkd_rate() path.  Downstream code attempting WLC SDP on
++    # this protocol will get a "pessimistic" rate (lower than analytic decoy);
++    # scope_reason documents this.
++    eff_qber_placeholder = min(0.5, 0.02 + 2.0 * p.e_delta)
+     observable_builders: dict[str, object] = {
+         "Q_mu": lambda _p: np.eye(4, dtype=np.complex128),
+         "E_Z": lambda _p: np.eye(4, dtype=np.complex128),
++        # WLC-compatible observables + conditional state (placeholder)
++        "qber_Z": lambda _p: _gamma_qber_Z(),
++        "qber_X": lambda _p: _gamma_qber_X(),
++        "_conditional_alice_bob": lambda _p: _bb84_conditional_state(eff_qber_placeholder),
++        "_cond_dim": lambda _p: 4,
+         # Protocol metadata for pm_qkd_rate dispatch
+         "_mu": lambda _p: mu,
+         "_eta_channel": lambda _p: eta_channel,
+@@ -160,9 +172,12 @@ def build_pm_qkd_protocol(
+         "mixture on key register only); the full Fock-truncated + phase-register-"
+         "purified EB source state from docs/msen/pm_qkd_formulation.md §1.1 is "
+         "deferred.  Charlie BS + single-click detection is placeholder "
+-        "(KrausMap.identity(4)).  Rate computation uses the analytic "
+-        "pm_qkd_rate() → pm_rate_with_decoy_phase_error() path, NOT WLC SDP "
+-        "(the latter is not meaningful without full Hilbert-space source/channel). "
++        "(KrausMap.identity(4)).  The `_conditional_alice_bob` override returns "
++        "a BB84-style 4x4 Werner state at a representative effective QBER "
++        "(= 0.02 + 2·e_delta), purely for WLC SDP dim-check compatibility — "
++        "the WLC SDP path is NOT authoritative for this protocol.  "
++        "Rate computation uses the analytic pm_qkd_rate() → "
++        "pm_rate_with_decoy_phase_error() path (Ma Eq. 4 + A33). "
+         "Upgrade to scope_tag='covered' requires: (1) Fock-truncated source state, "
+         "(2) phase register R_A of dimension M, (3) Charlie BS as KrausMap, "
+         "(4) conditional_alice_bob override consistent with Ma Lemma 1 reduction."
+@@ -175,7 +190,7 @@ def build_pm_qkd_protocol(
+             network=net,
+             announcement=ann,
+             key_map=km,
+-            observation_keys=("Q_mu", "E_Z"),
++            observation_keys=("Q_mu", "E_Z", "qber_Z", "qber_X"),
+             scope_tag="partial",
+             scope_reason=scope_reason,
+             _observable_builders=observable_builders,  # type: ignore[arg-type]
+diff --git a/tests/test_protocols/test_pm_qkd.py b/tests/test_protocols/test_pm_qkd.py
+index 8f80560..8d81a23 100644
+--- a/tests/test_protocols/test_pm_qkd.py
++++ b/tests/test_protocols/test_pm_qkd.py
+@@ -111,6 +111,42 @@ class TestPmQkdAnalyticRate:
+         assert slope == pytest.approx(0.5, abs=0.05), f"slope {slope:.4f} off target"
+ 
+ 
++class TestPmQkdWlcShapeCompatibility:
++    """Round-2 regression: WLC SDP dim-check must pass even though rate is analytic."""
++
++    def test_conditional_alice_bob_dim_is_4(self):
++        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
++        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
++        assert p.conditional_alice_bob_dim() == 4
++
++    def test_conditional_alice_bob_state_is_4x4(self):
++        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
++        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
++        rho = p.conditional_alice_bob()
++        assert rho.shape == (4, 4)
++        # Trace ≈ 1 (density matrix)
++        import numpy as np
++        assert abs(np.trace(rho).real - 1.0) < 1e-9
++
++    def test_observables_Z_X_are_4x4(self):
++        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
++        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
++        gamma_z = p.observable("qber_Z")
++        gamma_x = p.observable("qber_X")
++        assert gamma_z.shape == (4, 4)
++        assert gamma_x.shape == (4, 4)
++
++    def test_wlc_sdp_shape_compatibility(self):
++        # Regression: Codex caught "Incompatible dimensions (4, 4) (8, 8)"
++        # Check that observable and conditional state shapes match.
++        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
++        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
++        rho = p.conditional_alice_bob()
++        gamma_z = p.observable("qber_Z")
++        # Tr(rho · gamma) must be well-defined → shape match
++        assert rho.shape == gamma_z.shape
++
++
+ class TestPmQkdScopeDisclosure:
+     """Scope limitations are explicitly documented in scope_reason (no silent gaps)."""
+ 

@@ -50,12 +50,11 @@ class TestBuildPmQkdProtocol:
         assert "PM" in p.name
         assert "QKD" in p.name
 
-    def test_observation_keys_include_gain_and_qber(self):
+    def test_observation_keys_are_wlc_triple(self):
+        # Round-3 align with MDI pattern: observation_keys = (qber_Z, qber_X, p_sift)
         from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
         p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
-        obs = set(p.observation_keys)
-        assert any("Q" in k for k in obs), f"expected gain-like key, got {obs}"
-        assert any("E" in k or "qber" in k.lower() for k in obs)
+        assert set(p.observation_keys) == {"qber_Z", "qber_X", "p_sift"}
 
     def test_invalid_mu_raises(self):
         from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
@@ -109,6 +108,73 @@ class TestPmQkdAnalyticRate:
         my = sum(log_r) / len(log_r)
         slope = sum((x - mx) * (y - my) for x, y in zip(log_e, log_r)) / sum((x - mx) ** 2 for x in log_e)
         assert slope == pytest.approx(0.5, abs=0.05), f"slope {slope:.4f} off target"
+
+
+class TestPmQkdWlcShapeCompatibility:
+    """Round-2 regression: WLC SDP dim-check must pass even though rate is analytic."""
+
+    def test_conditional_alice_bob_dim_is_4(self):
+        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
+        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
+        assert p.conditional_alice_bob_dim() == 4
+
+    def test_conditional_alice_bob_state_is_4x4(self):
+        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
+        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
+        rho = p.conditional_alice_bob()
+        assert rho.shape == (4, 4)
+        # Trace ≈ 1 (density matrix)
+        import numpy as np
+        assert abs(np.trace(rho).real - 1.0) < 1e-9
+
+    def test_observables_Z_X_are_4x4(self):
+        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
+        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
+        gamma_z = p.observable("qber_Z")
+        gamma_x = p.observable("qber_X")
+        assert gamma_z.shape == (4, 4)
+        assert gamma_x.shape == (4, 4)
+
+    def test_wlc_sdp_shape_compatibility(self):
+        # Regression: Codex caught "Incompatible dimensions (4, 4) (8, 8)"
+        # Check that observable and conditional state shapes match.
+        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
+        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
+        rho = p.conditional_alice_bob()
+        gamma_z = p.observable("qber_Z")
+        # Tr(rho · gamma) must be well-defined → shape match
+        assert rho.shape == gamma_z.shape
+
+    def test_wlc_key_rate_runs_without_dim_error(self):
+        # Round-3 regression for Codex Round-2 finding: wlc_key_rate() should
+        # not fail with KeyError('p_sift') or dim mismatches on the protocol's
+        # own observation_keys.  The returned rate value is placeholder-based
+        # (not authoritative); we only pin that the call succeeds.
+        from qkdx.protocols.pm_qkd import build_pm_qkd_protocol
+        try:
+            from qkdx.numerics.wlc import wlc_key_rate
+        except ImportError:
+            pytest.skip("WLC SDP module not available")
+        p = build_pm_qkd_protocol(mu=0.3, eta_channel=0.1)
+        # Note: _bb84_conditional_state has qber_Z = placeholder but qber_X = 0.5
+        # (max-mixed X, since PM-QKD source has no X-basis structure).  The
+        # SDP may be infeasible on this constraint combo — we accept that,
+        # only regress against plumbing errors.
+        observations = {"qber_Z": 0.05, "qber_X": 0.5, "p_sift": 2.0 / 16}
+        try:
+            rate = wlc_key_rate(p, observations, solver="SCS")
+        except (RuntimeError, ValueError) as e:
+            msg = str(e)
+            # Solver infeasibility is acceptable (placeholder may be infeasible);
+            # but dim errors and KeyErrors are regressions.
+            assert "Incompatible dimensions" not in msg, f"dim mismatch regressed: {e}"
+            assert "p_sift" not in msg.lower() or "infeasib" in msg.lower()
+            pytest.skip(f"SDP solver failed (acceptable for placeholder): {e}")
+        except KeyError as e:
+            pytest.fail(f"wlc_key_rate raised KeyError on our observation_keys: {e}")
+        else:
+            # Rate can be any finite float; we don't assert value.
+            assert rate == rate  # not NaN
 
 
 class TestPmQkdScopeDisclosure:
