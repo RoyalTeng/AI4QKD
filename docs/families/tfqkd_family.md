@@ -213,7 +213,7 @@ def build_pm_qkd_protocol(
 - scope_reason 显式列出 upgrade 路径 4 项(Fock, R_A, BS Kraus, conditional)
 - 19 tests
 
-### §7.5c(当前 commit 待提交):μ-optimization + Ma Fig.3a benchmark
+### §7.5c(commit `1bdadd6`):μ-optimization + Ma Fig.3a benchmark
 
 - 新函数 `pm_optimal_mu(eta_channel, params)` + `pm_rate_sweep_optimized`(grid search 13 个 μ)
 - Ma Fig.3a 实测对照(μ-optimized):

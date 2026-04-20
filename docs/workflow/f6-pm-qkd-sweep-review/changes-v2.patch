@@ -1,0 +1,57 @@
+diff --git a/docs/PHASE1_LOG.md b/docs/PHASE1_LOG.md
+index f802bab..086f9ea 100644
+--- a/docs/PHASE1_LOG.md
++++ b/docs/PHASE1_LOG.md
+@@ -492,7 +492,7 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输
+ 
+ **测试**:19 tests
+ 
+-### §7.5c commit(待提交):μ-optimization + Ma Fig.3a benchmark
++### §7.5c commit `1bdadd6`:μ-optimization + Ma Fig.3a benchmark
+ 
+ **产出**:
+ - `pm_optimal_mu(eta_channel, params)`:grid search over 13 μ 值
+diff --git a/docs/families/tfqkd_family.md b/docs/families/tfqkd_family.md
+index 94f86ed..b2b6dbf 100644
+--- a/docs/families/tfqkd_family.md
++++ b/docs/families/tfqkd_family.md
+@@ -213,7 +213,7 @@ def build_pm_qkd_protocol(
+ - scope_reason 显式列出 upgrade 路径 4 项(Fock, R_A, BS Kraus, conditional)
+ - 19 tests
+ 
+-### §7.5c(当前 commit 待提交):μ-optimization + Ma Fig.3a benchmark
++### §7.5c(commit `1bdadd6`):μ-optimization + Ma Fig.3a benchmark
+ 
+ - 新函数 `pm_optimal_mu(eta_channel, params)` + `pm_rate_sweep_optimized`(grid search 13 个 μ)
+ - Ma Fig.3a 实测对照(μ-optimized):
+diff --git a/qkdx/analytic/pm_qkd_decoy.py b/qkdx/analytic/pm_qkd_decoy.py
+index bd36b26..9f8f3c1 100644
+--- a/qkdx/analytic/pm_qkd_decoy.py
++++ b/qkdx/analytic/pm_qkd_decoy.py
+@@ -266,6 +266,8 @@ def pm_optimal_mu(
+     """
+     if not (0.0 <= eta_channel <= 1.0):
+         raise ValueError(f"eta_channel must be in [0, 1], got {eta_channel}")
++    if not mu_grid:
++        raise ValueError("mu_grid must be non-empty")
+     best_mu = mu_grid[0]
+     best_rate = float("-inf")
+     for mu in mu_grid:
+diff --git a/tests/test_analytic/test_pm_qkd_decoy.py b/tests/test_analytic/test_pm_qkd_decoy.py
+index cfd0edf..62432bf 100644
+--- a/tests/test_analytic/test_pm_qkd_decoy.py
++++ b/tests/test_analytic/test_pm_qkd_decoy.py
+@@ -241,6 +241,13 @@ class TestPmOptimalMu:
+             f"μ* should decrease with loss: low-loss {mu_low} vs high-loss {mu_high}"
+         )
+ 
++    def test_empty_mu_grid_raises(self):
++        # Round-2 regression for Codex §7.5c finding: empty mu_grid must raise
++        # ValueError (not IndexError).
++        params = PmQkdParams()
++        with pytest.raises(ValueError, match="mu_grid must be non-empty"):
++            pm_optimal_mu(eta_channel=1e-2, params=params, mu_grid=())
++
+ 
+ class TestPmRateSweepOptimized:
+     """Sweep over loss with per-distance μ optimization — Ma Fig. 3a reproduction."""

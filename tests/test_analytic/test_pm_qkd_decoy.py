@@ -241,6 +241,13 @@ class TestPmOptimalMu:
             f"μ* should decrease with loss: low-loss {mu_low} vs high-loss {mu_high}"
         )
 
+    def test_empty_mu_grid_raises(self):
+        # Round-2 regression for Codex §7.5c finding: empty mu_grid must raise
+        # ValueError (not IndexError).
+        params = PmQkdParams()
+        with pytest.raises(ValueError, match="mu_grid must be non-empty"):
+            pm_optimal_mu(eta_channel=1e-2, params=params, mu_grid=())
+
 
 class TestPmRateSweepOptimized:
     """Sweep over loss with per-distance μ optimization — Ma Fig. 3a reproduction."""

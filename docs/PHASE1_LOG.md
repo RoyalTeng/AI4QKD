@@ -492,7 +492,7 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 **测试**:19 tests
 
-### §7.5c commit(待提交):μ-optimization + Ma Fig.3a benchmark
+### §7.5c commit `1bdadd6`:μ-optimization + Ma Fig.3a benchmark
 
 **产出**:
 - `pm_optimal_mu(eta_channel, params)`:grid search over 13 μ 值

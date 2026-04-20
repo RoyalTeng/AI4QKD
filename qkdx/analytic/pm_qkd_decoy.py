@@ -266,6 +266,8 @@ def pm_optimal_mu(
     """
     if not (0.0 <= eta_channel <= 1.0):
         raise ValueError(f"eta_channel must be in [0, 1], got {eta_channel}")
+    if not mu_grid:
+        raise ValueError("mu_grid must be non-empty")
     best_mu = mu_grid[0]
     best_rate = float("-inf")
     for mu in mu_grid:
