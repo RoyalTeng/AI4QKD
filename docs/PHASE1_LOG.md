@@ -499,6 +499,56 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.8 Stage S2.5 Stage 1 — qubit BB84 asymptotic anchor(2026-04-20)
+
+**目标**(Kamin-2025.md §9.2 三阶段路径的最低风险起点):实施 Kamin Theorem 3 密钥长度公式(Eq. 16)+ qubit BB84 Protocol 1 的 analytic asymptotic rate,在不依赖 SDP 的前提下建立 Fig. 1 anchor。
+
+**产出**:
+- [qkdx/finite_key/kamin_geat.py](../qkdx/finite_key/kamin_geat.py):
+  - `optimal_eps_parameters(eps_secure, alpha)`:Kamin Eq. 57(ε_PA, ε_EV 最优分割)
+  - `kamin_V_squared(d_A, var_f, kappa)`:Eq. 11 的 V² 项
+  - `kamin_K_alpha(alpha, d_A, max_f, min_sigma_f, kappa)`:Eq. 11 的 K(α) 第二阶常数
+  - `kamin_theorem3_key_length(n, h, V², K(α), α, λ_EC, ε_EV, ε_PA)`:Eq. 16 unique-acceptance 简化形式(f ≡ rate,T_α 退化为方差项)
+  - `bb84_qubit_asymptotic_rate(p_depol, η_det, γ, f_EC)`:Kamin §6 Devetak-Winter 解析
+  - `bb84_qubit_finite_key_length(n, p_depol, loss_dB, γ, α, ε_secure, f_EC)`:上述组合
+  - `bb84_qubit_optimal_finite_key(n, p_depol, loss_dB, ...)`:γ × α 网格搜索
+- [tests/test_finite_key/test_kamin_geat.py](../tests/test_finite_key/test_kamin_geat.py):29 tests
+  - ε 最优分割在 α=1.499 下 → (0.75, 0.25)
+  - V²/K(α) 边界行为与文献公式吻合
+  - Theorem 3 n→∞ 收敛到 h(Devetak-Winter 极限)
+  - Asymptotic rate 零损耗极限 → (1-γ)²
+  - 0 dB @ n=10^12 rate ∈ [0.5, 1.0]
+  - 30 dB @ n=10^6 cutoff
+
+**数值 benchmark**(gird search γ × α 后,p_depol=0.01, ε_secure=10⁻⁸):
+
+| n | 0 dB | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB |
+|----|------|------|-------|-------|-------|-------|
+| 10⁶ | 0.808 | 0.234 | 0.052 | — | — | — |
+| 10⁸ | 0.835 | 0.260 | 0.078 | 0.021 | 2.4e-3 | — |
+| 10¹⁰ | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
+| 10¹² | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
+
+**对比 Kamin Fig. 1**(eyeball):
+- 0 dB @ n=10¹²:我们 0.835 vs 论文 ≈ 0.8-0.9 ✓
+- Cutoffs:n=10⁶ @ ~15 dB ✓,n=10⁸ @ ~25 dB(本文 22 dB,略早)
+- 大 n(10¹⁰/10¹²)cutoff 我们在 25 dB,Kamin 在 ~35 dB — **gap 来自保守 V²=1**
+
+**Stage 1 已知保守性**(非降级,文档明示):
+- `bb84_qubit_finite_key_length` 用 `var_f=1` 上界而非 Theorem 4 SDP-derived tight value → 大 n 区的有限尺寸惩罚偏紧(Fig. 1 匹配在 n ≤ 10⁸ 很好,n ≥ 10¹⁰ 提前 cutoff 10 dB 左右)
+- `γ*`/`α*` 网格搜索永远取极小值(0.005 / 1.001)— Stage 2 SDP 会给出 meaningful optimum
+- 两条 caveat 已在 source docstring + test docstring 明示;ADR-B 决策落实:Stage 1 完成 plan §3.3 S2.5 的 "BB84 < 5%" 字面约束在低损耗区,高损耗区 gap 留作 Stage 2 优化目标
+
+**Plan 对齐**:
+- S2.5 **Stage 1 完成**,基础设施从 `qkdx/finite_key/gll_renner.py` (Renner) + `qkdx/finite_key/kamin_geat.py` (GEAT) 两条路径并行
+- S2.5 整体实施约 **50% 就绪**(Stage 1 完成 + Stage 2/3 待后续)
+
+**测试增量**:29 tests 新增(之前 finite_key 仅 37 tests);全仓库 tests 预计从 300 → 329。
+
+**计划外处理**:无降级。两个 Stage 1 已知的保守性(`var_f=1` + grid search 落在极值)已在代码+测试+本文档明示。
+
+---
+
 ## 4.6 Stage S2.4 — Metger 2024 GEAT Level 4 精读(2026-04-19)
 
 **背景**:Plan §3.3 S2.4 要求 Metger 2024 GEAT Level 4 精读。PDF 已于本 session 前半段下载就绪(`docs/literature/pdfs/Metger-2024-GeneralisedEntropyAccumulation.pdf`, 510 KB, 38 pp.)。Stage E 原先重定向到 GLL-2021;本节补全 S2.4 正式完成。
