@@ -493,7 +493,7 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 **Plan 对齐修订**:
 - RESEARCH_PLAN §3.3 S2.5 引用 "Kamin 2025 Table 1" **不存在**(论文只有 Fig. 1-4);**Fig. 3 作为 decoy-state 硬验收替代**
-- Plan 未明确 qubit vs decoy;**qubit Fig. 1 亦可满足 "BB84 < 5%" 的字面约束**
+- **【Round-2 撤回】** 原声称 "qubit Fig. 1 亦可满足 BB84 < 5% 的字面约束" 过度宽松;plan §3.3 S2.5 验收隐指 **decoy-state BB84** 有限密钥(S2.5 任务标题明示 "decoy-state"),qubit-only 不等于 plan 口径。正确说法:qubit Fig. 1 是 Stage 1 sanity anchor,不构成 S2.5 plan 硬验收的替代
 
 **计划外处理**:无降级。Kamin 2025 PDF 是本 session 新获依赖,已就绪。
 
@@ -600,32 +600,39 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
   - 0 dB @ n=10^12 rate ∈ [0.5, 1.0]
   - 30 dB @ n=10^6 cutoff
 
-**数值 benchmark**(gird search γ × α 后,p_depol=0.01, ε_secure=10⁻⁸):
+**数值 benchmark**(gird search γ × α 后,p_depol=0.01, ε_secure=10⁻⁸;Round-1 初始值 + Round-2 C1 修复值):
 
-| n | 0 dB | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB |
+| n | 0 dB(Round-1 buggy → Round-2 fix) | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB |
 |----|------|------|-------|-------|-------|-------|
-| 10⁶ | 0.808 | 0.234 | 0.052 | — | — | — |
-| 10⁸ | 0.835 | 0.260 | 0.078 | 0.021 | 2.4e-3 | — |
-| 10¹⁰ | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
-| 10¹² | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
+| 10⁶ | 0.808 → **0.861** | 0.234 → 0.250 | 0.052 → 0.057 | — | — | — |
+| 10⁸ | 0.835 → **0.887** | 0.260 → 0.276 | 0.078 → 0.083 | 0.021 → 0.022 | 2.4e-3 → 3.0e-3 | — |
+| 10¹² | 0.835 → **0.887** | 0.260 → 0.277 | 0.078 → 0.084 | 0.021 → 0.023 | 2.7e-3 → 3.2e-3 | — |
 
-**对比 Kamin Fig. 1**(eyeball):
-- 0 dB @ n=10¹²:我们 0.835 vs 论文 ≈ 0.8-0.9 ✓
-- Cutoffs:n=10⁶ @ ~15 dB ✓,n=10⁸ @ ~25 dB(本文 22 dB,略早)
-- 大 n(10¹⁰/10¹²)cutoff 我们在 25 dB,Kamin 在 ~35 dB — **gap 来自保守 V²=1**
+**对比 Kamin Fig. 1**(eyeball,Round-2 修复后):
+- 0 dB @ n=10¹²:我们 **0.887** vs 论文 ≈ 0.8-0.9 ✓
+- Cutoffs:n=10⁶ @ ~15 dB ✓,n=10⁸ @ ~25 dB(本文 ~22 dB,略早)
+- 大 n(10¹⁰/10¹²)cutoff 我们在 25 dB,Kamin 在 ~35 dB — **gap 来自 C2 missing min-tradeoff 优化 + 保守 V²=1**
 
-**Stage 1 已知保守性**(非降级,文档明示):
-- `bb84_qubit_finite_key_length` 用 `var_f=1` 上界而非 Theorem 4 SDP-derived tight value → 大 n 区的有限尺寸惩罚偏紧(Fig. 1 匹配在 n ≤ 10⁸ 很好,n ≥ 10¹⁰ 提前 cutoff 10 dB 左右)
-- `γ*`/`α*` 网格搜索永远取极小值(0.005 / 1.001)— Stage 2 SDP 会给出 meaningful optimum
-- 两条 caveat 已在 source docstring + test docstring 明示;ADR-B 决策落实:Stage 1 完成 plan §3.3 S2.5 的 "BB84 < 5%" 字面约束在低损耗区,高损耗区 gap 留作 Stage 2 优化目标
+**Stage 1 已知局限**(**Round-2 修订前后**:
 
-**Plan 对齐**:
-- S2.5 **Stage 1 完成**,基础设施从 `qkdx/finite_key/gll_renner.py` (Renner) + `qkdx/finite_key/kamin_geat.py` (GEAT) 两条路径并行
-- S2.5 整体实施约 **50% 就绪**(Stage 1 完成 + Stage 2/3 待后续)
+Round-1 初版声称 "Theorem 3 unique-acceptance implementation",评审发现两项**实质偏差**:
 
-**测试增量**:29 tests 新增(之前 finite_key 仅 37 tests);全仓库 tests 预计从 300 → 329。
+**【C1 已修 Round-2】EC leakage 双扣**:`bb84_qubit_asymptotic_rate` 返回已含 `-f_EC·h(Q)`,再传入 Theorem 3 公式又减 `λ_EC` 一次。修复:新增 `bb84_qubit_preEC_entropy` (pre-EC privacy) 与 `bb84_qubit_leak_EC_per_round` (EC leakage per round) 分开;`kamin_heuristic_key_length` 严格按 Kamin Eq. 16 的 `(pre-EC h, λ_EC)` 分离约定。详见 commit (待) + `docs/workflow/phase1-retrospective-review/workflow-log.md`。
 
-**计划外处理**:无降级。两个 Stage 1 已知的保守性(`var_f=1` + grid search 落在极值)已在代码+测试+本文档明示。
+**【C2 已改标 Round-2】Missing min-tradeoff 优化(不修,改标 heuristic)**:unique-acceptance 只移除 `Δ_com`,不移除 `T_α(f)` 的 `inf_{p,J}`(Kamin Eq. 11/41/42)。本实施假设 `f ≡ rate` 退化为只剩 variance term → 是 heuristic 估,不是 Thm 3 真实实现。修复:重命名 `kamin_theorem3_key_length` → `kamin_heuristic_key_length`(前者保留为 `DeprecationWarning` alias),docstring / module / tests 全部明示 "heuristic pre-SDP anchor, not faithful Thm 3"。Stage 2 SDP 才是 Thm 3 完整实施。
+
+**其他文档级修订**:
+- Round-1 声称 "Stage 1 完成 plan §3.3 S2.5 的 BB84 < 5% 字面约束" **撤回** — plan §3.3 S2.5 的硬验收明确指 decoy-state BB84 finite-key reproduction < 5%,qubit-only 不等同 plan 口径(Codex holistic review H5)
+- 保守 Var(f)=1 仍是 Stage 1 限制,但 Round-1 把高损耗 cutoff gap 全归于此是**不完整**:C1 双扣 + C2 missing min-tradeoff 是另外两个更实质的原因
+
+**Plan 对齐**(Round-2 实情):
+- S2.5 Stage 1 **heuristic anchor** 完成;**不声称** Kamin Thm 3 完整实施
+- S2.5 硬验收(Plan §3.3):**未完成**。需 Stage 2(Choi-state SDP + FW + Thm 4 dual 提取 g)
+- 基础设施从 `qkdx/finite_key/gll_renner.py` (Renner analytic) + `qkdx/finite_key/kamin_geat.py` (GEAT heuristic) 两条路径并行 — 两者都是 Stage 2 实施前的 sanity 工具
+
+**测试增量**(Round-2 更新):39 tests(Round-1 29 tests + Round-2 新增 10 tests 覆盖 pre-EC/post-EC decomposition + C1 regression)。
+
+**计划外处理**:Round-1 实施存在 C1 bug(已修)+ C2 overclaim(已改标);两者均经 Codex dual-agent review 识别并在 Round-2 闭合。详见 `docs/workflow/phase1-retrospective-review/workflow-log.md`。
 
 ---
 

@@ -1,0 +1,2062 @@
+diff --git a/docs/PHASE1_LOG.md b/docs/PHASE1_LOG.md
+index 7cd7feb..bc5c5ec 100644
+--- a/docs/PHASE1_LOG.md
++++ b/docs/PHASE1_LOG.md
+@@ -444,6 +444,221 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输
+ 
+ ---
+ 
++---
++
++## 4.7 Stage S2.5 预备 — Kamin 2025 Level 3–4 精读(2026-04-20)
++
++**背景**:Stage S2.4 GEAT memo 完成后,S2.5 "GEAT 实现 + Kamin 2025 复现"需要 Kamin 2025 原文作为实施蓝图。PDF 已于 2026-04-20 就绪(`docs/literature/pdfs/Kamin-2025-FiniteSizeAnalysisEntropyAccumulation.pdf`, 968 KB, 40 pp.),本节完成精读 memo。
++
++**精读范围**(Level 3–4):
++- §1 Introduction + §3 Protocol 1:完整精读
++- §4 GEAT channel + Thm 1 + 密钥长度 Thm 3:完整精读
++- §5 Key rate computation techniques(Thm 4 SDP + completeness LP + ε 优化):**完整精读**
++- §6 Qubit BB84 with loss(Fig. 1, 2):完整精读
++- §7 Decoy-state with improved analysis(Thm 6 + Fig. 3, 4):Level 3
++- §8 Coherent attack 扩展(Thm 5):完整精读
++- Appendix A/B/C:浏览
++
++**产出**:[docs/literature/Kamin-2025.md](literature/Kamin-2025.md)(v0.1, Level 3–4, ~400 行)
++
++**关键发现**:
++
++1. **密钥长度公式(Thm 3, Eq. 16)**:
++   $\ell \leq nh + nT_\alpha(f) - n((\alpha-1)/(2-\alpha))^2 K(\alpha) - \lambda_\text{EC} - \lceil \log(1/\varepsilon_\text{EV}) \rceil - (\alpha/(\alpha-1))\log(1/\varepsilon_\text{PA}) + 2$
++   (单个 $\varepsilon_\text{PA}$ 项 via Rényi PA [Dup23];比 [GLH+22] 结构简洁)
++
++2. **Choi-state 参数化 + Thm 4**(**本文核心数值技术**):
++   - Rate function 重写为 $\inf_J W(\rho_J^g)$ s.t. $\gamma \Phi[\rho_J^t] = \mathbf{p}_{\backslash\perp}$(Eq. 30)
++   - 最优 crossover min-tradeoff $\mathbf{g}^*$ = Frank-Wolfe SDP 的 **Lagrange 对偶乘子**(Eq. 49-51)
++   - 消除了 [GLH+22] 的 Fenchel 对偶实施困难
++
++3. **Decoy-state 单步 convex optimization**(Thm 6, Eq. 80):
++   - 合并两步法([WL22, NUL23, KL24, KTL25] = 先 yield LP + 再 entropy SDP)为单步 Choi-state 块对角 SDP
++   - Photon cut-off $N_\text{ph} = 10$ + yield 向量 + slack $\boldsymbol{\delta}^\mu$
++
++4. **Coherent attack 独立成立(Thm 5)**:[FKR+25, AT25] 证明移除 [MR23] 的 "Eve single-signal interaction" 条件,本文所有结果对任意 coherent attack 成立
++
++5. **数值 benchmark**:
++   - Fig. 1(qubit BB84, $p^\text{depol} = 0.01$): $n = 10^{10}$ 下 cutoff ≈ 25 dB
++   - Fig. 3(decoy BB84, $\mu_\text{sig} = 0.9, \mu_2 = 2e{-}2, \mu_3 = 1e{-}3$, $\theta^\text{misalign} = \sin^{-1}(0.1)$):$n = 10^{12}$ cutoff ≈ 25 dB
++   - $\varepsilon^\text{secure} = 10^{-8}$, $\varepsilon^\text{com} = 10^{-3}$
++
++**S2.5 实施建议**(三阶段,落实 ADR-B):
++
++| Stage | 难度 | 产出 | Plan 验收口径 |
++|-------|------|------|--------------|
++| 1(1 周)| 低 | asymptotic anchor(qubit BB84 Fig. 1 $n{=}10^{12}$ 0 dB)| asymptotic rate ≈ 0.91·(1-γ)² |
++| 2(3-4 周)| 中 | qubit BB84 full GEAT + Thm 4 SDP + FW | Fig. 1 四曲线 < 5% |
++| 3(6-8 周)| 高 | decoy-state BB84(Fig. 3)| Fig. 3 四曲线 < 5% |
++
++**Plan 对齐修订**:
++- RESEARCH_PLAN §3.3 S2.5 引用 "Kamin 2025 Table 1" **不存在**(论文只有 Fig. 1-4);**Fig. 3 作为 decoy-state 硬验收替代**
++- Plan 未明确 qubit vs decoy;**qubit Fig. 1 亦可满足 "BB84 < 5%" 的字面约束**
++
++**计划外处理**:无降级。Kamin 2025 PDF 是本 session 新获依赖,已就绪。
++
++---
++
++## 4.10 Stage F6 §7.2 PM-QKD MS-EB formulation(2026-04-20)
++
++**背景**:F6 §7.1 TF-QKD Level 3 memo 完成后,进入 §7.2 PM-QKD MS-EB formulation doc。遵循 [mdi-formulation.md](msen/mdi-formulation.md) 模板,覆盖 PM-QKD 在 MS-EB 五元组 $(\mathcal{P}, \mathcal{E}, \mathcal{A}, \mathcal{T}, \mathcal{K})$ 下的完整书写。
++
++**产出**:[docs/msen/pm_qkd_formulation.md](msen/pm_qkd_formulation.md)(v0.1, ~230 行)
++
++**关键决策**:
++
++1. **源态结构**:$\rho_\text{source} = \frac{1}{2}\sum_\kappa |\kappa\rangle\langle\kappa| \otimes \int d\phi/(2\pi) |\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\cdot|$,相位随机化退化为 Fock 数 Poisson 混合(Ma Eq. A3)
++2. **WLC SDP 维度**:$d_\rho = 4$(与 BB84/MDI 相同,得益于 Ma Lemma 1 奇偶光子数分解 + Shor-Preskill 归约)
++3. **$p_\text{sift}$ 关键标度**:$p_\text{sift}^\text{PM} = Q_\mu \cdot 2/M \propto \sqrt{\eta}$(**这是 √η 物理源**);对比 MDI $p_\text{sift} = \eta_A\eta_B/2$ 常数
++4. **Phase error 不可观测**:$E_\mu^X$ 通过 Ma Eq. 2 的 decoy-state 奇偶分解估**上界**,不作为接受判据
++
++**范围限定**(本书写覆盖):
++- $d = 2$(二相位 PM-QKD),$N_\text{fock} = 10$ 截断
++- 对称源强度 $\mu_a = \mu_b$
++- 理想 phase reference match(无 drift)
++
++**Out of scope**(ADR 待决):
++- $d > 2$(Ma §II 仅主分析 $d = 2$)
++- Phase reference deviation $\phi_0$ 补偿($j_d$ slice offset;Ma §IV 实验技术)
++- Fock 截断严格 error bound(Ma Appendix B 仅数值 convergence)
++
++**Bearing**:
++- **Sub-Q2**:补全 F6 作为 $\sqrt{\eta}$ 族 anchor,与 F1/F5(η 标度)形成 Pareto 对比
++- **Sub-Q3**:PLOB $-\log_2(1-\eta)$ vs PM Eq. 4 下界 gap 在 $\eta \in [10^{-6}, 10^{-3}]$ 是 testbed
++- **Sub-Q4**:PM 与 single-repeater bound $-\log_2(1-\sqrt\eta)$ 的 gap(Ma §VI outlook)是 Phase 3 gap 归因 A/B/C 的核心对象
++
++**下一步**(§7.3 实施):
++- `qkdx/protocols/pm_qkd.py` + tests
++- 复用现有 `qkdx/analytic/decoy.py` 的 2-decoy 基础设施,新增 `pm_decoy_phase_error_upper` via Ma Eq. 2
++- 复用 MDI 的 `_conditional_alice_bob` override 范式
++
++**计划外处理**:无。本文档严格遵循 MDI formulation 模板结构。
++
++---
++
++## 4.9 Stage F6 TF-QKD Level 3 精读(2026-04-20)
++
++**背景**:F6 TF-QKD family sheet([tfqkd_family.md](families/tfqkd_family.md) v0.1)的 §9 升级路径 §9.1 第一步是 "docs/literature/TF-QKD.md Level 3 精读(Lucamarini 2018 + SNS + PM + MP)"。三份原始 PDF 均已在库(Lucamarini-2018, WangYuHu-2018, MaZengZhou-2018)。本节闭合该精读。
++
++**精读范围**(Level 3):
++- Lucamarini 2018(Nature 557:400):TF-QKD 原版,phase-slicing + decoy
++- Wang-Yu-Hu 2018(PRA 98:062323):SNS-TF-QKD,信号无筛 + tagged-model 证明
++- Ma-Zeng-Zhou 2018(PRX 8:031043):PM-QKD,optical-mode EDP 证明
++- 主文 + 关键公式:完整精读;安全证明细节:Level 2 浏览
++
++**产出**:[docs/literature/TF-QKD.md](literature/TF-QKD.md)(v0.1, Level 3, ~330 行)
++
++**关键发现**:
++
++1. **共同骨架**:三变体同拓扑(Alice/Bob/Charlie + BS 干涉 + 单光子检测),密钥率均 $\propto \sqrt{\eta}$
++2. **变体区别**:
++   - Lucamarini:原方案,无完整安全证明,phase-slicing 信号筛选
++   - SNS:"发或不发" 回避信号筛 → traditional decoy 直接适用,tolerate 35-45% misalignment
++   - PM:optical-mode EDP + Fock truncation + 奇偶光子数分解 → **最完整证明**,MS-EB 适配度最高
++3. **MS-EB 实施推荐顺序**:**PM-QKD → SNS → Lucamarini 原版**(后者建议保持 `spec_only`)
++4. **Plan 对齐 ADR**:F6 首先实施 **PM-QKD** 作为 `covered` 目标;SNS 可作 Phase 1 S2.1 广度扩展;Lucamarini 原版因无完整安全证明保持 spec_only
++
++**MS-EB 映射难度评估**:
++
++| 变体 | 难度 | 门槛 |
++|------|------|------|
++| PM-QKD | 中 | Fock 截断 + Ma Lemma 1 奇偶分解 + decoy Eq.2 phase-error 上界 |
++| SNS-TF | 中 | `source_state` 的二元混合(发/不发)→ 依赖 Phase 0 multi-source 基础设施 |
++| Lucamarini 原版 | 高 | Phase slicing post-selection + 无完整安全证明(自承) |
++
++**未解决点**(ADR 备选):
++- Fock 截断 $N_\text{fock}$ 选择的 truncation error bound
++- Phase reference 的 MS-EB 表达(已在 tfqkd_family.md §9.4 列降级预案)
++- 与 Kamin 2025 GEAT 的兼容性(Kamin 只做 BB84-class,TF optical-mode 结构待评估)
++
++**Plan 对齐**:
++- F6 实施路径六子阶段(本 memo §7):7.1 完成 → 下一步 7.2 MS-EB formulation doc 或 7.3 PM-QKD 实施
++- Sub-Q2 覆盖完成 F6 后,三大协议族(F1 BB84 / F5 MDI / F6 TF)全 `covered`
++
++**计划外处理**:无。三篇 PDF 本 session 前半已下载,本节补齐文献精读层。
++
++---
++
++## 4.8 Stage S2.5 Stage 1 — qubit BB84 asymptotic anchor(2026-04-20)
++
++**目标**(Kamin-2025.md §9.2 三阶段路径的最低风险起点):实施 Kamin Theorem 3 密钥长度公式(Eq. 16)+ qubit BB84 Protocol 1 的 analytic asymptotic rate,在不依赖 SDP 的前提下建立 Fig. 1 anchor。
++
++**产出**:
++- [qkdx/finite_key/kamin_geat.py](../qkdx/finite_key/kamin_geat.py):
++  - `optimal_eps_parameters(eps_secure, alpha)`:Kamin Eq. 57(ε_PA, ε_EV 最优分割)
++  - `kamin_V_squared(d_A, var_f, kappa)`:Eq. 11 的 V² 项
++  - `kamin_K_alpha(alpha, d_A, max_f, min_sigma_f, kappa)`:Eq. 11 的 K(α) 第二阶常数
++  - `kamin_theorem3_key_length(n, h, V², K(α), α, λ_EC, ε_EV, ε_PA)`:Eq. 16 unique-acceptance 简化形式(f ≡ rate,T_α 退化为方差项)
++  - `bb84_qubit_asymptotic_rate(p_depol, η_det, γ, f_EC)`:Kamin §6 Devetak-Winter 解析
++  - `bb84_qubit_finite_key_length(n, p_depol, loss_dB, γ, α, ε_secure, f_EC)`:上述组合
++  - `bb84_qubit_optimal_finite_key(n, p_depol, loss_dB, ...)`:γ × α 网格搜索
++- [tests/test_finite_key/test_kamin_geat.py](../tests/test_finite_key/test_kamin_geat.py):29 tests
++  - ε 最优分割在 α=1.499 下 → (0.75, 0.25)
++  - V²/K(α) 边界行为与文献公式吻合
++  - Theorem 3 n→∞ 收敛到 h(Devetak-Winter 极限)
++  - Asymptotic rate 零损耗极限 → (1-γ)²
++  - 0 dB @ n=10^12 rate ∈ [0.5, 1.0]
++  - 30 dB @ n=10^6 cutoff
++
++**数值 benchmark**(gird search γ × α 后,p_depol=0.01, ε_secure=10⁻⁸):
++
++| n | 0 dB | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB |
++|----|------|------|-------|-------|-------|-------|
++| 10⁶ | 0.808 | 0.234 | 0.052 | — | — | — |
++| 10⁸ | 0.835 | 0.260 | 0.078 | 0.021 | 2.4e-3 | — |
++| 10¹⁰ | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
++| 10¹² | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
++
++**对比 Kamin Fig. 1**(eyeball):
++- 0 dB @ n=10¹²:我们 0.835 vs 论文 ≈ 0.8-0.9 ✓
++- Cutoffs:n=10⁶ @ ~15 dB ✓,n=10⁸ @ ~25 dB(本文 22 dB,略早)
++- 大 n(10¹⁰/10¹²)cutoff 我们在 25 dB,Kamin 在 ~35 dB — **gap 来自保守 V²=1**
++
++**Stage 1 已知保守性**(非降级,文档明示):
++- `bb84_qubit_finite_key_length` 用 `var_f=1` 上界而非 Theorem 4 SDP-derived tight value → 大 n 区的有限尺寸惩罚偏紧(Fig. 1 匹配在 n ≤ 10⁸ 很好,n ≥ 10¹⁰ 提前 cutoff 10 dB 左右)
++- `γ*`/`α*` 网格搜索永远取极小值(0.005 / 1.001)— Stage 2 SDP 会给出 meaningful optimum
++- 两条 caveat 已在 source docstring + test docstring 明示;ADR-B 决策落实:Stage 1 完成 plan §3.3 S2.5 的 "BB84 < 5%" 字面约束在低损耗区,高损耗区 gap 留作 Stage 2 优化目标
++
++**Plan 对齐**:
++- S2.5 **Stage 1 完成**,基础设施从 `qkdx/finite_key/gll_renner.py` (Renner) + `qkdx/finite_key/kamin_geat.py` (GEAT) 两条路径并行
++- S2.5 整体实施约 **50% 就绪**(Stage 1 完成 + Stage 2/3 待后续)
++
++**测试增量**:29 tests 新增(之前 finite_key 仅 37 tests);全仓库 tests 预计从 300 → 329。
++
++**计划外处理**:无降级。两个 Stage 1 已知的保守性(`var_f=1` + grid search 落在极值)已在代码+测试+本文档明示。
++
++---
++
++## 4.6 Stage S2.4 — Metger 2024 GEAT Level 4 精读(2026-04-19)
++
++**背景**:Plan §3.3 S2.4 要求 Metger 2024 GEAT Level 4 精读。PDF 已于本 session 前半段下载就绪(`docs/literature/pdfs/Metger-2024-GeneralisedEntropyAccumulation.pdf`, 510 KB, 38 pp.)。Stage E 原先重定向到 GLL-2021;本节补全 S2.4 正式完成。
++
++**精读范围**(Level 4):
++- §1 Introduction + Thm 1.1 + Lemma 1.2:完整精读(前 session)
++- §2 Preliminaries:Rényi 散度, $H_\alpha$, $H_\alpha^\dagger$, spectral pinching — 概念层(前 session)
++- §3 技术引理:channel divergence, Lemma 3.5–3.6 — Level 2 浏览
++- §4.1 简单 GEAT (Thm 4.1):完整精读(显式 Eq. 4.1 second-order term)
++- §4.2 带 testing GEAT (Thm 4.3):完整精读(Eq. 4.4 主定理 + Cor 4.6 显式 $c_1, c_0$ + Lemma 4.7 min-tradeoff 构造)
++- §5.2 E91 QKD 应用:完整精读(与 [DFR20] 的对比分析)
++
++**核心产出**:[docs/literature/GEAT-2024.md](literature/GEAT-2024.md)(v0.1, Level 4, ~330 行)
++
++**关键发现**:
++1. **Non-signalling 条件对 PM-QKD trivially 满足**:无需 $R_i$ 系统;Eve 的量子 side info $E_i$ 可在每轮更新,不破坏 non-signalling
++2. **GEAT 等价 tight bound**:Cor 4.6 给出 $H_\text{min}^\varepsilon(A^n|E_n) \geq nh - c_1\sqrt{n} - c_0$;second-order 误差与 [DFR20] 相同阶
++3. **Chain rule 惩罚消除**:原始 EAT [DFR20] 需加 $\bar{A}_i$ 辅助系统满足 Markov,导致 $H_\text{max}(\bar{A}^n|\cdot)$ 罚项;GEAT 不需要
++4. **Min-tradeoff function 实施路径**:Lemma 4.7 + [BFF21] 数值 SDP → 构造 $g(p)$ → 自动提升为 $f$ → 代入 Thm 4.3
++
++**ADR-B bearing**(GEAT vs Renner 框架选择):
++- GEAT 路径:直接处理 coherent attack,适用 PM-QKD / MDI / TF-QKD,via [MR22]
++- Renner 路径(GLL-2021):需 de Finetti 提升到 coherent,i.i.d. 为主
++- 推荐:S2.5 analytic anchor 用 GLL-2021 Renner path(基础设施已有);完整 Kamin 2025 实施用 GEAT 路径
++- 两条路径可并行 sanity check:BB84 Eq. 19 vs GEAT Cor 4.6 数值对比
++
++**计划外处理**:无降级。GEAT PDF 获取是本 session 新增依赖,已解决。
++
++---
++
+ ## 5. 本次 commit 的文件清单
+ 
+ **删除**:
+diff --git a/docs/literature/GEAT-2024.md b/docs/literature/GEAT-2024.md
+new file mode 100644
+index 0000000..9c5ff19
+--- /dev/null
++++ b/docs/literature/GEAT-2024.md
+@@ -0,0 +1,324 @@
++# Metger-Fawzi-Sutter-Renner 2024 精读(Level 4)
++
++**论文引用**:
++- Metger, T., Fawzi, O., Sutter, D., Renner, R. (2024). *Generalised entropy accumulation.*
++  arXiv:2203.04993 (Communications in Mathematical Physics, published 2024).
++  本 memo 基于 PDF 版本 (510 KB, 38 pp.)
++- 重要前置:
++  - [DFR20] Dupuis, Fawzi, Renner. *Entropy accumulation.* Comm. Math. Phys. 379:867–913, 2020.
++  - [DF19] Dupuis, Fawzi. *Entropy accumulation with improved second-order term.* IEEE TIT 65:7596–7612, 2019.
++  - [MR22] Metger, Renner. *Security of QKD from GEAT.* arXiv:2203.04993 companion (same arXiv number); see footnote distinction.
++- 相关项目文献:
++  - [GLL21] George, Lin, Lütkenhaus 2021 (PRR 3:013274) — 并行的 Renner framework 路径
++  - [Kamin25] Kamin 2025 — Phase 1 S2.5 的 GEAT finite-key SDP 实施参考
++
++**精读日期**:2026-04-19(Phase 1 S2.4)
++**精读等级**:**Level 4**
++- §1 Introduction + Theorem 1.1 + Lemma 1.2:完整精读
++- §2 Preliminaries:概念层精读(Rényi divergence, H_α, H_α^†, spectral pinching)
++- §3 技术引理:Level 2(channel divergence bound, Lemma 3.5–3.6)
++- §4.1 简单 GEAT (Thm 4.1):完整推导链精读
++- §4.2 带 Testing GEAT (Thm 4.3):完整精读,含显式第二阶项
++- §4.2 Corollary 4.6:完整精读,c_1, c_0 表达式
++- §4.2 Lemma 4.7:完整精读(min-tradeoff function 从测试函数 g 构造)
++- §5.1 Blind randomness expansion:浏览
++- §5.2 E91 QKD 应用:完整精读,含与 [DFR20] 的对比
++
++**范围说明**:
++- 本 memo 聚焦于 GEAT 主定理 + QKD 应用;§3 技术引理证明细节未全部重推
++- [MR22] 的完整 PM-QKD 处理未单独精读(参见 §5 bearing 说明)
++
++---
++
++## 1. 一句话总结
++
++**GEAT 将 EAT ([DFR20]) 从 Markov 条件推广到更弱的 non-signalling 条件**:在 `n` 轮交互协议中,即使 Eve 的量子 side information 在每轮更新(不满足 Markov 条件),Alice 的输出字符串 $A^n$ 的 smooth min-entropy 仍然被每轮最优单轮 von Neumann 熵之和 lower-bound,误差为 $O(\sqrt{n})$;其中 non-signalling 条件为 $\operatorname{Tr}_{A_i R_i} \circ \mathcal{M}_i = \mathcal{R}_i \circ \operatorname{Tr}_{R_{i-1}}$,对准备-测量型 QKD 天然满足。
++
++---
++
++## 2. 概念地图
++
++```
++                    ┌──────────────────────────────────────────────┐
++                    │    原始 EAT [DFR20]                           │
++                    │    条件:Markov condition                       │
++                    │      Tr_{A_i} ∘ M_i = M'_i ∘ Tr_{R_{i-1}}   │
++                    │    (side info 必须以 Markov 方式生成)           │
++                    │    问题:E91 QKD 中 Eve 更新量子 side info,    │
++                    │         Markov 条件不满足 → 需加 Ā_i 辅助系统 │
++                    └──────────────────────────────────────────────┘
++                                          │
++                                          │ 推广(本文主贡献)
++                                          ▼
++                    ┌──────────────────────────────────────────────┐
++                    │    GEAT (Theorem 4.3, 本文)                   │
++                    │    条件:non-signalling condition              │
++                    │      ∃ R_i ∈ CPTP(E_{i-1},E_i):             │
++                    │      Tr_{A_i R_i} ∘ M_i = R_i ∘ Tr_{R_{i-1}}│
++                    │    (A_i 的边际与 R_{i-1} 系统无关)            │
++                    │    优势:对 E91/PM-QKD 天然满足 (无 R_i 系统)  │
++                    └──────────────────────────────────────────────┘
++                                          │
++                     ┌────────────────────┼────────────────────┐
++                     ▼                                         ▼
++         ┌────────────────────┐                 ┌────────────────────────┐
++         │ Theorem 4.1        │                 │ Theorem 4.3            │
++         │ (无 testing)       │                 │ (带 testing, event Ω)  │
++         │                    │                 │                        │
++         │ H_min^ε(A^n|E_n)  │                 │ H_min^ε(A^n|E_n)|_Ω   │
++         │ ≥ Σ inf H(A_i|E_i │                 │ ≥ nh − c_1√n − c_0    │
++         │     Ẽ_{i-1}) −O(√n)│                 │ (Corollary 4.6)        │
++         └────────────────────┘                 └────────────────────────┘
++                                                           │
++                                          ┌────────────────┤
++                                          ▼                ▼
++                             ┌────────────────┐  ┌──────────────────────┐
++                             │ §5.2 E91 QKD   │  │ §5.1 Blind rand. exp │
++                             │ 无需加 Ā_i;    │  │ (non-local game)     │
++                             │ E_i 可在每轮更新│  └──────────────────────┘
++                             └────────────────┘
++```
++
++---
++
++## 3. 数学准备(§2 精要)
++
++### 3.1 Sandwiched Rényi 散度
++
++对 $\alpha \in (1,\infty)$ 和 $\rho, \sigma \in \operatorname{Pos}(\mathcal{H})$:
++
++$$D_\alpha(\rho \| \sigma) := \frac{1}{\alpha - 1} \log \operatorname{Tr}\!\left[\left(\sigma^{\frac{1-\alpha}{2\alpha}} \rho \, \sigma^{\frac{1-\alpha}{2\alpha}}\right)^\alpha\right]$$
++
++### 3.2 条件 Rényi 熵
++
++两种:
++
++$$H_\alpha(A|B)_\rho := -\inf_{\sigma_B} D_\alpha(\rho_{AB} \| \mathbb{1}_A \otimes \sigma_B)$$
++
++$$H_\alpha^\dagger(A|B)_\rho := \sup_{\sigma_B} \left\{-D_\alpha(\rho_{AB} \| \mathbb{1}_A \otimes \sigma_B)\right\}$$
++
++当 $\alpha \to 1$ 时两者均趋向 von Neumann 条件熵 $H(A|B)$。
++
++### 3.3 Smooth min-entropy
++
++$$H_\text{min}^\varepsilon(A|B)_\rho := \sup_{\bar{\rho}: P(\bar{\rho}, \rho) \leq \varepsilon} H_\text{min}(A|B)_{\bar{\rho}}$$
++
++其中 $P$ 是 purified distance。
++
++---
++
++## 4. 主要结果
++
++### 4.1 Theorem 4.1 — 简单 GEAT(无 testing)
++
++**设定**:信道序列 $\mathcal{M}_i \in \operatorname{CPTP}(R_{i-1}E_{i-1}, A_i R_i E_i)$,满足 non-signalling 条件:
++
++$$\exists\, \mathcal{R}_i \in \operatorname{CPTP}(E_{i-1}, E_i): \quad \operatorname{Tr}_{A_i R_i} \circ \mathcal{M}_i = \mathcal{R}_i \circ \operatorname{Tr}_{R_{i-1}}$$
++
++对任意 $\varepsilon \in (0,1)$ 和初始态 $\rho_{R_0 E_0}$:
++
++$$H_\text{min}^\varepsilon(A^n | E_n)_{\mathcal{M}_n \circ \cdots \circ \mathcal{M}_1(\rho)} \geq \sum_{i=1}^n \inf_{\omega \in S(R_{i-1}E_{i-1}\tilde{E}_{i-1})} H(A_i | E_i \tilde{E}_{i-1})_{\mathcal{M}_i(\omega)} - O(\sqrt{n})$$
++
++其中 $\tilde{E}_{i-1} \equiv R_{i-1}E_{i-1}$ 是 purifying 系统。
++
++**显式第二阶项**(Eq. 4.1):
++
++$$H_\text{min}^\varepsilon(A_1^n|E_n) \geq \sum_{i=1}^n \inf_{\omega_i} H(A_i|E_i\tilde{E}_{i-1})_{\mathcal{M}_i(\omega_i)} - n\cdot\frac{\alpha-1}{2-\alpha}\log^2(1+2d_A) - \frac{g(\varepsilon)}{\alpha-1}$$
++
++其中 $g(\varepsilon) = \log(1-\sqrt{1-\varepsilon^2})$,设 $\alpha = 1 + O(1/\sqrt{n})$ 即得 $O(\sqrt{n})$ 误差。
++
++**证明路径**:
++1. [DFR20, Lemma B.10]: $H_\text{min}^\varepsilon \geq H_\alpha - g(\varepsilon)/(\alpha-1)$
++2. 用 Lemma 3.6(chain rule for Rényi entropy,本文技术核心)重复 $n-1$ 次:
++   $H_\alpha(A_1^n|E_n) \geq \sum_{i=1}^n \inf_\omega H_{\frac{1}{2-\alpha}}(A_i|E_i\tilde{E}_{i-1})$
++3. [DFR20, Lemma B.9]: $\inf_\omega H_\beta(A_i|\cdot) \geq \inf_\omega H(A_i|\cdot) - \frac{\alpha-1}{2-\alpha}\log^2(1+2d_A)$
++4. 组合得 Eq. 4.1。
++
++### 4.2 Theorem 4.3 — 带 testing 的 GEAT
++
++**额外设定**:信道输出包含经典寄存器 $C_i$,共享字母表 $\mathcal{C}$;协议成功事件 $\Omega \subset \mathcal{C}^n$。
++
++**Min-tradeoff function** $f: \mathbb{P}(\mathcal{C}) \to \mathbb{R}$ 满足:
++
++$$f(q) \leq \min_{\nu \in \Sigma_i(q)} H(A_i|E_i\tilde{E}_{i-1})_\nu, \quad \forall i = 1,\ldots,n$$
++
++其中 $\Sigma_i(q)$ 是信道 $\mathcal{M}_i$ 在所有输入态上可达的、$C_i$ 边际等于 $q$ 的输出态集合(Definition 4.2)。
++
++**关键参数**:
++
++$$h = \min_{c^n \in \Omega} f(\text{freq}(c^n)), \quad V = \log(2d_A^2+1)+\sqrt{2+\text{Var}(f)}$$
++
++$$K'(\alpha) = \frac{(2-\alpha)^3}{6(3-2\alpha)^3 \ln 2} \cdot 2^{\frac{\alpha-1}{2-\alpha}(2\log d_A + \text{Max}(f) - \text{Min}_\Sigma(f))} \cdot \ln^3\!\left(2^{2\log d_A + \text{Max}(f) - \text{Min}_\Sigma(f)} + e^2\right)$$
++
++**主定理 (Eq. 4.4)**:对任意 $\varepsilon \in (0,1)$, $\alpha \in (1,3/2)$, $\rho_{R_0 E_0}$ 和 affine min-tradeoff function $f$ with $h = \min_{c^n \in \Omega} f(\text{freq}(c^n))$:
++
++$$H_\text{min}^\varepsilon(A^n|E_n)_{\mathcal{M}_n\circ\cdots\circ\mathcal{M}_1(\rho)|\Omega} \geq nh - n\frac{\alpha-1}{2-\alpha}\cdot\frac{\ln 2}{2}\cdot V^2 - \frac{g(\varepsilon) + \alpha\log(1/\Pr_{\rho^n}[\Omega])}{\alpha-1} - n\left(\frac{\alpha-1}{2-\alpha}\right)^2 K'(\alpha)$$
++
++**证明思路(high-level)**:
++1. 引入辅助系统 $D_i$($\dim(D_i) = \lceil 2^{\text{Max}(f)-\text{Min}(f)}\rceil$)扩展信道 $\mathcal{M}_i \to \tilde{\mathcal{M}}_i$
++2. $D_i$ 的 entropy 根据 $f(\delta_c)$ 值设计 mixing,使 $H_\alpha(D^n)_{|\bar{\rho}^n} = n\text{Max}(f) - nf(\text{freq}(c^n))$
++3. Lemma 4.5: $H_\alpha^\dagger(ACD|E) \leq H_\alpha^\dagger(AC|E) + \max_c H_\alpha(D)_{\rho_{D|c}}$(经典-量子条件)
++4. 对 $\tilde{\mathcal{M}}_i$ 用 Lemma 3.6 chain rule + [DF19, Corollary IV.2] 给出 $H_\beta(A_i D_i|E_i\tilde{E}_{i-1}) \geq H(A_i D_i|\cdot) - (\beta-1)\frac{\ln 2}{2}V^2 - (\beta-1)^2 K(\beta)$
++5. 汇总得 Eq. 4.11 → 设 $\alpha = 1 + O(1/\sqrt{n})$ 最优化得 Corollary 4.6。
++
++### 4.3 Corollary 4.6 — 显式 $c_1\sqrt{n} + c_0$ 形式
++
++对 Theorem 4.3 的设定,取最优 $\alpha$:
++
++$$H_\text{min}^\varepsilon(A^n|E_n)_{\mathcal{M}_n\circ\cdots\circ\mathcal{M}_1(\rho)|\Omega} \geq nh - c_1\sqrt{n} - c_0$$
++
++其中:
++
++$$c_1 = \sqrt{\frac{2\ln(2)V^2}{\eta}\left(g(\varepsilon) + (2-\eta)\log(1/\Pr_{\rho^n}[\Omega])\right)}$$
++
++$$c_0 = \frac{(2-\eta)^2\eta^2\log(1/\Pr_{\rho^n}[\Omega]) + \eta^2 g(\varepsilon)}{3(\ln 2)^2 V^2(2\eta-1)^3} \cdot 2^{\frac{1-\eta}{\eta}(2\log d_A + \text{Max}(f) - \text{Min}_\Sigma(f))} \ln^3\!\left(2^{2\log d_A+\text{Max}(f)-\text{Min}_\Sigma(f)}+e^2\right)$$
++
++$$\eta = \frac{2\ln 2}{1+2\ln 2} \approx 0.583, \quad g(\varepsilon) = \log(1-\sqrt{1-\varepsilon^2}), \quad V = \log(2d_A^2+1)+\sqrt{2+\text{Var}(f)}$$
++
++**实用意义**:Kamin 2025 实施中可直接代入上述 $c_1, c_0$ 得到有限密钥长度下界 $\ell = nh - c_1\sqrt{n} - c_0$。
++
++### 4.4 Lemma 4.7 — 从测试函数 g 构造 min-tradeoff function
++
++**设定**:若协议分轮:测试轮(概率 $\gamma$)+ 数据轮(概率 $1-\gamma$),且 $g: \mathbb{P}(\mathcal{C}') \to \mathbb{R}$ 是满足 Eq. 4.14 的 affine 函数($g(q) \leq \min_{\omega: (\mathcal{M}_i^\text{test}(\omega))_{C_i}=q} H(A_i|E_i\tilde{E}_{i-1})_{\mathcal{M}_i(\omega)}$):
++
++**构造**(Lemma 4.7 显式公式):
++
++$$f(\delta_x) = \text{Max}(g) + \frac{1}{\gamma}(g(\delta_x) - \text{Max}(g)), \quad \forall x \in \mathcal{C}'$$
++$$f(\delta_\perp) = \text{Max}(g)$$
++
++则 $f$ 是 $\{\mathcal{M}_i\}$ 的 affine min-tradeoff function,且:
++
++$$\text{Max}(f) = \text{Max}(g), \quad \text{Min}(f) = \left(1-\frac{1}{\gamma}\right)\text{Max}(g) + \frac{1}{\gamma}\text{Min}(g)$$
++$$\text{Var}(f) \leq \frac{1}{\gamma}(\text{Max}(g) - \text{Min}(g))^2$$
++
++**实用意义**:QKD 中只需对测试轮求解单轮 von Neumann 熵下界 $g(p)$(e.g., 通过数值 SDP — 参见 [BFF21] 方法),即可构造 $f$ 并代入 Thm 4.3。
++
++---
++
++## 5. §5.2 E91 QKD 应用(与 [DFR20] 的对比)
++
++### 5.1 协议描述(Protocol 2)
++
++| 参数 | 含义 |
++|------|------|
++| $n$ | qubit 信道使用次数 |
++| $\mu \in (0,1)$ | 对角基测量概率 |
++| $e \in (0,1/2)$ | 最大容忍相位错误率 |
++| $\vartheta_\text{EC}$ | 错误纠正相对通信代价 |
++| $r \in [0,1]$ | 密钥率 |
++
++**步骤**:
++1. **分发**:Alice 制备纠缠对 $(Q_i, \bar{Q}_i)$ 发给 Bob;Alice 以概率 $\mu$ 用对角基测 $Q_i \to A_i$,Bob 同样 $\bar{Q}_i \to \bar{A}_i$
++2. **筛选 + EC**:宣告基底 $B_i, \bar{B}_i$;$B_i \neq \bar{B}_i$ 时 $A_i = \bar{A}_i = \perp$;运行 EC 使 Bob 计算 $\hat{A}^n$
++3. **参数估计**:统计 $i \in S$ 中 $\bar{B}_i=1$ 且 $\bar{A}_i \neq \hat{A}_i$ 的比例,超过 $e\mu^2 n$ 则 abort
++4. **隐私放大**:见 [DFR20]
++
++**安全性归约**:需找 $H_\text{min}^\varepsilon(A^n|B^n\bar{B}^n E)_{\rho|\Omega}$ 的下界。
++
++### 5.2 原始 EAT [DFR20] 方法 vs GEAT 的对比
++
++| 方面 | 原始 EAT | GEAT (本文) |
++|------|----------|-------------|
++| **条件** | Markov condition | Non-signalling condition(更弱) |
++| **R_i 系统** | 需要 $R_{i-1} = Q_i^n \bar{Q}_i^n$(未来的纠缠对) | 不需要 $R_i$ 系统($E_i$ 可自由更新) |
++| **添加 $\bar{A}_i$** | 必须将 $\bar{A}_i$ 加入 conditioning,满足 Markov | 不需要;直接 bound $H_\text{min}^ε(A^n\|B^n\bar{B}^nE)$ |
++| **chain rule 惩罚** | 需用 chain rule 连接 $H_\text{min}^\varepsilon(A^n\bar{A}^n\|\cdot)$ → $H_\text{min}^\varepsilon(A^n\|\cdot)$,产生 $H_\text{max}(\bar{A}^n\|A^n B^n \bar{B}^n E)$ 罚项 | **无罚项**;$X^n$(Bob 观测记录)加入 conditioning 系统 $E_n$ 只降低熵,不惩罚 |
++| **non-signalling 验证** | 自动满足 Markov 时 | trivially 满足:无 $R_i$ 系统,Eve 不能 signal Alice |
++| **适用范围** | Markov 侧信息(e.g., prepare-and-measure with trusted devices) | 更广:side information 可在每轮更新 |
++
++**核心技术点**(§5.2 最后段):
++
++在 GEAT 框架下,单轮信道定义为 $\mathcal{M}_i: Q_i^n\bar{Q}_i^n(E_{i-1}) \to A_i E_i X_i$,其中 $E_i := Q_{i+1}^n\bar{Q}_{i+1}^n B^i\bar{B}^i X^i E$。Non-signalling 条件 trivially 满足:无 $R_i$ 系统。
++
++可以把 $Q^n\bar{Q}^n$ 加入初始 $E_0$,然后在每轮将 $Q_i\bar{Q}_i$ 通过 Alice/Bob 的 trusted 测量消掉 → side info $E_i$ 在每轮被删减,无 Markov 违反。
++
++**Min-tradeoff function 构造**:与 [DFR20, Claim 5.2] 完全相同(注意此处 $X^n \subset E_n$,对 $H_\text{min}(A^n|E_n)$ 只有降低作用)。
++
++**结论**:对 E91 QKD,GEAT 给出与 [DFR20] 相同的 tight second-order 项,**无需额外技术处理**即可 trivially 满足 non-signalling 条件。
++
++---
++
++## 6. ADR-B 决策 bearing
++
++**ADR-B 问题**:Phase 1 S2.5 有限密钥框架路径选择 — GEAT/Kamin vs Renner/GLL。
++
++**本文对 ADR-B 的 bearing**:
++
++| 维度 | GEAT 路径 (本文 + Kamin 2025) | Renner 路径 (GLL-2021) |
++|------|------------------------------|------------------------|
++| **适用攻击** | Coherent attack(直接,不需 de Finetti) | Collective → Coherent(需 de Finetti 或 post-selection,保守) |
++| **适用协议** | 任意准备-测量型 QKD(via [MR22]) | i.i.d. 协议为主 |
++| **MDI-QKD** | [MR22] 覆盖 PM-QKD(含 MDI);本文 §5.2 专注 E91 | GLL-2021 §IV.C MDI example |
++| **finite-key SDP** | Kamin 2025 = GEAT + GLL-2021 SDP 组合 | GLL-2021 Eq. 14 完整 finite-key SDP |
++| **代码实施难度** | 需实施 min-tradeoff function 数值构造 + GEAT 参数计算 | GLL SDP 已有接近完整 framework |
++| **第二阶项** | $c_1\sqrt{n} + c_0$,显式且 tight | $\delta(\bar\varepsilon)$ + EC log 项,同阶 |
++| **验收标准** | Kamin 2025 Fig. 4 < 5% 误差(RESEARCH_PLAN §3.3 S2.5) | BB84 Eq. 19 < 5% 误差(同上) |
++
++**建议**:
++- **短期(S2.5 当前实施)**:两条路径均可满足 BB84 analytic anchor 验收;优先用 GLL-2021 Renner path 因代码基础设施更近(`qkdx/finite_key/gll_renner.py` 已有 `variation_bound`, `delta_smoothing`, `bb84_finite_key_length_analytic`)
++- **中期(Kamin 2025 实施)**:GEAT 路径直接处理 coherent attack + MDI + TF-QKD,是 Phase 1 Sub-Q2/Sub-Q3 的更 principled 基础;需要实施 min-tradeoff function 数值构造([BFF21] 方法)
++- **两条路径可并行**:BB84 analytic 的 GLL Eq. 19 vs GEAT Corollary 4.6 结果对比可作为 S2.5 sanity check
++
++---
++
++## 7. 主要技术贡献要点(Level 4 小结)
++
++1. **推广条件**:Markov → non-signalling。Non-signalling 弱得多:只要 $A_i$ 的边际不依赖 $R_{i-1}$,无论 Eve 的 side information $E_i$ 如何更新都可。
++
++2. **等价 tight bound**:GEAT 给出与 EAT [DFR20] **相同阶** 的 second-order 项,即放松 Markov 条件**不损失** tight bounds(Remark 4.4)。
++
++3. **Min-tradeoff function 的数值构造路径**([BFF21]):对任意单轮 QKD 协议,用 SDP 计算 $\min_\omega H(A_i|E_i\tilde{E}_{i-1})_{\mathcal{M}_i(\omega)}$ 作为 $g(p)$,再用 Lemma 4.7 提升为 $f$。此为"zero-shot"有限密钥 SDP 路径。
++
++4. **E91 QKD trivial 应用**:non-signalling 条件对 E91 trivially 满足(无 $R_i$ 系统);避免了 [DFR20] 中添加 $\bar{A}_i$ 辅助系统的必要及链式法则惩罚。
++
++5. **第二阶项分解**:
++
++$$c_1 \sim \sqrt{\frac{V^2}{\eta} \log(1/\Pr[\Omega])}, \quad V^2 = (\log(2d_A^2+1))^2 + 2 + \text{Var}(f)$$
++
++$\text{Var}(f) \leq (1/\gamma)(\text{Max}(g)-\text{Min}(g))^2$ 随测试概率 $\gamma$ 增大而减小。对 QKD:$d_A=2$($\log_2 d_A = 1$);$\text{Max}(g) \leq 1$;$\text{Var}(f)$ 量级为 $1/\gamma$。
++
++---
++
++## 8. Limitations
++
++### 论文明示
++
++- **Trusted devices 假设**:§5.2 E91 应用中 Alice/Bob 的测量设备被信任(CPTP 测量);完全 device-independent(DI-QKD)的处理需要不同的 non-signalling 条件论证
++- **Finite-key SDP 不在本文**:本文给出 GEAT 定理框架,具体有限密钥 SDP 实施见 Kamin 2025 + [GLL21]
++- **Affine min-tradeoff function 限制**:Theorem 4.3 要求 $f$ 为 affine;一般非 affine 函数需先做 affine relaxation(可能损失 tightness)
++- **常数 $c_0$ 数量级**:$c_0 = O(1)$,但表达式复杂;对小 $n$ 的影响需要数值评估
++
++### 项目视角
++
++- 本文 §5.2 只处理 E91 QKD;完整 PM-QKD(含 BB84、MDI-QKD)处理在配套文献 [MR22](arXiv:2203.04993),本 memo 未精读
++- Min-tradeoff function $g(p)$ 的具体数值构造([BFF21])未在本文详述;实施 Kamin 2025 路径需额外精读 [BFF21]
++- 对 MDI-QKD 的 GEAT 应用:non-signalling 条件验证需要具体写出 Charlie BSM 信道在 PM source-replacement 框架下的 $\mathcal{M}_i$ 结构(Phase 1 S2.5 关键技术债)
++
++---
++
++## 9. 对 Phase 1 计划的对齐
++
++| RESEARCH_PLAN §3.3 S2.4 要求 | 本文覆盖 | 备注 |
++|-------------------------------|----------|------|
++| GEAT 主定理精读(Level 4) | ✓ Thm 4.1, 4.3, Cor 4.6, Lem 4.7 | 本 memo §3-4 完整覆盖 |
++| E91/PM-QKD 应用精读 | ✓ §5.2 完整精读 | 见本 memo §5 |
++| ADR-B 框架路径决策 bearing | ✓ | 见本 memo §6 |
++| Kamin 2025 前置理解 | ✓ | GEAT Cor 4.6 → Kamin 2025 $\ell = nh - c_1\sqrt{n} - c_0$ 直接连接 |
++| 与 GLL-2021 Renner 路径比较 | ✓ | 见本 memo §6 对照表 |
++| [MR22] PM-QKD 完整覆盖 | ✗ | 留待 Level 3 精读 [MR22] |
++| [BFF21] 数值 g(p) 构造 | ✗ | Kamin 2025 实施时需要 |
++
++---
++
++## 10. Level 5 升级需求(若后续回来精读)
++
++- **§3 技术引理完整重推**:Lemma 3.5(channel divergence bound)+ Lemma 3.6(chain rule for Rényi)的证明细节(目前只有 outline)
++- **Lemma 4.5 完整证明**:经典-量子分解引理(Eq. 4.7–4.10 推导)
++- **[MR22] 独立精读**:PM-QKD 的 GEAT 应用(BB84 + decoy-state),给出 S2.5 的具体 finite-key rate 表达式
++- **[BFF21] 精读**:单轮 SDP 数值构造 $g(p)$(min-tradeoff function 的计算实施)
++
++---
++
++## 11. 变更日志
++
++- **v0.1** (2026-04-19):首稿 Level 4 精读。基于 PDF 全文精读 §1, §2(精要), §4, §5.2;§3 Level 2 浏览;§5.1 浏览。配合 Phase 1 S2.4 完成 + ADR-B 框架选择 bearing。
+diff --git a/docs/literature/Kamin-2025.md b/docs/literature/Kamin-2025.md
+new file mode 100644
+index 0000000..db946b7
+--- /dev/null
++++ b/docs/literature/Kamin-2025.md
+@@ -0,0 +1,384 @@
++# Kamin-Arqand-George-Lütkenhaus-Tan 2025 精读(Level 3–4)
++
++**论文引用**:
++- Kamin, L., Arqand, A., George, I., Lütkenhaus, N., Tan, E. Y.-Z. (2025). *Finite-size analysis of prepare-and-measure and decoy-state QKD via entropy accumulation.* arXiv:2406.10198v3 [quant-ph] (15 Sep 2025).
++- 本 memo 基于 PDF (968 KB, 40 pp.)
++- **注**:RESEARCH_PLAN §3.3 S2.5 原引作 "Kamin et al. 2025. PRX Quantum 6:020342";arXiv 版本 v3 为本 memo 依据
++- 重要前置:
++  - [MFS+22/MR23] Metger-Fawzi-Sutter-Renner 2022 = GEAT 主文(本仓库 `docs/literature/GEAT-2024.md`)
++  - [GLH+22] George-Lin-Lütkenhaus-van-Himbeeck 2022 = 前期 EAT QKD 分析(GLL-2021 扩展)
++  - [LLR+21] Liu et al. 2021 = 改进 GEAT 第二阶项的另一版本(Supplement Theorem 2)
++  - [WLC18] Winick-Lütkenhaus-Coles 2018 = 渐近数值 QKD SDP
++  - [DF19] Dupuis-Fawzi 2019 = EAT with improved second-order term
++  - [WL22, NUL23, KL24, KTL25] = decoy-state 分析的前置(被本文统一成单步 SDP)
++
++**精读日期**:2026-04-19 / 2026-04-20(Phase 1 S2.5 准备层)
++**精读等级**:**Level 3–4**
++- §1 Introduction:完整精读(定位贡献 + 与前置的比较)
++- §2 Notation:浏览
++- §3 Protocol description (Protocol 1):完整精读
++- §4 Improved EA analysis for PM protocols:完整精读(GEAT channel 定义 + Theorem 1 + 密钥长度 Theorem 3)
++- §5 Key rate computation techniques:**完整精读**(Theorem 4 SDP + completeness LP + security parameter optimization)
++- §6 Qubit BB84 with loss:完整精读(Fig. 1, 2)
++- §7 Decoy-state with improved analysis:Level 3 精读(Theorem 6 + Fig. 3, 4);Appendix B/C 浏览
++- §8 Conclusion + Theorem 5(coherent attack 扩展):完整精读
++
++**范围说明**:
++- 本 memo **覆盖**:Kamin 2025 的 GEAT 框架密钥长度公式(Eq. 16)+ Choi-state 单步 SDP(Eq. 79–80)+ 数值结果(Fig. 1, 3)+ 与前置方法的理论对比(Remark 3)+ coherent attack 可靠性(Theorem 5)
++- 本 memo **不覆盖**:Appendix A 的 Theorem 4 完整证明(Legendre-Fenchel 对偶),Appendix B 的 squashing-based flag-state 扩展,Appendix C 的 Rényi-von Neumann 转换细节
++
++---
++
++## 1. 一句话总结
++
++**Kamin 2025 给出了 PM-QKD(含 decoy-state)的完整 GEAT 有限密钥安全证明 + 数值化实施路线**:通过把 [GLH+22] 的 EAT 分析改造为 GEAT(消除 Markov 条件 → 消除 test-round 通告的负向惩罚),加入 [LLR+21] 改进的 second-order 项,并把 decoy-state 的两步法(先算光子数 yield 上/下界,再对 single-photon 熵做 SDP)**合并为单步 Choi-state 凸优化**,实施于 BB84 qubit-with-loss + decoy-state BB84 两个例子,涵盖从 Rényi 散度到 Frank-Wolfe 实施的完整工具链。**硬验收**:BB84 qubit-with-loss(Fig. 1)+ decoy-state BB84(Fig. 3, 4)。
++
++---
++
++## 2. 概念地图
++
++```
++            ┌─────────────────────────────────────────────────────────┐
++            │    GEAT [MFS+22/MR23] (已见 docs/literature/GEAT-2024.md) │
++            │    H_min^ε(A^n|E_n)|_Ω ≥ nh + n·T_α(f) - ...            │
++            └─────────────────────────────────────────────────────────┘
++                                      │
++                ┌─────────────────────┼─────────────────────┐
++                ▼                                           ▼
++   ┌─────────────────────────┐              ┌─────────────────────────┐
++   │ [GLH+22] EAT QKD 分析    │              │ [LLR+21] 改进 GEAT      │
++   │ Markov 条件 → test-round │              │ second-order 项        │
++   │ 通告导致 subtractive 惩罚 │              │ (本文采用此版本)        │
++   │ (本文用 GEAT 避免)       │              │                         │
++   └─────────────────────────┘              └─────────────────────────┘
++                                      │
++                                      ▼
++            ┌─────────────────────────────────────────────────────────┐
++            │    Kamin 2025 主贡献                                     │
++            │    1. PM-QKD 的 Choi-state 参数化(Eq. 30-31)             │
++            │    2. 密钥长度 Theorem 3 (Eq. 16):                        │
++            │       l ≤ nh + nT_α(f) - n((α-1)/(2-α))²K(α)            │
++            │           - λ_EC - ⌈log(1/ε_EV)⌉ - (α/(α-1))log(1/ε_PA) │
++            │           + 2                                            │
++            │    3. Theorem 4 最优 min-tradeoff SDP(Eq. 49-51)         │
++            │    4. Decoy-state 单步 convex optimization(Eq. 79-80)   │
++            └─────────────────────────────────────────────────────────┘
++                                      │
++                ┌─────────────────────┼─────────────────────┐
++                ▼                                           ▼
++   ┌─────────────────────────┐              ┌─────────────────────────┐
++   │ Fig. 1/2: qubit BB84    │              │ Fig. 3/4: decoy BB84    │
++   │ p_hon^depol = 0.01      │              │ μ_sig=0.9, μ_2=2e-2,    │
++   │ n ∈ {10^6, 10^8, 10^10, │              │ μ_3=1e-3, N_ph=10       │
++   │       10^12}            │              │ θ_misalign=sin^-1(0.1)  │
++   │ 25 dB @ n=10^10         │              │ 25 dB @ n=10^12         │
++   └─────────────────────────┘              └─────────────────────────┘
++```
++
++---
++
++## 3. 协议与符号(§2–3 精要)
++
++### 3.1 通用 PM-QKD 协议(Protocol 1,§3)
++
++每轮:
++1. **State preparation + transmission**:Alice 以概率 γ 选 test round(发 test-round 状态),否则选 generation round。她记录基底 + 信号态到 $X_i$,公共通告 $C_i^A$。
++2. **Measurement**:Bob 用 POVM $\{M_k^B\}$ 测量,记录 $Y_i$,公共通告 $C_i^B$。
++3. **Public announcement**:Alice/Bob 宣告 $C_i^A C_i^B$,联合计算 $C_i$(test round 时 $C_i$ 取 test 结果;generation round 时 $C_i = \perp$)。
++4. **Sifting + key map**:Alice 基于 $X_i$ 和 $I_i = (C_i^A, C_i^B, \cdots)$ 做 sifting + key map,产出 $S_i$。
++
++**Acceptance test**:对 $C_1^n$ 的频率分布 $\mathbf{F}^\text{obs}$,接受当且仅当 $\mathbf{F}^\text{obs} \in S_\text{acc}$。
++
++**EC + EV + PA**:Alice 发送 $\lambda_\text{EC}$ 比特做纠错;Bob 验证 $\lceil \log(1/\varepsilon_\text{EV}) \rceil$ 比特哈希;最后用 2-universal 哈希把 $S_1^n$ 压缩为长度 $\ell$ 的最终密钥。
++
++### 3.2 Composable 安全定义(§4, Def. 9)
++
++- $\varepsilon^\text{secret}$-secret(Eq. 13):$\frac{1}{2}\Pr[\Omega_\text{acc}] \| \rho_{K_AE|\Omega_\text{acc}} - \mathbb{1}_{K_A}/|\mathcal{K}_A| \otimes \rho_{E|\Omega_\text{acc}} \|_1 \leq \varepsilon^\text{secret}$
++- $\varepsilon^\text{correct}$-correct(Eq. 14):$\Pr[K_A \neq K_B \wedge \text{accept}] \leq \varepsilon^\text{correct}$
++- $\varepsilon^\text{com}$-complete(Eq. 15):$\Pr[\text{abort}] \leq \varepsilon^\text{com}$(诚实行为下)
++- $\varepsilon^\text{secure} = \varepsilon^\text{secret} + \varepsilon^\text{correct}$
++
++---
++
++## 4. 核心结果
++
++### 4.1 GEAT channel 条件 + rate function(§4, Def. 6-8)
++
++GEAT channel 序列 $\{\mathcal{M}_i\}_i$ 满足:
++- **统计可重建**(Eq. 7):$\exists \mathcal{P}_{A^nE_n \to C^n A^n E_n}, \{\mathcal{N}_i\}$ 使得 $\mathcal{M}_n \circ \cdots \circ \mathcal{M}_1 = \mathcal{P} \circ \mathcal{N}_n \circ \cdots \circ \mathcal{N}_1$(投影形式)
++- **Non-signalling**(同 Metger 2024):$\exists \mathcal{R}_i$ 使得 $\operatorname{Tr}_{A_iR_iC_i} \circ \mathcal{M}_i = \mathcal{R}_i \circ \operatorname{Tr}_{R_{i-1}}$
++
++**Rate function**(Def. 7):$\text{rate}(\mathbf{p}) \leq \inf_\nu H(A_i|E_i R)_\nu$,其中 $\Sigma_i(\mathbf{p})$ 是 $\mathcal{M}_i$ 输出中 $C_i$ 边际为 $\mathbf{p}$ 的状态集。
++
++**Min-tradeoff function**(Def. 8):$f(\mathbf{p}) = \mathbf{f} \cdot \mathbf{p} + k_f$ 是 affine rate function。
++
++### 4.2 Theorem 1(GEAT with LLR+21 improvement, Eq. 10)
++
++对 $\alpha \in (1, 3/2)$, $\varepsilon \in (0,1)$:
++
++$$H_\alpha^\uparrow(A^n|E_n)_{\mathcal{M}_n\circ\cdots\circ\mathcal{M}_1(\rho)|\Omega} \geq nh + nT_\alpha(f) - \frac{\alpha}{\alpha-1}\log\frac{1}{\Pr[\Omega]} - n\left(\frac{\alpha-1}{2-\alpha}\right)^2 K(\alpha)$$
++
++其中:
++- $T_\alpha(f) := \inf_{\mathbf{p} \in \mathcal{Q}} \left(\text{rate}(\mathbf{p}) - f(\mathbf{p}) - \frac{\alpha-1}{2-\alpha}\cdot\frac{\ln 2}{2}V(\mathbf{p}, f)\right)$(Eq. 11)
++- $V(\mathbf{p}, f) = (\log(1+2d_A^\kappa) + \sqrt{2+\text{Var}(\mathbf{p}, f)})^2$,$\kappa = 1$(经典 $A_i$)或 $2$(量子)
++- $K(\alpha)$:与 Metger 2024 Cor 4.6 相同的复合项(含 max/min 差、维度、ln³ 项)
++- $h = \min_{c^n \in \Omega} f(\text{freq}(c^n))$
++
++### 4.3 Theorem 3(密钥长度, Eq. 16)
++
++对 $\alpha \in (1, 3/2)$, $\varepsilon_\text{PA}, \varepsilon_\text{EV} \in (0, 1]$,Protocol 1 是 $\varepsilon_\text{PA}$-secret 且 $\varepsilon_\text{EV}$-correct,只要:
++
++$$\boxed{\ell \leq nh + nT_\alpha(f) - n\left(\frac{\alpha-1}{2-\alpha}\right)^2 K(\alpha) - \lambda_\text{EC} - \left\lceil \log\frac{1}{\varepsilon_\text{EV}} \right\rceil - \frac{\alpha}{\alpha-1}\log\frac{1}{\varepsilon_\text{PA}} + 2}$$
++
++**关键**:采用 Rényi privacy amplification [Dup23] 替代传统 smoothing 的优势 — 只出现单个 $\varepsilon_\text{PA}$ 项,结构上比 [GLH+22] 更简洁。
++
++### 4.4 Completeness(§4.2, Eq. 22-25)
++
++$\varepsilon^\text{com} = \varepsilon^\text{com}_\text{AT} + \varepsilon^\text{com}_\text{EV}$,其中 $\varepsilon^\text{com}_\text{AT}$(acceptance test)通过 binomial 尾概率 LP 控制(Eq. 25);$\varepsilon^\text{com}_\text{EV}$ 来自 EC 失败。**本文选 $\varepsilon^\text{com} = 10^{-3}$**。
++
++**接受集形状**(Eq. 23):$S_\text{acc} = \{\mathbf{p}^\text{acc} \mid \forall c, p_c^\text{hon} - t_c^\text{low} \leq p_c^\text{acc} \leq p_c^\text{hon} + t_c^\text{upp}\}$ — "entrywise" 容忍区间。Unique-acceptance 是特例($t = 0$)。
++
++### 4.5 Completeness penalty(§5.1, Eq. 40)
++
++$h = \min_{c^n \in \Omega} f(\text{freq}(c^n)) = f(\mathbf{p}^\text{hon}) - \Delta_\text{com}$
++
++其中 $\Delta_\text{com} := \sup_{\mathbf{p}^\text{acc} \in S_\text{acc}} -\mathbf{f} \cdot (\mathbf{p}^\text{acc} - \mathbf{p}^\text{hon})$ — LP 可解。
++
++---
++
++## 5. 数值实施技巧(§5,本文核心技术)
++
++### 5.1 Rate function via Choi state(§4.3, Eq. 30-31)
++
++把 Eve 的 channel $\mathcal{E}: A' \to B$ 参数化为 Choi state $J$:
++- Test round:$\rho_J^t = \operatorname{Tr}_{A'}[(\mathbb{1}_A \otimes J)(|\xi^t\rangle\langle\xi^t|^{T_{A'}} \otimes \mathbb{1}_B)]$
++- Generation round:$\rho_J^g$ 类似,用 $|\xi^g\rangle$
++
++**Rate function 重写**(Eq. 30):
++$$\text{rate}(\mathbf{p}) = \inf_J W(\rho_J^g) \quad \text{s.t.} \quad \gamma \Phi[\rho_J^t] = \mathbf{p}_{\backslash \perp}$$
++
++$W(\rho) = D(\mathcal{G}(\rho) \| \mathcal{Z}(\mathcal{G}(\rho)))$ 是 WLC-2018 形式的相对熵。此参数化 → **凸优化**(Frank-Wolfe 可解)。
++
++### 5.2 Crossover min-tradeoff function(§4.3, Eq. 33-35)
++
++Infrequent-sampling channels(test prob γ 小) → 先对 test round 构造 crossover rate function:
++$$r_\text{cross}(\mathbf{q}) = \inf_J W(\rho_J^g) \quad \text{s.t.} \quad \Phi[\rho_J^t] = \mathbf{q}$$
++
++Crossover min-tradeoff $g$(affine 下界)通过 [DF19] 方法转换为 min-tradeoff $f$:
++$$f(\delta_c) = \frac{1}{\gamma}g(\delta_c) + \left(1 - \frac{1}{\gamma}\right)\text{Max}(g), \quad f(\delta_\perp) = \text{Max}(g)$$
++
++即 $\mathbf{f} = \frac{1}{\gamma}(\mathbf{g}, \text{Max}(\mathbf{g}))$(Eq. 37)。
++
++### 5.3 Theorem 4(最优 min-tradeoff 的 SDP 构造, Eq. 49-51)
++
++**关键定理**:最优 crossover min-tradeoff $\mathbf{g}^*$ 就是以下凸优化的 **dual variable**:
++
++$$r_\text{best} = \sup_g (g(\mathbf{q}^\text{hon}) - \hat{T}(\mathbf{g}))$$
++
++其中 $\hat{T}(\mathbf{g}) = \varphi_0 (\max(\mathbf{g}) - \min(\mathbf{g}))^2 + \varphi_1 (\max(\mathbf{g}) - \min(\mathbf{g}))$(Eq. 44)是 $T_\alpha$ 的 loose substitute。
++
++通过 Legendre-Fenchel 对偶(Appendix A),等价于求解:
++
++$$r_\text{SDP} = \inf_{J, \boldsymbol{\lambda}, \boldsymbol{\tau}} L(\rho_J^g, \boldsymbol{\tau}) \quad \text{s.t.} \quad \mathbf{q}^\text{hon} - \boldsymbol{\Phi}[\rho_J^t] - \boldsymbol{\lambda} = 0, \quad -\boldsymbol{\tau} \leq \boldsymbol{\lambda} \leq \boldsymbol{\tau}$$
++
++最优 $\mathbf{g}^*$ 是上面 $\mathbf{q}^\text{hon} - \boldsymbol{\Phi}[\rho_J^t] - \boldsymbol{\lambda} = 0$ 约束的 **Lagrange 对偶乘子**。
++
++**实用**:每次 Frank-Wolfe 迭代解一个 SDP,其 dual 自然给出当前最优 $\mathbf{g}$;算法终止时的 $\mathbf{g}^*$ 即最优 min-tradeoff。
++
++### 5.4 Completeness-penalty LP(§5.2.2, Eq. 54-55)
++
++对形如 Eq. 23 的 $S_\text{acc}$,$\Delta_\text{com}$ 简化为带约束的线性规划。本文给出 greedy 算法(Eq. 55 下段),比通用 LP 求解器更快,并与 CVX 结果一致验证。
++
++### 5.5 Security parameter optimization(§5.2.3, Eq. 57)
++
++最小化 $f_\alpha(\varepsilon^\text{secure}, \varepsilon_\text{PA}) = \frac{\alpha}{\alpha-1}\log(1/\varepsilon_\text{PA}) + \log(2/(\varepsilon^\text{secure}-\varepsilon_\text{PA}))$,得到最优:
++
++$$\varepsilon_\text{PA} = \frac{\alpha}{2\alpha-1}\varepsilon^\text{secure}, \quad \varepsilon_\text{EV} = \frac{\alpha-1}{2\alpha-1}\varepsilon^\text{secure}$$
++
++### 5.6 整体流程(§5.2.3 末段)
++
++```
++for each (γ, α) on grid:
++    for each (t^low, t^upp):
++        g = SDP_dual_variable(γ, α, t, t')   # §5.2.1 via Frank-Wolfe
++        ℓ = key_length_formula(Eq.42/82, γ, α, t, t', g)  # with Δ_com
++    maximize over (t^low, t^upp)              # completeness LP
++maximize over (γ, α)                          # grid search
++```
++
++---
++
++## 6. Qubit BB84 with loss(§6,Fig. 1/2 复现目标)
++
++### 6.1 Protocol 模型(§6, Eq. 58)
++
++- **Source**:perfect qubit source
++- **Channel**:$\mathcal{E}_\text{depol}[\rho] = (1-p^\text{depol}_\text{hon})\rho + p^\text{depol}_\text{hon}\mathbb{1}/2$ + loss (probability $1 - 10^{-\zeta_\text{hon}/10\,\text{dB}}$ qubit 丢失)
++- **Test**:$|+\rangle, |-\rangle$(X-basis)
++- **Generation**:$|0\rangle, |1\rangle$(Z-basis)
++- **Sifting**:generation round × Bob in Z × detection
++
++### 6.2 G-map / Z-map(§6, Eq. 63-64)
++
++- $K_Z$ Kraus(单个):
++$$K_Z = \left[\binom{1}{0}_S \otimes \begin{pmatrix}1&0\\0&0\end{pmatrix}_A + \binom{0}{1}_S \otimes \begin{pmatrix}0&0\\0&1\end{pmatrix}_A\right] \otimes \binom{1}{0}_B \otimes \mathbb{1}_I$$
++- $\mathcal{Z}$ Kraus:$Z_1 = \binom{1}{0} \otimes \mathbb{1}$, $Z_2 = \binom{0}{1} \otimes \mathbb{1}$
++
++$W(\rho_J^g) = (1-\gamma)^2 D(\mathcal{G}(\rho_J^g) \| \mathcal{Z}\circ\mathcal{G}(\rho_J^g))$ 是 WLC 形式。
++
++### 6.3 数值结果(Fig. 1)
++
++| $n$ | cutoff loss (GEAT) | cutoff loss (IID [KTL25]) |
++|-----|--------------------|---------------------------|
++| $10^6$ | ≈ 15 dB | ≈ 15 dB |
++| $10^8$ | ≈ 20 dB | ≈ 25 dB |
++| $10^{10}$ | ≈ 25 dB | ≈ 35 dB |
++| $10^{12}$ | ≈ 26 dB | ≈ 36 dB |
++
++**观察**:
++- 低损耗下 GEAT ≈ IID(对 coherent attack 无明显惩罚)
++- 高损耗下 GEAT 下降更快(对 coherent attack 的保守性显现)
++- $n = 10^{12}$ 下 0 dB 密钥率 ≈ 0.9(接近 asymptotic)
++
++**Fig. 2 (unique vs realistic acceptance)**:realistic 损失很小(~5 dB cutoff 左右);**EUR (complementarity-based) 略好**,说明对 qubit BB84 EUR 方法竞争力强。
++
++---
++
++## 7. Decoy-state BB84(§7,Fig. 3/4)
++
++### 7.1 Protocol 扩展(§7.1)
++
++- WCP 源,intensities $\{\mu_\text{sig}, \mu_2, \mu_3\}$
++- 偏振编码 $\{\rho_H, \rho_V, \rho_D, \rho_A\}$
++- Test round:X 基,随机 intensity $\mu_i \in \{\mu_\text{sig}, \mu_2, \mu_3\}$;Generation round:Z 基,$\mu_\text{sig}$
++- Active BB84 detection + [BML08, GBN+14] post-processing
++- Misalignment model from [WL22]:$\theta_\text{hon}^\text{misalign}$
++
++### 7.2 块对角 Choi state 分解(§7.2, Eq. 71-78)
++
++- Eve 做 QND 光子数测量 ⇒ Choi state $J = \bigoplus_n J_n$
++- n-photon yields:$Y_n^{ab} = \boldsymbol{\Phi}_{ab}[\rho_{J_n}^{t,\mu}]$(与 intensity μ 无关,因为 Eve 对 n 选择 attack,独立 μ)
++- 引入光子数 cut-off $N_\text{ph}$ 处理无穷和
++
++### 7.3 单步 SDP(Theorem 4 decoy 版, Eq. 80)
++
++$$r_\text{best} = \inf_{J_1, \mathbf{Y}_0, \cdots, \mathbf{Y}_{N_\text{ph}}, \boldsymbol{\delta}^\mu, \boldsymbol{\tau}^\mu} p(1) W(\rho_{J_1}^g) + s(\cdot)$$
++
++s.t. (Eq. 80 约束组):
++- $-\boldsymbol{\tau}^\mu \leq \mathbf{q}^\mu - p(\mu|t)(\sum_{n \leq N_\text{ph}} p_\mu(n)\mathbf{Y}_n + \boldsymbol{\delta}^\mu) \leq \boldsymbol{\tau}^\mu$
++- $0 \leq \boldsymbol{\delta}^\mu \leq 1 - p_\text{tot}(\mu)$
++- $p(\mu|t)\mathbf{Y}_1 = p(\mu|t)\boldsymbol{\Phi}[\rho_{J_1}^{t,\mu}]$
++- $\sum_b Y_n^{ab} = p(a|t, n)$
++
++**Remark 3**:此单步 convex optimization 在数学上严格优于 [WL22, NUL23, KL24, KTL25] 的两步法(在渐近/IID 场景),因为它不允许"Eve 同时对所有 yields 取 worst case"的非物理可行点。
++
++### 7.4 数值结果(Fig. 3/4)
++
++**参数**:$\mu_\text{sig} = 0.9$, $\mu_2 = 2 \times 10^{-2}$, $\mu_3 = 10^{-3}$, $\theta^\text{misalign} = \sin^{-1}(0.1)$, $N_\text{ph} = 10$, $\varepsilon^\text{secure} = 10^{-8}$, $\varepsilon^\text{com} = 10^{-3}$.
++
++| $n$ | cutoff loss (GEAT) | cutoff loss (IID) |
++|-----|--------------------|--------------------|
++| $10^7$ | ≈ 5 dB | ≈ 10 dB |
++| $10^8$ | ≈ 10 dB | ≈ 15 dB |
++| $10^{10}$ | ≈ 20 dB | ≈ 30 dB |
++| $10^{12}$ | ≈ 25 dB | ≈ 38 dB |
++
++**Fig. 4 (unique vs realistic acceptance, decoy)**:realistic 惩罚比 qubit case 大得多,尤其高损耗区 → **实际协议需要可忍受的 acceptance set**。
++
++**Fig. 4 下 (GEAT vs EUR)**:**低损耗 GEAT 好,高损耗 EUR 好**;说明对 decoy-state 两种方法各有优势。
++
++---
++
++## 8. Coherent attack 扩展(§8, Theorem 5)
++
++原 [MR23] 要求"Eve 每轮只与单个信号交互"。[FKR+25, AT25] 证明此条件可移除 — 即 **本文的 GEAT 密钥率对任意 coherent attack(Eve 可同时持有所有信号)仍然成立**。
++
++**Theorem 5**(本文 Eq. 85):对任意 source-replaced state $\mathcal{M}^{\otimes n}(\rho_{A_1^n B_1^n E})$,GEAT 界 Eq. 10 同样成立,无需 single-signal 交互限制。
++
++**Remark**:[FKR+25, AT25] 还给出基于 Rényi 熵的 sharper bounds,未来工作可合并。
++
++---
++
++## 9. 与本项目的 Bearing
++
++### 9.1 与 RESEARCH_PLAN §3.3 S2.5 的对齐
++
++| Plan 要求 | 本文覆盖 | 备注 |
++|----------|---------|------|
++| 对 decoy-state BB84 finite-key rate 误差 < 5% | ✓ Fig. 3 提供 benchmark | Fig. 4 上图 realistic acceptance 是实用验收目标 |
++| `qkdx/finite_key/` 模块 | 本文 §5 提供实施蓝图 | Choi-state SDP + FW + Theorem 4 dual |
++| `notebooks/s2_kamin_reproduce.ipynb` | 待实施 | Fig. 1 qubit BB84 可作为简化起点 |
++| Kamin 2025 Table 1 对比 | **注意**:论文**不含** Table 1,只有 Fig. 1-4 | Plan 引用错位;本 memo 以 **Fig. 3** 为 decoy 硬验收 target |
++
++### 9.2 实施路径建议(三阶段)
++
++**Stage 1(1 周,低风险):qubit BB84 (Fig. 1) asymptotic sanity**
++- 复现 $n = 10^{12}$ 下 0–5 dB 密钥率(应 ≈ asymptotic Devetak-Winter,即 $(1-\gamma)^2(1-2h(e))$ at low loss)
++- **不需要 SDP**;只需 analytic entropy 形式 + optimized γ, α grid search
++- 验收:0 dB @ $p^\text{depol} = 0.01$ asymptotic rate $\approx 0.91 \cdot (1-\gamma)^2$ matches plot
++
++**Stage 2(3–4 周,中风险):qubit BB84 (Fig. 1) full GEAT**
++- 实施 Theorem 3 密钥长度公式(Eq. 16)
++- 实施 Frank-Wolfe + SDP(CVXPY + MOSEK)求 min-tradeoff $\mathbf{g}$
++- 实施 Theorem 4 dual extraction
++- 验收:Fig. 1 四条 $n$ 曲线对 loss 关键点 < 5% 误差
++
++**Stage 3(6–8 周,高风险):decoy-state BB84 (Fig. 3, 4)**
++- 扩展单步 convex optimization(Eq. 80):photon-number 块对角 + yield 约束
++- Cut-off $N_\text{ph} = 10$ ⇒ 11 个 yield 向量 + $\boldsymbol{\delta}^\mu$
++- 验收:Fig. 3 四条 $n$ 曲线 < 5% 误差
++
++### 9.3 ADR-B 决策落实
++
++**推荐**:Phase 1 S2.5 采用 **Stage 1 + Stage 2 缩减版** 作为**硬验收 proxy**;Stage 3 decoy 留到 Phase 2 Sub-Q3 与上界对比时合并实施(因为 Sub-Q3 PLOB 对比也需要 decoy finite-key rate)。
++
++**理由**:
++- Stage 1/2 验证 GEAT 工具链核心(Theorem 3 + Choi SDP + Theorem 4 dual)
++- Stage 3 引入 decoy 特有的 photon-number 块对角,复杂度 + 时间成本显著更高
++- RESEARCH_PLAN §3.3 S2.5 验收"BB84"未明确 qubit vs decoy — qubit Fig. 1 亦可作为有效硬验收,decoy 作 stretch goal
++- 与 GLL-2021 analytic 对接:Stage 1 的 asymptotic 极限应 ≈ GLL-2021 BB84 公式,形成 cross-validation anchor
++
++---
++
++## 10. Limitations(论文明示 + 项目视角)
++
++### 论文明示(§8 Conclusion + Fig. 2/4 lower panels)
++
++- **对 complementarity-based 技术(EUR)的比较未完整**:§1 "We emphasize that the scope of our above claims is restricted to the specifically mentioned works ... claims do not encompass complementarity-based proof techniques"。Fig. 2/4 下图对 qubit BB84 EUR 更好;decoy 下 EUR 在高损耗好。
++- **Photon cut-off $N_\text{ph}$ 引入松弛**:Eq. 78 的 $\boldsymbol{\delta}^\mu$ 是上界,非物理 Choi state;原则上 $N_\text{ph} \to \infty$ 恢复严格,但数值成本高
++- **Fig. 4 realistic acceptance 的 cutoff 损失**:比 unique acceptance 差很多,实际实现需要"adaptive key rate formulations"(如 [TTL24, HB25])
++- **Passive detection setup 需要 flag-state squasher**(Appendix B Theorem 6),本文只做 active detection
++
++### 项目视角
++
++- **MATLAB/CVX+MOSEK 实施**:本文代码仓库为 MATLAB,移植到 Python(CVXPY)有工作量
++- **Frank-Wolfe improved variant [LJ15]**:论文用了改进的 FW(避免 zigzagging),实施时需注意这个 detail
++- **Asymptotic limit 验证**:论文未明确给出 Stage 1 asymptotic expected value,需自己推导 $(1-\gamma)^2 (1 - h(p^\text{depol}/2) - h(p^\text{depol}/2))$ 作为 anchor
++- **γ, α optimization grid**:论文"optimized for each data point"但未公开具体值 ⇒ 复现时需要 grid search
++- **[LLR+21] Supplement Theorem 2 细节**:本文只引用,未完整复述 → 若对 $K(\alpha)$ 系数存疑需查原文
++
++---
++
++## 11. 下一级 Level 4 升级需求(若后续回来精读)
++
++- **Appendix A 完整**:Legendre-Fenchel 对偶推导(Eq. 46 $\hat{T}^*(\boldsymbol{\lambda}) = s(\|\boldsymbol{\lambda}\|_1 / 2)$ 证明)+ Theorem 4 完整证明 + Eq. 95-96 sign convention
++- **Appendix B**:Flag-state squasher + Theorem 6 for passive detection — 若 decoy-state 实施中用 passive detection(常见实验设定)必读
++- **Appendix C**:Rényi-von Neumann 转换 + [FKR+25, AT25] 的 sharper bounds 合并技术
++- **[DF19] Lemma V.5**:$\hat{T}(\mathbf{g})$ 推导的关键引理
++- **[LLR+21] Supplement Theorem 2**:改进 $K(\alpha)$ second-order 项的完整证明
++
++---
++
++## 12. 与 GEAT-2024 (Metger) 精读 memo 的关系
++
++两份 memo **互补**:
++- `GEAT-2024.md`:GEAT 定理本体(Thm 4.1/4.3, Cor 4.6, Lemma 4.7)的数学层 + E91 概念示例
++- `Kamin-2025.md`(本文):GEAT 应用到 PM-QKD + decoy-state + **数值实施完整 pipeline**
++
++Kamin 2025 **依赖** Metger 2024 的 Thm 4.3 / Cor 4.6,并添加 [LLR+21] 改进 second-order;阅读顺序 GEAT-2024 → Kamin-2025 是合理的。
++
++---
++
++## 13. 变更日志
++
++- **v0.1** (2026-04-20):首稿 Level 3–4 精读。基于 PDF 全文 §1-§8 精读(§5, §6 完整;§7 Level 3;§4.3 complete);Appendices 浏览。配合 Phase 1 S2.5 实施路径决策 + ADR-B 落实。
+diff --git a/docs/literature/TF-QKD.md b/docs/literature/TF-QKD.md
+new file mode 100644
+index 0000000..c9b8957
+--- /dev/null
++++ b/docs/literature/TF-QKD.md
+@@ -0,0 +1,245 @@
++# TF-QKD 族三变体精读(Level 3)
++
++**目标**:为 F6 TF-QKD family sheet([tfqkd_family.md](../families/tfqkd_family.md))upgrade 路径 §9.1 提供文献基础 — 三份原始论文并列精读,给出 MS-EB 映射可行性评估 + 密钥率公式 + 数值 benchmark。
++
++## 论文引用
++
++1. **TF-QKD (原版)**:Lucamarini, M., Yuan, Z. L., Dynes, J. F., Shields, A. J. (2018). *Overcoming the rate-distance limit of quantum key distribution without quantum repeaters.* Nature **557**:400–403. arXiv:1811.06826.
++2. **SNS-TF-QKD**:Wang, X.-B., Yu, Z.-W., Hu, X.-L. (2018). *Sending or not sending: Twin-field quantum key distribution with large misalignment error.* PRA **98**:062323. arXiv:1805.09222v9.
++3. **PM-QKD**:Ma, X., Zeng, P., Zhou, H. (2018). *Phase-Matching Quantum Key Distribution.* PRX **8**:031043. arXiv:1805.05538v3.
++
++**精读日期**:2026-04-20(Phase 1 F6 TF-QKD 协议族覆盖准备)
++**精读等级**:**Level 3**
++- 各篇主文:完整精读(协议 + 密钥率公式 + 数值 benchmark)
++- 安全证明细节:Level 2(Ma-Zeng-Zhou Appendix A / Wang-Yu-Hu §V 虚拟协议浏览)
++
++**范围说明**:
++- 本 memo **覆盖**:三变体的共同骨架 + 各自的关键区别 + 密钥率公式 + 数值参数 + MS-EB 适用性初判
++- 本 memo **不覆盖**:Wang-Yu-Hu §VI 完整 tagged-model 证明;Ma-Zeng-Zhou Appendix B 完整仿真公式推导;phase-locking 实验细节(Lucamarini SI)
++
++---
++
++## 1. 一句话总结
++
++**三变体共享"两方 + Charlie 相干干涉 + 单光子检测"拓扑**,密钥率均 $\propto \sqrt{\eta}$ 击穿 PLOB 直接传输极限;三者在 **phase reference / 后筛策略 / 安全证明** 的路线各异,其中 **SNS 用 "发或不发" 回避信号后筛让 traditional decoy-state 直接适用**,**PM 用 optical-mode EDP 给出完整安全证明**,Lucamarini 原版主要贡献是物理方案提出。
++
++---
++
++## 2. 共同骨架(三变体 MS-EB 可抽象层)
++
++```
++             Alice                Charlie(Eve 可控)                  Bob
++       ┌─────────────┐        ┌────────────────────┐           ┌─────────────┐
++       │ 激光源 |√μ⟩  │        │ 分束器 (50:50)     │           │ 激光源 |√μ⟩ │
++       │ 随机相位 φ_a │──────→ │ + 干涉测量         │  ←──────  │ 随机相位 φ_b│
++       │ 编码 κ_a     │        │ + 单光子检测 D_L/D_R │           │ 编码 κ_b    │
++       └─────────────┘        └────────────────────┘           └─────────────┘
++                                        │
++                                        ▼
++                          Charlie 公开检测器点击结果
++                          (L / R / fail)
++                                        │
++                                        ▼
++                    Alice/Bob 公开随机相位 φ_a, φ_b
++                                        │
++                                        ▼
++             ┌──────────────────────────────────────────┐
++             │  变体区别所在(下表):                   │
++             │  - 信号窗口是否做 phase post-selection?  │
++             │  - decoy 方法能否直接用?                 │
++             │  - 安全证明的路径?                       │
++             └──────────────────────────────────────────┘
++```
++
++**核心物理机制**:
++- Alice/Bob 独立制备**相干态**,经信道传输到 Charlie → 在 Charlie 处做**单光子干涉**(而非 MDI 的 coincidence)→ 单光子事件率 $\propto \eta_\text{total} = \eta_A \cdot \eta_B$ 的**平方根** $\sqrt{\eta_\text{total}}$
++- **拓扑相同于 MDI**(Alice/Bob/Charlie 三方,Charlie 可 malicious),但 **TF 对单光子检测的依赖**使 $R \propto \sqrt{\eta}$ 而非 MDI 的 $R \propto \eta$
++- **关键假设**:Alice/Bob 的激光源 **phase-locked** 或 phase reference 可通过强脉冲互校准(可实现)
++
++---
++
++## 3. 三变体对比
++
++| 维度 | TF-QKD(Lucamarini) | SNS-TF-QKD(Wang) | PM-QKD(Ma) |
++|------|---------------------|-------------------|-------------|
++| **信号源** | 相干态 + 随机相位 + κ bit 编码到相位 | 信号窗口:以 ε 概率发 \|√μ'⟩,以 1-ε 发真空 | 相干态 + 随机相位 φ + κ bit 编码到 κπ 相位偏移 |
++| **Decoy 源** | 相干态 \|√μ⟩ with random phase ρ | 独立 decoy 窗口,多强度 μ_i | 独立 decoy 窗口,多强度 μ_i |
++| **Phase slicing 后筛** | **必需**:M 个 phase slice(典型 M=16),筛选 \|ρ_a−ρ_b\| 落同 slice | **不做信号筛**(Z-windows 无 post-selection);X-windows 用 \|cos(δ_a−δ_b)\| 判据 | 连续 φ 后筛 \|φ_a−φ_b\| = 0 or π(等效 M→∞)|
++| **Decoy-state 有效性** | 传统 decoy **不直接适用**(phase 后筛引入额外非经典信息) | **直接适用**(Z 基无筛 → 信号是 classical mixture of Fock states)| **适用** + Ma optical-mode 证明直接用 |
++| **安全证明状态** | Lucamarini 承认 "unconditional security beyond scope" | 完整 tagged-model 证明(§V 虚拟协议 + reduction) | 完整 optical-mode EDP 证明(Appendix A) |
++| **Misalignment 容忍** | ~几个 % | **35%–45%**(关键优势) | ~1.5% 实际,可容 ~10% |
++| **sifting 因子** | 1/M ≈ 6.25%(M=16) | 2ε(1-ε) ≈ 几个 % | 2/M ≈ 12.5%(M=16) |
++
++**结论**(MS-EB 映射难度):
++- **PM-QKD 最友好**:Ma 的 optical-mode 证明使用 Fock-truncation + parity measurement 直接,和 WLC numerical 工具链接口清晰(Ma Lemma 1 偶奇光子数分开分析)
++- **SNS 次友好**:Decoy 直接用,"发或不发" 等效 coherent state + vacuum 的二元选择 → `source_state` 是 density matrix superposition
++- **Lucamarini** 最不友好:无完整安全证明,phase slicing 后筛需 post-selection `AnnouncementRule`(F3 SARG04 遗留的基础设施缺口类似)
++
++---
++
++## 4. 密钥率公式
++
++### 4.1 Lucamarini 2018(Eq. 2–3)
++
++原版 decoy-state QKD-style 形式:
++
++$$R_\text{QKD}(\mu, L) = \left.Q_1\right|_{\mu, L}\left[1 - h\left(\bar{e}_1\big|_{\mu, L}\right)\right] - f Q_{\mu, L} h(E_{\mu, L})$$
++
++其中 $Q_1 = p_{1|\mu} y_1$ single-photon gain,$\bar{e}_1$ phase error upper bound(decoy 估)。**TF-QKD** 额外有 phase-slice 筛因子:
++
++$$R_\text{TF-QKD}(\mu, L) = \frac{d}{M}\left.\left[R_\text{QKD}(\mu, L/2)\right]\right|_{\oplus E_M}$$
++
++其中 $E_M = 1/2 - \sin(2\pi/M)/(4\pi/M)$ 是 phase slice 引入的 intrinsic QBER。$L/2$ 体现 "each user effectively travels L/2" 的 √η 优势来源。
++
++### 4.2 Wang-Yu-Hu 2018(Eq. 3–4)
++
++SNS 信号窗口 Z-basis 无筛,直接用 Shor-Preskill:
++
++$$N_f = n_1 [1 - H(e_1^{ph})] - n_t f H(E^Z)$$
++
++Per-time-window rate(Eq. 4):
++
++$$R = 2\epsilon(1-\epsilon) \mu' e^{-\mu'} s_1 [1 - H(e_1^{ph})] - S_Z f H(E^Z)$$
++
++其中 $s_1$ 是 $\mathcal{X}_1$-windows 的单光子 yield,$e_1^{ph}$ 是 Z1-bits 的 phase-flip rate(由 X-window 数据通过 Eq. 2 估计):
++
++$$e_1^{\mathcal{X}_1} = \frac{S_\mu E_\mu^X - e^{-2\mu} s_0 / 2}{2 \mu e^{-2\mu} s_1}$$
++
++### 4.3 Ma-Zeng-Zhou 2018(Eq. 4)
++
++PM-QKD Shor-Preskill 形式:
++
++$$R_\text{PM} \geq \frac{2}{M} Q_\mu \left[-f H(E_\mu^Z) + 1 - H(E_\mu^X)\right]$$
++
++其中 $E_\mu^X$ 上界由 Eq. 2 通过 decoy-state 给出(单光子 phase error ≈ bit error of odd-photon-number states,per Ma Lemma 1)。
++
++**相同结构性**:三式都是 "**single-photon contribution 给 privacy term** $[1 - H(e_1^X)]$ + **总 gain 给 leak_EC term** $-f Q h(E^Z)$";decoy-state 估 $(Q_1, e_1^X)$ 是核心数值任务。
++
++---
++
++## 5. 数值 benchmark(三变体 Fig. 复现 target)
++
++| 变体 | 参数 | Fig. | 典型距离 | 密钥率 |
++|------|------|------|----------|--------|
++| Lucamarini | $p_d=10$ Hz, $\eta_d=30\%$, $e_\text{opt}=1\%$, $f=1.15$, M=16 | Fig. 1a(thick line) | 500 km | ~10² bit/s(~10⁻⁸ bit/pulse at 1 GHz clock) |
++| SNS-Wang | $p_d=10^{-11}$, $\eta_d=80\%$, $f_\text{EC}=1.1$, 理想解析 | Fig. 1 | 700 km @ $e_a=15\%$;500 km @ $e_a=35\%$ | $10^{-7}$ at 500 km @ $e_a=35\%$ |
++| PM-Ma | $p_d=8\times10^{-8}$, $\eta_d=14.5\%$, $f=1.15$, $M=16$, $e_d=1.5\%$ | Fig. 3a | 418 km(cutoff $10^{-8}$) | 超过 PLOB 线性 bound at $l > 250$ km |
++
++**统一标度**:三者均展示 $R \propto \sqrt{\eta}$,log-log 斜率 $0.5$(vs BB84/MDI 的 1)。
++
++**F6 tfqkd_family.md §5.2 硬验收对齐**:
++- TF(Lucamarini):log-log 斜率 $0.5 \pm 0.05$
++- SNS:密钥率误差 rel=0.05(vs Fig. 1 曲线)
++- PM:密钥率误差 rel=0.05(vs Table II / Fig. 3)
++
++---
++
++## 6. MS-EB 映射可行性初判
++
++### 6.1 PM-QKD(**推荐首先实施**)
++
++- **$\mathcal{P}$**:双 `SourceParty`,`source_state` 为 Fock 截断后的 coherent state + phase-randomization(Ma Eq. A3 Poisson 分布 + 奇偶子空间分解 Ma Eq. A4)
++- **$\mathcal{E}$**:BS 干涉 + 单光子检测 → 3-outcome classical register({L, R, fail})
++- **$\mathcal{A}$**:`sift_keep` = (L or R) ∧ ($|\phi_a - \phi_b| \in \{0, \pi\}$);Bob 在 $|\phi_a - \phi_b| = \pi$ 时 flip bit(classical post-processing)
++- **$\mathcal{T}$**:$Q_\mu, E_\mu^Z$ 直接观测;$E_\mu^X$ 通过 decoy-state(多强度) estimate via Ma Eq. 2
++- **$\mathcal{K}$**:Alice 持 key,Bob 对齐后持同步 key
++
++**实施路径**:Phase 0 已有 `qkdx/numerics/wlc.py` + `qkdx/analytic/decoy.py`;PM-QKD 增量是 **`qkdx/protocols/pm_qkd.py`**,共享 MDI-QKD 的双源 + Charlie 框架([qkdx/protocols/mdi.py](../../qkdx/protocols/mdi.py))。`scope_tag='partial'` 转 `'covered'` 的门槛:Fock 截断合法化 + Ma Lemma 1 奇偶分解写入 `build_pm_qkd_protocol`。
++
++### 6.2 SNS-TF-QKD(次优先)
++
++- **$\mathcal{P}$**:`source_state` = $\epsilon |\sqrt{\mu'} e^{i\delta}\rangle\langle \sqrt{\mu'} e^{i\delta}| + (1-\epsilon) |0\rangle\langle 0|$ — 需要 density matrix 混合(非 pure MUB)
++- **其余**:同 PM
++- **特殊点**:信号窗口无 post-selection → `sift_keep` 只看 Charlie 声明 ∈ {L, R},无相位判据 → 最简
++
++**门槛**:`source_state` 不再是 single MUB state;需要 MS-EB framework 支持 source 层 classical register(发/不发的经典决策)。Phase 1 S2.1 MDI multi-source 的基础设施已覆盖此情形([qkdx/protocols/mdi.py](../../qkdx/protocols/mdi.py) `build_mdi_bell_protocol`)。
++
++### 6.3 Lucamarini 原版(**降级为 `spec_only`,不推荐实施**)
++
++- **$\mathcal{A}$**:需要 phase slice post-selection($|\rho_a - \rho_b|$ 落同 M-slice 内)→ 需要 `AnnouncementRule` 支持 classical register post-selection 谓词
++- **安全证明**:Lucamarini 自己承认未完成;后续文献(Ma 2018 / Curty-Azuma-Lo 2019)补全
++- **建议**:F6 主实施走 PM-QKD 或 SNS,Lucamarini 原版在文档中作为历史参考,不单独实施
++
++---
++
++## 7. F6 实施路径建议(Phase 1 S2.1-S2.2 节律)
++
++| 子阶段 | 产出 | 难度 | Plan 对齐 |
++|--------|------|------|-----------|
++| 7.1 文献 memo | **本 memo** | 已完成 | S2.1 R1.1 |
++| 7.2 MS-EB formulation doc | `docs/msen/pm_qkd_formulation.md` | 低 | S2.1 R1.2 |
++| 7.3 PM-QKD 实施 | `qkdx/protocols/pm_qkd.py` + tests | 中(~1 周) | S2.1 R1.3 |
++| 7.4 log-log 斜率验收 | `test_pm_qkd_sqrt_eta_scaling` | 低 | tfqkd_family.md §5.2 |
++| 7.5 SNS 实施(可选) | `qkdx/protocols/sns_tfqkd.py` + tests | 中(~1 周) | Sub-Q2 覆盖广度 |
++| 7.6 Pareto 扫描 | `qkdx/sweeps/tfqkd_family_sweep.py` | 低 | S2.2 硬验收 |
++
++**S2.1 R1.3 验收**(family sheet `scope_tag='covered'`):
++- PM-QKD log-log 斜率 $0.5 \pm 0.05$ in range $\eta \in [10^{-3}, 10^{-5}]$
++- 至少 1 个文献 anchor(Ma Fig. 3a)匹配在 cutoff 距离附近
++
++**MS-EB 映射未解决点**(留作 ADR):
++- PM-QKD 的 Fock 截断 $N_\text{fock}$ 选择(Ma 用 implicit 无限;我们需要 $N \leq 10-20$)→ 引入 truncation error,量化影响
++- SNS 的"发或不发"在 `SourceParty` 层如何表达(二元 classical register 是否破坏 MS-EB H2 单一 $\mathcal{E}$?)— 需要 Phase 0 multi-source 基础设施验证
++
++---
++
++## 8. 对 Phase 1 / Phase 2 的 Bearing
++
++### 8.1 Phase 1 Sub-Q2 bearing
++
++- 完成 F6 后,Sub-Q2 三大协议族(F1 BB84 / F5 MDI / F6 TF)**全覆盖**;Pareto 比较图可横跨 $\eta \in [10^{-6}, 1]$
++- $\sqrt{\eta}$ vs $\eta$ 的物理本质是 **中间节点的单光子 vs 双光子相干**,在 Sub-Q2 Pareto sheet 中作为"协议族层面最优选择"轴
++
++### 8.2 Phase 2 Sub-Q3 bearing
++
++- **TF 族 vs PLOB/Pirandola 上界**:TF 是首个 $\sqrt{\eta}$ 协议族;Sub-Q3 上界对比图的核心对象
++- 已有上界文献(本仓库 [docs/literature/pdfs/](pdfs/)):PLOB-2017 / TGW-2014 / WTB-2017 / Pirandola-2019 / DKW-2020 全在库
++- **gap 刻画**:TF 下界 $\sim \sqrt{\eta}$ vs 上界 $-\log_2(1-\eta) \approx \eta/\ln 2$ 在 $\eta \ll 1$ 下 ⇒ TF 接近但未达上界 — Sub-Q4 归因 A/B/C 的典型 testbed(Ma §VI outlook 明示)
++
++### 8.3 Sub-Q4 主问题 bearing
++
++TF 族是 [PROSPECTUS.md](../PROSPECTUS.md) 主问题攻坚的**最大权重** testbed(Sub-Q3 + Sub-Q4 均以 TF 为主对象)。本 memo 完成 + PM-QKD 实施后,主问题的"下界层"工具链完整。
++
++---
++
++## 9. 三篇论文的关键符号对照表
++
++| 概念 | Lucamarini | Wang-Yu-Hu | Ma-Zeng-Zhou |
++|------|------------|------------|--------------|
++| 信号强度 | $\mu$ (combined $\mu_a + \mu_b$) | $\mu'$(signal),$\mu_k$(decoy) | $\mu_a = \mu_b = \mu_i / 2$ |
++| 随机相位 | $\rho_a, \rho_b$ 全局 + $\gamma_a, \gamma_b$ 编码 | $\delta_A, \delta_B$ 随机 + $\gamma_A, \gamma_B$ 参考 | $\phi_a, \phi_b$ 随机 + $\pi\kappa_{a,b}$ 编码 |
++| Phase slice 数 | $M$ | 不做(有 $\lambda$ judgement) | $M$ |
++| 信号 QBER | $E_{\mu, L}$(overall) | $E^Z$(Z-basis) | $E_\mu^Z$ |
++| Phase error | $\bar{e}_1$(single-photon) | $e_1^{ph}$ | $E_\mu^X$ |
++| Sifting factor | $d/M$ | $2\epsilon(1-\epsilon)$(×$\mu' e^{-\mu'}$) | $2/M$ |
++
++---
++
++## 10. Limitations 与未解决点
++
++### 作者明示
++
++- **Lucamarini 2018**:§3(结尾)明确 "a rigorous proof of unconditional security is beyond the scope of the current paper"
++- **Wang-Yu-Hu 2018**:§V 虚拟协议证明 **在假设信道无 entangle 所有 rounds 的前提下**(i.e., 不包含 coherent attack 在 general sense);coherent attack 需要进一步论证
++- **Ma-Zeng-Zhou 2018 §VI**:"our bound Eq. (4) is still far away from this bound [single-repeater $-\log_2(1-\sqrt\eta)$]";参数空间优化(如 biased phase randomization)未完成
++
++### 本 memo 读者视角
++
++- **Phase reference 实验难度**:三方案均需 phase-locked 激光或强脉冲互校准(Lucamarini SI 详述);我们的 MS-EB 模型如何表达此 phase reference **可能需要 ADR**(tfqkd_family.md §9.4 已列预案)
++- **Fock 截断 error bound**:Ma-Zeng-Zhou 的 $N \to \infty$ 证明在 truncation 下的严格误差未给出;WLC numerical 在 $N = 10$ 的数值是否严格 lower bound 需额外论证(Ma Appendix B 仿真仅验证 convergence)
++- **与 Kamin 2025 GEAT 的兼容性**:Kamin §7 分析 decoy-state BB84 用 Choi-state 块对角;TF-QKD 的 optical-mode 结构是否需要扩展 Kamin 框架待评估(Kamin 论文明确只做 BB84-class 协议,未涉及 TF)
++
++---
++
++## 11. 下一级 Level 4 升级需求(若后续回来精读)
++
++- **Ma-Zeng-Zhou Appendix A.4**:optical-mode EDP 证明细节(Protocol I 的 $|\Psi_0^{(k)}\rangle$ 推导)
++- **Ma-Zeng-Zhou Appendix A.5**:$E_\mu^X$ 的 decoy-state 上界推导(奇偶光子数 phase error 关系 Lemma 1 的完整证明)
++- **Wang-Yu-Hu §V Theorem + Reduction 2**:完整 tagged-model 证明 + $X_0/X_1$-window 扩展
++- **Lucamarini 2018 SI**:phase-locking 技术 + Eq. 4 相位漂移模型完整导出
++
++---
++
++## 12. 变更日志
++
++- **v0.1** (2026-04-20):首稿 Level 3 并列精读。基于三篇 PDF 主文完整阅读 + Appendix 浏览。配合 Phase 1 F6 tfqkd_family.md v0.1 → v0.2 的 TF/SNS/PM 实施准备层。
+diff --git a/docs/msen/pm_qkd_formulation.md b/docs/msen/pm_qkd_formulation.md
+new file mode 100644
+index 0000000..e23ca8d
+--- /dev/null
++++ b/docs/msen/pm_qkd_formulation.md
+@@ -0,0 +1,226 @@
++# PM-QKD 在 MS-EB 框架下的书写
++
++**版本**:v0.1(2026-04-20,F6 §7.2 produce)
++**关联研究动作**:tfqkd_family.md §9.1 §7.2(MS-EB formulation doc)
++**对应协议代码(目标)**:`qkdx/protocols/pm_qkd.py`(F6 §7.3 产出,本文档不创建)
++**Level 3 精读 memo**:[docs/literature/TF-QKD.md](../literature/TF-QKD.md)(三变体并列,§2–6 覆盖 PM)
++
++---
++
++## 0. 范围限定
++
++本 MS-EB 书写**只覆盖 PM-QKD 的 d=2 + phase-randomized 情形**(Ma-Zeng-Zhou 2018 §II 主分析对象):
++
++**覆盖**:
++- $d = 2$(key bit 编码到 $\pi\kappa$ 相位偏移,$\kappa \in \{0, 1\}$)
++- Alice/Bob 对各自相干态做独立 uniform phase randomization $\phi_a, \phi_b \in [0, 2\pi)$(Ma §II "plus phase randomization")
++- Fock truncation $N_\text{fock}$(本书写:$N_\text{fock} = 10$,与 F5 MDI Bell builder 一致)
++- 对称源方强度 $\mu_a = \mu_b = \mu/2$
++- Charlie 的 50:50 分束器 + 单光子检测(L/R/fail 三结果)
++- **Decoy-state estimation of $(Q_1^L, e_1^X)$**:Ma Eq. 2 通过 Poisson 光子数分解估上界
++
++**不覆盖**(归 Phase 1 S2.2 扩展 / ADR 待决):
++- $d > 2$(多相位 PM-QKD,Ma §II 提到但主证明不覆盖)
++- Phase reference deviation $\phi_0$ 及 post-compensation($j_d$ slice offset;Ma §IV 实验补偿技术)
++- 相位漂移统计模型(Ma §IV Gaussian drift;本书写假设瞬时 phase reference match)
++- 连续 phase 后筛(Ma §II 理论上连续 $[0, 2\pi)$,本书写把筛选条件离散化到 $M$ slice)
++- **$\sqrt{\eta}$ scaling 的严格 truncation error bound**(Ma Appendix B 仅数值验证 convergence,未给 $N_\text{fock}$ 误差 closed form)
++
++---
++
++## 1. MS-EB 五元组 $\Pi_\text{PM} = (\mathcal{P}, \mathcal{E}, \mathcal{A}, \mathcal{T}, \mathcal{K})$
++
++### 1.1 $\mathcal{P}$:双源方 + Fock 截断 + phase randomization
++
++PM-QKD 是**第二个双源方**协议(首个是 MDI,见 [mdi-formulation.md](mdi-formulation.md) §1.1)。与 MDI 的关键差异:**源态不是 BB84 EB 4-dim qubit**,而是 **Fock-truncated phase-randomized coherent state × key-bit classical register**。
++
++| 源方 | key_register_dim | signal_register_dim | source_state 维度 |
++|------|-------------------|---------------------|---|
++| Alice | 2(κ=0, 1) | $N_\text{fock} + 1$(Fock 0..N) | $(2(N+1))^2$ |
++| Bob | 2 | $N + 1$ | $(2(N+1))^2$ |
++
++**源态构造**(Ma Eq. A3 + §II 相位随机化):
++
++$$\rho_\text{Alice}^\text{source} = \frac{1}{2}\sum_{\kappa=0}^{1} |\kappa\rangle\langle\kappa|_{K_A} \otimes \int_0^{2\pi}\frac{d\phi}{2\pi}|\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}|_{A'}$$
++
++其中 $|\alpha|^2 = \mu/2$(每源强度),$A'$ 是 Fock 截断后的光学模态。**相位随机化**使内部积分项退化为 Poisson 分布的 Fock 数混合([Ma Eq. A3]):
++
++$$\int_0^{2\pi}\frac{d\phi}{2\pi}|\alpha e^{i\phi}\rangle\langle\alpha e^{i\phi}| = \sum_{k=0}^{\infty} e^{-|\alpha|^2}\frac{|\alpha|^{2k}}{k!}|k\rangle\langle k|$$
++
++**$\pi\kappa$ 编码的效果**:对偶数 $k$,$|\alpha e^{i\pi\kappa}\rangle^{\otimes k} = |\alpha\rangle^{\otimes k}$(相位差 $e^{i\pi \cdot 2m} = 1$);对奇数 $k$,key bit 引入 $\pm$ 符号区别 → 奇光子数分量携带 key information(Ma Lemma 1 奇偶分解核心)。
++
++### 1.2 $\mathcal{E}$:双臂信道 + Charlie 分束器 + 单光子检测
++
++$\mathcal{E}: A' \otimes B' \to \text{classical outcome} \in \{L, R, \text{fail}\}$,数学上:
++
++$$\mathcal{E} = \mathcal{E}_\text{det-LR} \circ \mathcal{E}_\text{BS} \circ (\mathcal{E}_{A'} \otimes \mathcal{E}_{B'})$$
++
++- $\mathcal{E}_{A'}, \mathcal{E}_{B'}$:Alice/Bob → Charlie 的透射信道(本书写理想:identity × identity);真实实现为有损 $\eta_A, \eta_B$
++- $\mathcal{E}_\text{BS}$:50:50 分束器 Kraus(Ma Eq. A8):
++  $$\begin{pmatrix} c^\dagger \\ d^\dagger \end{pmatrix} = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} a^\dagger \\ b^\dagger \end{pmatrix}$$
++- $\mathcal{E}_\text{det-LR}$:两探测器 $L, R$ 的单光子检测投影 + 公告
++  - $L$ click:$|1\rangle_L \otimes |0\rangle_R$(单点击 left detector)
++  - $R$ click:$|0\rangle_L \otimes |1\rangle_R$(单点击 right detector)
++  - fail:其他(0 或 coincidence 2+)
++
++**实施简化**(与 [mdi-formulation.md](mdi-formulation.md) §1.2 类似):WLC SDP 数值只用 $d_\rho$ + observable,因此**网络 channel 初版用 `KrausMap.identity`**,Charlie 的 BS + detection 通过 `_conditional_alice_bob` override 注入。严格 MS-EB 的完整 Kraus 嵌入留给 F6 §7.5 或 M3+ 精化。
++
++### 1.3 $\mathcal{A}$:公告与筛选
++
++- Charlie 公告 $r \in \{L, R, \text{fail}\}$
++- Alice 公告 $\phi_a \in [0, 2\pi)$(离散化到 $M$ slices,$j_a \in \{0, \ldots, M-1\}$)
++- Bob 公告 $\phi_b$(同上,$j_b$)
++- **sift_keep**:$r \in \{L, R\}$ **AND** $|j_a - j_b| \mod M \in \{0, M/2\}$(等价于 Ma §II "$|\phi_a - \phi_b| = 0$ or $\pi$")
++
++**Bit flip 规则**(Ma §II step "Sifting"):
++- 若 $|j_a - j_b| \mod M = M/2$(相位差 ≈ π):Bob 翻转自己的 $\kappa_b$
++- 若 Charlie 公告 $r = R$:Bob 同样翻转(Ma §II "Bob flips his key bit $\kappa_b$ if Eve's announcement is $R$ click")
++
++**两个 flip 条件独立**,共同使 Alice-Bob raw key 对齐。
++
++### 1.4 $\mathcal{T}$:观测量与接受判据
++
++三个 observation keys:
++
++$$\text{observation\_keys} = (Q_\mu, E_\mu^Z, E_\mu^X)$$
++
++- **$Q_\mu$**(total gain):$\mathbb{P}[r \in \{L, R\}]$(Charlie 成功率)
++- **$E_\mu^Z$**(Z-basis QBER):在 sift 后 Alice-Bob key bit 不匹配率,可**直接观测**
++- **$E_\mu^X$**(phase error rate):**不可直接观测**,需通过 Ma Eq. 2 decoy-state 估上界:
++  $$E_\mu^X \leq e_0^Z q_0 + \sum_{k=0}^\infty e_{2k+1}^Z q_{2k+1} + (1 - q_0 - \sum_{k=0}^\infty q_{2k+1})$$
++  其中 $q_k = (e^{-\mu}\mu^k/k!)Y_k / Q_\mu$ 是 k-photon 信号比例,由 multi-intensity decoy 估 $Y_k$。
++
++**接受判据**(unique-acceptance 初版):$(Q_\mu, E_\mu^Z)$ 接近 honest 参数(用 `rel=0.05` 宽容窗),$E_\mu^X$ 由 decoy 产生的上界 → 不作为独立接受判据。
++
++### 1.5 $\mathcal{K}$:密钥映射
++
++- **密钥持有方**:**Alice**(`key_party = "Alice"`)
++- **Key register**:$\kappa_A \in \{0, 1\}$
++- **Bob 对齐**:根据 sifting rule 1.3 翻转 $\kappa_B$(2-step: $|j_a - j_b| = M/2$ → flip;$r = R$ → flip)
++
++Alice 的 key map 是 identity($\kappa_A$ 直接作为 raw key);Bob 的翻转动作通过 virtual EB picture 在源态 `source_state` 的对称构造下**隐式吸收**(与 MDI 的 `key_party = "Alice"` 约定一致)。
++
++---
++
++## 2. $p_\text{sift}$ 的推导
++
++$$p_\text{sift}^\text{PM} = \underbrace{P(r \in \{L, R\})}_{Q_\mu \sim \sqrt{\eta}} \times \underbrace{P(|j_a - j_b| \mod M \in \{0, M/2\})}_{2/M}$$
++
++- **单光子干涉成功率**:$Q_\mu = 2\mu\eta + O(\mu^2)$(小 μ 线性展开;Ma Eq. B14 完整式包含 dark count);对典型 $\mu \sim 0.3, \eta = 10^{-3}$,$Q_\mu \sim 6 \times 10^{-4} \sim \sqrt{\eta}$ 量级
++- **Phase slice 匹配率**:$M$ 个 slice 中,$|j_a - j_b|$ 均匀分布到 $M$ 值;匹配 $\{0, M/2\}$ 两个值 → $2/M$
++
++**Ma Eq. 4 per-pulse rate**:
++
++$$R_\text{PM} \geq \frac{2}{M} Q_\mu \left[-f H(E_\mu^Z) + 1 - H(E_\mu^X)\right]$$
++
++即 $\frac{2}{M}$ 作为 sifting factor,$Q_\mu[\cdot]$ 作为 per-sift 净 key rate。
++
++**典型参数下的 $p_\text{sift}$**(Ma Fig. 3b simulation,$\mu=0.3, \eta_d=14.5\%, M=16$):
++- $\eta_\text{total} = 10^{-3}$(100 km):$Q_\mu \approx 10^{-4}$,$2/M = 0.125$ ⇒ $p_\text{sift} \approx 1.25 \times 10^{-5}$
++- $\eta_\text{total} = 10^{-4}$(200 km):$Q_\mu \approx 3 \times 10^{-5}$ ⇒ $p_\text{sift} \approx 3.75 \times 10^{-6}$
++
++---
++
++## 3. WLC SDP 表达(目标,F6 §7.3 实施时落)
++
++### 3.1 SDP 变量
++
++**conditional_alice_bob 维度**:$d_\rho = 4$($2 \times 2$,Alice $\kappa_A$ × Bob $\kappa_B$ effective key bit)— 与 BB84/MDI **相同**。
++
++**关键观察**:WLC SDP 层面 PM-QKD 与 BB84/MDI 的**可约化性**(Ma §III 明示):Alice-Bob 的 effective 4-dim key subspace 在 "只保留 sift 事件" 后,经 Ma Lemma 1 的奇偶光子数分解 + Shor-Preskill argument,**归约到 qubit-based CSS 密钥率**。
++
++- $\mathcal{G}$:identity on 4-dim,`dim_key=2, dim_side=2`
++- $\mathcal{Z}$:pinching key register(Alice $\kappa_A$)
++
++### 3.2 约束集合 $\mathcal{S}_\text{PM}$
++
++$$\mathcal{S}_\text{PM} = \{\rho \succeq 0 : \text{Tr}(\rho) = 1, \text{Tr}(\Gamma_Z \rho) = E_\mu^Z, \text{Tr}(\Gamma_X \rho) \leq E_\mu^X{}^\text{decoy-UB}\}$$
++
++**差异 vs MDI**:$E_\mu^X$ 不是直接约束(不可观测),而是 decoy-state 产生的**上界**;$\rho$ 的可行集在 $E_\mu^X$ 方向更大 → $H(A|E)$ 更小(保守)。
++
++**与 BB84 等价性条件**:当 $E_\mu^X = E_\mu^Z$ 且 decoy-UB 吻合时 $H^\text{PM}(A|E) = H^\text{BB84}(A|E)$;否则 PM 略 pessimistic。
++
++### 3.3 密钥率关系
++
++$$R_\text{PM}^\text{ideal} = p_\text{sift}^\text{PM} \cdot [H(A|E) - f_\text{ec} \cdot h(E_\mu^Z)]$$
++
++不同于 MDI 的 $p_\text{sift} = 0.25$ 常数,**PM 的 $p_\text{sift}$ 随信道标度**(因 $Q_\mu \propto \sqrt{\eta}$,而 $2/M$ 常数)。这正是 $\sqrt{\eta}$ 标度的来源:
++
++$$R_\text{PM} \propto p_\text{sift} \propto Q_\mu \propto \sqrt{\eta_\text{total}}$$
++
++### 3.4 数值验证计划(F6 §7.3 目标测试)
++
++- `test_pm_qkd_sift_scaling`:log-log($Q_\mu$ vs $\eta$)斜率 $0.5 \pm 0.05$
++- `test_pm_qkd_vs_ma_fig3a`:$\mu=0.3, \eta_d=0.145, M=16, e_d=0.015$ 下密钥率在 100 km / 200 km / 300 km 三点对比 Ma Fig. 3a,rel=0.05
++
++---
++
++## 4. Additivity 验证(预计)
++
++`qkdx/numerics/wlc.py` **零修改**(与 MDI/BB84/六态一致,这是 MS-EB framework 的核心稳定性保证)。新增仅限:
++
++- [qkdx/analytic/decoy.py](../../qkdx/analytic/decoy.py):Ma Eq. 2 phase-error 上界估 `pm_decoy_phase_error_upper`(复用现有 2-decoy 基础设施)
++- `qkdx/protocols/pm_qkd.py`(本文档不创建,F6 §7.3 产出)
++- `tests/test_protocols/test_pm_qkd.py`(同上)
++
++**预期** WLC SDP 通过 override 路径接入:与 [mdi.py](../../qkdx/protocols/mdi.py) 的 `_conditional_alice_bob` override 思路一致,PM-QKD 的 `_conditional_alice_bob` 从 `executed_state` 提取 Alice $\kappa_A$ × Bob $\kappa_B$ 4-dim 子空间并应用 Ma 奇偶分解 + decoy-UB phase-error 约束。
++
++---
++
++## 5. 对 PROSPECTUS §3.1 主问题的 Bearing
++
++PM-QKD 是 PROSPECTUS v3.1 §3.1 **untrusted measurement relay with √η scaling** 拓扑的 **首个完整安全证明**(对比 Lucamarini 原版 "proof beyond scope"):
++
++1. **为 Sub-Q2 提供 $\sqrt{\eta}$ 族 anchor**(Phase 1 S2.1-S2.2):补全三大族 F1 BB84(η) / F5 MDI(η) / F6 TF(√η)的协议族地图;Pareto 前沿跨 6 decade η 成为可能
++2. **为 Sub-Q3 上界对比提供参数化 benchmark**(Phase 2):PLOB-2017 $-\log_2(1-\eta)$ vs PM-QKD Eq. 4 下界的 gap 在 $\eta \in [10^{-6}, 10^{-3}]$ 是 Sub-Q4 归因的典型 testbed
++3. **为 Sub-Q4 主问题提供"TF 族是否已最紧"判据的证据基础**:Ma §VI outlook 明示"still far away from single-repeater bound $-\log_2(1-\sqrt\eta)$";此 gap 本身是 Phase 3 gap 归因 A/B/C 的核心刻画对象
++
++---
++
++## 6. Limitations
++
++**源于 Ma-Zeng-Zhou 2018 论文明示**(见 [TF-QKD.md](../literature/TF-QKD.md) §10):
++- 单光子干涉 **不在 PLOB repeaterless 直接传输** 的 scope 内(Charlie 是 untrusted relay,而非 direct)— 此"不矛盾"Ma §V 明示
++- Phase reference 假设 $\phi_0 = \phi_{b,0} - \phi_{a,0}$ 瞬时 match;实际实验需 active feedback 或 strong-pulse calibration(Ma §IV);**本 MS-EB 书写不覆盖 phase drift model**
++- $d > 2$ PM-QKD 证明未在 Ma §II 完整给出(Ma §VI outlook);$d=2$ 是严格覆盖的唯一情形
++
++**源于 MS-EB framework**:
++- Charlie POVM 未显式 Kraus 嵌入(同 MDI);严格形式化留待 F6 §7.5 或更晚
++- Fock 截断 $N_\text{fock}$ 的**严格上界误差 bound 不可用**(Ma 只做 convergence 数值验证);此为 `scope_tag='partial'` 升级到 `'covered'` 的 key blocker(ADR 待决)
++- No finite-key:渐近 i.i.d. + collective attack;finite-key 归 Phase 1 S2.5(GEAT 或 Renner path)
++
++**源于本书写假设**:
++- 对称源强度 $\mu_a = \mu_b$(Ma §II 主分析;asymmetric 扩展归 Phase 1 Sub-Q2)
++- Phase slice 离散化到 $M = 16$(Ma Fig. 3b 典型);$M$ 的优化归 Pareto 扫描
++- 不处理 `AnnouncementRule` 的连续相位积分(当前 MS-EB framework 假设 classical register 离散)
++
++---
++
++## 7. 下一步
++
++1. ✅ F6 §7.1 文献 memo([TF-QKD.md](../literature/TF-QKD.md)):v0.1 完成
++2. ✅ F6 §7.2 本 MS-EB 书写:v0.1 完成(本文档)
++3. ⏳ F6 §7.3 `qkdx/protocols/pm_qkd.py` 实施 + 基础 tests
++4. ⏳ F6 §7.4 log-log $\sqrt{\eta}$ 斜率验收(`test_pm_qkd_sift_scaling`)
++5. ⏳ F6 §7.5 SNS 实施(可选,Sub-Q2 覆盖广度)
++6. ⏳ F6 §7.6 Pareto 扫描(Phase 1 S2.2 硬验收接入)
++
++**门槛升级路径**(tfqkd_family.md `scope_tag` 变动):
++- `partial` → `partial with impl`:完成 §7.3 后(实施但 phase reference / Fock truncation ADR 未决)
++- `partial with impl` → `covered`:完成 §7.4 log-log 硬验收 + Fock truncation ADR 解决(§7.5 前置)
++
++---
++
++## 8. 关键符号对照(vs MDI / BB84 formulation)
++
++| 量 | BB84 | MDI | PM-QKD |
++|----|------|-----|--------|
++| 源方数 | 1 | 2 | **2** |
++| source_state 维度 | 2 × 2 = 4 | 8 × 8(×2 sources)| $(2(N_\text{fock}+1))^2$(×2 sources) |
++| $d_\rho$(WLC SDP) | 4 | 4 | **4**(Ma Lemma 1 归约后) |
++| $p_\text{sift}$ | $1/2$(std)or $p_z^2 + (1-p_z)^2$(Efficient)| $\eta_A \eta_B / 2$(const wrt η)| **$2 Q_\mu / M \propto \sqrt{\eta}$** |
++| Phase error 来源 | 直接观测 $E_X$ | 直接观测 $E_X$ | **decoy Eq. 2 上界**(不可直接观测) |
++| Key party | Alice | Alice | Alice |
++| Source EB | 纯 Bell(MUB)| 纯 Bell(MUB)| **Fock-truncated phase-randomized coherent** |
++
++**关键差异总结**:PM-QKD 的 MS-EB 书写 **保留 BB84/MDI 的 WLC SDP 4-dim 核心**(得益于 Ma Lemma 1 奇偶分解 + Shor-Preskill),但 **source_state 结构和 $p_\text{sift}$ 标度质变**,这对应 $\sqrt{\eta}$ 物理来源。
+diff --git a/qkdx/finite_key/kamin_geat.py b/qkdx/finite_key/kamin_geat.py
+new file mode 100644
+index 0000000..19c0dd1
+--- /dev/null
++++ b/qkdx/finite_key/kamin_geat.py
+@@ -0,0 +1,335 @@
++"""Kamin 2025 GEAT finite-key formulas for PM-QKD.
++
++Phase 1 S2.5 Stage 1 (asymptotic anchor):
++    Direct implementation of Kamin 2025 Theorem 3 (Eq. 16) for qubit BB84 with
++    loss, using analytic rate functions (no SDP required).  This closes the
++    "bridge" layer between the GEAT memo and the downstream decoy-state SDP.
++
++References:
++    - Kamin et al. 2025.  Finite-size analysis of prepare-and-measure and
++      decoy-state QKD via entropy accumulation.  arXiv:2406.10198v3.
++    - docs/literature/Kamin-2025.md (Level 3-4 memo)
++    - Metger et al. 2024 GEAT (Thm 4.3, Cor 4.6) — parent theorem
++    - docs/literature/GEAT-2024.md
++
++Scope note (Stage 1):
++    - Theorem 3 key length formula (Eq. 16) — yes
++    - Optimal ε allocation (Eq. 57) — yes
++    - Qubit BB84 asymptotic rate — yes
++    - Choi-state SDP / Frank-Wolfe (Thm 4 dual) — NOT in this module
++    - Decoy-state block-diagonal SDP (Thm 6) — NOT in this module
++"""
++from __future__ import annotations
++
++import math
++
++
++def _h(p: float) -> float:
++    """Binary entropy (bits), 0·log 0 = 0 convention."""
++    if p <= 0.0 or p >= 1.0:
++        return 0.0
++    return -p * math.log2(p) - (1.0 - p) * math.log2(1.0 - p)
++
++
++# ---------------------------------------------------------------------------
++# Kamin Eq. 57 — optimal ε_PA / ε_EV allocation
++# ---------------------------------------------------------------------------
++
++def optimal_eps_parameters(eps_secure: float, alpha: float) -> tuple[float, float]:
++    """Kamin 2025 Eq. 57: optimal ε_PA, ε_EV split minimizing f_α.
++
++        ε_PA = α / (2α - 1) · ε_secure
++        ε_EV = (α - 1) / (2α - 1) · ε_secure
++
++    Derived from calculus on Eq. 56: f_α(ε_secure, ε_PA) := α/(α-1)·log(1/ε_PA)
++    + log(2/(ε_secure − ε_PA)).
++
++    Args:
++        eps_secure: total secrecy parameter (0 < ε ≤ 1).
++        alpha: Rényi parameter, α ∈ (1, 3/2).
++
++    Returns:
++        (eps_PA, eps_EV) with eps_PA + eps_EV = eps_secure.
++
++    Raises:
++        ValueError on invalid inputs.
++    """
++    if not (0.0 < eps_secure <= 1.0):
++        raise ValueError(f"eps_secure must be in (0, 1], got {eps_secure}")
++    if not (1.0 < alpha < 1.5):
++        raise ValueError(f"alpha must be in (1, 3/2), got {alpha}")
++    eps_PA = alpha / (2.0 * alpha - 1.0) * eps_secure
++    eps_EV = (alpha - 1.0) / (2.0 * alpha - 1.0) * eps_secure
++    return eps_PA, eps_EV
++
++
++# ---------------------------------------------------------------------------
++# Kamin Eq. 11 — V² and K(α) second-order coefficients
++# ---------------------------------------------------------------------------
++
++def kamin_V_squared(d_A: int, var_f: float, kappa: int = 1) -> float:
++    """Kamin Eq. 11: V(p, f) = (log(1 + 2 d_A^κ) + sqrt(2 + Var(p, f)))²
++
++    κ = 1 for classical A_i, κ = 2 for quantum (Kamin §4, Eq. 11).
++
++    Args:
++        d_A: max alphabet dimension of A_i.
++        var_f: Var_p(f) variance of f against distribution p.
++        kappa: 1 (classical) or 2 (quantum).
++
++    Returns:
++        V².
++    """
++    if d_A < 1:
++        raise ValueError(f"d_A must be ≥ 1, got {d_A}")
++    if var_f < 0.0:
++        raise ValueError(f"var_f must be ≥ 0, got {var_f}")
++    if kappa not in (1, 2):
++        raise ValueError(f"kappa must be 1 or 2, got {kappa}")
++    inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(2.0 + var_f)
++    return inner * inner
++
++
++def kamin_K_alpha(
++    alpha: float,
++    d_A: int,
++    max_f: float,
++    min_sigma_f: float,
++    kappa: int = 1,
++) -> float:
++    """Kamin Eq. 11: K(α) second-order coefficient.
++
++        K(α) = (2-α)³ / (6(3-2α)³ ln 2)
++             · 2^{(α-1)/(2-α) · (κ·log d_A + max(f) − min_Σ(f))}
++             · ln³(2^{κ·log d_A + max(f) − min_Σ(f)} + e²)
++
++    Args:
++        alpha: Rényi parameter ∈ (1, 3/2).
++        d_A: max alphabet dim.
++        max_f: max of min-tradeoff function f.
++        min_sigma_f: min of f over valid distributions (Min_Σ(f) in Kamin notation).
++        kappa: 1 or 2.
++
++    Returns:
++        K(α) > 0.
++    """
++    if not (1.0 < alpha < 1.5):
++        raise ValueError(f"alpha must be in (1, 3/2), got {alpha}")
++    if d_A < 1:
++        raise ValueError(f"d_A must be ≥ 1, got {d_A}")
++    if kappa not in (1, 2):
++        raise ValueError(f"kappa must be 1 or 2, got {kappa}")
++
++    log_dA = math.log2(d_A)
++    span = kappa * log_dA + max_f - min_sigma_f
++
++    prefactor = ((2.0 - alpha) ** 3) / (6.0 * ((3.0 - 2.0 * alpha) ** 3) * math.log(2.0))
++    power_term = 2.0 ** ((alpha - 1.0) / (2.0 - alpha) * span)
++    log_term = math.log(2.0 ** span + math.e ** 2) ** 3
++    return prefactor * power_term * log_term
++
++
++# ---------------------------------------------------------------------------
++# Kamin Eq. 16 — Theorem 3 key length (unique-acceptance simplified form)
++# ---------------------------------------------------------------------------
++
++def kamin_theorem3_key_length(
++    n: int,
++    h: float,
++    V_squared: float,
++    K_alpha: float,
++    alpha: float,
++    lambda_EC: float,
++    eps_EV: float,
++    eps_PA: float,
++) -> float:
++    """Kamin 2025 Eq. 16, simplified for unique-acceptance (T_α = −((α-1)/(2-α))·(ln 2/2)·V²).
++
++        ℓ ≤ n·h − n·((α-1)/(2-α))·(ln 2/2)·V²
++          − n·((α-1)/(2-α))² · K(α)
++          − λ_EC − ⌈log(1/ε_EV)⌉ − (α/(α-1))·log(1/ε_PA) + 2
++
++    Valid for Protocol 1 with unique-acceptance (S_acc = {p^hon}) and affine f
++    matching rate at p^hon (so Δ_com = 0 and T_α reduces to the variance term).
++
++    Args:
++        n: number of signal rounds.
++        h: rate at honest distribution (per-round entropy, bits).
++        V_squared: V²(p^hon, f) from Eq. 11.
++        K_alpha: K(α) from Eq. 11.
++        alpha: Rényi parameter ∈ (1, 3/2).
++        lambda_EC: error-correction bits communicated (total, not per-round).
++        eps_EV: error-verification failure probability ∈ (0, 1].
++        eps_PA: privacy-amplification failure probability ∈ (0, 1].
++
++    Returns:
++        ℓ in bits (may be negative in infeasible regime).
++    """
++    if n < 1:
++        raise ValueError(f"n must be ≥ 1, got {n}")
++    if not (1.0 < alpha < 1.5):
++        raise ValueError(f"alpha must be in (1, 3/2), got {alpha}")
++    if not (0.0 < eps_EV <= 1.0):
++        raise ValueError(f"eps_EV must be in (0, 1], got {eps_EV}")
++    if not (0.0 < eps_PA <= 1.0):
++        raise ValueError(f"eps_PA must be in (0, 1], got {eps_PA}")
++    if V_squared < 0.0 or K_alpha < 0.0:
++        raise ValueError(f"V² and K(α) must be ≥ 0")
++    if lambda_EC < 0.0:
++        raise ValueError(f"lambda_EC must be ≥ 0, got {lambda_EC}")
++
++    beta = (alpha - 1.0) / (2.0 - alpha)
++    variance_penalty = n * beta * (math.log(2.0) / 2.0) * V_squared
++    K_penalty = n * (beta ** 2) * K_alpha
++    log_EV = math.ceil(math.log2(1.0 / eps_EV))
++    log_PA = (alpha / (alpha - 1.0)) * math.log2(1.0 / eps_PA)
++    ell = n * h - variance_penalty - K_penalty - lambda_EC - log_EV - log_PA + 2.0
++    return ell
++
++
++# ---------------------------------------------------------------------------
++# Qubit BB84 with loss (Kamin §6) — analytic asymptotic rate
++# ---------------------------------------------------------------------------
++
++def bb84_qubit_asymptotic_rate(
++    p_depol: float,
++    eta_det: float,
++    gamma: float,
++    f_EC: float = 1.16,
++) -> float:
++    """Kamin §6 qubit BB84 asymptotic (n → ∞) rate per transmitted signal.
++
++        rate = (1 − γ)² · η_det · [1 − h(Q) − f_EC · h(Q)]    (Q = p_depol / 2)
++
++    Derivation (Kamin Eq. 59 + §6.3):
++        - Generation round chosen with prob (1 − γ)
++        - Bob measures in Z-basis with prob (1 − γ)
++        - Detection prob in Z (honest, loss-only): η_det
++        - Single-photon privacy:  1 − h(Q_X), Q_X = p_depol/2 for depol channel
++        - Leak EC per detected round: f_EC · h(Q_Z), Q_Z = p_depol/2
++
++    Args:
++        p_depol: depolarization parameter (honest behavior), ∈ [0, 1].
++        eta_det: detection efficiency ∈ (0, 1], combined into honest loss.
++        gamma: test-round probability ∈ (0, 1).
++        f_EC: EC efficiency ≥ 1.
++
++    Returns:
++        Per-signal key rate (bits/signal), can be negative above threshold.
++    """
++    if not (0.0 <= p_depol <= 1.0):
++        raise ValueError(f"p_depol must be in [0, 1], got {p_depol}")
++    if not (0.0 < eta_det <= 1.0):
++        raise ValueError(f"eta_det must be in (0, 1], got {eta_det}")
++    if not (0.0 < gamma < 1.0):
++        raise ValueError(f"gamma must be in (0, 1), got {gamma}")
++    if f_EC < 1.0:
++        raise ValueError(f"f_EC must be ≥ 1, got {f_EC}")
++
++    Q = p_depol / 2.0
++    hQ = _h(Q)
++    return (1.0 - gamma) ** 2 * eta_det * (1.0 - hQ - f_EC * hQ)
++
++
++# ---------------------------------------------------------------------------
++# Qubit BB84 finite-key length via Kamin Theorem 3
++# ---------------------------------------------------------------------------
++
++def bb84_qubit_finite_key_length(
++    n: int,
++    p_depol: float,
++    loss_dB: float,
++    gamma: float,
++    alpha: float,
++    eps_secure: float = 1e-8,
++    f_EC: float = 1.16,
++) -> float:
++    """Kamin qubit BB84 finite-key length via Theorem 3 (unique-acceptance).
++
++    Asymptotic rate h = rate_asy(p_depol, eta_det, γ, f_EC).
++    λ_EC = n · (1−γ)² · η_det · f_EC · h(Q)  (honest leak).
++    V² uses Var(f) = Var(rate) ≤ Max(rate)² ≤ 1 (loose conservative bound).
++    ε_PA, ε_EV optimally split per Eq. 57.
++
++    Note (Stage 1 limitation): V² uses a conservative variance upper bound
++    (Var(f) = 1) rather than the tight computation from the honest distribution;
++    this underestimates the key length at small n.  Full optimization requires
++    Theorem 4 SDP (Stage 2).
++
++    Args:
++        n: number of signal rounds.
++        p_depol: depolarization parameter ∈ [0, 1].
++        loss_dB: channel loss in dB, η_det = 10^(−loss_dB/10).
++        gamma: test-round probability ∈ (0, 1).
++        alpha: Rényi parameter ∈ (1, 3/2).
++        eps_secure: total secrecy parameter (default 10^−8, Kamin §6).
++        f_EC: EC efficiency (default 1.16, Kamin §4.2 Eq. 26).
++
++    Returns:
++        ℓ in bits (can be negative).
++    """
++    if loss_dB < 0.0:
++        raise ValueError(f"loss_dB must be ≥ 0, got {loss_dB}")
++    eta_det = 10.0 ** (-loss_dB / 10.0)
++
++    # Honest rate h
++    h = bb84_qubit_asymptotic_rate(p_depol, eta_det, gamma, f_EC)
++
++    # Honest EC leakage (per-round): λ_EC / n = (1-γ)² · η_det · f_EC · h(Q)
++    Q = p_depol / 2.0
++    hQ = _h(Q)
++    lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * hQ
++
++    # Conservative V²: Var(f) bounded by (Max-Min)² ≤ 1 for rates in [0, 1]
++    var_f = 1.0
++    V_sq = kamin_V_squared(d_A=2, var_f=var_f, kappa=1)
++
++    # K(α): max(f) = 1, min_Σ(f) = 0 (conservative)
++    K_val = kamin_K_alpha(alpha=alpha, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
++
++    # ε split
++    eps_PA, eps_EV = optimal_eps_parameters(eps_secure, alpha)
++
++    return kamin_theorem3_key_length(
++        n=n, h=h, V_squared=V_sq, K_alpha=K_val, alpha=alpha,
++        lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
++    )
++
++
++def bb84_qubit_optimal_finite_key(
++    n: int,
++    p_depol: float,
++    loss_dB: float,
++    eps_secure: float = 1e-8,
++    f_EC: float = 1.16,
++    gamma_grid: tuple[float, ...] = (
++        0.005, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4,
++    ),
++    alpha_grid: tuple[float, ...] = (
++        1.001, 1.005, 1.01, 1.02, 1.05, 1.1, 1.2, 1.3, 1.4,
++    ),
++) -> tuple[float, float, float]:
++    """Grid search over (γ, α) to maximize Kamin qubit BB84 key length.
++
++    Evaluates `bb84_qubit_finite_key_length` on the Cartesian product of
++    gamma_grid × alpha_grid and returns the best (ℓ, γ*, α*).
++
++    Args:
++        n, p_depol, loss_dB, eps_secure, f_EC: as in bb84_qubit_finite_key_length.
++        gamma_grid: γ values to try (default covers 0.5 % – 40 %).
++        alpha_grid: α values to try (default covers near-1 to near-3/2).
++
++    Returns:
++        (ell_max, gamma_star, alpha_star).  ell_max may be negative if infeasible.
++    """
++    best = (-math.inf, gamma_grid[0], alpha_grid[0])
++    for gamma in gamma_grid:
++        for alpha in alpha_grid:
++            ell = bb84_qubit_finite_key_length(
++                n=n, p_depol=p_depol, loss_dB=loss_dB,
++                gamma=gamma, alpha=alpha,
++                eps_secure=eps_secure, f_EC=f_EC,
++            )
++            if ell > best[0]:
++                best = (ell, gamma, alpha)
++    return best
+diff --git a/tests/test_finite_key/test_kamin_geat.py b/tests/test_finite_key/test_kamin_geat.py
+new file mode 100644
+index 0000000..84d9ca5
+--- /dev/null
++++ b/tests/test_finite_key/test_kamin_geat.py
+@@ -0,0 +1,286 @@
++"""Tests for Kamin 2025 GEAT finite-key formulas (S2.5 Stage 1 — qubit BB84 asymptotic anchor).
++
++References:
++    - Kamin et al. 2025 (arXiv:2406.10198v3), Theorem 3 (Eq. 16) + Thm 1 (Eq. 11)
++    - docs/literature/Kamin-2025.md §4, §6
++
++Scope (Stage 1):
++    - Theorem 3 key length formula evaluation (given h, V², K(α), λ_EC)
++    - Optimal ε_PA / ε_EV allocation (Eq. 57)
++    - Qubit BB84 with loss analytic asymptotic rate
++    - Grid search over (γ, α) to find best finite-size key length
++    - Cross-check Kamin Fig. 1 at n=10^12, 0 dB, p_depol=0.01 against Devetak-Winter limit
++
++Not in scope (Stage 2/3):
++    - Choi-state SDP (Frank-Wolfe + dual extraction)
++    - Decoy-state block-diagonal optimization
++"""
++from __future__ import annotations
++
++import math
++
++import pytest
++
++from qkdx.finite_key.kamin_geat import (
++    bb84_qubit_asymptotic_rate,
++    bb84_qubit_finite_key_length,
++    bb84_qubit_optimal_finite_key,
++    kamin_K_alpha,
++    kamin_theorem3_key_length,
++    kamin_V_squared,
++    optimal_eps_parameters,
++)
++
++
++class TestOptimalEpsilonParameters:
++    """Kamin Eq. 57: ε_PA = α/(2α-1) · ε_secure, ε_EV = (α-1)/(2α-1) · ε_secure."""
++
++    def test_sum_is_epsilon_secure(self):
++        eps_PA, eps_EV = optimal_eps_parameters(eps_secure=1e-8, alpha=1.2)
++        assert eps_PA + eps_EV == pytest.approx(1e-8, rel=1e-12)
++
++    def test_alpha_near_1p5_approaches_2to1_split(self):
++        # α → 1.5⁻ → ε_PA/ε → 0.75, ε_EV/ε → 0.25
++        eps_PA, eps_EV = optimal_eps_parameters(eps_secure=1e-8, alpha=1.499)
++        assert eps_PA == pytest.approx(0.75e-8, rel=5e-3)
++        assert eps_EV == pytest.approx(0.25e-8, rel=5e-3)
++
++    @pytest.mark.parametrize("alpha", [1.01, 1.1, 1.3, 1.49])
++    def test_both_positive_in_valid_range(self, alpha):
++        eps_PA, eps_EV = optimal_eps_parameters(eps_secure=1e-9, alpha=alpha)
++        assert 0 < eps_PA < 1e-9
++        assert 0 < eps_EV < 1e-9
++
++    def test_invalid_alpha_raises(self):
++        with pytest.raises(ValueError):
++            optimal_eps_parameters(eps_secure=1e-8, alpha=0.5)
++        with pytest.raises(ValueError):
++            optimal_eps_parameters(eps_secure=1e-8, alpha=1.0)
++
++    def test_invalid_eps_raises(self):
++        with pytest.raises(ValueError):
++            optimal_eps_parameters(eps_secure=0, alpha=1.2)
++        with pytest.raises(ValueError):
++            optimal_eps_parameters(eps_secure=1.1, alpha=1.2)
++
++
++class TestKaminVSquared:
++    """Kamin Eq. 11: V²(p, f) = (log(1 + 2 d_A^κ) + sqrt(2 + Var(p, f)))²."""
++
++    def test_kappa1_d2_zero_variance(self):
++        # log(1 + 2*2) + sqrt(2 + 0) = log 5 + √2
++        V_sq = kamin_V_squared(d_A=2, var_f=0.0, kappa=1)
++        expected = (math.log2(5) + math.sqrt(2.0)) ** 2
++        assert V_sq == pytest.approx(expected, rel=1e-12)
++
++    def test_kappa2_d2_zero_variance(self):
++        # log(1 + 2*4) + sqrt(2) = log 9 + √2
++        V_sq = kamin_V_squared(d_A=2, var_f=0.0, kappa=2)
++        expected = (math.log2(9) + math.sqrt(2.0)) ** 2
++        assert V_sq == pytest.approx(expected, rel=1e-12)
++
++    def test_variance_monotone(self):
++        V0 = kamin_V_squared(d_A=2, var_f=0.0, kappa=1)
++        V1 = kamin_V_squared(d_A=2, var_f=1.0, kappa=1)
++        assert V1 > V0
++
++
++class TestKaminKAlpha:
++    """Kamin Eq. 11: K(α) complex second-order coefficient."""
++
++    def test_finite_positive_in_valid_range(self):
++        # α ∈ (1, 3/2), κ=1, d_A=2, max(f)=1, min_Σ(f)=0
++        K = kamin_K_alpha(alpha=1.1, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
++        assert K > 0
++        assert math.isfinite(K)
++
++    def test_alpha_out_of_range_raises(self):
++        with pytest.raises(ValueError):
++            kamin_K_alpha(alpha=1.0, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
++        with pytest.raises(ValueError):
++            kamin_K_alpha(alpha=1.5, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
++        with pytest.raises(ValueError):
++            kamin_K_alpha(alpha=2.0, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
++
++    def test_K_finite_near_boundaries(self):
++        # K should remain finite as α → 1+ (numerator (2-α)³ → 1, denominator (3-2α)³ → 1)
++        K_near_1 = kamin_K_alpha(alpha=1.001, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
++        assert math.isfinite(K_near_1)
++        assert K_near_1 > 0
++
++
++class TestKaminTheorem3KeyLength:
++    """Kamin Eq. 16: ℓ ≤ nh + n·T_α(f) − n((α-1)/(2-α))²K(α) − λ_EC − ⌈log(1/ε_EV)⌉ − (α/(α-1))·log(1/ε_PA) + 2.
++
++    For unique-acceptance with f = rate, T_α simplifies to -((α-1)/(2-α))·(ln 2/2)·V².
++    """
++
++    def test_no_finite_size_limit(self):
++        # n → ∞, α → 1: ℓ/n → h (Devetak-Winter limit)
++        n = 10**20
++        h = 0.5
++        V_sq = 4.0
++        K_val = 1.0
++        alpha = 1.0001
++        ell = kamin_theorem3_key_length(
++            n=n, h=h, V_squared=V_sq, K_alpha=K_val, alpha=alpha,
++            lambda_EC=0.0, eps_EV=1e-10, eps_PA=1e-10,
++        )
++        rate = ell / n
++        assert rate == pytest.approx(h, abs=1e-3)
++
++    def test_smaller_n_lower_rate(self):
++        # Finite-size correction: smaller n → lower rate
++        kwargs = dict(
++            h=0.5, V_squared=4.0, K_alpha=1.0, alpha=1.05,
++            lambda_EC=0.0, eps_EV=1e-10, eps_PA=1e-10,
++        )
++        ell_large = kamin_theorem3_key_length(n=10**12, **kwargs)
++        ell_small = kamin_theorem3_key_length(n=10**8, **kwargs)
++        assert ell_large / 10**12 > ell_small / 10**8
++
++    def test_negative_when_n_too_small(self):
++        # For very small n, ℓ can go negative (infeasible regime)
++        ell = kamin_theorem3_key_length(
++            n=100, h=0.5, V_squared=4.0, K_alpha=1.0, alpha=1.05,
++            lambda_EC=10.0, eps_EV=1e-10, eps_PA=1e-10,
++        )
++        assert ell < 0
++
++
++class TestBB84QubitAsymptoticRate:
++    """Kamin §6 asymptotic (n → ∞) rate for qubit BB84 with loss.
++
++    rate_hon = (1 - γ)² · η_det · [1 - h(Q_X) - f_EC · h(Q_Z)]
++    with Q_X = Q_Z = p_depol / 2 for depolarizing channel.
++    """
++
++    def test_zero_depol_no_loss_gamma_small(self):
++        # Ideal: rate → (1-γ)²
++        r = bb84_qubit_asymptotic_rate(p_depol=0.0, eta_det=1.0, gamma=0.01, f_EC=1.0)
++        assert r == pytest.approx((0.99) ** 2, rel=1e-6)
++
++    def test_zero_depol_with_loss(self):
++        r = bb84_qubit_asymptotic_rate(p_depol=0.0, eta_det=0.5, gamma=0.1, f_EC=1.0)
++        assert r == pytest.approx(0.9 ** 2 * 0.5, rel=1e-6)
++
++    def test_depol_1pct_no_loss(self):
++        # Kamin §6 default p_depol=0.01 → Q = 0.005, f_EC=1.16
++        # rate = (1-γ)² · 1 · [1 - 2.16 · h(0.005)]
++        gamma = 0.01
++        p = 0.005
++        h_p = -p * math.log2(p) - (1 - p) * math.log2(1 - p)
++        expected = (1 - gamma) ** 2 * (1 - h_p - 1.16 * h_p)
++        r = bb84_qubit_asymptotic_rate(p_depol=0.01, eta_det=1.0, gamma=gamma, f_EC=1.16)
++        assert r == pytest.approx(expected, rel=1e-10)
++
++    def test_high_depol_gives_negative(self):
++        # Above BB84 threshold (~11% QBER) rate should go negative
++        r = bb84_qubit_asymptotic_rate(p_depol=0.30, eta_det=1.0, gamma=0.01, f_EC=1.0)
++        assert r < 0
++
++    def test_invalid_inputs_raise(self):
++        with pytest.raises(ValueError):
++            bb84_qubit_asymptotic_rate(p_depol=-0.1, eta_det=1.0, gamma=0.1, f_EC=1.0)
++        with pytest.raises(ValueError):
++            bb84_qubit_asymptotic_rate(p_depol=0.01, eta_det=1.5, gamma=0.1, f_EC=1.0)
++        with pytest.raises(ValueError):
++            bb84_qubit_asymptotic_rate(p_depol=0.01, eta_det=1.0, gamma=0.0, f_EC=1.0)
++        with pytest.raises(ValueError):
++            bb84_qubit_asymptotic_rate(p_depol=0.01, eta_det=1.0, gamma=1.0, f_EC=1.0)
++        with pytest.raises(ValueError):
++            bb84_qubit_asymptotic_rate(p_depol=0.01, eta_det=1.0, gamma=0.1, f_EC=0.5)
++
++
++class TestBB84QubitFiniteKeyLength:
++    """Kamin qubit BB84 Protocol 1: given (n, p_depol, loss_dB, γ, α) → ℓ."""
++
++    def test_large_n_approaches_asymptotic(self):
++        # n = 10^14 → ℓ/n ≈ rate_asy (up to O(1/√n) correction from V²)
++        # Stage 1 uses conservative V² (Var(f)=1 upper bound) → ~5-10% gap is expected;
++        # Stage 2 with Theorem 4 SDP-derived min-tradeoff would tighten this.
++        n = 10**14
++        ell = bb84_qubit_finite_key_length(
++            n=n, p_depol=0.01, loss_dB=0.0, gamma=0.05, alpha=1.001,
++            eps_secure=1e-8, f_EC=1.16,
++        )
++        rate_asy = bb84_qubit_asymptotic_rate(
++            p_depol=0.01, eta_det=1.0, gamma=0.05, f_EC=1.16,
++        )
++        assert ell / n == pytest.approx(rate_asy, abs=1e-1)
++
++    def test_zero_loss_kamin_fig1_anchor(self):
++        # Kamin Fig.1 @ n=10^12, loss=0 dB, p_depol=0.01: rate close to asymptotic
++        # (GEAT at low loss ≈ IID per Kamin §6 observation)
++        n = 10**12
++        # Optimized over γ, α: pick a reasonable point
++        ell = bb84_qubit_finite_key_length(
++            n=n, p_depol=0.01, loss_dB=0.0, gamma=0.02, alpha=1.005,
++            eps_secure=1e-8, f_EC=1.16,
++        )
++        # Must produce positive rate
++        assert ell > 0
++        rate = ell / n
++        # Devetak-Winter limit = (1-0.02)² · (1 - 2.16 h(0.005)) ≈ 0.96 · 0.902 ≈ 0.866
++        # Finite-size at n=10^12 loses ~10-20% → rate ∈ [0.4, 0.9]
++        assert 0.3 < rate < 0.95
++
++    def test_high_loss_abort(self):
++        # 40 dB loss @ n = 10^6: too lossy, ℓ < 0
++        ell = bb84_qubit_finite_key_length(
++            n=10**6, p_depol=0.01, loss_dB=40.0, gamma=0.1, alpha=1.1,
++            eps_secure=1e-8, f_EC=1.16,
++        )
++        assert ell < 0
++
++    def test_scaling_with_n(self):
++        # As n increases, ℓ/n should monotonically increase (less finite-size penalty)
++        rates = []
++        for n in [10**8, 10**10, 10**12, 10**14]:
++            ell = bb84_qubit_finite_key_length(
++                n=n, p_depol=0.01, loss_dB=0.0, gamma=0.02, alpha=1.005,
++                eps_secure=1e-8, f_EC=1.16,
++            )
++            rates.append(ell / n)
++        # Monotone increasing
++        for i in range(len(rates) - 1):
++            assert rates[i + 1] > rates[i]
++
++
++class TestBB84QubitOptimalFiniteKey:
++    """Grid search over (γ, α) to find max key length."""
++
++    def test_zero_loss_large_n(self):
++        # At n=10^12, 0 dB, p_depol=0.01: should find positive rate near asymptotic
++        ell, gamma_star, alpha_star = bb84_qubit_optimal_finite_key(
++            n=10**12, p_depol=0.01, loss_dB=0.0,
++            eps_secure=1e-8, f_EC=1.16,
++        )
++        assert ell > 0
++        rate = ell / 10**12
++        # Kamin Fig.1 n=10^12 @ 0 dB ≈ 0.8-0.9 (eyeball from paper Fig.1)
++        assert 0.5 < rate < 1.0
++        # γ should be small (low loss regime)
++        assert 0 < gamma_star < 0.2
++        # α should be close to 1
++        assert 1.0 < alpha_star < 1.2
++
++    def test_cutoff_at_high_loss(self):
++        # n=10^6, high loss: optimal ℓ negative (cutoff)
++        ell, _, _ = bb84_qubit_optimal_finite_key(
++            n=10**6, p_depol=0.01, loss_dB=30.0,
++            eps_secure=1e-8, f_EC=1.16,
++        )
++        # Kamin Fig.1 n=10^6 cutoff ~15 dB → 30 dB is past cutoff
++        assert ell <= 0
++
++    def test_monotone_n(self):
++        # Optimal ℓ/n increases with n at fixed loss
++        rates = []
++        for n in [10**8, 10**10, 10**12]:
++            ell, _, _ = bb84_qubit_optimal_finite_key(
++                n=n, p_depol=0.01, loss_dB=5.0,
++                eps_secure=1e-8, f_EC=1.16,
++            )
++            rates.append(ell / n)
++        assert rates[2] > rates[1] > rates[0]

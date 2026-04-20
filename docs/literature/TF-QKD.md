@@ -220,7 +220,7 @@ TF 族是 [PROSPECTUS.md](../PROSPECTUS.md) 主问题攻坚的**最大权重** t
 ### 作者明示
 
 - **Lucamarini 2018**:§3(结尾)明确 "a rigorous proof of unconditional security is beyond the scope of the current paper"
-- **Wang-Yu-Hu 2018**:§V 虚拟协议证明 **在假设信道无 entangle 所有 rounds 的前提下**(i.e., 不包含 coherent attack 在 general sense);coherent attack 需要进一步论证
+- **Wang-Yu-Hu 2018**:§V 虚拟协议 + Reduction 论证展示 "信号后筛取消 + tagged-model" 路径对 SNS-TF 的安全性；本 memo v0.1 曾附加"coherent attack 需要进一步论证"的限定,**Round-2 修订撤回** — 该限定在原文中没有直接支撑,属 memo 作者越权 paraphrase。Wang 原文仅指出 "traditional decoy-state method does not apply to the original TF-QKD protocol" 的论证焦点,我 memo 中的进一步 coherent-attack 限制是 不当推断,应以 Wang 原文论述为准
 - **Ma-Zeng-Zhou 2018 §VI**:"our bound Eq. (4) is still far away from this bound [single-repeater $-\log_2(1-\sqrt\eta)$]";参数空间优化(如 biased phase randomization)未完成
 
 ### 本 memo 读者视角

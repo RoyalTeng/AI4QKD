@@ -31,7 +31,9 @@
 
 ## 1. 一句话总结
 
-**Kamin 2025 给出了 PM-QKD(含 decoy-state)的完整 GEAT 有限密钥安全证明 + 数值化实施路线**:通过把 [GLH+22] 的 EAT 分析改造为 GEAT(消除 Markov 条件 → 消除 test-round 通告的负向惩罚),加入 [LLR+21] 改进的 second-order 项,并把 decoy-state 的两步法(先算光子数 yield 上/下界,再对 single-photon 熵做 SDP)**合并为单步 Choi-state 凸优化**,实施于 BB84 qubit-with-loss + decoy-state BB84 两个例子,涵盖从 Rényi 散度到 Frank-Wolfe 实施的完整工具链。**硬验收**:BB84 qubit-with-loss(Fig. 1)+ decoy-state BB84(Fig. 3, 4)。
+**Kamin 2025 给出了 prepare-and-measure QKD(含 decoy-state)的完整 GEAT 有限密钥安全证明 + 数值化实施路线**:通过把 [GLH+22] 的 EAT 分析改造为 GEAT(消除 Markov 条件 → 消除 test-round 通告的负向惩罚),加入 [LLR+21] 改进的 second-order 项,并把 decoy-state 的两步法(先算光子数 yield 上/下界,再对 single-photon 熵做 SDP)**合并为单步 Choi-state 凸优化**,实施于 BB84 qubit-with-loss + decoy-state BB84 两个例子,涵盖从 Rényi 散度到 Frank-Wolfe 实施的完整工具链。**硬验收**:BB84 qubit-with-loss(Fig. 1)+ decoy-state BB84(Fig. 3, 4)。
+
+> **命名说明(Round 2 修订)**:Kamin 2025 用 "PM-QKD" 作为 *prepare-and-measure QKD* 的英文缩写,本项目在 F6 TF-QKD family 中用 "PM-QKD" 指 *phase-matching QKD*(Ma-Zeng-Zhou 2018)。**两者含义完全不同**。本 memo 之后统一改用 "**prepare-and-measure QKD**" 或 "**PM(准备-测量)**" 全称以避免与 F6 的 PM = phase-matching 混淆;引用 Kamin §/Table/Eq. 原文时按原文保留 "PM-QKD"。
 
 ---
 
@@ -55,7 +57,8 @@
                                       ▼
             ┌─────────────────────────────────────────────────────────┐
             │    Kamin 2025 主贡献                                     │
-            │    1. PM-QKD 的 Choi-state 参数化(Eq. 30-31)             │
+            │    1. prepare-and-measure QKD 的 Choi-state 参数化         │
+            │       (Eq. 30-31)                                        │
             │    2. 密钥长度 Theorem 3 (Eq. 16):                        │
             │       l ≤ nh + nT_α(f) - n((α-1)/(2-α))²K(α)            │
             │           - λ_EC - ⌈log(1/ε_EV)⌉ - (α/(α-1))log(1/ε_PA) │
@@ -79,7 +82,7 @@
 
 ## 3. 协议与符号(§2–3 精要)
 
-### 3.1 通用 PM-QKD 协议(Protocol 1,§3)
+### 3.1 通用 prepare-and-measure QKD 协议(Kamin Protocol 1,§3)
 
 每轮:
 1. **State preparation + transmission**:Alice 以概率 γ 选 test round(发 test-round 状态),否则选 generation round。她记录基底 + 信号态到 $X_i$,公共通告 $C_i^A$。
@@ -308,7 +311,7 @@ s.t. (Eq. 80 约束组):
 | 对 decoy-state BB84 finite-key rate 误差 < 5% | ✓ Fig. 3 提供 benchmark | Fig. 4 上图 realistic acceptance 是实用验收目标 |
 | `qkdx/finite_key/` 模块 | 本文 §5 提供实施蓝图 | Choi-state SDP + FW + Theorem 4 dual |
 | `notebooks/s2_kamin_reproduce.ipynb` | 待实施 | Fig. 1 qubit BB84 可作为简化起点 |
-| Kamin 2025 Table 1 对比 | **注意**:论文**不含** Table 1,只有 Fig. 1-4 | Plan 引用错位;本 memo 以 **Fig. 3** 为 decoy 硬验收 target |
+| Kamin 2025 Table 1 对比 | **注意**:Kamin 2025 的 Table 1 是符号表(notation, p.5),**不是** RESEARCH_PLAN §3.3 S2.5 隐指的 benchmark 表 | Plan 引用错位;本 memo 把 **Fig. 3**(decoy 有限密钥数值)作为 decoy 硬验收的实用 target |
 
 ### 9.2 实施路径建议(三阶段)
 
@@ -373,7 +376,7 @@ s.t. (Eq. 80 约束组):
 
 两份 memo **互补**:
 - `GEAT-2024.md`:GEAT 定理本体(Thm 4.1/4.3, Cor 4.6, Lemma 4.7)的数学层 + E91 概念示例
-- `Kamin-2025.md`(本文):GEAT 应用到 PM-QKD + decoy-state + **数值实施完整 pipeline**
+- `Kamin-2025.md`(本文):GEAT 应用到 prepare-and-measure QKD + decoy-state + **数值实施完整 pipeline**
 
 Kamin 2025 **依赖** Metger 2024 的 Thm 4.3 / Cor 4.6,并添加 [LLR+21] 改进 second-order;阅读顺序 GEAT-2024 → Kamin-2025 是合理的。
 

@@ -1,0 +1,789 @@
+diff --git a/docs/PHASE1_LOG.md b/docs/PHASE1_LOG.md
+index bc5c5ec..b697d0c 100644
+--- a/docs/PHASE1_LOG.md
++++ b/docs/PHASE1_LOG.md
+@@ -493,7 +493,7 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输
+ 
+ **Plan 对齐修订**:
+ - RESEARCH_PLAN §3.3 S2.5 引用 "Kamin 2025 Table 1" **不存在**(论文只有 Fig. 1-4);**Fig. 3 作为 decoy-state 硬验收替代**
+-- Plan 未明确 qubit vs decoy;**qubit Fig. 1 亦可满足 "BB84 < 5%" 的字面约束**
++- **【Round-2 撤回】** 原声称 "qubit Fig. 1 亦可满足 BB84 < 5% 的字面约束" 过度宽松;plan §3.3 S2.5 验收隐指 **decoy-state BB84** 有限密钥(S2.5 任务标题明示 "decoy-state"),qubit-only 不等于 plan 口径。正确说法:qubit Fig. 1 是 Stage 1 sanity anchor,不构成 S2.5 plan 硬验收的替代
+ 
+ **计划外处理**:无降级。Kamin 2025 PDF 是本 session 新获依赖,已就绪。
+ 
+@@ -600,32 +600,39 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输
+   - 0 dB @ n=10^12 rate ∈ [0.5, 1.0]
+   - 30 dB @ n=10^6 cutoff
+ 
+-**数值 benchmark**(gird search γ × α 后,p_depol=0.01, ε_secure=10⁻⁸):
++**数值 benchmark**(gird search γ × α 后,p_depol=0.01, ε_secure=10⁻⁸;Round-1 初始值 + Round-2 C1 修复值):
+ 
+-| n | 0 dB | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB |
++| n | 0 dB(Round-1 buggy → Round-2 fix) | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB |
+ |----|------|------|-------|-------|-------|-------|
+-| 10⁶ | 0.808 | 0.234 | 0.052 | — | — | — |
+-| 10⁸ | 0.835 | 0.260 | 0.078 | 0.021 | 2.4e-3 | — |
+-| 10¹⁰ | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
+-| 10¹² | 0.835 | 0.260 | 0.078 | 0.021 | 2.7e-3 | — |
++| 10⁶ | 0.808 → **0.861** | 0.234 → 0.250 | 0.052 → 0.057 | — | — | — |
++| 10⁸ | 0.835 → **0.887** | 0.260 → 0.276 | 0.078 → 0.083 | 0.021 → 0.022 | 2.4e-3 → 3.0e-3 | — |
++| 10¹² | 0.835 → **0.887** | 0.260 → 0.277 | 0.078 → 0.084 | 0.021 → 0.023 | 2.7e-3 → 3.2e-3 | — |
+ 
+-**对比 Kamin Fig. 1**(eyeball):
+-- 0 dB @ n=10¹²:我们 0.835 vs 论文 ≈ 0.8-0.9 ✓
+-- Cutoffs:n=10⁶ @ ~15 dB ✓,n=10⁸ @ ~25 dB(本文 22 dB,略早)
+-- 大 n(10¹⁰/10¹²)cutoff 我们在 25 dB,Kamin 在 ~35 dB — **gap 来自保守 V²=1**
++**对比 Kamin Fig. 1**(eyeball,Round-2 修复后):
++- 0 dB @ n=10¹²:我们 **0.887** vs 论文 ≈ 0.8-0.9 ✓
++- Cutoffs:n=10⁶ @ ~15 dB ✓,n=10⁸ @ ~25 dB(本文 ~22 dB,略早)
++- 大 n(10¹⁰/10¹²)cutoff 我们在 25 dB,Kamin 在 ~35 dB — **gap 来自 C2 missing min-tradeoff 优化 + 保守 V²=1**
+ 
+-**Stage 1 已知保守性**(非降级,文档明示):
+-- `bb84_qubit_finite_key_length` 用 `var_f=1` 上界而非 Theorem 4 SDP-derived tight value → 大 n 区的有限尺寸惩罚偏紧(Fig. 1 匹配在 n ≤ 10⁸ 很好,n ≥ 10¹⁰ 提前 cutoff 10 dB 左右)
+-- `γ*`/`α*` 网格搜索永远取极小值(0.005 / 1.001)— Stage 2 SDP 会给出 meaningful optimum
+-- 两条 caveat 已在 source docstring + test docstring 明示;ADR-B 决策落实:Stage 1 完成 plan §3.3 S2.5 的 "BB84 < 5%" 字面约束在低损耗区,高损耗区 gap 留作 Stage 2 优化目标
++**Stage 1 已知局限**(**Round-2 修订前后**:
+ 
+-**Plan 对齐**:
+-- S2.5 **Stage 1 完成**,基础设施从 `qkdx/finite_key/gll_renner.py` (Renner) + `qkdx/finite_key/kamin_geat.py` (GEAT) 两条路径并行
+-- S2.5 整体实施约 **50% 就绪**(Stage 1 完成 + Stage 2/3 待后续)
++Round-1 初版声称 "Theorem 3 unique-acceptance implementation",评审发现两项**实质偏差**:
++
++**【C1 已修 Round-2】EC leakage 双扣**:`bb84_qubit_asymptotic_rate` 返回已含 `-f_EC·h(Q)`,再传入 Theorem 3 公式又减 `λ_EC` 一次。修复:新增 `bb84_qubit_preEC_entropy` (pre-EC privacy) 与 `bb84_qubit_leak_EC_per_round` (EC leakage per round) 分开;`kamin_heuristic_key_length` 严格按 Kamin Eq. 16 的 `(pre-EC h, λ_EC)` 分离约定。详见 commit (待) + `docs/workflow/phase1-retrospective-review/workflow-log.md`。
++
++**【C2 已改标 Round-2】Missing min-tradeoff 优化(不修,改标 heuristic)**:unique-acceptance 只移除 `Δ_com`,不移除 `T_α(f)` 的 `inf_{p,J}`(Kamin Eq. 11/41/42)。本实施假设 `f ≡ rate` 退化为只剩 variance term → 是 heuristic 估,不是 Thm 3 真实实现。修复:重命名 `kamin_theorem3_key_length` → `kamin_heuristic_key_length`(前者保留为 `DeprecationWarning` alias),docstring / module / tests 全部明示 "heuristic pre-SDP anchor, not faithful Thm 3"。Stage 2 SDP 才是 Thm 3 完整实施。
++
++**其他文档级修订**:
++- Round-1 声称 "Stage 1 完成 plan §3.3 S2.5 的 BB84 < 5% 字面约束" **撤回** — plan §3.3 S2.5 的硬验收明确指 decoy-state BB84 finite-key reproduction < 5%,qubit-only 不等同 plan 口径(Codex holistic review H5)
++- 保守 Var(f)=1 仍是 Stage 1 限制,但 Round-1 把高损耗 cutoff gap 全归于此是**不完整**:C1 双扣 + C2 missing min-tradeoff 是另外两个更实质的原因
++
++**Plan 对齐**(Round-2 实情):
++- S2.5 Stage 1 **heuristic anchor** 完成;**不声称** Kamin Thm 3 完整实施
++- S2.5 硬验收(Plan §3.3):**未完成**。需 Stage 2(Choi-state SDP + FW + Thm 4 dual 提取 g)
++- 基础设施从 `qkdx/finite_key/gll_renner.py` (Renner analytic) + `qkdx/finite_key/kamin_geat.py` (GEAT heuristic) 两条路径并行 — 两者都是 Stage 2 实施前的 sanity 工具
+ 
+-**测试增量**:29 tests 新增(之前 finite_key 仅 37 tests);全仓库 tests 预计从 300 → 329。
++**测试增量**(Round-2 更新):39 tests(Round-1 29 tests + Round-2 新增 10 tests 覆盖 pre-EC/post-EC decomposition + C1 regression)。
+ 
+-**计划外处理**:无降级。两个 Stage 1 已知的保守性(`var_f=1` + grid search 落在极值)已在代码+测试+本文档明示。
++**计划外处理**:Round-1 实施存在 C1 bug(已修)+ C2 overclaim(已改标);两者均经 Codex dual-agent review 识别并在 Round-2 闭合。详见 `docs/workflow/phase1-retrospective-review/workflow-log.md`。
+ 
+ ---
+ 
+diff --git a/docs/literature/GEAT-2024.md b/docs/literature/GEAT-2024.md
+index 9c5ff19..d0f5655 100644
+--- a/docs/literature/GEAT-2024.md
++++ b/docs/literature/GEAT-2024.md
+@@ -2,12 +2,14 @@
+ 
+ **论文引用**:
+ - Metger, T., Fawzi, O., Sutter, D., Renner, R. (2024). *Generalised entropy accumulation.*
+-  arXiv:2203.04993 (Communications in Mathematical Physics, published 2024).
++  arXiv:**2203.04989**v2 (Communications in Mathematical Physics, published 2024).
++  (Round-2 fix: earlier drafts had the wrong arXiv number.  The companion
++  paper [MR22] is arXiv:2203.04993 — adjacent number, distinct paper.)
+   本 memo 基于 PDF 版本 (510 KB, 38 pp.)
+ - 重要前置:
+   - [DFR20] Dupuis, Fawzi, Renner. *Entropy accumulation.* Comm. Math. Phys. 379:867–913, 2020.
+   - [DF19] Dupuis, Fawzi. *Entropy accumulation with improved second-order term.* IEEE TIT 65:7596–7612, 2019.
+-  - [MR22] Metger, Renner. *Security of QKD from GEAT.* arXiv:2203.04993 companion (same arXiv number); see footnote distinction.
++  - [MR22] Metger, Renner. *Security of quantum key distribution from generalised entropy accumulation.* arXiv:2203.04993 — **distinct paper** from the GEAT main paper above (Metger-Fawzi-Sutter-Renner's GEAT is arXiv:2203.04989v2, posted Oct 2022).  Both were uploaded on nearby dates and have adjacent arXiv numbers, which is why earlier drafts of this memo mistakenly claimed they were the same preprint — the MR22 paper focuses specifically on the PM-QKD security reduction and is the companion/application of the general GEAT theorem.
+ - 相关项目文献:
+   - [GLL21] George, Lin, Lütkenhaus 2021 (PRR 3:013274) — 并行的 Renner framework 路径
+   - [Kamin25] Kamin 2025 — Phase 1 S2.5 的 GEAT finite-key SDP 实施参考
+diff --git a/docs/literature/Kamin-2025.md b/docs/literature/Kamin-2025.md
+index db946b7..6a21762 100644
+--- a/docs/literature/Kamin-2025.md
++++ b/docs/literature/Kamin-2025.md
+@@ -31,7 +31,9 @@
+ 
+ ## 1. 一句话总结
+ 
+-**Kamin 2025 给出了 PM-QKD(含 decoy-state)的完整 GEAT 有限密钥安全证明 + 数值化实施路线**:通过把 [GLH+22] 的 EAT 分析改造为 GEAT(消除 Markov 条件 → 消除 test-round 通告的负向惩罚),加入 [LLR+21] 改进的 second-order 项,并把 decoy-state 的两步法(先算光子数 yield 上/下界,再对 single-photon 熵做 SDP)**合并为单步 Choi-state 凸优化**,实施于 BB84 qubit-with-loss + decoy-state BB84 两个例子,涵盖从 Rényi 散度到 Frank-Wolfe 实施的完整工具链。**硬验收**:BB84 qubit-with-loss(Fig. 1)+ decoy-state BB84(Fig. 3, 4)。
++**Kamin 2025 给出了 prepare-and-measure QKD(含 decoy-state)的完整 GEAT 有限密钥安全证明 + 数值化实施路线**:通过把 [GLH+22] 的 EAT 分析改造为 GEAT(消除 Markov 条件 → 消除 test-round 通告的负向惩罚),加入 [LLR+21] 改进的 second-order 项,并把 decoy-state 的两步法(先算光子数 yield 上/下界,再对 single-photon 熵做 SDP)**合并为单步 Choi-state 凸优化**,实施于 BB84 qubit-with-loss + decoy-state BB84 两个例子,涵盖从 Rényi 散度到 Frank-Wolfe 实施的完整工具链。**硬验收**:BB84 qubit-with-loss(Fig. 1)+ decoy-state BB84(Fig. 3, 4)。
++
++> **命名说明(Round 2 修订)**:Kamin 2025 用 "PM-QKD" 作为 *prepare-and-measure QKD* 的英文缩写,本项目在 F6 TF-QKD family 中用 "PM-QKD" 指 *phase-matching QKD*(Ma-Zeng-Zhou 2018)。**两者含义完全不同**。本 memo 之后统一改用 "**prepare-and-measure QKD**" 或 "**PM(准备-测量)**" 全称以避免与 F6 的 PM = phase-matching 混淆;引用 Kamin §/Table/Eq. 原文时按原文保留 "PM-QKD"。
+ 
+ ---
+ 
+@@ -55,7 +57,8 @@
+                                       ▼
+             ┌─────────────────────────────────────────────────────────┐
+             │    Kamin 2025 主贡献                                     │
+-            │    1. PM-QKD 的 Choi-state 参数化(Eq. 30-31)             │
++            │    1. prepare-and-measure QKD 的 Choi-state 参数化         │
++            │       (Eq. 30-31)                                        │
+             │    2. 密钥长度 Theorem 3 (Eq. 16):                        │
+             │       l ≤ nh + nT_α(f) - n((α-1)/(2-α))²K(α)            │
+             │           - λ_EC - ⌈log(1/ε_EV)⌉ - (α/(α-1))log(1/ε_PA) │
+@@ -79,7 +82,7 @@
+ 
+ ## 3. 协议与符号(§2–3 精要)
+ 
+-### 3.1 通用 PM-QKD 协议(Protocol 1,§3)
++### 3.1 通用 prepare-and-measure QKD 协议(Kamin Protocol 1,§3)
+ 
+ 每轮:
+ 1. **State preparation + transmission**:Alice 以概率 γ 选 test round(发 test-round 状态),否则选 generation round。她记录基底 + 信号态到 $X_i$,公共通告 $C_i^A$。
+@@ -308,7 +311,7 @@ s.t. (Eq. 80 约束组):
+ | 对 decoy-state BB84 finite-key rate 误差 < 5% | ✓ Fig. 3 提供 benchmark | Fig. 4 上图 realistic acceptance 是实用验收目标 |
+ | `qkdx/finite_key/` 模块 | 本文 §5 提供实施蓝图 | Choi-state SDP + FW + Theorem 4 dual |
+ | `notebooks/s2_kamin_reproduce.ipynb` | 待实施 | Fig. 1 qubit BB84 可作为简化起点 |
+-| Kamin 2025 Table 1 对比 | **注意**:论文**不含** Table 1,只有 Fig. 1-4 | Plan 引用错位;本 memo 以 **Fig. 3** 为 decoy 硬验收 target |
++| Kamin 2025 Table 1 对比 | **注意**:Kamin 2025 的 Table 1 是符号表(notation, p.5),**不是** RESEARCH_PLAN §3.3 S2.5 隐指的 benchmark 表 | Plan 引用错位;本 memo 把 **Fig. 3**(decoy 有限密钥数值)作为 decoy 硬验收的实用 target |
+ 
+ ### 9.2 实施路径建议(三阶段)
+ 
+@@ -373,7 +376,7 @@ s.t. (Eq. 80 约束组):
+ 
+ 两份 memo **互补**:
+ - `GEAT-2024.md`:GEAT 定理本体(Thm 4.1/4.3, Cor 4.6, Lemma 4.7)的数学层 + E91 概念示例
+-- `Kamin-2025.md`(本文):GEAT 应用到 PM-QKD + decoy-state + **数值实施完整 pipeline**
++- `Kamin-2025.md`(本文):GEAT 应用到 prepare-and-measure QKD + decoy-state + **数值实施完整 pipeline**
+ 
+ Kamin 2025 **依赖** Metger 2024 的 Thm 4.3 / Cor 4.6,并添加 [LLR+21] 改进 second-order;阅读顺序 GEAT-2024 → Kamin-2025 是合理的。
+ 
+diff --git a/docs/literature/TF-QKD.md b/docs/literature/TF-QKD.md
+index c9b8957..5596cdf 100644
+--- a/docs/literature/TF-QKD.md
++++ b/docs/literature/TF-QKD.md
+@@ -220,7 +220,7 @@ TF 族是 [PROSPECTUS.md](../PROSPECTUS.md) 主问题攻坚的**最大权重** t
+ ### 作者明示
+ 
+ - **Lucamarini 2018**:§3(结尾)明确 "a rigorous proof of unconditional security is beyond the scope of the current paper"
+-- **Wang-Yu-Hu 2018**:§V 虚拟协议证明 **在假设信道无 entangle 所有 rounds 的前提下**(i.e., 不包含 coherent attack 在 general sense);coherent attack 需要进一步论证
++- **Wang-Yu-Hu 2018**:§V 虚拟协议 + Reduction 论证展示 "信号后筛取消 + tagged-model" 路径对 SNS-TF 的安全性；本 memo v0.1 曾附加"coherent attack 需要进一步论证"的限定,**Round-2 修订撤回** — 该限定在原文中没有直接支撑,属 memo 作者越权 paraphrase。Wang 原文仅指出 "traditional decoy-state method does not apply to the original TF-QKD protocol" 的论证焦点,我 memo 中的进一步 coherent-attack 限制是 不当推断,应以 Wang 原文论述为准
+ - **Ma-Zeng-Zhou 2018 §VI**:"our bound Eq. (4) is still far away from this bound [single-repeater $-\log_2(1-\sqrt\eta)$]";参数空间优化(如 biased phase randomization)未完成
+ 
+ ### 本 memo 读者视角
+diff --git a/docs/msen/pm_qkd_formulation.md b/docs/msen/pm_qkd_formulation.md
+index e23ca8d..7082a82 100644
+--- a/docs/msen/pm_qkd_formulation.md
++++ b/docs/msen/pm_qkd_formulation.md
+@@ -34,20 +34,32 @@
+ 
+ PM-QKD 是**第二个双源方**协议(首个是 MDI,见 [mdi-formulation.md](mdi-formulation.md) §1.1)。与 MDI 的关键差异:**源态不是 BB84 EB 4-dim qubit**,而是 **Fock-truncated phase-randomized coherent state × key-bit classical register**。
+ 
+-| 源方 | key_register_dim | signal_register_dim | source_state 维度 |
+-|------|-------------------|---------------------|---|
+-| Alice | 2(κ=0, 1) | $N_\text{fock} + 1$(Fock 0..N) | $(2(N+1))^2$ |
+-| Bob | 2 | $N + 1$ | $(2(N+1))^2$ |
++| 源方 | key_register_dim | phase_register_dim | signal_register_dim | source_state 维度 |
++|------|-------------------|---------------------|---------------------|---|
++| Alice | 2(κ=0, 1) | $M$(相位 slice) | $N_\text{fock} + 1$(Fock 0..N) | $(2 M (N+1))^2$ |
++| Bob | 2 | $M$ | $N + 1$ | $(2 M (N+1))^2$ |
+ 
+-**源态构造**(Ma Eq. A3 + §II 相位随机化):
++**注**:Round-1 review M1 指出 v0.1 的表格未含 phase register,导致 EB 源态写法错误。Round-2 显式加入 $M$-dim phase register $R_A$ / $R_B$ 保留 key-optical 相关性。
+ 
+-$$\rho_\text{Alice}^\text{source} = \frac{1}{2}\sum_{\kappa=0}^{1} |\kappa\rangle\langle\kappa|_{K_A} \otimes \int_0^{2\pi}\frac{d\phi}{2\pi}|\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}|_{A'}$$
++**源态构造**(**Round-2 修订**,见本节末的 Round-1 review M1 说明):
+ 
+-其中 $|\alpha|^2 = \mu/2$(每源强度),$A'$ 是 Fock 截断后的光学模态。**相位随机化**使内部积分项退化为 Poisson 分布的 Fock 数混合([Ma Eq. A3]):
++EB 写法需要 key register $K_A$ 与 optical mode $A'$ **保持相关**。先对 φ 积分会把 κ 的 optical marginal 抹平,导致 emitted state 不再携带 key bit 信息(Round-1 M1 review 正确指出的 bug)。正确的 PM-QKD EB 源态是:
+ 
+-$$\int_0^{2\pi}\frac{d\phi}{2\pi}|\alpha e^{i\phi}\rangle\langle\alpha e^{i\phi}| = \sum_{k=0}^{\infty} e^{-|\alpha|^2}\frac{|\alpha|^{2k}}{k!}|k\rangle\langle k|$$
++$$\rho^\text{src}_{K_A A' R_A} = \frac{1}{2}\sum_{\kappa=0}^{1} |\kappa\rangle\langle\kappa|_{K_A} \otimes \int_0^{2\pi}\!\frac{d\phi}{2\pi}\,|\phi\rangle\langle\phi|_{R_A} \otimes |\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}|_{A'}$$
+ 
+-**$\pi\kappa$ 编码的效果**:对偶数 $k$,$|\alpha e^{i\pi\kappa}\rangle^{\otimes k} = |\alpha\rangle^{\otimes k}$(相位差 $e^{i\pi \cdot 2m} = 1$);对奇数 $k$,key bit 引入 $\pm$ 符号区别 → 奇光子数分量携带 key information(Ma Lemma 1 奇偶分解核心)。
++其中 $R_A$ 是 Alice 私人保留的 **phase register**(classical, uniform over $[0, 2\pi)$,本实施离散化到 $M$ slices → $\dim R_A = M$)。**关键**:只有在 Alice 稍后公开 $\phi_a = \phi$ 后,φ 才从 Alice 的 side information 转入公共记录;此**之前** $R_A$ 的存在让 $|\kappa \rangle$ 与 optical $A'$ 通过 $\phi$ 保持相关,emitted optical state 仍携带 κ 信息。
++
++**Fock 对角化 on announcement** (Ma Eq. A3 的正确理解):公告 $\phi$ 之后,optical marginal **在该 φ 条件化下** 退化为 Poisson Fock 数混合:
++
++$$\rho^\text{src}_{A' | R_A = \phi, K_A = \kappa} = |\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}| \xrightarrow{\text{phase-random}} \sum_{k=0}^{\infty} e^{-|\alpha|^2}\frac{|\alpha|^{2k}}{k!}|k\rangle\langle k|_{\text{Fock}}$$
++
++(仅在公告后、对 φ 积分时才出现 Poisson 分布;EB picture 中 $R_A$ 保留了公告前的 φ 值)
++
++其中 $|\alpha|^2 = \mu/2$(每源强度),$A'$ 是 Fock 截断后的光学模态。
++
++**$\pi\kappa$ 编码的效果**(Ma Lemma 1 奇偶分解):对 fixed κ + announced φ,$|\alpha e^{i(\phi + \pi\kappa)}\rangle$ 的 even-photon 分量 $|\alpha e^{i\phi}\rangle^\text{even}$ 与 $\kappa$ 无关(因为 $e^{i\pi \cdot 2m} = 1$),odd-photon 分量 $|\alpha e^{i\phi}\rangle^\text{odd}$ 携带 κ 相位符号差 → key bit 的相干性质在 odd-photon 子空间 — 这就是 Ma Lemma 1 的"奇光子 phase flip ⇔ Z-bit flip" 关系。
++
++> **Round-1 review M1 闭合**:v0.1 的源态写成 $\rho = \frac{1}{2}\sum_\kappa |\kappa\rangle\langle\kappa| \otimes \int d\phi \cdots$ 把 φ 积分在 κ 求和之内(即没有 purifying $R_A$)。这样**在源态层面**就把 optical marginal 抹成 κ-independent,等价于说 Alice 的 emitted state 不携带 key bit — 与 Ma-Zeng-Zhou §II 协议语义矛盾。Round-2 修订引入 $R_A$ phase-purifying register,保留 κ 与 $A'$ 的相关性,只在公告后才有条件化 Poisson 退化。
+ 
+ ### 1.2 $\mathcal{E}$:双臂信道 + Charlie 分束器 + 单光子检测
+ 
+diff --git a/qkdx/finite_key/kamin_geat.py b/qkdx/finite_key/kamin_geat.py
+index 19c0dd1..d765b11 100644
+--- a/qkdx/finite_key/kamin_geat.py
++++ b/qkdx/finite_key/kamin_geat.py
+@@ -1,9 +1,27 @@
+-"""Kamin 2025 GEAT finite-key formulas for PM-QKD.
++"""Kamin 2025 GEAT finite-key — S2.5 Stage 1 HEURISTIC pre-SDP anchor.
+ 
+-Phase 1 S2.5 Stage 1 (asymptotic anchor):
+-    Direct implementation of Kamin 2025 Theorem 3 (Eq. 16) for qubit BB84 with
+-    loss, using analytic rate functions (no SDP required).  This closes the
+-    "bridge" layer between the GEAT memo and the downstream decoy-state SDP.
++**Scope disclosure (post-Round-1 review, 2026-04-20)**:
++    This module is a HEURISTIC Stage-1 estimator for the Kamin 2025 qubit BB84
++    finite-key rate.  It is NOT a faithful Theorem 3 implementation.  Two known
++    shortcuts relative to Kamin Eq. 16:
++
++    1. **No min-tradeoff optimization**: Kamin Eq. 11/41/42 require (a) a valid
++       affine min-tradeoff function g and (b) the infimum over admissible p/J
++       (Choi state).  Unique-acceptance removes Δ_com, but NOT this inf_{p,J}
++       optimization.  The heuristic here assumes f ≡ rate at the honest point so
++       T_α(f) degenerates to its variance-penalty term only.  See
++       `kamin_heuristic_key_length` docstring.
++
++    2. **Conservative Var(f) = 1**: tight Var(f) requires the min-tradeoff SDP;
++       the heuristic uses the worst-case V² upper bound.
++
++    Stage 2 (the full Theorem 3) requires Choi-state SDP + Frank-Wolfe +
++    Lagrange-dual extraction of g* (Kamin Thm 4 Eq. 49-51).  Not in this module.
++
++Phase 1 S2.5 usage:
++    - BB84 analytic anchor cross-checking the GLL-2021 Renner path
++      (`qkdx.finite_key.gll_renner.bb84_finite_key_length_analytic`)
++    - NOT a Kamin 2025 Fig. 1 reproduction (that is Stage 2)
+ 
+ References:
+     - Kamin et al. 2025.  Finite-size analysis of prepare-and-measure and
+@@ -11,17 +29,11 @@ References:
+     - docs/literature/Kamin-2025.md (Level 3-4 memo)
+     - Metger et al. 2024 GEAT (Thm 4.3, Cor 4.6) — parent theorem
+     - docs/literature/GEAT-2024.md
+-
+-Scope note (Stage 1):
+-    - Theorem 3 key length formula (Eq. 16) — yes
+-    - Optimal ε allocation (Eq. 57) — yes
+-    - Qubit BB84 asymptotic rate — yes
+-    - Choi-state SDP / Frank-Wolfe (Thm 4 dual) — NOT in this module
+-    - Decoy-state block-diagonal SDP (Thm 6) — NOT in this module
+ """
+ from __future__ import annotations
+ 
+ import math
++import warnings
+ 
+ 
+ def _h(p: float) -> float:
+@@ -130,10 +142,10 @@ def kamin_K_alpha(
+ 
+ 
+ # ---------------------------------------------------------------------------
+-# Kamin Eq. 16 — Theorem 3 key length (unique-acceptance simplified form)
++# Kamin Eq. 16 — HEURISTIC unique-acceptance form (NOT faithful Theorem 3)
+ # ---------------------------------------------------------------------------
+ 
+-def kamin_theorem3_key_length(
++def kamin_heuristic_key_length(
+     n: int,
+     h: float,
+     V_squared: float,
+@@ -143,22 +155,41 @@ def kamin_theorem3_key_length(
+     eps_EV: float,
+     eps_PA: float,
+ ) -> float:
+-    """Kamin 2025 Eq. 16, simplified for unique-acceptance (T_α = −((α-1)/(2-α))·(ln 2/2)·V²).
++    """Kamin 2025 Eq. 16 HEURISTIC form (not a faithful Theorem 3 implementation).
+ 
+-        ℓ ≤ n·h − n·((α-1)/(2-α))·(ln 2/2)·V²
++    Formula:
++        ℓ = n·h − n·((α-1)/(2-α))·(ln 2/2)·V²
+           − n·((α-1)/(2-α))² · K(α)
+           − λ_EC − ⌈log(1/ε_EV)⌉ − (α/(α-1))·log(1/ε_PA) + 2
+ 
+-    Valid for Protocol 1 with unique-acceptance (S_acc = {p^hon}) and affine f
+-    matching rate at p^hon (so Δ_com = 0 and T_α reduces to the variance term).
++    **What this IS**:
++        A direct Eq. 16 evaluation with caller-supplied values of `h`, `V²`,
++        `K(α)`, and `λ_EC`.  Useful for analytic sanity checks when these
++        quantities come from closed-form qubit BB84 formulas.
++
++    **What this is NOT** (do not conflate with Kamin Thm 3):
++        Kamin Eq. 11/41/42 define `T_α(f)` as an *infimum* over admissible
++        distributions p (or over Choi states J):
++            T_α(f) = inf_{p∈Q} [rate(p) − f(p) − (α-1)/(2-α)·(ln2/2)·V(p,f)]
++        This requires (a) a valid affine min-tradeoff function g, and (b) a
++        solver (Frank-Wolfe + SDP — Kamin Thm 4) to extract g* as a Lagrange
++        dual.  The heuristic here assumes f ≡ rate at p^hon so T_α reduces to
++        the `−((α-1)/(2-α))·(ln 2/2)·V²` term only.  Unique-acceptance
++        (`S_acc = {p^hon}`) removes `Δ_com`, **not** this inf_{p,J}.
++
++    **Pre-EC `h` convention**:
++        `h` here is the PER-ROUND PRIVACY entropy (Kamin Eq. 60 `W(ρ_J^g)`),
++        with EC leakage subtracted SEPARATELY via `λ_EC`.  Do NOT pass a
++        post-EC Devetak-Winter rate or leakage will be double-counted.
+ 
+     Args:
+         n: number of signal rounds.
+-        h: rate at honest distribution (per-round entropy, bits).
+-        V_squared: V²(p^hon, f) from Eq. 11.
++        h: pre-EC per-round privacy entropy (bits/round).
++        V_squared: V²(p^hon, f) from Eq. 11 — pass conservative upper bound
++                   if true value not available.
+         K_alpha: K(α) from Eq. 11.
+         alpha: Rényi parameter ∈ (1, 3/2).
+-        lambda_EC: error-correction bits communicated (total, not per-round).
++        lambda_EC: TOTAL error-correction bits communicated (not per-round).
+         eps_EV: error-verification failure probability ∈ (0, 1].
+         eps_PA: privacy-amplification failure probability ∈ (0, 1].
+ 
+@@ -188,25 +219,70 @@ def kamin_theorem3_key_length(
+ 
+ 
+ # ---------------------------------------------------------------------------
+-# Qubit BB84 with loss (Kamin §6) — analytic asymptotic rate
++# Qubit BB84 with loss (Kamin §6) — pre-EC entropy / leak-EC / full D-W rate
+ # ---------------------------------------------------------------------------
+ 
++def _validate_bb84_qubit_inputs(p_depol: float, eta_det: float, gamma: float) -> None:
++    if not (0.0 <= p_depol <= 1.0):
++        raise ValueError(f"p_depol must be in [0, 1], got {p_depol}")
++    if not (0.0 < eta_det <= 1.0):
++        raise ValueError(f"eta_det must be in (0, 1], got {eta_det}")
++    if not (0.0 < gamma < 1.0):
++        raise ValueError(f"gamma must be in (0, 1), got {gamma}")
++
++
++def bb84_qubit_preEC_entropy(
++    p_depol: float,
++    eta_det: float,
++    gamma: float,
++) -> float:
++    """Per-round PRE-EC privacy entropy — the `h` input for Kamin Eq. 16.
++
++        h = (1 − γ)² · η_det · [1 − h(Q_X)]    (Q_X = p_depol/2 for depol)
++
++    This is Kamin Eq. 60 `W(ρ_J^g) = (1 − γ)² · D(G(ρ_J^g) || Z∘G(ρ_J^g))`
++    evaluated at the honest depolarization distribution: single-photon privacy
++    with BB84 phase-error correction, **before** error-correction leakage.
++
++    Use this as `h` in `kamin_heuristic_key_length`; keep `λ_EC` separate.
++    """
++    _validate_bb84_qubit_inputs(p_depol, eta_det, gamma)
++    Q = p_depol / 2.0
++    return (1.0 - gamma) ** 2 * eta_det * (1.0 - _h(Q))
++
++
++def bb84_qubit_leak_EC_per_round(
++    p_depol: float,
++    eta_det: float,
++    gamma: float,
++    f_EC: float = 1.16,
++) -> float:
++    """Honest per-round EC leakage (Kamin Eq. 26/59).
++
++        λ_EC / n = (1 − γ)² · η_det · f_EC · h(Q_Z)   (Q_Z = p_depol/2 for depol)
++
++    Multiply by n to get total `lambda_EC` for `kamin_heuristic_key_length`.
++    """
++    _validate_bb84_qubit_inputs(p_depol, eta_det, gamma)
++    if f_EC < 1.0:
++        raise ValueError(f"f_EC must be ≥ 1, got {f_EC}")
++    Q = p_depol / 2.0
++    return (1.0 - gamma) ** 2 * eta_det * f_EC * _h(Q)
++
++
+ def bb84_qubit_asymptotic_rate(
+     p_depol: float,
+     eta_det: float,
+     gamma: float,
+     f_EC: float = 1.16,
+ ) -> float:
+-    """Kamin §6 qubit BB84 asymptotic (n → ∞) rate per transmitted signal.
++    """Kamin §6 qubit BB84 asymptotic (n → ∞) full Devetak-Winter rate.
+ 
+-        rate = (1 − γ)² · η_det · [1 − h(Q) − f_EC · h(Q)]    (Q = p_depol / 2)
++        rate = h_preEC − leak_EC = (1 − γ)² · η_det · [1 − h(Q) − f_EC · h(Q)]
+ 
+-    Derivation (Kamin Eq. 59 + §6.3):
+-        - Generation round chosen with prob (1 − γ)
+-        - Bob measures in Z-basis with prob (1 − γ)
+-        - Detection prob in Z (honest, loss-only): η_det
+-        - Single-photon privacy:  1 − h(Q_X), Q_X = p_depol/2 for depol channel
+-        - Leak EC per detected round: f_EC · h(Q_Z), Q_Z = p_depol/2
++    This is the **post-EC** rate.  Do NOT pass into `kamin_heuristic_key_length`
++    as `h` — that would double-count the leakage.  Use `bb84_qubit_preEC_entropy`
++    for the finite-key `h` input.
+ 
+     Args:
+         p_depol: depolarization parameter (honest behavior), ∈ [0, 1].
+@@ -217,18 +293,10 @@ def bb84_qubit_asymptotic_rate(
+     Returns:
+         Per-signal key rate (bits/signal), can be negative above threshold.
+     """
+-    if not (0.0 <= p_depol <= 1.0):
+-        raise ValueError(f"p_depol must be in [0, 1], got {p_depol}")
+-    if not (0.0 < eta_det <= 1.0):
+-        raise ValueError(f"eta_det must be in (0, 1], got {eta_det}")
+-    if not (0.0 < gamma < 1.0):
+-        raise ValueError(f"gamma must be in (0, 1), got {gamma}")
+-    if f_EC < 1.0:
+-        raise ValueError(f"f_EC must be ≥ 1, got {f_EC}")
+-
+-    Q = p_depol / 2.0
+-    hQ = _h(Q)
+-    return (1.0 - gamma) ** 2 * eta_det * (1.0 - hQ - f_EC * hQ)
++    return (
++        bb84_qubit_preEC_entropy(p_depol, eta_det, gamma)
++        - bb84_qubit_leak_EC_per_round(p_depol, eta_det, gamma, f_EC)
++    )
+ 
+ 
+ # ---------------------------------------------------------------------------
+@@ -244,17 +312,19 @@ def bb84_qubit_finite_key_length(
+     eps_secure: float = 1e-8,
+     f_EC: float = 1.16,
+ ) -> float:
+-    """Kamin qubit BB84 finite-key length via Theorem 3 (unique-acceptance).
++    """Qubit BB84 finite-key length via the `kamin_heuristic_key_length` path.
+ 
+-    Asymptotic rate h = rate_asy(p_depol, eta_det, γ, f_EC).
+-    λ_EC = n · (1−γ)² · η_det · f_EC · h(Q)  (honest leak).
+-    V² uses Var(f) = Var(rate) ≤ Max(rate)² ≤ 1 (loose conservative bound).
+-    ε_PA, ε_EV optimally split per Eq. 57.
++    Decomposition (avoids EC double-count — see Round-1 review C1):
++        h          = bb84_qubit_preEC_entropy(...)      ← pre-EC privacy
++        leak_EC    = bb84_qubit_leak_EC_per_round(...)  ← EC leakage per round
++        lambda_EC  = n · leak_EC                         ← total EC bits
++        ℓ          = kamin_heuristic_key_length(n, h, V², K(α), α, λ_EC, ε_EV, ε_PA)
+ 
+-    Note (Stage 1 limitation): V² uses a conservative variance upper bound
+-    (Var(f) = 1) rather than the tight computation from the honest distribution;
+-    this underestimates the key length at small n.  Full optimization requires
+-    Theorem 4 SDP (Stage 2).
++    Stage-1 limitations (NOT faithful Theorem 3):
++        - V² uses conservative Var(f) = 1 upper bound (tight Var needs SDP)
++        - Missing inf_{p,J} of T_α(f) (Kamin Eq. 11/41/42) — Stage 2 work
++    These underestimate the key length at small n but do not bias the
++    asymptotic limit.
+ 
+     Args:
+         n: number of signal rounds.
+@@ -272,17 +342,14 @@ def bb84_qubit_finite_key_length(
+         raise ValueError(f"loss_dB must be ≥ 0, got {loss_dB}")
+     eta_det = 10.0 ** (-loss_dB / 10.0)
+ 
+-    # Honest rate h
+-    h = bb84_qubit_asymptotic_rate(p_depol, eta_det, gamma, f_EC)
++    # Pre-EC entropy (goes in as `h`)
++    h_preEC = bb84_qubit_preEC_entropy(p_depol, eta_det, gamma)
+ 
+-    # Honest EC leakage (per-round): λ_EC / n = (1-γ)² · η_det · f_EC · h(Q)
+-    Q = p_depol / 2.0
+-    hQ = _h(Q)
+-    lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * hQ
++    # EC leakage (kept separate — fixes Round-1 C1 double-count)
++    lambda_EC = n * bb84_qubit_leak_EC_per_round(p_depol, eta_det, gamma, f_EC)
+ 
+-    # Conservative V²: Var(f) bounded by (Max-Min)² ≤ 1 for rates in [0, 1]
+-    var_f = 1.0
+-    V_sq = kamin_V_squared(d_A=2, var_f=var_f, kappa=1)
++    # Conservative V²: Var(f) ≤ (Max-Min)² ≤ 1 for rates in [0, 1]
++    V_sq = kamin_V_squared(d_A=2, var_f=1.0, kappa=1)
+ 
+     # K(α): max(f) = 1, min_Σ(f) = 0 (conservative)
+     K_val = kamin_K_alpha(alpha=alpha, d_A=2, max_f=1.0, min_sigma_f=0.0, kappa=1)
+@@ -290,12 +357,29 @@ def bb84_qubit_finite_key_length(
+     # ε split
+     eps_PA, eps_EV = optimal_eps_parameters(eps_secure, alpha)
+ 
+-    return kamin_theorem3_key_length(
+-        n=n, h=h, V_squared=V_sq, K_alpha=K_val, alpha=alpha,
++    return kamin_heuristic_key_length(
++        n=n, h=h_preEC, V_squared=V_sq, K_alpha=K_val, alpha=alpha,
+         lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
+     )
+ 
+ 
++def kamin_theorem3_key_length(*args, **kwargs):
++    """**Deprecated** alias for `kamin_heuristic_key_length`.
++
++    The old name overclaimed theorem-level correctness (see Round-1 review C2):
++    the function is a heuristic pre-SDP estimator, not a faithful Theorem 3
++    implementation (missing inf_{p,J} min-tradeoff optimization).  Use
++    `kamin_heuristic_key_length` instead.
++    """
++    warnings.warn(
++        "kamin_theorem3_key_length is deprecated (overclaims Theorem 3 "
++        "correctness); use kamin_heuristic_key_length instead.",
++        DeprecationWarning,
++        stacklevel=2,
++    )
++    return kamin_heuristic_key_length(*args, **kwargs)
++
++
+ def bb84_qubit_optimal_finite_key(
+     n: int,
+     p_depol: float,
+diff --git a/tests/test_finite_key/test_kamin_geat.py b/tests/test_finite_key/test_kamin_geat.py
+index 84d9ca5..45c7846 100644
+--- a/tests/test_finite_key/test_kamin_geat.py
++++ b/tests/test_finite_key/test_kamin_geat.py
+@@ -1,18 +1,27 @@
+-"""Tests for Kamin 2025 GEAT finite-key formulas (S2.5 Stage 1 — qubit BB84 asymptotic anchor).
++"""Tests for Kamin 2025 GEAT finite-key formulas — S2.5 Stage 1 heuristic pre-SDP anchor.
++
++**Scope disclosure (post-Round-1 review)**:
++    - This is a HEURISTIC pre-SDP estimator, not a faithful Theorem 3 implementation.
++    - Even under unique-acceptance, Kamin Eq. 11/41/42 still require (a) a valid
++      affine min-tradeoff function g and (b) the infimum over admissible p/J.
++      The min-tradeoff optimization step is NOT implemented here — unique-acceptance
++      only removes Δ_com, not the inf over p.
++    - These helpers are a Stage-1 analytic anchor useful for sanity against GLL-2021
++      Renner path; they are NOT Kamin 2025 Theorem 3.
+ 
+ References:
+     - Kamin et al. 2025 (arXiv:2406.10198v3), Theorem 3 (Eq. 16) + Thm 1 (Eq. 11)
+     - docs/literature/Kamin-2025.md §4, §6
+ 
+-Scope (Stage 1):
+-    - Theorem 3 key length formula evaluation (given h, V², K(α), λ_EC)
++Covered:
++    - Pre-EC entropy (Eq. 16 `h` input) separate from post-EC Devetak-Winter rate
+     - Optimal ε_PA / ε_EV allocation (Eq. 57)
+-    - Qubit BB84 with loss analytic asymptotic rate
+-    - Grid search over (γ, α) to find best finite-size key length
+-    - Cross-check Kamin Fig. 1 at n=10^12, 0 dB, p_depol=0.01 against Devetak-Winter limit
++    - Qubit BB84 loss model (Kamin §6)
++    - Grid search over (γ, α)
++    - Cross-check at n=10^12, 0 dB, p_depol=0.01 against D-W limit
+ 
+-Not in scope (Stage 2/3):
+-    - Choi-state SDP (Frank-Wolfe + dual extraction)
++Not covered (Stage 2/3):
++    - Choi-state SDP (Frank-Wolfe + dual extraction) with min-tradeoff optimization
+     - Decoy-state block-diagonal optimization
+ """
+ from __future__ import annotations
+@@ -25,7 +34,10 @@ from qkdx.finite_key.kamin_geat import (
+     bb84_qubit_asymptotic_rate,
+     bb84_qubit_finite_key_length,
+     bb84_qubit_optimal_finite_key,
++    bb84_qubit_preEC_entropy,
++    bb84_qubit_leak_EC_per_round,
+     kamin_K_alpha,
++    kamin_heuristic_key_length,
+     kamin_theorem3_key_length,
+     kamin_V_squared,
+     optimal_eps_parameters,
+@@ -109,10 +121,13 @@ class TestKaminKAlpha:
+         assert K_near_1 > 0
+ 
+ 
+-class TestKaminTheorem3KeyLength:
+-    """Kamin Eq. 16: ℓ ≤ nh + n·T_α(f) − n((α-1)/(2-α))²K(α) − λ_EC − ⌈log(1/ε_EV)⌉ − (α/(α-1))·log(1/ε_PA) + 2.
++class TestKaminHeuristicKeyLength:
++    """Kamin Eq. 16 HEURISTIC form (NOT a faithful Theorem 3 implementation).
++
++    Assumes: f ≡ rate at honest distribution ⇒ T_α(f) ≈ −((α-1)/(2-α))·(ln 2/2)·V²
++    Missing: inf_{p,J} optimization from Kamin Eq. 11/41/42 (min-tradeoff function search).
+ 
+-    For unique-acceptance with f = rate, T_α simplifies to -((α-1)/(2-α))·(ln 2/2)·V².
++    `kamin_theorem3_key_length` is a deprecated alias for backward compat.
+     """
+ 
+     def test_no_finite_size_limit(self):
+@@ -122,7 +137,7 @@ class TestKaminTheorem3KeyLength:
+         V_sq = 4.0
+         K_val = 1.0
+         alpha = 1.0001
+-        ell = kamin_theorem3_key_length(
++        ell = kamin_heuristic_key_length(
+             n=n, h=h, V_squared=V_sq, K_alpha=K_val, alpha=alpha,
+             lambda_EC=0.0, eps_EV=1e-10, eps_PA=1e-10,
+         )
+@@ -135,24 +150,105 @@ class TestKaminTheorem3KeyLength:
+             h=0.5, V_squared=4.0, K_alpha=1.0, alpha=1.05,
+             lambda_EC=0.0, eps_EV=1e-10, eps_PA=1e-10,
+         )
+-        ell_large = kamin_theorem3_key_length(n=10**12, **kwargs)
+-        ell_small = kamin_theorem3_key_length(n=10**8, **kwargs)
++        ell_large = kamin_heuristic_key_length(n=10**12, **kwargs)
++        ell_small = kamin_heuristic_key_length(n=10**8, **kwargs)
+         assert ell_large / 10**12 > ell_small / 10**8
+ 
+     def test_negative_when_n_too_small(self):
+         # For very small n, ℓ can go negative (infeasible regime)
+-        ell = kamin_theorem3_key_length(
++        ell = kamin_heuristic_key_length(
+             n=100, h=0.5, V_squared=4.0, K_alpha=1.0, alpha=1.05,
+             lambda_EC=10.0, eps_EV=1e-10, eps_PA=1e-10,
+         )
+         assert ell < 0
+ 
++    def test_deprecated_alias_same_result(self):
++        # Backward compat: kamin_theorem3_key_length is an alias that emits a DeprecationWarning
++        kwargs = dict(
++            n=10**10, h=0.5, V_squared=4.0, K_alpha=1.0, alpha=1.05,
++            lambda_EC=0.0, eps_EV=1e-10, eps_PA=1e-10,
++        )
++        ell_new = kamin_heuristic_key_length(**kwargs)
++        with pytest.warns(DeprecationWarning):
++            ell_old = kamin_theorem3_key_length(**kwargs)
++        assert ell_old == ell_new
++
++
++class TestBB84QubitPreECEntropy:
++    """Pre-EC entropy — the `h` that goes into Kamin Eq. 16.
++
++    Kamin Eq. 60 defines W(ρ_J^g) = (1-γ)² D(G(ρ_J^g) || Z∘G(ρ_J^g)) — this is the
++    PER-ROUND PRIVACY entropy (before EC leakage).  For qubit BB84 with depolarization:
++        h = (1-γ)² · η_det · [1 - h(Q_X)]    with Q_X = p_depol/2
++
++    This is distinct from the full D-W rate (which subtracts f_EC · h(Q_Z) for leak_EC).
++    """
++
++    def test_zero_depol_gives_detection_sift(self):
++        # h → (1-γ)² · η_det
++        h = bb84_qubit_preEC_entropy(p_depol=0.0, eta_det=1.0, gamma=0.02)
++        assert h == pytest.approx(0.98 ** 2, rel=1e-9)
++
++    def test_depol_1pct_no_loss_matches_formula(self):
++        gamma = 0.02
++        p = 0.005
++        hQ = -p * math.log2(p) - (1 - p) * math.log2(1 - p)
++        expected = (1 - gamma) ** 2 * 1.0 * (1 - hQ)
++        assert bb84_qubit_preEC_entropy(p_depol=0.01, eta_det=1.0, gamma=gamma) == pytest.approx(expected, rel=1e-12)
++
++    def test_strictly_greater_than_full_rate(self):
++        # h (pre-EC) > full D-W rate (post-EC) for any nonzero depol
++        params = dict(p_depol=0.01, eta_det=0.5, gamma=0.1)
++        h_pre = bb84_qubit_preEC_entropy(**params)
++        r_post = bb84_qubit_asymptotic_rate(**params, f_EC=1.16)
++        assert h_pre > r_post
++
++    def test_separates_correctly_from_leak_EC(self):
++        # Key identity: r_postEC = h_preEC - leak_EC (per round)
++        params = dict(p_depol=0.01, eta_det=1.0, gamma=0.05, f_EC=1.16)
++        h_pre = bb84_qubit_preEC_entropy(p_depol=0.01, eta_det=1.0, gamma=0.05)
++        leak = bb84_qubit_leak_EC_per_round(**params)
++        r_post = bb84_qubit_asymptotic_rate(**params)
++        assert r_post == pytest.approx(h_pre - leak, rel=1e-12)
++
++    def test_invalid_inputs_raise(self):
++        with pytest.raises(ValueError):
++            bb84_qubit_preEC_entropy(p_depol=-0.1, eta_det=1.0, gamma=0.1)
++        with pytest.raises(ValueError):
++            bb84_qubit_preEC_entropy(p_depol=0.01, eta_det=0.0, gamma=0.1)
++        with pytest.raises(ValueError):
++            bb84_qubit_preEC_entropy(p_depol=0.01, eta_det=1.0, gamma=0.0)
++
++
++class TestBB84QubitLeakECPerRound:
++    """Kamin Eq. 59/26: honest leak_EC per round = (1-γ)² · η_det · f_EC · h(Q_Z)."""
++
++    def test_zero_depol_zero_leak(self):
++        assert bb84_qubit_leak_EC_per_round(p_depol=0.0, eta_det=1.0, gamma=0.1, f_EC=1.16) == 0.0
++
++    def test_formula_match(self):
++        gamma = 0.05
++        p = 0.005
++        hQ = -p * math.log2(p) - (1 - p) * math.log2(1 - p)
++        expected = (1 - gamma) ** 2 * 1.0 * 1.16 * hQ
++        got = bb84_qubit_leak_EC_per_round(p_depol=0.01, eta_det=1.0, gamma=gamma, f_EC=1.16)
++        assert got == pytest.approx(expected, rel=1e-12)
++
++    def test_f_EC_monotone(self):
++        params = dict(p_depol=0.01, eta_det=1.0, gamma=0.05)
++        leak_10 = bb84_qubit_leak_EC_per_round(**params, f_EC=1.0)
++        leak_12 = bb84_qubit_leak_EC_per_round(**params, f_EC=1.2)
++        assert leak_12 > leak_10
++
+ 
+ class TestBB84QubitAsymptoticRate:
+-    """Kamin §6 asymptotic (n → ∞) rate for qubit BB84 with loss.
++    """Kamin §6 asymptotic (n → ∞) rate for qubit BB84 with loss — full Devetak-Winter.
+ 
+     rate_hon = (1 - γ)² · η_det · [1 - h(Q_X) - f_EC · h(Q_Z)]
+     with Q_X = Q_Z = p_depol / 2 for depolarizing channel.
++
++    Note: This is the FULL post-EC rate, NOT the Eq. 16 `h` input.
++    Use bb84_qubit_preEC_entropy for the latter.
+     """
+ 
+     def test_zero_depol_no_loss_gamma_small(self):
+@@ -193,11 +289,38 @@ class TestBB84QubitAsymptoticRate:
+ 
+ 
+ class TestBB84QubitFiniteKeyLength:
+-    """Kamin qubit BB84 Protocol 1: given (n, p_depol, loss_dB, γ, α) → ℓ."""
++    """Kamin qubit BB84 Protocol 1: heuristic pre-SDP finite-key length.
++
++    Regression tests below separately pin the pre-EC vs post-EC decomposition.
++    """
++
++    def test_decomposition_identity_at_n_inf(self):
++        # Regression test for C1 (EC double-count).
++        # As n → ∞ and α → 1: ℓ/n → h_preEC − leak_EC = r_postEC (Devetak-Winter).
++        # If leak_EC were subtracted twice, the observed rate would be
++        # r_postEC − leak_EC, i.e. lower by leak_EC ≈ 0.05 at p_depol=0.01.
++        n = 10**16
++        params = dict(p_depol=0.01, eta_det=1.0, gamma=0.05, f_EC=1.16)
++        h_pre = bb84_qubit_preEC_entropy(**{k: v for k, v in params.items() if k != "f_EC"})
++        leak = bb84_qubit_leak_EC_per_round(**params)
++        r_post = bb84_qubit_asymptotic_rate(**params)
++        # Sanity: decomposition holds
++        assert r_post == pytest.approx(h_pre - leak, rel=1e-12)
++
++        ell = bb84_qubit_finite_key_length(
++            n=n, p_depol=0.01, loss_dB=0.0, gamma=0.05, alpha=1.0001,
++            eps_secure=1e-8, f_EC=1.16,
++        )
++        # At n = 10^16, finite-size corrections ~ 10^-6 — ell/n should be ≈ r_post
++        # (within ~1% of D-W, NOT ~5% below it from the double-count bug)
++        assert ell / n == pytest.approx(r_post, abs=5e-3), (
++            f"ell/n = {ell/n:.6f} vs r_post = {r_post:.6f} "
++            f"(gap = {r_post - ell/n:.6f}; bug would give gap ≈ leak_EC = {leak:.6f})"
++        )
+ 
+     def test_large_n_approaches_asymptotic(self):
+         # n = 10^14 → ℓ/n ≈ rate_asy (up to O(1/√n) correction from V²)
+-        # Stage 1 uses conservative V² (Var(f)=1 upper bound) → ~5-10% gap is expected;
++        # Stage 1 uses conservative V² (Var(f)=1 upper bound) → small residual gap;
+         # Stage 2 with Theorem 4 SDP-derived min-tradeoff would tighten this.
+         n = 10**14
+         ell = bb84_qubit_finite_key_length(
+@@ -207,23 +330,29 @@ class TestBB84QubitFiniteKeyLength:
+         rate_asy = bb84_qubit_asymptotic_rate(
+             p_depol=0.01, eta_det=1.0, gamma=0.05, f_EC=1.16,
+         )
+-        assert ell / n == pytest.approx(rate_asy, abs=1e-1)
++        # After C1 fix: gap to asymptotic < 5e-2 at n=10^14 (was 1e-1 with bug)
++        assert ell / n == pytest.approx(rate_asy, abs=5e-2)
+ 
+     def test_zero_loss_kamin_fig1_anchor(self):
+-        # Kamin Fig.1 @ n=10^12, loss=0 dB, p_depol=0.01: rate close to asymptotic
+-        # (GEAT at low loss ≈ IID per Kamin §6 observation)
++        # Kamin Fig.1 @ n=10^12, loss=0 dB, p_depol=0.01.
++        # After C1 fix (pre-EC `h` separate from λ_EC), rate ≈ D-W limit ≈ 0.866
++        # at Kamin Fig.1 eyeball target (0.8–0.9).
+         n = 10**12
+-        # Optimized over γ, α: pick a reasonable point
+         ell = bb84_qubit_finite_key_length(
+             n=n, p_depol=0.01, loss_dB=0.0, gamma=0.02, alpha=1.005,
+             eps_secure=1e-8, f_EC=1.16,
+         )
+-        # Must produce positive rate
+         assert ell > 0
+         rate = ell / n
+-        # Devetak-Winter limit = (1-0.02)² · (1 - 2.16 h(0.005)) ≈ 0.96 · 0.902 ≈ 0.866
+-        # Finite-size at n=10^12 loses ~10-20% → rate ∈ [0.4, 0.9]
+-        assert 0.3 < rate < 0.95
++        rate_asy = bb84_qubit_asymptotic_rate(
++            p_depol=0.01, eta_det=1.0, gamma=0.02, f_EC=1.16,
++        )
++        # Tight band: within ±10% of D-W (catches double-count regressions)
++        assert rate == pytest.approx(rate_asy, abs=0.1), (
++            f"rate={rate:.4f}, D-W={rate_asy:.4f} — would fail with EC double-count"
++        )
++        # Kamin Fig.1 eyeball target
++        assert 0.7 < rate < 1.0
+ 
+     def test_high_loss_abort(self):
+         # 40 dB loss @ n = 10^6: too lossy, ℓ < 0
+@@ -258,8 +387,10 @@ class TestBB84QubitOptimalFiniteKey:
+         )
+         assert ell > 0
+         rate = ell / 10**12
+-        # Kamin Fig.1 n=10^12 @ 0 dB ≈ 0.8-0.9 (eyeball from paper Fig.1)
+-        assert 0.5 < rate < 1.0
++        # After C1 fix, Kamin Fig.1 n=10^12 @ 0 dB falls in [0.8, 1.0] (eyeball)
++        # Before C1 fix the double-count placed rate in [0.7, 0.85] — this tightened
++        # bound catches C1 regressions.
++        assert 0.8 < rate < 1.0
+         # γ should be small (low loss regime)
+         assert 0 < gamma_star < 0.2
+         # α should be close to 1

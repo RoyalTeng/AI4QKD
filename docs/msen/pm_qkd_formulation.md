@@ -34,20 +34,44 @@
 
 PM-QKD 是**第二个双源方**协议(首个是 MDI,见 [mdi-formulation.md](mdi-formulation.md) §1.1)。与 MDI 的关键差异:**源态不是 BB84 EB 4-dim qubit**,而是 **Fock-truncated phase-randomized coherent state × key-bit classical register**。
 
-| 源方 | key_register_dim | signal_register_dim | source_state 维度 |
-|------|-------------------|---------------------|---|
-| Alice | 2(κ=0, 1) | $N_\text{fock} + 1$(Fock 0..N) | $(2(N+1))^2$ |
-| Bob | 2 | $N + 1$ | $(2(N+1))^2$ |
+| 源方 | key_register_dim | phase_register_dim | signal_register_dim | source_state 维度 |
+|------|-------------------|---------------------|---------------------|---|
+| Alice | 2(κ=0, 1) | $M$(相位 slice) | $N_\text{fock} + 1$(Fock 0..N) | $(2 M (N+1))^2$ |
+| Bob | 2 | $M$ | $N + 1$ | $(2 M (N+1))^2$ |
 
-**源态构造**(Ma Eq. A3 + §II 相位随机化):
+**注**:Round-1 review M1 指出 v0.1 的表格未含 phase register,导致 EB 源态写法错误。Round-2 显式加入 $M$-dim phase register $R_A$ / $R_B$ 保留 key-optical 相关性。
 
-$$\rho_\text{Alice}^\text{source} = \frac{1}{2}\sum_{\kappa=0}^{1} |\kappa\rangle\langle\kappa|_{K_A} \otimes \int_0^{2\pi}\frac{d\phi}{2\pi}|\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}|_{A'}$$
+**源态构造**(**Round-2 修订**,见本节末的 Round-1 review M1 说明):
 
-其中 $|\alpha|^2 = \mu/2$(每源强度),$A'$ 是 Fock 截断后的光学模态。**相位随机化**使内部积分项退化为 Poisson 分布的 Fock 数混合([Ma Eq. A3]):
+EB 写法需要 key register $K_A$ 与 optical mode $A'$ **保持相关**。先对 φ 积分会把 κ 的 optical marginal 抹平,导致 emitted state 不再携带 key bit 信息(Round-1 M1 review 正确指出的 bug)。正确的 PM-QKD EB 源态是:
 
-$$\int_0^{2\pi}\frac{d\phi}{2\pi}|\alpha e^{i\phi}\rangle\langle\alpha e^{i\phi}| = \sum_{k=0}^{\infty} e^{-|\alpha|^2}\frac{|\alpha|^{2k}}{k!}|k\rangle\langle k|$$
+$$\rho^\text{src}_{K_A A' R_A} = \frac{1}{2}\sum_{\kappa=0}^{1} |\kappa\rangle\langle\kappa|_{K_A} \otimes \int_0^{2\pi}\!\frac{d\phi}{2\pi}\,|\phi\rangle\langle\phi|_{R_A} \otimes |\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}|_{A'}$$
 
-**$\pi\kappa$ 编码的效果**:对偶数 $k$,$|\alpha e^{i\pi\kappa}\rangle^{\otimes k} = |\alpha\rangle^{\otimes k}$(相位差 $e^{i\pi \cdot 2m} = 1$);对奇数 $k$,key bit 引入 $\pm$ 符号区别 → 奇光子数分量携带 key information(Ma Lemma 1 奇偶分解核心)。
+其中 $R_A$ 是 Alice 私人保留的 **phase register**(classical, uniform over $[0, 2\pi)$,本实施离散化到 $M$ slices → $\dim R_A = M$)。**关键**:只有在 Alice 稍后公开 $\phi_a = \phi$ 后,φ 才从 Alice 的 side information 转入公共记录;此**之前** $R_A$ 的存在让 $|\kappa \rangle$ 与 optical $A'$ 通过 $\phi$ 保持相关,emitted optical state 仍携带 κ 信息。
+
+**两种不同的 "Fock 对角化" 情形**(Ma Eq. A3 的正确理解,Round-2 修订):
+
+条件化 ≠ 求迹。两者给出**完全不同的** optical state。
+
+- **在公告 φ 条件化下**(Alice 宣布 $\phi_a = \phi$ 后,$R_A$ 的 φ 值变为公共知识,对其做 classical conditioning):
+
+$$\rho^\text{src}_{A' | R_A = \phi, K_A = \kappa} = |\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\alpha e^{i(\phi + \pi\kappa)}|$$
+
+这是**仍然是相干态**,不是 Fock 混合(coherent state 在固定 φ 下完全保留)。
+
+- **求迹/平均 over phase register**(Eve 的视角:不做 Alice 的 φ 公告 conditioning,对 $R_A$ 求迹):
+
+$$\operatorname{Tr}_{R_A}\rho^\text{src}_{K_A A' R_A} = \frac{1}{2}\sum_{\kappa=0}^{1} |\kappa\rangle\langle\kappa|_{K_A} \otimes \left[\sum_{k=0}^{\infty} e^{-|\alpha|^2}\frac{|\alpha|^{2k}}{k!}|k\rangle\langle k|_{\text{Fock}}\right]$$
+
+此时 optical marginal **κ-independent**(Poisson Fock 混合,Ma Eq. A3);这对 Eve 的 single-photon attack 分析有用 — 但**不是** Alice 在自己 lab 中的态描述。
+
+**下游实施警示**:`build_pm_qkd_protocol` 的 `source_state` 应构造**纯化后**的三件套 $(K_A, R_A, A')$,**不应** 在源态层面直接写 Poisson Fock 混合(那是 Eve-perspective average,不是 EB source);否则就回到 v0.1 的 M1 bug。Ma Lemma 1 的奇偶光子分解作用域:**Eve 在她不知道 φ 时做 QND photon-number 测量**(Kamin Eq. 71 decoy 分块的正是此情形)— 这等价于对 $R_A$ 求迹 / 求平均,而不是对 $R_A = \phi$ 做条件化。**Alice/Bob 公告 $\phi_a, \phi_b$ 的行为本身不触发** Fock 对角化(注意:φ 的公告方是 Alice/Bob,不是 Charlie — Charlie 只公告检测器结果 $r \in \{L, R, \text{fail}\}$);φ 公告与 Eve 对 $R_A$ 的"不知情"才共同造成 Fock 分块可用性。
+
+其中 $|\alpha|^2 = \mu/2$(每源强度),$A'$ 是 Fock 截断后的光学模态。
+
+**$\pi\kappa$ 编码的效果**(Ma Lemma 1 奇偶分解):对 fixed κ + announced φ,$|\alpha e^{i(\phi + \pi\kappa)}\rangle$ 的 even-photon 分量 $|\alpha e^{i\phi}\rangle^\text{even}$ 与 $\kappa$ 无关(因为 $e^{i\pi \cdot 2m} = 1$),odd-photon 分量 $|\alpha e^{i\phi}\rangle^\text{odd}$ 携带 κ 相位符号差 → key bit 的相干性质在 odd-photon 子空间 — 这就是 Ma Lemma 1 的"奇光子 phase flip ⇔ Z-bit flip" 关系。
+
+> **Round-1 review M1 闭合**:v0.1 的源态写成 $\rho = \frac{1}{2}\sum_\kappa |\kappa\rangle\langle\kappa| \otimes \int d\phi \cdots$ 把 φ 积分在 κ 求和之内(即没有 purifying $R_A$)。这样**在源态层面**就把 optical marginal 抹成 κ-independent,等价于说 Alice 的 emitted state 不携带 key bit — 与 Ma-Zeng-Zhou §II 协议语义矛盾。Round-2 修订引入 $R_A$ phase-purifying register,保留 κ 与 $A'$ 的相关性。**关键**:Poisson / Fock 对角化**只在对 $R_A$ 求迹或平均时出现**,**不是**在对公告 φ 做 conditional 时出现(Round-3 M6 修订:条件化 ≠ 求迹 — 见上文两种情形)。
 
 ### 1.2 $\mathcal{E}$:双臂信道 + Charlie 分束器 + 单光子检测
 
