@@ -643,6 +643,7 @@ def kamin_full_key_length_bb84(
     solver: str = "MOSEK",
     epsilon_regularization: float = 1e-9,
     verbose: bool = False,
+    V2_mode: str = "tight_bb84",
 ) -> dict[str, Any]:
     """Full Kamin Thm 3 (Eq. 16) finite-key length for qubit BB84.
 
@@ -708,21 +709,23 @@ def kamin_full_key_length_bb84(
     # h per round: (1-γ)² · h_per_sift (sifting factor)
     h_per_round = (1.0 - gamma) ** 2 * h_per_sift
 
-    # Step 3: V² via Kamin Eq. 44
-    # g_values on Σ observable alphabet = {q_Z, q_X} + possibly ⊥/aux
-    # For BB84 minimal: max(g) = max(g_Z, g_X), min(g) = min(g_Z, g_X)
-    # We use classical key register d_A = 2, κ = 1.
+    # Step 3: V² via V2_mode (Eq. 44 UB or tight BB84 variance)
     d_A = 2
     kappa = 1
     g_max = max(g_Z, g_X)
     g_min = min(g_Z, g_X)
-    # Kamin Eq. 44: V(p, f) = log(1 + 2·d_A^κ) + √(2 + (1/γ)·(Max(g) - Min(g))²)
-    # with f derived from g via Lemma 4.7
     gap = g_max - g_min
-    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
-        2.0 + (1.0 / gamma) * gap ** 2
-    )
-    V_squared = V_inner ** 2
+    if V2_mode == "eq44_ub":
+        V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+            2.0 + (1.0 / gamma) * gap ** 2
+        )
+        V_squared = V_inner ** 2
+    elif V2_mode == "tight_bb84":
+        V_squared = _kamin_V2_bb84_tight(
+            g_Z=g_Z, g_X=g_X, qber=qber, gamma=gamma, eta_det=1.0,
+        )
+    else:
+        raise ValueError(f"unknown V2_mode={V2_mode!r}")
 
     # Step 4: K(α) via Kamin Eq. 11
     # Max(f), Min_Σ(f) appear in K(α).  Via Lemma 4.7 conversion:
@@ -774,6 +777,35 @@ def kamin_full_key_length_bb84(
 # Stage 2 A3 optimizer: γ × α grid search
 # ---------------------------------------------------------------------------
 
+def _kamin_V2_bb84_tight(
+    g_Z: float, g_X: float, qber: float, gamma: float, eta_det: float,
+) -> float:
+    """Tight upper bound on V²(p_hon, f) for qubit BB84 with dual (g_Z, g_X).
+
+    Derivation (symmetric BB84 with basis-split γ/2 each):
+        Per-round observation ω_i takes values in
+            {key-round, Z-test-correct, Z-test-error, X-test-correct,
+             X-test-error, no-detect}.
+        The dual g_B estimates ∂rate/∂qber_B; per-round contribution of the
+        error estimator, normalized so that the average recovers qber_B:
+            f(ω_i) = (2/γ) · g_Z · 1{Z-test-error}
+                   + (2/γ) · g_X · 1{X-test-error}
+                   + 0     otherwise.
+
+        Per-round prob of a B-test error:
+            P(B-test-error) = (γ/2) · η_det · qber.
+
+        V² = Var[f] ≤ E[f²] = (2/γ)² · (γ/2·η_det·qber) · (g_Z² + g_X²)
+                            = (2·η_det·qber/γ) · (g_Z² + g_X²).
+
+    This is still an UPPER bound (drops the −E[f]² term; E[f]² is negligible
+    for qber ≪ 1).  Strictly tighter than Kamin Eq. 44 by a factor ~
+    2·η_det·qber whenever η_det·qber ≪ 1 (which covers Fig. 1 Kamin
+    parameters: p_depol=0.01, qber=0.005, η ∈ (0, 1]).
+    """
+    return (2.0 * eta_det * qber / gamma) * (g_Z ** 2 + g_X ** 2)
+
+
 def _kamin_ell_from_sdp_result(
     h_per_sift: float,
     g_Z: float,
@@ -784,22 +816,41 @@ def _kamin_ell_from_sdp_result(
     alpha: float,
     eps_secure: float,
     f_EC: float,
+    eta_det: float = 1.0,
+    V2_mode: str = "tight_bb84",
 ) -> float:
     """Helper: compute Kamin Eq. 16 ℓ from CACHED SDP result (h, g*).
 
     This lets us grid-sweep (γ, α) without re-solving the expensive SDP.
-    The SDP h_per_sift and g_star do NOT depend on (γ, α), only on qber.
+    The SDP h_per_sift and g_star do NOT depend on (γ, α, η_det), only on qber.
+
+    η_det enters through (a) per-round privacy and EC leak scaling, and
+    (b) V² via observation frequencies in the tight mode.
+
+    V2_mode:
+      - "eq44_ub": Kamin Eq. 44 loose upper bound.  Needed for A3
+        back-compatibility; very pessimistic at small qber.
+      - "tight_bb84" (default): closed-form (2·η_det·qber/γ)·(g_Z²+g_X²)
+        derived from per-round observation variance; reproduces Kamin
+        Fig. 1 cutoffs.
     """
-    h_per_round = (1.0 - gamma) ** 2 * h_per_sift
+    h_per_round = (1.0 - gamma) ** 2 * eta_det * h_per_sift
     d_A = 2
     kappa = 1
     g_max = max(g_Z, g_X)
     g_min = min(g_Z, g_X)
     gap = g_max - g_min
-    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
-        2.0 + (1.0 / gamma) * gap ** 2
-    )
-    V_squared = V_inner ** 2
+    if V2_mode == "eq44_ub":
+        V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+            2.0 + (1.0 / gamma) * gap ** 2
+        )
+        V_squared = V_inner ** 2
+    elif V2_mode == "tight_bb84":
+        V_squared = _kamin_V2_bb84_tight(
+            g_Z=g_Z, g_X=g_X, qber=qber, gamma=gamma, eta_det=eta_det,
+        )
+    else:
+        raise ValueError(f"unknown V2_mode={V2_mode!r}")
 
     from qkdx.finite_key.kamin_geat import (
         kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
@@ -815,7 +866,7 @@ def _kamin_ell_from_sdp_result(
         H_qber = 0.0
     else:
         H_qber = -qber * math.log2(qber) - (1 - qber) * math.log2(1 - qber)
-    lambda_EC = n * (1.0 - gamma) ** 2 * f_EC * H_qber
+    lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * H_qber
 
     return kamin_heuristic_key_length(
         n=n, h=h_per_round, V_squared=V_squared, K_alpha=K_val,
@@ -834,6 +885,7 @@ def kamin_full_key_length_bb84_loss(
     solver: str = "MOSEK",
     epsilon_regularization: float = 1e-9,
     verbose: bool = False,
+    V2_mode: str = "tight_bb84",
 ) -> dict[str, Any]:
     """Kamin Eq. 16 key length for qubit BB84 WITH LOSS (§6 model).
 
@@ -881,10 +933,17 @@ def kamin_full_key_length_bb84_loss(
     g_max = max(g_Z, g_X)
     g_min = min(g_Z, g_X)
     gap = g_max - g_min
-    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
-        2.0 + (1.0 / gamma) * gap ** 2
-    )
-    V_squared = V_inner ** 2
+    if V2_mode == "eq44_ub":
+        V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+            2.0 + (1.0 / gamma) * gap ** 2
+        )
+        V_squared = V_inner ** 2
+    elif V2_mode == "tight_bb84":
+        V_squared = _kamin_V2_bb84_tight(
+            g_Z=g_Z, g_X=g_X, qber=qber, gamma=gamma, eta_det=eta_det,
+        )
+    else:
+        raise ValueError(f"unknown V2_mode={V2_mode!r}")
 
     from qkdx.finite_key.kamin_geat import (
         kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
@@ -935,6 +994,7 @@ def kamin_full_key_length_bb84_loss_optimized(
     solver: str = "MOSEK",
     epsilon_regularization: float = 1e-9,
     verbose: bool = False,
+    V2_mode: str = "tight_bb84",
 ) -> dict[str, Any]:
     """Loss-variant of kamin_full_key_length_bb84_optimized.
 
@@ -988,10 +1048,17 @@ def kamin_full_key_length_bb84_loss_optimized(
 
     for gamma in gamma_grid:
         h_per_round = (1.0 - gamma) ** 2 * eta_det * h_per_sift
-        V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
-            2.0 + (1.0 / gamma) * gap ** 2
-        )
-        V_squared = V_inner ** 2
+        if V2_mode == "eq44_ub":
+            V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+                2.0 + (1.0 / gamma) * gap ** 2
+            )
+            V_squared = V_inner ** 2
+        elif V2_mode == "tight_bb84":
+            V_squared = _kamin_V2_bb84_tight(
+                g_Z=g_Z, g_X=g_X, qber=qber, gamma=gamma, eta_det=eta_det,
+            )
+        else:
+            raise ValueError(f"unknown V2_mode={V2_mode!r}")
         lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * H_qber
 
         for alpha in alpha_grid:
@@ -1110,4 +1177,113 @@ def kamin_full_key_length_bb84_optimized(
         "g_star": sdp["g_star"],
         "sdp_status": sdp["status"],
         "n_grid_pts": len(gamma_grid) * len(alpha_grid),
+    }
+
+
+# ---------------------------------------------------------------------------
+# A4b: Kamin Fig. 1 multi-n × multi-distance sweep (single SDP solve)
+# ---------------------------------------------------------------------------
+
+def kamin_fig1_sweep(
+    qber: float,
+    n_values: tuple[int, ...],
+    loss_dB_values: tuple[float, ...],
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    gamma_grid: tuple[float, ...] = (
+        0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+    ),
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Reproduce Kamin 2025 Fig. 1 at a (n, loss_dB) grid.
+
+    The SDP depends ONLY on qber (and γ enters only through the objective at
+    the trivial sifting factor which we factor out post-hoc).  So a single
+    SDP solve suffices; the grid search over (γ, α) is then cheap.
+
+    Args:
+        qber: honest qubit QBER (Fig. 1 uses p_depol=0.01 ⇒ qber=0.005).
+        n_values: sequence of round counts to sweep.
+        loss_dB_values: sequence of channel losses in dB.
+        eps_secure, f_EC, gamma_grid, solver, epsilon_regularization, verbose:
+            as for `kamin_full_key_length_bb84_loss_optimized`.
+
+    Returns:
+        dict with keys:
+          - "rates": np.ndarray of shape (len(n_values), len(loss_dB_values))
+            containing ell_star / n per cell (bits per signal round).
+          - "ell_stars": same shape, raw ell_star.
+          - "gamma_stars", "alpha_stars": same shape, optimal (γ, α) per cell.
+          - "h_per_sift": scalar, SDP per-sift privacy.
+          - "g_star": dict with g_Z, g_X.
+          - "n_values", "loss_dB_values": echo of inputs.
+    """
+    if not (0.0 <= qber < 0.5):
+        raise ValueError(f"qber must be in [0, 0.5), got {qber}")
+    for n in n_values:
+        if n < 1:
+            raise ValueError(f"n must be ≥ 1, got {n}")
+    for L in loss_dB_values:
+        if L < 0.0:
+            raise ValueError(f"loss_dB must be ≥ 0, got {L}")
+
+    # SINGLE SDP solve
+    sdp = kamin_choi_sdp_qubit_bb84_with_dual(
+        qber=qber, gamma=gamma_grid[0], solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+    )
+    h_per_sift = sdp["h_per_sift"]
+    g_Z = sdp["g_star"]["g_star_Z"]
+    g_X = sdp["g_star"]["g_star_X"]
+
+    n_rows = len(n_values)
+    n_cols = len(loss_dB_values)
+    rates = np.full((n_rows, n_cols), -math.inf)
+    ell_stars = np.full((n_rows, n_cols), -math.inf)
+    gamma_stars = np.zeros((n_rows, n_cols))
+    alpha_stars = np.zeros((n_rows, n_cols))
+
+    for i, n in enumerate(n_values):
+        inv_sqrt_n = 1.0 / math.sqrt(n)
+        alpha_grid = tuple(
+            1.0 + scale * inv_sqrt_n
+            for scale in (0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0)
+            if 1.0 + scale * inv_sqrt_n < 1.5
+        )
+        for j, loss_dB in enumerate(loss_dB_values):
+            eta_det = 10.0 ** (-loss_dB / 10.0)
+            best_ell = -math.inf
+            best_gamma = gamma_grid[0]
+            best_alpha = alpha_grid[0]
+            for gamma in gamma_grid:
+                for alpha in alpha_grid:
+                    try:
+                        ell = _kamin_ell_from_sdp_result(
+                            h_per_sift=h_per_sift, g_Z=g_Z, g_X=g_X,
+                            qber=qber, n=n, gamma=gamma, alpha=alpha,
+                            eps_secure=eps_secure, f_EC=f_EC, eta_det=eta_det,
+                        )
+                    except (ValueError, OverflowError):
+                        continue
+                    if ell > best_ell:
+                        best_ell = ell
+                        best_gamma = gamma
+                        best_alpha = alpha
+            ell_stars[i, j] = best_ell
+            rates[i, j] = best_ell / n if n > 0 else 0.0
+            gamma_stars[i, j] = best_gamma
+            alpha_stars[i, j] = best_alpha
+
+    return {
+        "rates": rates,
+        "ell_stars": ell_stars,
+        "gamma_stars": gamma_stars,
+        "alpha_stars": alpha_stars,
+        "h_per_sift": h_per_sift,
+        "g_star": sdp["g_star"],
+        "n_values": tuple(n_values),
+        "loss_dB_values": tuple(loss_dB_values),
+        "sdp_status": sdp["status"],
     }
