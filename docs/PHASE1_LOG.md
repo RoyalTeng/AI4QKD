@@ -446,6 +446,53 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.14 Sub-Q3 前置 — Pirandola 2019 Level 4 精读(2026-04-20 autonomous session)
+
+**背景**:PLOB 2017 memo 完成后,按 Sub-Q3 §4 后续精读 Pirandola 2019 end-to-end capacities,这是 TF-QKD / relay-assisted QKD 拓扑的**正确**上界来源。PDF 在库(`docs/literature/pdfs/Pirandola-2019-EndToEndCapacities.pdf`, 1.0 MB)。
+
+**产出**:[docs/literature/Pirandola-2019.md](literature/Pirandola-2019.md)(v0.1, Level 4, ~380 行)
+
+**精读范围**:
+- §Abstract + Introduction + Results:完整
+- §Discussion + §Methods(weak converse + network simulation):完整
+- SI Notes:浏览(未重推)
+
+**关键发现**(核心):
+
+1. **Repeater chain capacity(Eq. 7)**:distillable chain 下 $\mathcal{C}(\{\mathcal{E}_i\}) = \min_i E_R(\rho_{\mathcal{E}_i})$(weakest-link)
+2. **Lossy chain 公式(Eq. 9)**:
+   $$\mathcal{C}_\text{loss}(\eta, N) = -\log_2(1 - \eta^{1/(N+1)})$$
+   - N=0(无 repeater):PLOB direct-link $-\log_2(1-\eta)$ 重现
+   - **N=1(single repeater):$-\log_2(1 - \sqrt{\eta})$ — 这就是 TF-QKD / PM-QKD 的正确上界**
+   - Ma §VI 指的 "still far from single-repeater bound" 就是它
+3. **Network 扩展**:单路径 widest-path + 多路径 max-flow-min-cut;distillable networks 闭式
+4. **Untrusted-relay 覆盖**:§Discussion 明示 "upper bounds also apply to chains and networks with untrusted nodes" — 故 Pirandola bound 对 TF-QKD(Charlie untrusted)仍然成立
+
+**对 Sub-Q3 拓扑适用性 lemma 的决定性数据**:
+
+⚠️ **Sub-Q3 §4.3 拓扑适用性 lemma 核心结论**(本 memo 导出):
+- BB84 decoy / MDI direct-link:上界 $-\log_2(1-\eta)$(PLOB)
+- TF-QKD / PM-QKD N=1 relay topology:上界 $-\log_2(1-\sqrt\eta)$(Pirandola Eq. 9)
+- 两者差异:取决于协议 MS-EB formulation 中 $\mathcal{E}$ 是单信道还是双段信道(Charlie 分隔)
+
+**数值对比**($\eta = 10^{-2}$ @ 100 km Alice-Bob):
+- PLOB direct:0.0145 bit/use
+- Pirandola N=1:0.152 bit/use(**10× 更宽松**)
+- PM-QKD Ma Fig.3a:~10⁻³(**vs Pirandola N=1 低 ~150×**)
+
+**Sub-Q4 gap 归因准备**:
+- Distillable (lossy/amplifier/dephasing/erasure):Pirandola 上界 = 下界 exact,归因 A(上界松)**可排除**
+- PM-QKD 实测距 Pirandola N=1 bound ~100×(低损耗):归因 B(下界松)主导,+ C(μ/M 未优)
+- Amplitude damping:PLOB 上界 Eq. 47 不 tight,squashed 更紧 — 归因 A 可能性
+
+**Plan 对齐**:
+- RESEARCH_PLAN §Sub-Q3 §4.1 "PLOB + Pirandola 前传精读":**完成**(2 篇 Level 4 memo ✓)
+- 下一步:拓扑适用性 lemma 形式化(`docs/msen/topology_applicability.md`,Week 1-2)+ TF-QKD vs Pirandola N=1 gap 数值表
+
+**计划外处理**:无降级。Level 4 精读对 §Methods 完整覆盖;SI Notes 留 Level 5。
+
+---
+
 ## 4.13 Sub-Q3 前置 — PLOB 2017 Level 4 精读(2026-04-20 autonomous session)
 
 **背景**:用户离开前授权"按你的计划继续"。完成 F6 §7.5a/b/c 后,按 PROSPECTUS 主线进入 Phase 2 Sub-Q3 前置工作。PDF 早在库(`docs/literature/pdfs/PLOB-2017-FundamentalLimitsRepeaterless.pdf`, 1.1 MB)。
