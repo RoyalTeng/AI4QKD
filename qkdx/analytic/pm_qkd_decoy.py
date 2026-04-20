@@ -241,6 +241,68 @@ def pm_decoy_q_mu_exact(
     return min(max(total, 0.0), 1.0)
 
 
+def pm_optimal_mu(
+    eta_channel: float,
+    params: PmQkdParams = PmQkdParams(),
+    N_ph_cutoff: int = 20,
+    mu_grid: tuple[float, ...] = (
+        0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.7, 1.0,
+    ),
+) -> tuple[float, float]:
+    """Find μ that maximizes `pm_rate_with_decoy_phase_error` at given η_channel.
+
+    Ma Fig. 3a shows distance-dependent μ optimization is important for
+    faithful reproduction.  This helper does a simple grid search; for
+    higher precision, use scipy.optimize on top of this scaffold.
+
+    Args:
+        eta_channel: total Alice-Bob transmittance.
+        params: PmQkdParams.
+        N_ph_cutoff: Ma A33 truncation.
+        mu_grid: candidate μ values to evaluate.
+
+    Returns:
+        (mu_star, rate_star) — best μ and its rate.  rate_star may be ≤ 0.
+    """
+    if not (0.0 <= eta_channel <= 1.0):
+        raise ValueError(f"eta_channel must be in [0, 1], got {eta_channel}")
+    best_mu = mu_grid[0]
+    best_rate = float("-inf")
+    for mu in mu_grid:
+        r = pm_rate_with_decoy_phase_error(
+            mu=mu, eta_channel=eta_channel, params=params, N_ph_cutoff=N_ph_cutoff,
+        )
+        if r > best_rate:
+            best_rate = r
+            best_mu = mu
+    return best_mu, best_rate
+
+
+def pm_rate_sweep_optimized(
+    loss_db_values: list[float],
+    params: PmQkdParams = PmQkdParams(),
+    N_ph_cutoff: int = 20,
+    mu_grid: tuple[float, ...] = (
+        0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.7, 1.0,
+    ),
+) -> tuple[list[float], list[float], list[float]]:
+    """Sweep loss values with per-distance μ optimization.
+
+    Returns:
+        (loss_db_values, rates, mu_stars) — rate and the μ* that achieved it.
+    """
+    rates: list[float] = []
+    mu_stars: list[float] = []
+    for loss in loss_db_values:
+        eta = 10.0 ** (-loss / 10.0)
+        mu_star, rate_star = pm_optimal_mu(
+            eta_channel=eta, params=params, N_ph_cutoff=N_ph_cutoff, mu_grid=mu_grid,
+        )
+        rates.append(rate_star)
+        mu_stars.append(mu_star)
+    return list(loss_db_values), rates, mu_stars
+
+
 def pm_rate_with_decoy_phase_error(
     mu: float,
     eta_channel: float,

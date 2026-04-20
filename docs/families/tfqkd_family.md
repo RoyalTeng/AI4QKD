@@ -172,22 +172,69 @@ def build_pm_qkd_protocol(
 |------|------|------|-------|------|
 | TF | Lucamarini 2018 Fig.3 | log-log 斜率 `0.5 ± 0.05` | M4B 硬验收 | 待实施 |
 | SNS | Wang-Yu-Hu 2018 Fig.3 | 密钥率误差 `rel=0.05` | S2.2 | 待实施 |
-| PM | Ma-Zeng-Zhou 2018 Fig.3a | **原目标** 密钥率误差 `rel=0.05` | S2.2 | **🟡 部分(下调口径)** |
+| PM | Ma-Zeng-Zhou 2018 Fig.3a | **原目标** 密钥率误差 `rel=0.05` | S2.2 | **🟡 部分 (§7.3 + §7.5 下调口径)** |
 
-**F6 §7.3 — PM-QKD analytic 两轮实施(2026-04-20)**:
+**F6 §7.3 / §7.5 — PM-QKD 实施进展(2026-04-20)**:
 
-- **原目标**(本表 v0.1):密钥率 **绝对值** 与 Ma Fig.3a 匹配 `rel=0.05` → **未达**(gap 1 个数量级)
-- **实际达成(下调口径)**:log-log 斜率 `0.5 ± 0.05`(**Round 2 实测 0.539**;Round 1 实测 0.516)— **仅验证 √η 定性物理,非绝对值匹配**
-- Round 1(commit `6db6d97`):BB84-style QBER 近似 + 自建 Q_μ formula;Codex review 判 FAIL(2 major: Q_μ/E_Z 不符 Ma Appendix B + Y_1 override 不安全)
-- Round 2(`qkdx/analytic/pm_qkd.py` rewrite):采用 Ma Eq. B13/B14/B19/B22 + phase_error_upper 加安全保护(Y_1_lower validation + E_X clamped to 0.5);35 tests 全过
+### §7.3(commit `6db6d97` → `4ae0be3`):PM-QKD analytic 层
 
-**本下调口径原因**(显式记录,**不属默默降级**):
-- 绝对密钥率匹配需要:多强度 decoy 反演 + per-distance μ 优化 + 完整奇偶光子数分解 — 均是 §7.5+ 工作
-- 当前实施只是 honest-behaviour 单强度估,未使用任何 decoy-inferred Y_k 下界
+- Round 1 → Round 4 dev-reviewer 闭环,verdict PASS
+- 公共 API: `qkdx/analytic/pm_qkd.py`(Ma Appendix B 精确形式 B13/B14/B19/B22)
+- 观察量: `pm_charlie_gain`, `pm_k_photon_yield`, `pm_phase_slice_error_rate`, `pm_bit_error_rate`, `pm_phase_error_upper`
+- 主 rate 函数: `pm_asymptotic_rate(mu, eta_channel, params)`(Ma Eq. 4)
+- 安全设计(Round 4):`pm_phase_error_upper` 不暴露 `Y_1_lower` override —— decoy-state 真实下界接入留 §7.5
+- Phase-error UB 内部使用保守 fallback `Y_1 ≈ (Q_μ - Y_0)/μ`
+- log-log 斜率: 0.519(target 0.5 ± 0.05 ✓)
+- 37 tests
 
-**结论**:
-- PM **"斜率形状验收" 通过**,不声称 "Ma Fig.3a 绝对值复现"
-- F6 `partial → covered` 门槛**未达**;门槛真正路径见 §9.1(需 `qkdx/protocols/pm_qkd.py` + 完整 decoy 反演 + Fock 截断 ADR)
+### §7.5a(commit `36348f0` → `236a5a3`):严格 decoy-state phase-error UB
+
+- Round 1 → Round 2 dev-reviewer 闭环,verdict PASS
+- 公共 API: `qkdx/analytic/pm_qkd_decoy.py`
+- 新函数:
+  - `pm_k_photon_error_rate_honest`(Ma Eq. B20)
+  - `pm_decoy_q_k_fraction`(Ma Eq. A34)
+  - `pm_decoy_q_mu_exact`(Ma A35 self-consistent Q_μ = Σ P^μ(k)·Y_k)
+  - `pm_decoy_phase_error_upper`(Ma Eq. A33 infinite-decoy limit)
+  - `pm_rate_with_decoy_phase_error`(Ma Eq. 4 with A33)
+- E^X decoy vs heuristic(μ=0.3, default params):**0.23 vs 0.27**(tighter 15%)
+- Rate decoy vs heuristic: **3-5× higher** across all distances
+- Cutoff pushed 320 km → 380 km
+- Round 1 FAIL: `pm_charlie_gain`(B14 approx)与 A35 不一致,Σ q_k ≠ 1;Round 2 fix 采用 `pm_decoy_q_mu_exact` 保证 Σ q_k = 1 at any p_d
+- 19 tests
+
+### §7.5b(commit `39bf021` → `571bd42`):`qkdx/protocols/pm_qkd.py` 协议 builder shell
+
+- Round 1 → Round 3 dev-reviewer 闭环,verdict PASS
+- MSEBProtocol 注册条目,`scope_tag='partial'`
+- 源态 + channel 是 placeholder;rate 通过 `pm_qkd_rate()` 委托到 analytic decoy 路径
+- WLC SDP dim compat: 观察量 `(qber_Z, qber_X, p_sift)` 与 MDI 模式对齐
+- BB84 Werner-style `_conditional_alice_bob` override(eff_qber=0.02+2·e_delta)placeholder
+- scope_reason 显式列出 upgrade 路径 4 项(Fock, R_A, BS Kraus, conditional)
+- 19 tests
+
+### §7.5c(当前 commit 待提交):μ-optimization + Ma Fig.3a benchmark
+
+- 新函数 `pm_optimal_mu(eta_channel, params)` + `pm_rate_sweep_optimized`(grid search 13 个 μ)
+- Ma Fig.3a 实测对照(μ-optimized):
+
+| L (km) | loss dB | μ* | rate (decoy) | Ma Fig.3a eyeball | gap |
+|--------|---------|------|------|------|------|
+| 50 | 10 | 0.15 | 2.5e-4 | ~1e-3 | 4× |
+| 100 | 20 | 0.15 | 7.8e-5 | ~1e-3 | 13× |
+| 200 | 40 | 0.15 | 7.7e-6 | ~1e-5 | 1.3× |
+| 300 | 60 | 0.15 | 7.0e-7 | ~5e-7 | ~1× |
+| 400 | 80 | 0.15 | 9.5e-9 | near cutoff | — |
+
+- **低损耗 gap 1 order**:根因 Ma B20 approximation "omits higher-order p_d corrections"(Ma §V 末段自己明示);完全闭合需要 §7.5+ 更精的 k-photon error model
+- **高损耗 gap ~1x**:与 Ma 实验曲线贴合
+- 26 tests
+
+**结论**(§7.5 总结):
+- **log-log √η 斜率硬验收通过**(多轮实测 0.5 ± 0.05 范围内)
+- **Ma Fig.3a 绝对值匹配**:高损耗区 ~1× gap ✓,低损耗区 ~10× gap(已归因 B20 近似,documented)
+- **rel=0.05 绝对值验收**:**未达**,需要完整 k-photon error model + finite-decoy LP 反演(§7.5+ 后续)
+- F6 `partial → covered` 门槛:仍未达(需完整 Fock truncation + phase register R_A 的 Hilbert-space 源态),但 analytic 层已从 "heuristic fallback" 提升到 "严格 decoy infinite-decoy 极限"
 
 ---
 

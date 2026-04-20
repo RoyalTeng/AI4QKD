@@ -446,6 +446,92 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.12 Stage F6 §7.5 — PM-QKD 严格 decoy-state 实施 + 协议 builder(2026-04-20 post-session)
+
+**上下文**:用户离开前授权"按你的计划继续"。按 dev-reviewer §7.3 review 推荐("Stage 2 SDP first" 不可行因 MOSEK,pivot to PM-QKD 深度化),推进 §7.5 三阶段。
+
+### §7.5a commit `36348f0` → `236a5a3`:严格 decoy-state phase-error UB
+
+**产出**:[qkdx/analytic/pm_qkd_decoy.py](../qkdx/analytic/pm_qkd_decoy.py)(~300 行)
+
+- Ma Appendix A.5 infinite-decoy 极限 rigorous phase-error UB
+- Eq. A33(奇/偶光子数分解)+ A34(q_k = P^μ(k)·Y_k/Q_μ)+ B13(Y_k)+ B20(e_k^Z)
+- 关键函数:
+  - `pm_k_photon_error_rate_honest`(B20)
+  - `pm_decoy_q_k_fraction`(A34)
+  - `pm_decoy_q_mu_exact`(A35 self-consistent Q_μ)
+  - `pm_decoy_phase_error_upper`(A33 truncated evaluation)
+  - `pm_rate_with_decoy_phase_error`(Eq. 4 with A33)
+
+**Dev-reviewer 闭环**:Round 1 FAIL → Round 2 PASS
+- Round 1 major: `pm_charlie_gain`(B14 approx)与 A35 不一致,Σ q_k = 1/(1-p_d)
+- Round 2 fix: 内部 `Q_μ` 改用 `Σ P^μ(k)·Y_k`,保证 Σ q_k = 1 精确
+
+**数值对比 vs §7.3 heuristic fallback**(μ=0.3, default):
+- E^X: 0.233 decoy vs 0.270 heuristic(tighter 15%)
+- Rate at 100 km: 4.8e-5 vs 1.6e-5(3× higher)
+- Cutoff 320 km → 380 km
+
+**测试**:19 tests(含 `test_self_consistency_sum_q_k_equals_one` at p_d=0.01 pin Round 1 bug)
+
+### §7.5b commit `39bf021` → `571bd42`:qkdx/protocols/pm_qkd.py 协议 builder shell
+
+**产出**:[qkdx/protocols/pm_qkd.py](../qkdx/protocols/pm_qkd.py)(~160 行)
+
+- MSEBProtocol 注册条目(name="PM-QKD",scope_tag='partial')
+- 两源方 + BS channel(placeholder identity)+ announcement + key_map
+- 观察量 `(qber_Z, qber_X, p_sift)` 对齐 MDI 模式
+- `_conditional_alice_bob` BB84 Werner placeholder(eff_qber=0.02+2·e_delta)
+- Rate 计算通过 `pm_qkd_rate(protocol)` 委托到 analytic decoy 路径
+- scope_reason 显式列出 upgrade 到 `covered` 的 4 项要求
+
+**Dev-reviewer 闭环**:Round 1 FAIL → Round 2 FAIL → Round 3 PASS
+- Round 1: 缺 `_conditional_alice_bob` / `_cond_dim`,WLC SDP dim mismatch
+- Round 2: 加了 override 但 observation_keys 缺 `p_sift`,KeyError
+- Round 3: observation_keys 对齐 `(qber_Z, qber_X, p_sift)`,WLC SDP 可 run(infeasible OK,dim 错误/KeyError 不可)
+
+**测试**:19 tests
+
+### §7.5c commit(待提交):μ-optimization + Ma Fig.3a benchmark
+
+**产出**:
+- `pm_optimal_mu(eta_channel, params)`:grid search over 13 μ 值
+- `pm_rate_sweep_optimized(loss_db_values, params)`:per-distance μ* + rate
+
+**Ma Fig.3a 对照**(μ-optimized,default params):
+
+| L | loss dB | μ* | rate decoy | Ma eyeball | gap |
+|---|---------|----|---|---|---|
+| 50 km | 10 | 0.15 | 2.5e-4 | ~1e-3 | 4× |
+| 100 km | 20 | 0.15 | 7.8e-5 | ~1e-3 | 13× |
+| 200 km | 40 | 0.15 | 7.7e-6 | ~1e-5 | 1.3× |
+| 300 km | 60 | 0.15 | 7.0e-7 | ~5e-7 | ~1× |
+| 400 km | 80 | 0.15 | 9.5e-9 | cutoff 区 | — |
+
+- **低损耗 gap ~1 order**:Ma B20 approximation 明示 "omits higher-order p_d corrections"(Ma §V 末段),完全闭合需要 §7.5+ k-photon error model 精化
+- **高损耗 ~1× gap**:与 Ma 实验曲线贴合
+- Log-log 斜率(μ-optimized sweep):0.5 ± 0.05 ✓
+
+**测试**:26 tests(+7 new: μ-optimization + Ma Fig.3a spot-checks)
+
+### §7.5 总结 + F6 状态
+
+- **tfqkd_family.md §5.2** PM 行更新:状态保持 `🟡 partial (§7.3 + §7.5 下调口径)`,增补 §7.5 进展表格
+- **log-log √η 硬验收**:通过(0.5 ± 0.05)✓
+- **rel=0.05 绝对值验收**:**未达**(低损耗 ~10×,高损耗 ~1×),需 k-photon error model 精化 + finite-decoy LP 反演
+- **F6 `partial → covered` 门槛**:未达(需 Hilbert-space Fock truncation + phase register)但 analytic 层从 heuristic fallback 提升到"严格 decoy infinite-decoy 极限"
+- 总测试增量: §7.3 37 + §7.5a 19 + §7.5b 19 + §7.5c 7 = **82 tests** for PM-QKD family
+
+**计划外处理**:无降级。§7.5 三子阶段严格按 tfqkd_family.md §9 upgrade path 推进,每阶段独立 dev-reviewer 闭环。
+
+**下一步选项**(供用户决定):
+- §7.5d: k-photon error model 精化 + finite-decoy LP 反演(~1 周,关 rel=0.05 验收最后 gap)
+- §7.5b 升级: Fock truncation + phase register Hilbert-space 源态(~1-2 周,使 F6 `partial → covered`)
+- Sub-Q3 PLOB Level 4 memo(~1-2 天,Phase 2 前置)
+- §7.6: Pareto sweep TF vs BB84 vs MDI(需 §7.5+ 可靠的 PM 数据才有意义)
+
+---
+
 ## 4.11 Stage F6 §7.3 — PM-QKD analytic 第一遍实施(2026-04-20,post-review)
 
 **背景**:dev-reviewer Round 4 PASS 后,按原 §7.3 计划推进 PM-QKD 实施。Stage 2 Kamin SDP 被 MOSEK 沙箱不可用阻塞,故选择 PM-QKD 作为当前最可交付的 Sub-Q2 进展。
