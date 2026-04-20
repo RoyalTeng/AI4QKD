@@ -627,3 +627,284 @@ def kamin_choi_sdp_qubit_bb84_with_dual(
             "g_star_X": g_star_X,
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Stage 2 A3: Full Thm 3 key length (SDP-derived V² + K(α) + ε-split)
+# ---------------------------------------------------------------------------
+
+def kamin_full_key_length_bb84(
+    qber: float,
+    n: int,
+    gamma: float,
+    alpha: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Full Kamin Thm 3 (Eq. 16) finite-key length for qubit BB84.
+
+    Pipeline:
+        1. Solve Choi-state SDP at honest qber with dual extraction (A2)
+        2. Extract g* = (g_star_Z, g_star_X) and honest rate h = h_per_sift
+        3. Compute V² via Kamin Eq. 44: (log(1 + 2·d_A^κ) + √(2 + (1/γ)·(Max(g) − Min(g))²))²
+        4. Compute K(α) via Kamin Eq. 11
+        5. Optimal ε split via Eq. 57: ε_PA = α/(2α-1)·ε_secure
+        6. Honest λ_EC = n · (1-γ)² · f_EC · H₂(qber)
+        7. Apply Eq. 16:
+             ℓ = n·[(1-γ)²·h] − n·((α-1)/(2-α))·(ln 2/2)·V²
+                  − n·((α-1)/(2-α))²·K(α) − λ_EC
+                  − ⌈log(1/ε_EV)⌉ − (α/(α-1))·log(1/ε_PA) + 2
+
+    Note: the (1-γ)² factor converts per-sift entropy to per-round privacy.
+    For no-loss qubit BB84, sift probability = (1-γ)² (test vs generation AND
+    basis-match).  With loss, further multiply by η_det (not included here).
+
+    Args:
+        qber: honest BB84 QBER (symmetric Z=X).
+        n: number of signal rounds.
+        gamma: test-round probability ∈ (0, 1).
+        alpha: Rényi parameter ∈ (1, 3/2).
+        eps_secure: total secrecy parameter.
+        f_EC: EC efficiency.
+        solver: CVXPY solver (MOSEK required for quantum_rel_entr).
+        epsilon_regularization: (1-ε) convex combo regularization.
+        verbose: solver verbosity.
+
+    Returns:
+        dict with keys:
+            ell             : ℓ in bits (may be negative)
+            h_per_sift      : SDP-derived pre-EC privacy per sift
+            h_per_round     : (1-γ)² · h_per_sift
+            g_star          : {g_star_Z, g_star_X}
+            V_squared       : Kamin Eq. 44 V²
+            K_alpha         : Kamin Eq. 11 K(α)
+            lambda_EC       : total EC bits
+            eps_PA, eps_EV  : optimal ε split (Eq. 57)
+            sdp_status      : solver status
+    """
+    if not (0.0 <= qber < 0.5):
+        raise ValueError(f"qber must be in [0, 0.5), got {qber}")
+    if n < 1:
+        raise ValueError(f"n must be ≥ 1, got {n}")
+    if not (0.0 < gamma < 1.0):
+        raise ValueError(f"gamma must be in (0, 1), got {gamma}")
+    if not (1.0 < alpha < 1.5):
+        raise ValueError(f"alpha must be in (1, 3/2), got {alpha}")
+    if not (0.0 < eps_secure <= 1.0):
+        raise ValueError(f"eps_secure must be in (0, 1], got {eps_secure}")
+
+    # Step 1-2: SDP with dual extraction
+    sdp = kamin_choi_sdp_qubit_bb84_with_dual(
+        qber=qber, gamma=gamma, solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+    )
+    h_per_sift = sdp["h_per_sift"]
+    g_Z = sdp["g_star"]["g_star_Z"]
+    g_X = sdp["g_star"]["g_star_X"]
+
+    # h per round: (1-γ)² · h_per_sift (sifting factor)
+    h_per_round = (1.0 - gamma) ** 2 * h_per_sift
+
+    # Step 3: V² via Kamin Eq. 44
+    # g_values on Σ observable alphabet = {q_Z, q_X} + possibly ⊥/aux
+    # For BB84 minimal: max(g) = max(g_Z, g_X), min(g) = min(g_Z, g_X)
+    # We use classical key register d_A = 2, κ = 1.
+    d_A = 2
+    kappa = 1
+    g_max = max(g_Z, g_X)
+    g_min = min(g_Z, g_X)
+    # Kamin Eq. 44: V(p, f) = log(1 + 2·d_A^κ) + √(2 + (1/γ)·(Max(g) - Min(g))²)
+    # with f derived from g via Lemma 4.7
+    gap = g_max - g_min
+    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+        2.0 + (1.0 / gamma) * gap ** 2
+    )
+    V_squared = V_inner ** 2
+
+    # Step 4: K(α) via Kamin Eq. 11
+    # Max(f), Min_Σ(f) appear in K(α).  Via Lemma 4.7 conversion:
+    # Max(f) = Max(g), Min(f) ≥ Min(g) (conservative).
+    # For safety use Max_f = max(g, 0) and Min_f = min(g, 0) (includes ⊥ bin).
+    from qkdx.finite_key.kamin_geat import kamin_K_alpha
+    max_f = max(g_max, 0.0)
+    min_sigma_f = min(g_min, 0.0)
+    K_val = kamin_K_alpha(
+        alpha=alpha, d_A=d_A, max_f=max_f, min_sigma_f=min_sigma_f, kappa=kappa,
+    )
+
+    # Step 5: ε split
+    from qkdx.finite_key.kamin_geat import optimal_eps_parameters
+    eps_PA, eps_EV = optimal_eps_parameters(eps_secure=eps_secure, alpha=alpha)
+
+    # Step 6: honest λ_EC
+    # H_2(qber) binary entropy
+    if qber <= 0.0 or qber >= 1.0:
+        H_qber = 0.0
+    else:
+        H_qber = -qber * math.log2(qber) - (1 - qber) * math.log2(1 - qber)
+    # Per-round EC leak for no-loss BB84: (1-γ)² · f_EC · H(qber)
+    # (every sift event generates f_EC·H(qber) bits of EC leakage)
+    lambda_EC = n * (1.0 - gamma) ** 2 * f_EC * H_qber
+
+    # Step 7: assemble Eq. 16
+    from qkdx.finite_key.kamin_geat import kamin_heuristic_key_length
+    ell = kamin_heuristic_key_length(
+        n=n, h=h_per_round, V_squared=V_squared, K_alpha=K_val,
+        alpha=alpha, lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
+    )
+
+    return {
+        "ell": ell,
+        "h_per_sift": h_per_sift,
+        "h_per_round": h_per_round,
+        "g_star": sdp["g_star"],
+        "V_squared": V_squared,
+        "K_alpha": K_val,
+        "lambda_EC": lambda_EC,
+        "eps_PA": eps_PA,
+        "eps_EV": eps_EV,
+        "sdp_status": sdp["status"],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Stage 2 A3 optimizer: γ × α grid search
+# ---------------------------------------------------------------------------
+
+def _kamin_ell_from_sdp_result(
+    h_per_sift: float,
+    g_Z: float,
+    g_X: float,
+    qber: float,
+    n: int,
+    gamma: float,
+    alpha: float,
+    eps_secure: float,
+    f_EC: float,
+) -> float:
+    """Helper: compute Kamin Eq. 16 ℓ from CACHED SDP result (h, g*).
+
+    This lets us grid-sweep (γ, α) without re-solving the expensive SDP.
+    The SDP h_per_sift and g_star do NOT depend on (γ, α), only on qber.
+    """
+    h_per_round = (1.0 - gamma) ** 2 * h_per_sift
+    d_A = 2
+    kappa = 1
+    g_max = max(g_Z, g_X)
+    g_min = min(g_Z, g_X)
+    gap = g_max - g_min
+    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(
+        2.0 + (1.0 / gamma) * gap ** 2
+    )
+    V_squared = V_inner ** 2
+
+    from qkdx.finite_key.kamin_geat import (
+        kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
+    )
+    max_f = max(g_max, 0.0)
+    min_sigma_f = min(g_min, 0.0)
+    K_val = kamin_K_alpha(
+        alpha=alpha, d_A=d_A, max_f=max_f, min_sigma_f=min_sigma_f, kappa=kappa,
+    )
+    eps_PA, eps_EV = optimal_eps_parameters(eps_secure=eps_secure, alpha=alpha)
+
+    if qber <= 0.0 or qber >= 1.0:
+        H_qber = 0.0
+    else:
+        H_qber = -qber * math.log2(qber) - (1 - qber) * math.log2(1 - qber)
+    lambda_EC = n * (1.0 - gamma) ** 2 * f_EC * H_qber
+
+    return kamin_heuristic_key_length(
+        n=n, h=h_per_round, V_squared=V_squared, K_alpha=K_val,
+        alpha=alpha, lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
+    )
+
+
+def kamin_full_key_length_bb84_optimized(
+    qber: float,
+    n: int,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    gamma_grid: tuple[float, ...] = (
+        0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+    ),
+    alpha_grid: tuple[float, ...] | None = None,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Kamin Eq. 16 finite-key length with (γ, α) grid optimization.
+
+    Pipeline:
+        1. Solve SDP ONCE at qber → h_per_sift, g_star
+        2. Grid-search (γ, α) over cached SDP result
+        3. Return best ℓ + optimal (γ*, α*)
+
+    For n = 10^k, the optimal α is typically α ≈ 1 + O(n^{-1/2}), so an
+    alpha_grid centered on 1 + 1/√n with multiplicative spread.
+
+    Args:
+        qber: honest BB84 QBER.
+        n: number of signal rounds.
+        eps_secure, f_EC: see `kamin_full_key_length_bb84`.
+        gamma_grid: test-round probability candidates.
+        alpha_grid: Rényi parameter candidates; if None, auto-selects based on n.
+
+    Returns:
+        dict: ell_star, gamma_star, alpha_star, h_per_sift, g_star, sdp_status.
+    """
+    if not (0.0 <= qber < 0.5):
+        raise ValueError(f"qber must be in [0, 0.5), got {qber}")
+    if n < 1:
+        raise ValueError(f"n must be ≥ 1, got {n}")
+
+    # Step 1: solve SDP ONCE
+    sdp = kamin_choi_sdp_qubit_bb84_with_dual(
+        qber=qber, gamma=gamma_grid[0], solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+    )
+    h_per_sift = sdp["h_per_sift"]
+    g_Z = sdp["g_star"]["g_star_Z"]
+    g_X = sdp["g_star"]["g_star_X"]
+
+    # Step 2: auto-select α grid if not provided, centered on 1 + 1/√n
+    if alpha_grid is None:
+        inv_sqrt_n = 1.0 / math.sqrt(n)
+        # Range: α ∈ [1 + 0.1/√n, 1 + 10/√n]
+        alpha_grid = tuple(
+            1.0 + scale * inv_sqrt_n
+            for scale in (0.1, 0.3, 1.0, 3.0, 10.0)
+            if 1.0 + scale * inv_sqrt_n < 1.5
+        )
+
+    # Step 3: grid-sweep (γ, α)
+    best_ell = -math.inf
+    best_gamma = gamma_grid[0]
+    best_alpha = alpha_grid[0]
+    for gamma in gamma_grid:
+        for alpha in alpha_grid:
+            try:
+                ell = _kamin_ell_from_sdp_result(
+                    h_per_sift=h_per_sift, g_Z=g_Z, g_X=g_X,
+                    qber=qber, n=n, gamma=gamma, alpha=alpha,
+                    eps_secure=eps_secure, f_EC=f_EC,
+                )
+            except (ValueError, OverflowError):
+                continue
+            if ell > best_ell:
+                best_ell = ell
+                best_gamma = gamma
+                best_alpha = alpha
+
+    return {
+        "ell_star": best_ell,
+        "gamma_star": best_gamma,
+        "alpha_star": best_alpha,
+        "h_per_sift": h_per_sift,
+        "g_star": sdp["g_star"],
+        "sdp_status": sdp["status"],
+        "n_grid_pts": len(gamma_grid) * len(alpha_grid),
+    }
