@@ -168,17 +168,26 @@ def build_pm_qkd_protocol(
 
 ### 5.2 待补(Phase 0.5 M4B — 可选 / Phase 1 S2.2)
 
-| 变体 | 对照 | 阈值 | Phase | 状态 |
+| 变体 | 对照 | **原阈值** | Phase | 状态 |
 |------|------|------|-------|------|
 | TF | Lucamarini 2018 Fig.3 | log-log 斜率 `0.5 ± 0.05` | M4B 硬验收 | 待实施 |
 | SNS | Wang-Yu-Hu 2018 Fig.3 | 密钥率误差 `rel=0.05` | S2.2 | 待实施 |
-| **PM** | **Ma-Zeng-Zhou 2018 Fig.3a / Eq.4** | **log-log 斜率 `0.5 ± 0.05`** | **F6 §7.3 (2026-04-20)** | **✓ commit `pending`** |
+| PM | Ma-Zeng-Zhou 2018 Fig.3a | **原目标** 密钥率误差 `rel=0.05` | S2.2 | **🟡 部分(下调口径)** |
 
-**F6 §7.3 第一遍实施**(`qkdx/analytic/pm_qkd.py`, 2026-04-20):
-- Ma Eq. 4 + Eq. 2 decoy phase-error UB(honest-behaviour first-pass)
-- 实测 log-log 斜率 **0.52**(target 0.5 ± 0.05 ✓)
-- 绝对密钥率比 Ma Fig.3a 低 1-2 个数量级(per-distance μ 未优化 + phase-error UB 未接入完整 decoy 反演,§7.5+ 补)
-- 20 tests 全过;tfqkd_family §5.2 PM 硬验收**斜率形状通过**,绝对值匹配归 §7.5
+**F6 §7.3 — PM-QKD analytic 两轮实施(2026-04-20)**:
+
+- **原目标**(本表 v0.1):密钥率 **绝对值** 与 Ma Fig.3a 匹配 `rel=0.05` → **未达**(gap 1 个数量级)
+- **实际达成(下调口径)**:log-log 斜率 `0.5 ± 0.05`(**Round 2 实测 0.539**;Round 1 实测 0.516)— **仅验证 √η 定性物理,非绝对值匹配**
+- Round 1(commit `6db6d97`):BB84-style QBER 近似 + 自建 Q_μ formula;Codex review 判 FAIL(2 major: Q_μ/E_Z 不符 Ma Appendix B + Y_1 override 不安全)
+- Round 2(`qkdx/analytic/pm_qkd.py` rewrite):采用 Ma Eq. B13/B14/B19/B22 + phase_error_upper 加安全保护(Y_1_lower validation + E_X clamped to 0.5);35 tests 全过
+
+**本下调口径原因**(显式记录,**不属默默降级**):
+- 绝对密钥率匹配需要:多强度 decoy 反演 + per-distance μ 优化 + 完整奇偶光子数分解 — 均是 §7.5+ 工作
+- 当前实施只是 honest-behaviour 单强度估,未使用任何 decoy-inferred Y_k 下界
+
+**结论**:
+- PM **"斜率形状验收" 通过**,不声称 "Ma Fig.3a 绝对值复现"
+- F6 `partial → covered` 门槛**未达**;门槛真正路径见 §9.1(需 `qkdx/protocols/pm_qkd.py` + 完整 decoy 反演 + Fock 截断 ADR)
 
 ---
 
