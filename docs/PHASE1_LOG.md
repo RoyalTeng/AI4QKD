@@ -499,6 +499,43 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.10 Stage F6 §7.2 PM-QKD MS-EB formulation(2026-04-20)
+
+**背景**:F6 §7.1 TF-QKD Level 3 memo 完成后,进入 §7.2 PM-QKD MS-EB formulation doc。遵循 [mdi-formulation.md](msen/mdi-formulation.md) 模板,覆盖 PM-QKD 在 MS-EB 五元组 $(\mathcal{P}, \mathcal{E}, \mathcal{A}, \mathcal{T}, \mathcal{K})$ 下的完整书写。
+
+**产出**:[docs/msen/pm_qkd_formulation.md](msen/pm_qkd_formulation.md)(v0.1, ~230 行)
+
+**关键决策**:
+
+1. **源态结构**:$\rho_\text{source} = \frac{1}{2}\sum_\kappa |\kappa\rangle\langle\kappa| \otimes \int d\phi/(2\pi) |\alpha e^{i(\phi + \pi\kappa)}\rangle\langle\cdot|$,相位随机化退化为 Fock 数 Poisson 混合(Ma Eq. A3)
+2. **WLC SDP 维度**:$d_\rho = 4$(与 BB84/MDI 相同,得益于 Ma Lemma 1 奇偶光子数分解 + Shor-Preskill 归约)
+3. **$p_\text{sift}$ 关键标度**:$p_\text{sift}^\text{PM} = Q_\mu \cdot 2/M \propto \sqrt{\eta}$(**这是 √η 物理源**);对比 MDI $p_\text{sift} = \eta_A\eta_B/2$ 常数
+4. **Phase error 不可观测**:$E_\mu^X$ 通过 Ma Eq. 2 的 decoy-state 奇偶分解估**上界**,不作为接受判据
+
+**范围限定**(本书写覆盖):
+- $d = 2$(二相位 PM-QKD),$N_\text{fock} = 10$ 截断
+- 对称源强度 $\mu_a = \mu_b$
+- 理想 phase reference match(无 drift)
+
+**Out of scope**(ADR 待决):
+- $d > 2$(Ma §II 仅主分析 $d = 2$)
+- Phase reference deviation $\phi_0$ 补偿($j_d$ slice offset;Ma §IV 实验技术)
+- Fock 截断严格 error bound(Ma Appendix B 仅数值 convergence)
+
+**Bearing**:
+- **Sub-Q2**:补全 F6 作为 $\sqrt{\eta}$ 族 anchor,与 F1/F5(η 标度)形成 Pareto 对比
+- **Sub-Q3**:PLOB $-\log_2(1-\eta)$ vs PM Eq. 4 下界 gap 在 $\eta \in [10^{-6}, 10^{-3}]$ 是 testbed
+- **Sub-Q4**:PM 与 single-repeater bound $-\log_2(1-\sqrt\eta)$ 的 gap(Ma §VI outlook)是 Phase 3 gap 归因 A/B/C 的核心对象
+
+**下一步**(§7.3 实施):
+- `qkdx/protocols/pm_qkd.py` + tests
+- 复用现有 `qkdx/analytic/decoy.py` 的 2-decoy 基础设施,新增 `pm_decoy_phase_error_upper` via Ma Eq. 2
+- 复用 MDI 的 `_conditional_alice_bob` override 范式
+
+**计划外处理**:无。本文档严格遵循 MDI formulation 模板结构。
+
+---
+
 ## 4.9 Stage F6 TF-QKD Level 3 精读(2026-04-20)
 
 **背景**:F6 TF-QKD family sheet([tfqkd_family.md](families/tfqkd_family.md) v0.1)的 §9 升级路径 §9.1 第一步是 "docs/literature/TF-QKD.md Level 3 精读(Lucamarini 2018 + SNS + PM + MP)"。三份原始 PDF 均已在库(Lucamarini-2018, WangYuHu-2018, MaZengZhou-2018)。本节闭合该精读。
