@@ -446,6 +446,47 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 
 ---
 
+## 4.13 Sub-Q3 前置 — PLOB 2017 Level 4 精读(2026-04-20 autonomous session)
+
+**背景**:用户离开前授权"按你的计划继续"。完成 F6 §7.5a/b/c 后,按 PROSPECTUS 主线进入 Phase 2 Sub-Q3 前置工作。PDF 早在库(`docs/literature/pdfs/PLOB-2017-FundamentalLimitsRepeaterless.pdf`, 1.1 MB)。
+
+**产出**:[docs/literature/PLOB-2017.md](literature/PLOB-2017.md)(v0.1, Level 4, ~330 行)
+
+**精读范围**:
+- §Abstract + Introduction + Results:完整精读
+- §Methods(teleportation-covariance / LOCC-averaging / One-shot REE bound proof):完整精读
+- Single-letter 容量公式:全部覆盖(lossy, thermal-loss, amplifier, dephasing, erasure, depolarizing, amplitude damping)
+- Supplementary Notes:未覆盖(留 Level 5)
+
+**关键发现**:
+
+1. **主定理(Theorem 1)**:$C(\mathcal{E}) \leq E_R^\star(\mathcal{E})$ — 任何 channel 的 two-way 容量被 REE 上界,任意维度
+2. **技术核心(Lemma 3 Stretching)**:adaptive 协议可 collapse 成 block form $\rho_{\mathbf{ab}}^n = \bar{\Lambda}(\sigma^{\otimes n})$ via teleportation stretching
+3. **Theorem 5 one-shot bound**:$C(\mathcal{E}) \leq E_R^\infty(\sigma) \leq E_R(\sigma)$ 对 σ-stretchable
+4. **Choi-stretchable + distillable**:$C(\mathcal{E}) = E_R(\rho_\mathcal{E}) = \Phi(\mathcal{E})$ 精确等式
+5. **Lossy channel 主产品(Eq. 19)**:$C(\eta) = -\log_2(1-\eta)$ ≈ 1.44η at η ≪ 1
+
+**对 Phase 2 Sub-Q3 的关键 bearing**:
+
+⚠️ **PLOB 不直接适用 TF-QKD / PM-QKD 拓扑**。PLOB Theorem 1 适用于 point-to-point adaptive LOCC,Alice-Bob 二方信道。**TF/PM 引入 untrusted Charlie 作为独立第三方中间节点,拓扑不同**:
+- Ma-Zeng-Zhou §V 明示 PM-QKD 达到 $\sqrt{\eta}$ 标度,超过 PLOB $\eta$ 标度,不矛盾 — 拓扑不同
+- TF 族的真正上界在 **Pirandola 2019** end-to-end capacities of quantum networks(PDF 在库,未精读)
+- **拓扑适用性 lemma**(RESEARCH_PLAN Sub-Q3 §4.3 硬要求)的形式化是 Sub-Q3 核心技术债
+
+**Sub-Q3 gap 归因推论**(PLOB 视角下):
+- BB84 decoy / MDI:direct-link,PLOB 是 tight 上界(distillable class);gap 主要 C(协议未优)
+- PM-QKD / TF:非 PLOB 直接对象,上界在 Pirandola 2019;gap 主要 B(下界松)+ C
+- Amplitude damping:PLOB bound 不 tight,squashed bound 更紧 — 归因 A(上界松)可能性
+
+**Plan 对齐**:
+- RESEARCH_PLAN §Sub-Q3 §4.1 "PLOB Level 4 精读":**完成** ✓
+- Phase 2 下一步:Pirandola 2019 end-to-end capacities Level 4 精读(~1-2 天)
+- 拓扑适用性 lemma:待两篇精读完成后正式攻坚
+
+**计划外处理**:无降级。Level 4 精读严格按 RESEARCH_PLAN §Sub-Q3 §4 要求。
+
+---
+
 ## 4.12 Stage F6 §7.5 — PM-QKD 严格 decoy-state 实施 + 协议 builder(2026-04-20 post-session)
 
 **上下文**:用户离开前授权"按你的计划继续"。按 dev-reviewer §7.3 review 推荐("Stage 2 SDP first" 不可行因 MOSEK,pivot to PM-QKD 深度化),推进 §7.5 三阶段。
