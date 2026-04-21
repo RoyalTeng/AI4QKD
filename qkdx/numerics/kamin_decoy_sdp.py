@@ -456,6 +456,9 @@ def kamin_decoy_choi_sdp(
         )
 
     # ---- Eq. 79a: p(μ|t)·(Σ_n p_μ(n)·Y_n + δ^μ) = q^μ ----
+    # Track these constraints for Lagrange dual extraction.
+    # Each cell (μ, a, b) → one equality → one dual g^{μ,a,b}.
+    q_constraints: dict[tuple[float, int, int], cp.Constraint] = {}
     for i_mu, mu in enumerate(intensities):
         p_n_mu = poisson_pmf_vec(mu, N_ph)  # shape (N_ph+1,)
         for a in range(N_ALICE_SIGNALS):
@@ -464,7 +467,9 @@ def kamin_decoy_choi_sdp(
                     sum(p_n_mu[n] * Y[n, a, b] for n in range(N_ph + 1))
                     + delta[i_mu, a, b]
                 )
-                constraints.append(lhs == float(q_hon_per_mu[mu][a, b]))
+                c = lhs == float(q_hon_per_mu[mu][a, b])
+                q_constraints[(mu, a, b)] = c
+                constraints.append(c)
 
     # ---- Eq. 79b: 0 ≤ δ^μ ≤ 1 − p_tot(μ) ----
     constraints.append(delta >= 0)
@@ -514,15 +519,356 @@ def kamin_decoy_choi_sdp(
     r_cross_nats = float(prob.value)
     r_cross_bits = r_cross_nats / math.log(2.0)
 
+    # ---- Dual extraction for Kamin Eq. 82 finite-key ----
+    # Sign convention (validated against A2 BB84 qubit): CVXPY dual for
+    # equality constraint lhs == rhs has sign -∂(objective)/∂(rhs).
+    # We flip sign so g_c = ∂(r_cross)/∂(q^μ_c).
+    g_star = np.zeros(
+        (len(intensities), N_ALICE_SIGNALS, N_BOB_OUTCOMES), dtype=float,
+    )
+    for i_mu, mu in enumerate(intensities):
+        for a in range(N_ALICE_SIGNALS):
+            for b in range(N_BOB_OUTCOMES):
+                dual_nat = float(q_constraints[(mu, a, b)].dual_value)
+                # CVXPY: dual value is in nats for quantum_rel_entr (obj in nats).
+                # Flip sign + convert to bits.
+                g_star[i_mu, a, b] = -dual_nat / math.log(2.0)
+
     return {
         "r_cross": r_cross_bits,
         "r_cross_nats": r_cross_nats,
         "J_1": np.asarray(J_1.value),
         "Y": np.asarray(Y.value),
         "delta": np.asarray(delta.value),
+        "g_star": g_star,
         "status": prob.status,
         "mu_sig": mu_sig,
         "p_1_mu_sig": p_1_mu_sig,
         "gamma": gamma,
         "eta_1_calib": eta_1_calib,
+        "intensities": tuple(intensities),
+        "p_mu_given_t": tuple(p_mu_given_t),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Kamin Eq. 38 exact variance for decoy (multi-intensity)
+# ---------------------------------------------------------------------------
+
+def kamin_decoy_V2_eq39(
+    g_star: np.ndarray,
+    q_hon_per_mu: dict[float, np.ndarray],
+    intensities: tuple[float, ...],
+    p_mu_given_t: tuple[float, ...],
+    gamma: float,
+    d_A: int = 2,
+    kappa: int = 1,
+) -> float:
+    """Kamin 2025 Eq. 38 exact variance + Eq. 39 wrapper for decoy protocol.
+
+    Construction of the test-conditional distribution q (Σ q = 1):
+        q_{μ,a,b} (test-cond) = q_hon^μ_{a,b} / p(μ|t)  (from normalization
+            Σ_{a,b} q_hon^μ = p(μ|t) in our honest model).
+        Weighting across intensities: p(μ|t)·q_{μ|test,μ} = q_hon^μ giving
+        q_{μ,a,b} (per-round-test) = q_hon^μ_{a,b}.
+        Sum Σ_{μ,a,b} q = Σ_μ p(μ|t) = 1 ✓.
+
+    Apply Eq. 38:
+        Var(p, f) = Σ_{c≠⊥} (q_c/γ)·(max(g) - g_c)² - (max(g) - g·q)²
+    where c ranges over (μ, a, b).
+
+    Ṽ² from Eq. 39:
+        Ṽ² = (log₂(1 + 2·d_A^κ) + √(2 + Var))²
+    """
+    # Flatten g and q into 1-D vectors
+    g_flat = np.zeros(len(intensities) * N_ALICE_SIGNALS * N_BOB_OUTCOMES)
+    q_flat = np.zeros_like(g_flat)
+    idx = 0
+    for i_mu, mu in enumerate(intensities):
+        q_mu = q_hon_per_mu[mu]
+        for a in range(N_ALICE_SIGNALS):
+            for b in range(N_BOB_OUTCOMES):
+                g_flat[idx] = g_star[i_mu, a, b]
+                q_flat[idx] = float(q_mu[a, b])
+                idx += 1
+
+    # Verify q sums to (1 - γ) approximately (missing = ⊥ = 1-γ prob)
+    # q is per-round test-outcome distribution; Σ q = γ (prob of test).
+    # For Eq. 38 we need q as test-conditional: Σ q = 1.
+    q_sum = float(q_flat.sum())
+    if q_sum > 0:
+        q_flat = q_flat / q_sum  # normalize to test-conditional
+
+    max_g = float(g_flat.max())
+    g_dot_q = float(np.dot(g_flat, q_flat))
+    # Eq. 38
+    Var = float(np.sum(q_flat / gamma * (max_g - g_flat) ** 2)) \
+        - (max_g - g_dot_q) ** 2
+    if Var < 0.0:
+        Var = 0.0
+    # Eq. 39
+    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(2.0 + Var)
+    return V_inner ** 2
+
+
+# ---------------------------------------------------------------------------
+# Kamin Eq. 82 finite-key formula for decoy protocol
+# ---------------------------------------------------------------------------
+
+def kamin_decoy_full_key_length(
+    intensities: tuple[float, ...],
+    p_mu_given_t: tuple[float, ...],
+    q_hon_per_mu: dict[float, np.ndarray],
+    N_ph: int,
+    n: int,
+    loss_dB: float,
+    theta_misalign: float,
+    gamma: float,
+    alpha: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    qber_key_basis: float | None = None,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Kamin Eq. 82 finite-key length for decoy-state qubit BB84.
+
+    Implements:
+        ℓ ≤ n·(inf_J (p(1)·W + g·(q_hon − Φ) − β·ln2/2·Ṽ) − Δ_com)
+          − n·β²·K(α) − λ_EC − ⌈log(1/ε_EV)⌉ − (α/(α-1))·log(1/ε_PA) + 2
+
+    Per-round rate scales additionally by η_det (calibrated single-photon
+    detection); the SDP computes the η-invariant conditional contribution.
+
+    Unique-acceptance assumption: Δ_com = 0.  Honest state's f = g·q_hon
+    (tight min-tradeoff at honest point).
+
+    Args:
+        intensities, p_mu_given_t, q_hon_per_mu, N_ph: as for kamin_decoy_choi_sdp
+        n: number of signal rounds
+        loss_dB: channel loss in dB (enters via η_1 = 10^(-L/10))
+        theta_misalign: for K(α) span computation
+        gamma, alpha: test probability + Rényi parameter
+        eps_secure, f_EC: security + EC efficiency
+        qber_key_basis: for λ_EC computation (default = sin²(θ_misalign))
+
+    Returns:
+        dict with ell, r_cross, V_squared, K_alpha, lambda_EC, eps_{PA,EV},
+             g_star, sdp_status.
+    """
+    if n < 1:
+        raise ValueError(f"n must be ≥ 1, got {n}")
+    if loss_dB < 0.0:
+        raise ValueError(f"loss_dB must be ≥ 0, got {loss_dB}")
+    eta_1 = 10.0 ** (-loss_dB / 10.0)
+    if qber_key_basis is None:
+        qber_key_basis = math.sin(theta_misalign) ** 2
+
+    # 1) Solve decoy SDP → r_cross + g_star
+    sdp = kamin_decoy_choi_sdp(
+        intensities=intensities, p_mu_given_t=p_mu_given_t,
+        q_hon_per_mu=q_hon_per_mu, N_ph=N_ph, gamma=gamma,
+        eta_1_calib=eta_1, solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+    )
+    r_cross = sdp["r_cross"]  # p(1|μ_sig)·(1-γ)²·W_conditional
+    g_star = sdp["g_star"]
+
+    # 2) Ṽ² via Kamin Eq. 39 with exact Var from Eq. 38
+    V_squared = kamin_decoy_V2_eq39(
+        g_star=g_star, q_hon_per_mu=q_hon_per_mu,
+        intensities=intensities, p_mu_given_t=p_mu_given_t, gamma=gamma,
+    )
+
+    # 3) K(α) via Kamin Eq. 11
+    from qkdx.finite_key.kamin_geat import (
+        kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
+    )
+    # span = κ·log(d_A) + max(g) - min_Σ(g)
+    # d_A = 2 for qubit, κ = 1
+    max_f = max(float(g_star.max()), 0.0)
+    min_sigma_f = min(float(g_star.min()), 0.0)
+    K_val = kamin_K_alpha(
+        alpha=alpha, d_A=2, max_f=max_f, min_sigma_f=min_sigma_f, kappa=1,
+    )
+
+    # 4) ε-split via Eq. 57
+    eps_PA, eps_EV = optimal_eps_parameters(eps_secure=eps_secure, alpha=alpha)
+
+    # 5) λ_EC: error correction leak per sifted round × η_1 · (1-γ)² · n
+    # H(S|YI)_hon = (1-γ)²·η_1·f_EC·H_2(qber_key_basis)
+    if qber_key_basis <= 0 or qber_key_basis >= 1:
+        H_qber = 0.0
+    else:
+        H_qber = (
+            -qber_key_basis * math.log2(qber_key_basis)
+            - (1 - qber_key_basis) * math.log2(1 - qber_key_basis)
+        )
+    # For decoy, λ_EC leak is across all sifted rounds (all photon numbers);
+    # sift prob ≈ (1-γ)²·Q_μ_sig where Q_μ_sig is total detection rate for
+    # μ_sig.  Approximate Q_μ_sig ≈ 1 - e^{-μ_sig·η_1} for WCP with per-photon
+    # loss; for small eta_1·μ_sig: Q ≈ η_1·μ_sig·(1-γ)².
+    # Simpler approximation: use Q_sift = η_1·μ_sig·(1-γ)² for single-photon-
+    # dominated rate (conservative for multi-photon contribution).
+    mu_sig = intensities[0]
+    Q_sift_approx = eta_1 * mu_sig * (1.0 - gamma) ** 2
+    lambda_EC = n * Q_sift_approx * f_EC * H_qber
+
+    # 6) Per-round rate with η scaling
+    # r_cross_sdp is conditional; multiply by η_1 for per-round single-photon
+    # contribution.  Total per-round: R = η_1·r_cross (multi-photon absorbed in
+    # decoy LP via Y_n; those contribute 0 to W).
+    R_per_round = eta_1 * r_cross
+
+    # 7) Kamin Eq. 82 key length via heuristic helper (uses V² from Eq. 39)
+    ell = kamin_heuristic_key_length(
+        n=n, h=R_per_round, V_squared=V_squared, K_alpha=K_val,
+        alpha=alpha, lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
+    )
+
+    return {
+        "ell": ell,
+        "rate_per_round": ell / n,
+        "R_per_round_asymp": R_per_round,
+        "r_cross_sdp": r_cross,
+        "V_squared": V_squared,
+        "K_alpha": K_val,
+        "lambda_EC": lambda_EC,
+        "eps_PA": eps_PA,
+        "eps_EV": eps_EV,
+        "g_star": g_star,
+        "eta_1": eta_1,
+        "sdp_status": sdp["status"],
+    }
+
+
+def _decoy_ell_from_sdp_cached(
+    r_cross: float,
+    g_star: np.ndarray,
+    intensities: tuple[float, ...],
+    p_mu_given_t: tuple[float, ...],
+    q_hon_per_mu: dict[float, np.ndarray],
+    n: int,
+    eta_1: float,
+    gamma: float,
+    alpha: float,
+    eps_secure: float,
+    f_EC: float,
+    qber_key_basis: float,
+    mu_sig: float,
+) -> float:
+    """Compute Kamin Eq. 82 ℓ from CACHED SDP result; used in (γ, α) sweep.
+
+    Note: r_cross depends on γ (through (1-γ)² factor) and g_star depends on
+    γ through the Eq. 79a LHS.  For a cached SDP we treat these as
+    approximately γ-invariant at the honest point.  In practice gain from
+    γ-grid is modest; this cached helper is for α-sweep primarily.
+    """
+    from qkdx.finite_key.kamin_geat import (
+        kamin_K_alpha, optimal_eps_parameters, kamin_heuristic_key_length,
+    )
+    V_squared = kamin_decoy_V2_eq39(
+        g_star=g_star, q_hon_per_mu=q_hon_per_mu,
+        intensities=intensities, p_mu_given_t=p_mu_given_t, gamma=gamma,
+    )
+    max_f = max(float(g_star.max()), 0.0)
+    min_sigma_f = min(float(g_star.min()), 0.0)
+    K_val = kamin_K_alpha(
+        alpha=alpha, d_A=2, max_f=max_f, min_sigma_f=min_sigma_f, kappa=1,
+    )
+    eps_PA, eps_EV = optimal_eps_parameters(eps_secure=eps_secure, alpha=alpha)
+    if qber_key_basis <= 0 or qber_key_basis >= 1:
+        H_qber = 0.0
+    else:
+        H_qber = (
+            -qber_key_basis * math.log2(qber_key_basis)
+            - (1 - qber_key_basis) * math.log2(1 - qber_key_basis)
+        )
+    Q_sift_approx = eta_1 * mu_sig * (1.0 - gamma) ** 2
+    lambda_EC = n * Q_sift_approx * f_EC * H_qber
+    R_per_round = eta_1 * r_cross
+    return kamin_heuristic_key_length(
+        n=n, h=R_per_round, V_squared=V_squared, K_alpha=K_val,
+        alpha=alpha, lambda_EC=lambda_EC, eps_EV=eps_EV, eps_PA=eps_PA,
+    )
+
+
+def kamin_decoy_full_key_length_optimized(
+    intensities: tuple[float, ...],
+    p_mu_given_t: tuple[float, ...],
+    q_hon_per_mu: dict[float, np.ndarray],
+    N_ph: int,
+    n: int,
+    loss_dB: float,
+    theta_misalign: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    qber_key_basis: float | None = None,
+    gamma_grid: tuple[float, ...] = (
+        0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5,
+    ),
+    alpha_grid: tuple[float, ...] | None = None,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Grid-optimize (γ, α) for Kamin Eq. 82 decoy finite-key length.
+
+    For efficiency, the SDP is solved once per γ (γ enters Eq. 79 objective
+    via (1-γ)² factor, but only mildly).  α sweep is cached.  Auto alpha_grid
+    logarithmic around 1 + 1/√n.
+    """
+    if not qber_key_basis:
+        qber_key_basis = math.sin(theta_misalign) ** 2
+    eta_1 = 10.0 ** (-loss_dB / 10.0)
+    mu_sig = intensities[0]
+    if alpha_grid is None:
+        inv_sqrt_n = 1.0 / math.sqrt(n)
+        alpha_grid = tuple(
+            1.0 + scale * inv_sqrt_n
+            for scale in (0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0)
+            if 1.0 + scale * inv_sqrt_n < 1.5
+        )
+
+    best_ell = -math.inf
+    best_gamma = gamma_grid[0]
+    best_alpha = alpha_grid[0]
+    best_sdp_result = None
+
+    for gamma in gamma_grid:
+        sdp = kamin_decoy_choi_sdp(
+            intensities=intensities, p_mu_given_t=p_mu_given_t,
+            q_hon_per_mu=q_hon_per_mu, N_ph=N_ph, gamma=gamma,
+            eta_1_calib=eta_1, solver=solver,
+            epsilon_regularization=epsilon_regularization, verbose=verbose,
+        )
+        r_cross = sdp["r_cross"]
+        g_star = sdp["g_star"]
+        for alpha in alpha_grid:
+            try:
+                ell = _decoy_ell_from_sdp_cached(
+                    r_cross=r_cross, g_star=g_star,
+                    intensities=intensities, p_mu_given_t=p_mu_given_t,
+                    q_hon_per_mu=q_hon_per_mu, n=n, eta_1=eta_1,
+                    gamma=gamma, alpha=alpha, eps_secure=eps_secure,
+                    f_EC=f_EC, qber_key_basis=qber_key_basis, mu_sig=mu_sig,
+                )
+            except (ValueError, OverflowError):
+                continue
+            if ell > best_ell:
+                best_ell = ell
+                best_gamma = gamma
+                best_alpha = alpha
+                best_sdp_result = sdp
+
+    return {
+        "ell_star": best_ell,
+        "rate_star": best_ell / n,
+        "gamma_star": best_gamma,
+        "alpha_star": best_alpha,
+        "eta_1": eta_1,
+        "r_cross_sdp": best_sdp_result["r_cross"] if best_sdp_result else None,
+        "g_star": best_sdp_result["g_star"] if best_sdp_result else None,
+        "sdp_status": best_sdp_result["status"] if best_sdp_result else "none",
     }

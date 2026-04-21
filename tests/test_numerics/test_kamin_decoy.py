@@ -328,6 +328,125 @@ class TestDecoyMultiIntensity:
                 f"Non-monotone: {rates_per_round}"
             )
 
+    def test_dual_extraction_returned(self):
+        """SDP returns g_star tensor (|intensities|, 2, 5) with finite values."""
+        from qkdx.numerics.kamin_decoy_sdp import (
+            kamin_decoy_choi_sdp, honest_q_per_intensity,
+        )
+        intensities = (0.9, 0.02, 0.001)
+        p_mu_given_t = (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)
+        N_ph = 5
+        theta = math.asin(0.1)
+        q_per_mu = {}
+        for mu, p in zip(intensities, p_mu_given_t):
+            q_per_mu[mu] = honest_q_per_intensity(
+                mu=mu, N_ph=N_ph, eta_det=1.0, theta_misalign=theta,
+                bob_gamma=0.5, p_mu_given_t=p,
+            )
+        r = kamin_decoy_choi_sdp(
+            intensities=intensities, p_mu_given_t=p_mu_given_t,
+            q_hon_per_mu=q_per_mu, N_ph=N_ph, gamma=0.01, eta_1_calib=1.0,
+        )
+        assert "g_star" in r
+        assert r["g_star"].shape == (len(intensities), 2, 5)
+        assert np.all(np.isfinite(r["g_star"]))
+
+
+class TestDecoyFiniteKey:
+    """Kamin Eq. 82 finite-key formula for decoy."""
+
+    def test_finite_key_positive_at_large_n_optimized(self):
+        """At n=10^12, 0 dB, (γ, α) optimized rate > 0 and near asymptotic."""
+        from qkdx.numerics.kamin_decoy_sdp import (
+            kamin_decoy_full_key_length_optimized, honest_q_per_intensity,
+        )
+        intensities = (0.9, 0.02, 0.001)
+        p_mu_given_t = (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)
+        N_ph = 5
+        theta = math.asin(0.1)
+        eta = 1.0
+        q_per_mu = {}
+        for mu, p in zip(intensities, p_mu_given_t):
+            q_per_mu[mu] = honest_q_per_intensity(
+                mu=mu, N_ph=N_ph, eta_det=eta, theta_misalign=theta,
+                bob_gamma=0.5, p_mu_given_t=p,
+            )
+        r = kamin_decoy_full_key_length_optimized(
+            intensities=intensities, p_mu_given_t=p_mu_given_t,
+            q_hon_per_mu=q_per_mu, N_ph=N_ph, n=10**12, loss_dB=0.0,
+            theta_misalign=theta,
+        )
+        print(f"Optimized: ell={r['ell_star']:.4e}, rate={r['rate_star']:.4f}, "
+              f"γ*={r['gamma_star']}, α*={r['alpha_star']:.10f}")
+        assert r["ell_star"] > 0
+        # At large n, rate should be in [0.15, 0.45] (finite-size penalty
+        # from 30-cell decoy V² is larger than qubit)
+        assert 0.15 < r["rate_star"] < 0.45, (
+            f"Rate at n=10^12 0 dB optimized expected 0.15-0.45, got "
+            f"{r['rate_star']:.4f}"
+        )
+
+    def test_finite_key_negative_at_small_n(self):
+        """At n=100, finite-size penalty dominates → ℓ < 0."""
+        from qkdx.numerics.kamin_decoy_sdp import (
+            kamin_decoy_full_key_length, honest_q_per_intensity,
+        )
+        intensities = (0.9, 0.02, 0.001)
+        p_mu_given_t = (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)
+        N_ph = 5
+        theta = math.asin(0.1)
+        eta = 1.0
+        q_per_mu = {}
+        for mu, p in zip(intensities, p_mu_given_t):
+            q_per_mu[mu] = honest_q_per_intensity(
+                mu=mu, N_ph=N_ph, eta_det=eta, theta_misalign=theta,
+                bob_gamma=0.5, p_mu_given_t=p,
+            )
+        r = kamin_decoy_full_key_length(
+            intensities=intensities, p_mu_given_t=p_mu_given_t,
+            q_hon_per_mu=q_per_mu, N_ph=N_ph, n=100, loss_dB=0.0,
+            theta_misalign=theta, gamma=0.01, alpha=1.1,
+        )
+        assert r["ell"] < 0
+
+    def test_fig3_anchor_0dB_optimized(self):
+        """Kamin Fig.3 GEAT finite-n at n=10^12 0 dB.
+
+        At n=10^12 0 dB, Kamin Fig.3 GEAT rate ≈ 0.3.  My rate from
+        Eq. 82 formula with 2-DoF g should be in [0.15, 0.45].
+
+        Note (documented gap): at loss > 0, the 2-DoF dual g_star has large
+        magnitude (|g| ~ 10³-10⁴) because per-cell constraint sensitivity
+        scales as 1/η.  This inflates V² via Eq. 38 and the finite-key
+        formula goes negative.  Closing this gap requires implementing
+        Kamin Thm 4 Legendre-Fenchel g*-optimization (Eq. 46-55) — same
+        underlying need as for qubit Fig.1 n=10^12 residual cutoff.
+        """
+        from qkdx.numerics.kamin_decoy_sdp import (
+            kamin_decoy_full_key_length_optimized, honest_q_per_intensity,
+        )
+        intensities = (0.9, 0.02, 0.001)
+        p_mu_given_t = (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)
+        N_ph = 5
+        theta = math.asin(0.1)
+        q_per_mu = {}
+        for mu, p in zip(intensities, p_mu_given_t):
+            q_per_mu[mu] = honest_q_per_intensity(
+                mu=mu, N_ph=N_ph, eta_det=1.0, theta_misalign=theta,
+                bob_gamma=0.5, p_mu_given_t=p,
+            )
+        r = kamin_decoy_full_key_length_optimized(
+            intensities=intensities, p_mu_given_t=p_mu_given_t,
+            q_hon_per_mu=q_per_mu, N_ph=N_ph, n=10**12, loss_dB=0.0,
+            theta_misalign=theta,
+        )
+        print(f"n=10^12 0 dB optimized: rate={r['rate_star']:.4f}, "
+              f"γ*={r['gamma_star']}, α*-1={r['alpha_star']-1:.2e}")
+        assert 0.15 < r["rate_star"] < 0.45, (
+            f"n=10^12 0 dB rate {r['rate_star']:.4f} outside [0.15, 0.45] "
+            f"(Kamin Fig.3 anchor ≈ 0.3)"
+        )
+
     def test_decoy_asymptotic_matches_kamin_fig3_0dB(self):
         """Kamin Fig.3 at 0 dB, asymptotic: rate ≈ 0.35 (visible from plot).
 
