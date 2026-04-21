@@ -143,6 +143,39 @@
 
 **Patch**: `changes-v5b.patch` (pending commit)
 
-**Status**: **等用户决策**（Round 6 re-check / 直接 FINALIZE / 其他）
+**Status**: **FINALIZED** — 用户于 2026-04-21 session 显式接受 Round 5b 直接 FINALIZE（不启动 Round 6 re-check）
+
+---
+
+## Final outcome (FINALIZED 2026-04-21)
+
+**Retraction cycle 完整归档**：
+
+- **核心撤回**: path γ v0.2 [COROLLARY pending] → v0.3 **[CONJ]**，双 reviewer 独立 UNSOUND（Claude audit + Codex audit）
+- **文档状态**: 全部与 FINDINGS v2 §1.1 对齐（umr 上界仅在放宽版 $\mathcal{T}_\text{umr}^\text{bosonic-asym}$ 下为 [CONJ]）
+- **用户审阅 queue**: 从 5 项 / 4-5 天 压缩到 3 项 / 1-1.5 天（path γ v0.2 三项 CLOSED）
+- **治理文件新增**: [CLAUDE.md](../../../CLAUDE.md)（R0.1-R0.3 三红线；升级规则 C1 ∧ C2 ∧ C3 invariant）+ [.claude/rules/research-rigor.md](../../../.claude/rules/research-rigor.md)（同步 quick-reference）
+
+**轮次汇总**：
+
+| 轮 | commit | reviewers | verdict | 处理 |
+|---|---|---|---|---|
+| Round 1 | 2583ffc | dual Codex | Agent 1 REJECTED + Agent 2 major | 5 issues → Round 2 |
+| Round 2 | 37fa7df | dual Codex | Agent 1 FAIL + Agent 2 FAIL | 7 issues → Round 3 |
+| Round 3 | f5bb30a | dual Codex | Agent 1 FAIL + Agent 2 FAIL | 3 issues → Round 4 |
+| Round 4 | bf0b790 | dual Codex | Agent 1 PASS + Agent 2 FAIL | 1 MAJOR → Round 5 |
+| Round 5 | 149c60a | dual Codex | Agent 1 FAIL + Agent 2 PASS | 分裂 → Round 5b cleanup |
+| Round 5b | 9ab3559 | — | 机械 cleanup | ✅ **FINALIZED** |
+
+**用户决策时序** (time-stamped, per R0.1 exception requirement):
+
+- 2026-04-21 session 末：用户显式指示 "接受 5b 直接 FINALIZE" → 工作流关闭
+- **注**：Round 5 本身未取得 unified PASS（Agent 1 FAIL vs Agent 2 PASS），按 R2.2 "任一 FAIL → 撤回" 字面应启动 Round 6；但用户用其**审签权**（FINALIZE decision）终止 workflow。此决策不构成任何理论陈述的升级（无 [CONJ] → [COROLLARY] 发生），仅关闭 dev-reviewer QA cycle。umr 上界仍为 **[CONJ]**
+
+**未来工作提示**（AI 代理需遵守）：
+
+1. 本 cycle 生成的 R0.2 C1 ∧ C2 ∧ C3 invariant 对**后续**所有 [CONJ] / [SYN] → [COROLLARY] / [THM] 升级**生效**（包括未来尝试 path α / β / γ 真版）
+2. 本 cycle 用户 FINALIZE decision 是**单次** scope 结束信号，**非** invariant 豁免
+3. 若未来重启 umr 上界升级，AI **不得**自主执行；须用户显式启动，且必须走 C1 ∧ C2 ∧ C3 完整路径（见 [docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md §5](../../AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md)）
 
 
