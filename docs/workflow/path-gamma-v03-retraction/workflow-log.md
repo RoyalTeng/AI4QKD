@@ -2,8 +2,8 @@
 
 **Mode**: review-only (no new implementation)
 **Base**: 9402e44^ (pre path γ v0.2)
-**Head (latest)**: Round 4 (see § below); Round 1 base = 2583ffc; Round 2 commit = 37fa7df; Round 3 commit = f5bb30a; Round 4 commit = (this commit, pending)
-**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正 + Round 4 工作流边界 + path β citation 修正
+**Head (latest)**: Round 5 (see § below); Round 1 base = 2583ffc; Round 2 commit = 37fa7df; Round 3 commit = f5bb30a; Round 4 commit = bf0b790; Round 5 commit = this commit (pending).
+**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正 + Round 4 工作流边界 + path β citation 修正 + Round 5 升级规则 invariant (C1 AND C2 AND C3)
 
 ## Round 1 — SETUP done 2026-04-21
 
@@ -87,19 +87,42 @@
 
 **Decision**: Round 4 FIX，合并 2 MAJOR + 1 MINOR。
 
-### Round 4 — 2026-04-21 FIX (this commit)
+### Round 4 — 2026-04-21 FIX (commit bf0b790)
 
-**Addressing 2 MAJOR + 1 MINOR**:
+**Addressed 2 MAJOR + 1 MINOR** (substance closed; Round 5 further tightens wording):
 
-1. ✅ [Agent 1 M1] workflow-log 明确把 Round 3 锚定到 **commit f5bb30a**；Round 4 = this commit
-2. ✅ [Agent 1 m1] conclusions §5 path β 引用修正：Log 07 §3.2 → §3.1 + §4.4（path β 的 authoritative 位置）
-3. ✅ [Agent 2 M1] CLAUDE.md §3 + rigor.md 加入"dev-reviewer 地位边界"红线：
-   - dev-reviewer 双 Codex 是**强制 QA triage**
-   - 但 Codex + Claude 仍属跨家族 AI 审计链，**不单独**满足 R0.2 的 independent-review 条件
-   - PASS **必须**叠加用户签字 / 人类纸笔 / 非 AI 工具任一 (R0.2 的 a/b/c)
-   - 违反边界视同 R0.1 计划外越权
+1. ✅ [Agent 1 M1] workflow-log anchors Round 3 = f5bb30a
+2. ✅ [Agent 1 m1] conclusions §5 path β citation fixed (Log 07 §3.1 + §4.4)
+3. ✅ [Agent 2 M1] CLAUDE.md §3 + rigor.md 加入 dev-reviewer 边界红线（headline level）
 
-**Patch**: `changes-v4.patch` (to be saved)
+**Patch**: `changes-v4.patch` (127 lines, saved and committed)
 
-**Next**: Round 4 Codex 双 Agent 评审（Round 1-3 模式）
+### Round 4 review — 2026-04-21
+
+**Agent 1 (review-diff-4.json, gpt-5.4 xhigh)**: `PASS` — 1 MINOR only
+- MINOR 1: workflow-log :5 + :102 still has pre-commit placeholder "(this commit, pending)" / "(to be saved)"
+
+**Agent 2 (review-holistic-4.md, gpt-5.4 high)**: `FAIL` — 1 MAJOR new regression
+- MAJOR 1: Round 4 的 "不单独满足" 措辞正确，但叠加的 "或 / 任一 / user sign-off" 语法把 C1 (a/b/c) 和用户签字写成了**替代**关系（而非并列）。R0.2 说 [COROLLARY] 要 "两独立评审 + 用户签字"（AND），但 §3.2 只对 [THM] 额外要求 (a/b/c)，暗示 [COROLLARY] 可能不需要。rigor.md :39 "或叠加 (b)/(c)" + workflow-log :99 "任一 (R0.2 a/b/c)" 同类问题。可被 AI 误读为 "dev-reviewer PASS + 用户签字 → [COROLLARY] OK"，**正是 Round 4 本要封堵的 loophole**。
+
+**Decision**: 任一 reviewer FAIL → Round 5 FIX (最终轮)。
+
+### Round 5 — 2026-04-21 FIX (this commit)
+
+**Addressing 1 MAJOR + 1 MINOR**:
+
+1. ✅ [Agent 2 M1] 把 [COROLLARY] / [THM] 升级规则改写为 **invariant AND logic** (C1 ∧ C2 ∧ C3)：
+   - **C1** R0.2-compliant independent review PASS（(a)/(b)/(c) 任一）
+   - **C2** 用户显式签字（逐项确认）
+   - **C3** dev-reviewer 双 Codex PASS
+   - 三条件**并列必要**（AND）；任一缺失即非法
+   - 显式列**越权示例**（dev-reviewer PASS + 用户签字 缺 C1 → 禁止；等等）
+   - 显式列**合法示例**（C1 + C2 + C3 完整）
+   - 对应 [CLAUDE.md R0.2](../../CLAUDE.md) + [CLAUDE.md §3.2](../../CLAUDE.md) + [.claude/rules/research-rigor.md R2.2](../../../.claude/rules/research-rigor.md) 同步收紧
+2. ✅ [Agent 1 m1] workflow-log 去除 "(this commit, pending)" / "(to be saved)" placeholder，锚定 Round 4 = bf0b790 / Round 5 = this commit
+
+**Patch**: `changes-v5.patch` (pending)
+
+**Next**: Round 5 Codex 双 Agent 评审（最终轮）；若 PASS → FINALIZE。若仍 FAIL → 转交用户决策
+
 

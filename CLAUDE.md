@@ -21,18 +21,33 @@
 
 ### R0.2 研究结论必须多方验证
 
-- **AI 起草的理论陈述默认 [CONJ] 级**。**不得**基于单一 AI session 内的推理链自行升级到 [COROLLARY] 或 [THM]
-- 升级到 **[COROLLARY] 或 [THM]** 的**硬**路径（单值规则，任何一级越权升级都非法）：
-  1. 必须至少有 **两个独立评审** 各自**独立**返回 PASS / SOUND
-  2. 任一评审返回 UNSOUND / FAIL / REJECTED → **必须撤回**并记录
-  3. **用户显式签字**是升级到 **[COROLLARY] 以及 [THM]** 的**必要**条件，对外引用 / 论文 / 展示稿同样要求
-- 评审的"独立"含义**严格按 [RETRACTION.md §4.1 规则 3](docs/research/RETRACTION.md) 执行**：
-  - **不计入**"独立验证"的组合：同一模型多次运行、同一家族模型（例如 Claude 对 Claude）多 prompt 重评、AI 单层审计链
-  - **计入**"独立验证"的组合须满足**任一**：
-    - (a) **不同训练偏差源**的模型（例如 Claude + Codex/GPT 跨家族）**且** 双方均**直接读 PDF / 原文**而不是复述 AI 综述
-    - (b) 包含**人类研究者**直接纸笔复核
-    - (c) 使用**非 AI 工具**（数值 SDP / 符号计算 / 形式化 proof assistant）独立复现
-  - v1 FINDINGS retraction 正是因为 "Claude 起草 + Claude 多次审" 被当作 "多方验证"；此陷阱**不得**重蹈
+**AI 起草的理论陈述默认 [CONJ] 级**。**不得**基于单一 AI session 内的推理链自行升级到 [COROLLARY] 或 [THM]。
+
+**升级规则（invariant，适用于 [COROLLARY] 和 [THM]，两级无例外）**：
+
+任何从 [SYN]/[CONJ] 向 [COROLLARY] 或 [THM] 的升级**必须同时**满足以下**全部三个**条件（逻辑 AND，**非** OR / 任一）：
+
+1. **C1 独立验证**：至少一组 R0.2-合规的 **independent review** 返回 PASS / SOUND。"independent review" 的合规组合严格按 [RETRACTION.md §4.1 规则 3](docs/research/RETRACTION.md) 定义，**必须满足 (a)/(b)/(c) 之一**：
+   - (a) **不同训练偏差源**的模型（例如 Claude + Codex/GPT 跨家族）**且** 双方均**直接读 PDF / 原文**而不是复述 AI 综述
+   - (b) 包含**人类研究者**直接纸笔复核
+   - (c) 使用**非 AI 工具**（数值 SDP / 符号计算 / 形式化 proof assistant）独立复现
+
+2. **C2 用户显式签字**：项目负责人对升级目标（包括分级、scope、适用假设）**逐项确认**。用户签字**不**替代 C1，也**不**被 C1 替代 —— 两者**并列必要**。
+
+3. **C3 dev-reviewer 通过**：自主 session 内的 dev-reviewer 双 Codex QA 流程 verdict = PASS；任一 Round UNSOUND / FAIL / REJECTED 立即撤回并记录。**但 dev-reviewer PASS 单独不构成 C1**（Claude + Codex 属跨家族 AI 审计链，未满足 (a) 的"直读 PDF"双边要求，且不含 (b)/(c)），它是 C1 之外的**独立**必要 QA 闸门。
+
+**越权示例**（**禁止**）：
+
+- ❌ "dev-reviewer PASS + 用户签字" → 不足以升级（缺 C1；dev-reviewer 不是 C1）
+- ❌ "C1 (a) 跨家族评审 PASS" 但无用户签字 → 不足以升级（缺 C2）
+- ❌ 同家族模型多次运行 / 纯 AI 审计链 → 根本不计入 C1
+
+**合法示例**：
+
+- ✅ C1 (a) 跨家族评审 + 双方直读 PDF + PASS，**AND** C2 用户签字，**AND** C3 dev-reviewer PASS → 可升级
+- ✅ C1 (b) 人类纸笔复核 PASS，AND C2 用户签字，AND C3 dev-reviewer PASS → 可升级
+
+v1 FINDINGS retraction 正是因为 "Claude 起草 + Claude 多次审" 被当作多方验证，同时缺 C2；**不得**重蹈。
 
 ### R0.3 严谨性分级四级制（FINDINGS v2 §1.2 红线）
 
@@ -111,11 +126,14 @@ AI 起草的合成陈述**默认** [SYN] 或更低。
 
 项目有 **dev-reviewer skill** 运行双 Codex Agent 自动化 QA。
 
-**角色定位**（**硬红线**）：
+**角色定位**（**硬红线**，与 R0.2 C3 对齐）：
 
-- dev-reviewer 双 Codex 评审是自主 session 内**强制**的 QA triage，用于捕获低级 bug / consistency / 引用精度 / 文档状态一致性等错误
-- **但** dev-reviewer 双 Codex 流程**不单独满足** R0.2 的 independent-review 要求：Codex 与 Claude 属于不同家族但仍是 AI 审计链；R0.2 要求"跨训练偏差源**且**双方直接读 PDF" / 人类纸笔 / 非 AI 工具任一
-- 因此：通过 dev-reviewer 评审**必要但不充分**；PASS 之后仍须用户签字（以及对 [THM] 升级还需按 R0.2 的 (a)/(b)/(c) 满足独立性条件）
+- dev-reviewer 双 Codex 评审 = R0.2 **C3**（必要 QA 闸门），**不是** C1（independent validation），**不是** C2（user sign-off）
+- [COROLLARY] / [THM] 升级同时需要 C1 + C2 + C3 三者，**无例外**：
+  - dev-reviewer PASS → 满足 C3
+  - C1 必须另走：R0.2 (a)/(b)/(c) 任一（跨家族直读 PDF / 人类纸笔 / 非 AI 工具）
+  - C2 必须另走：用户逐项签字
+- **任何"或 / 任一 / 二选一"写法视同误读**：三个条件**并列必要**（逻辑 AND）
 - 违反 §3.2 边界的 AI session 视同 R0.1 计划外越权，须回滚
 
 工作流位置：`docs/workflow/{feature}/`
