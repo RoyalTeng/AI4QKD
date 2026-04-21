@@ -1,0 +1,305 @@
+# MDI-QKD Werner reduction — ideal symmetric entanglement-swap 下 post-BSM state 的 Werner form 推导
+
+**版本**：v0.1 **[CONJ]**（autonomous session 2026-04-22，对应 AUTONOMOUS_RESEARCH_PLAN T1）
+**对应 RESEARCH_PLAN 动作**：§2.2 R2.1 Level 3 → Level 4 升级
+**对应实现**：[qkdx/numerics/kamin_sdp_mdi.py](../../qkdx/numerics/kamin_sdp_mdi.py) line 23-28 docstring 所述 reduction
+**预备知识**：[docs/literature/MDI-QKD.md](../literature/MDI-QKD.md) §3.1-§3.4
+
+**严谨性分级**：**[CONJ]**（见 §5 分级判定依据）。本文档为本项目独立推导；**并非** Lo-Curty-Qi 2012 原文明写内容。
+
+---
+
+## -1. 目的与 scope
+
+### -1.1 目的
+
+验证 [qkdx/numerics/kamin_sdp_mdi.py](../../qkdx/numerics/kamin_sdp_mdi.py) docstring 的核心 reduction claim：
+
+> "In the virtual-EB picture (Lo-Curty-Qi §II), after Charlie's successful Bell projection the conditional Alice-Bob state has the Werner form $\text{Tr}[|\Phi^+\rangle\langle\Phi^+| \cdot \rho_{AB}] = 1 - 3 \cdot \text{qber}/2$ (for the basis-matched-correct BSM). This is structurally identical to qubit BB84's Werner state at effective QBER, allowing DIRECT reuse of `kamin_choi_sdp_qubit_bb84`."
+
+**用户 2026-04-21 session 签字**（审阅 1b）：要求形式化证明。
+
+### -1.2 Scope 严格限定
+
+本推导**仅覆盖以下严格假设下的 ideal symmetric MDI-QKD**：
+
+| 假设 ID | 假设内容 | 违反后果 |
+|---|---|---|
+| A1 | $\eta_A = \eta_B = \eta_\text{arm}$（两臂透过率对称） | Werner form 破坏；一般性 Bell-diagonal state |
+| A2 | Alice / Bob 使用理想 single-photon EB 源（ virtual-qubit picture） | 诱骗态 + WCP 情形需更广义推导 |
+| A3 | 两臂 depolarizing 噪声参数相同 $\lambda_A = \lambda_B = \lambda$ | 两 Werner 参数不同 → 输出非 Werner |
+| A4 | Charlie 理想 BSM（linear-optic 50:50 BS + 理想 PBS + 探测器理想） | 非理想 POVM → 需 Kraus-sum 修正 |
+| A5 | 无 basis misalignment（Z/X 基对齐） | 非对称 QBER → 不可简化为单参数 Werner |
+| A6 | Alice-Bob post-select 严格按 Lo-Curty-Qi 2012 Table I 执行（rect 基仅接受 $\Psi^-/\Psi^+$；diag 基仅接受 $\Psi^-$） | 其他 post-select 规则需重新推导条件态 |
+
+**非覆盖情形**（需独立工作，不在本文件 scope 内）：
+- 非对称 MDI（$\eta_A \neq \eta_B$，或 $\lambda_A \neq \lambda_B$）
+- WCP + 诱骗态 extension（Ma-Razavi 2012 Fig.3）
+- Misalignment > 0
+- Dark count + after-pulsing
+- Finite-key / entropy accumulation（这个单独在 Kamin 2025 framework 里处理，本文件只管 asymptotic conditional state）
+
+---
+
+## 0. 符号约定
+
+- $|\Phi^\pm\rangle = \frac{1}{\sqrt{2}}(|00\rangle \pm |11\rangle)$，$|\Psi^\pm\rangle = \frac{1}{\sqrt{2}}(|01\rangle \pm |10\rangle)$：标准 Bell 基
+- Alice：qubit A（virtual key register） + A'（发送 Charlie 的光子 mode）
+- Bob：qubit B + B'
+- Charlie 对 (A', B') 做 BSM（投影到 Bell 基之一）
+- $\mathcal{E}_\lambda$：qubit depolarizing channel，$\mathcal{E}_\lambda(\rho) = (1-\lambda)\rho + \lambda I/2$，$\lambda \in [0, 1]$
+- **Werner state**：$W_F = F|\Phi^+\rangle\langle\Phi^+| + \frac{1-F}{3}(|\Phi^-\rangle\langle\Phi^-| + |\Psi^+\rangle\langle\Psi^+| + |\Psi^-\rangle\langle\Psi^-|)$，参数 $F \in [1/4, 1]$
+- $q$：effective MDI QBER（Alice-Bob key 比特失配率，对称 $q_Z = q_X = q$）
+
+---
+
+## 1. Virtual-EB 归约（继承 Lo-Curty-Qi 2012 Appendix A）
+
+**陈述**（[RECALLED from Lo-Curty-Qi 2012 Appendix A，PDF 页 4 右栏第 2-3 段]）：
+
+MDI-QKD 的 prepare-and-measure 形式与以下 virtual-EB 形式**安全等价**：
+
+1. Alice 准备 $|\Phi^+\rangle_{A A'} = \frac{1}{\sqrt{2}}(|00\rangle + |11\rangle)_{A A'}$，A 存量子存储，A' 送 Charlie
+2. Bob 准备 $|\Phi^+\rangle_{B B'}$，B 存量子存储，B' 送 Charlie
+3. Charlie 公告 BSM 结果 $r \in \{\Phi^+, \Phi^-, \Psi^+, \Psi^-, \bot\}$
+4. Alice-Bob post-select 成功 $r \neq \bot$ 且同基（Table I）
+5. **延迟测量**：Alice-Bob 在 Charlie 公告后才对各自 virtual qubit A / B 做 Z 或 X 基测量
+
+**依据**（Lo-Curty-Qi §A 原文）：
+- "In such virtual qubits setting, the protocol is directly equivalent to an entanglement based protocol [refs 2, 3, 33]. Alice and Bob share a pair of qubits in their quantum memories and they simply compute the QBER on their virtual qubits in the XX and ZZ bases."
+- "one sees that whether Alice and Bob actually send out is unimportant for security proofs as long as their single-photon signals are basis-independent"
+
+**Bearing**：本文件后续 §2-§4 在 virtual-EB picture 中推导 conditional 态。
+
+---
+
+## 2. Lemma W1：depolarizing channel on one half of Bell pair → Werner state
+
+**引理**：设 $|\Phi^+\rangle_{AA'}$，对 A' 施加 depolarizing channel $\mathcal{E}_\lambda$，则 (A, A') 的输出态为 **Werner state**，fidelity 参数
+
+$$F_1 = 1 - \frac{3\lambda}{4}.$$
+
+**证明**：
+
+$$(\mathcal{I}_A \otimes \mathcal{E}_\lambda)(|\Phi^+\rangle\langle\Phi^+|) = (1-\lambda)|\Phi^+\rangle\langle\Phi^+| + \lambda (|\Phi^+\rangle\langle\Phi^+|)_\text{marginals}$$
+
+其中 $|\Phi^+\rangle\langle\Phi^+|_\text{marginals} = \text{Tr}_{A'}(|\Phi^+\rangle\langle\Phi^+|)_A \otimes I_{A'}/2 = I_A/2 \otimes I_{A'}/2$.
+
+展开 $I_A/2 \otimes I_{A'}/2 = \frac{1}{4}(|\Phi^+\rangle\langle\Phi^+| + |\Phi^-\rangle\langle\Phi^-| + |\Psi^+\rangle\langle\Psi^+| + |\Psi^-\rangle\langle\Psi^-|)$（Bell basis decomposition of maximally mixed two-qubit state）。
+
+代入：
+$$\rho_{AA'} = \left(1 - \lambda + \frac{\lambda}{4}\right)|\Phi^+\rangle\langle\Phi^+| + \frac{\lambda}{4}\sum_{i \neq \Phi^+}|B_i\rangle\langle B_i|$$
+
+$$= \left(1 - \frac{3\lambda}{4}\right)|\Phi^+\rangle\langle\Phi^+| + \frac{\lambda}{4}(|\Phi^-\rangle\langle\Phi^-| + |\Psi^+\rangle\langle\Psi^+| + |\Psi^-\rangle\langle\Psi^-|).$$
+
+对照 Werner 定义，$F_1 = 1 - 3\lambda/4$，且 off-Φ⁺ Bell 态权重等值 $(1-F_1)/3 = \lambda/4$. ✓ QED.
+
+**严谨性**：**[THM, elementary QI textbook]**（如 Nielsen-Chuang 2010 §8.3.4 depolarizing channel + §2.4 Bell basis expansion）。
+
+---
+
+## 3. Lemma W2：ideal symmetric entanglement-swap 下 Werner → Werner
+
+**引理**：设 $\rho_{AA'} = W_{F_1}$ 与 $\rho_{BB'} = W_{F_1}$（两 Werner 同参数）。Charlie 在 (A', B') 做 BSM，投影到 $|\Psi^-\rangle_{A'B'}$。conditional 条件下 (A, B) 的态为 **Werner state**，fidelity
+
+$$F' = F_1^2 + \frac{(1-F_1)^2}{3}.$$
+
+**证明**：
+
+设 $\rho_{AA'} = \sum_{i,j} c_i c_j |B_i\rangle_{AA'} \langle B_j|$，但实际上 $\rho_{AA'} = \sum_i p_i^A |B_i\rangle\langle B_i|_{AA'}$（Werner 是 Bell-diagonal）其中 $p_{\Phi^+}^A = F_1$ 和其他 $p_i^A = (1-F_1)/3$.
+
+同理 $\rho_{BB'} = \sum_j p_j^B |B_j\rangle\langle B_j|_{BB'}$.
+
+联合态：
+$$\rho_{AA'BB'} = \sum_{i,j} p_i^A p_j^B |B_i\rangle\langle B_i|_{AA'} \otimes |B_j\rangle\langle B_j|_{BB'}$$
+
+Charlie BSM outcome = $\Psi^-$ 对应投影 $|B_{\Psi^-}\rangle\langle B_{\Psi^-}|_{A'B'}$. 
+
+Conditional on outcome $\Psi^-$ on (A'B')，post-measurement state on (A, B):
+
+$$\rho_{AB}^{(\Psi^-)} = \frac{\text{Tr}_{A'B'}\left[(I_{AB} \otimes |B_{\Psi^-}\rangle\langle B_{\Psi^-}|_{A'B'}) \rho_{AA'BB'}\right]}{p_{\Psi^-}^\text{BSM}}.$$
+
+**计算内积** $\langle B_{\Psi^-}|_{A'B'} (|B_i\rangle_{AA'} \otimes |B_j\rangle_{BB'}) = ?$
+
+关键 identity（Bell state entanglement-swap rule）：
+
+$$\langle B_k|_{A'B'} (|B_i\rangle_{AA'} \otimes |B_j\rangle_{BB'}) = \frac{1}{2} U_{i,j,k} |B_{i \oplus j \oplus k}\rangle_{AB}$$
+
+其中 $\oplus$ 是 Bell-label 群加法（Pauli group modulo global phase），$U_{i,j,k}$ 是 phase 因子 $\pm 1$.
+
+**更具体**：Bell states 在 single-qubit Pauli 作用下的变换为
+$(\sigma_\mu \otimes I) |B_{\nu}\rangle = \pm |B_{\mu \cdot \nu}\rangle$，Bell 指标 $\mu \in \{\Phi^+, \Psi^+, \Psi^-, \Phi^-\} \leftrightarrow \{I, X, iY, Z\}$ 的 Pauli group structure.
+
+Entanglement swap lemma: $\langle B_k|_{23}(|B_i\rangle_{12} \otimes |B_j\rangle_{34}) = \frac{1}{2} \sigma^\text{eff}_{i,j,k} \otimes$ (something)_{14}$...$
+
+实际上标准结果（Briegel-Dür-Cirac-Zoller 1998 "Quantum Repeaters" Eq.(3-5)；或 Bose-Vedral-Knight 1998 "Multiparticle generalization of entanglement swapping"）：
+
+若输入 $(A, A')$ 态为 $W_{F_1}$，$(B, B')$ 态为 $W_{F_1}$，Charlie 在 $(A', B')$ 做**任一** Bell 投影（不限 $\Psi^-$），输出 $(A, B)$ 态**保持 Werner 形式**且 fidelity 为
+
+$$F' = F_1^2 + \frac{(1-F_1)^2}{3}.$$
+
+此结果亦可见 [Dür-Briegel-Cirac-Zoller 1999 "Quantum repeaters based on entanglement purification"](https://arxiv.org/abs/quant-ph/9808065) Eq.(12) 的特殊情形 (M=2 阶 concatenation at first level)，与 [Briegel-Dür-Cirac-Zoller 1998](https://arxiv.org/abs/quant-ph/9803056) Eq.(8) 等价。
+
+**验证极限情形**：
+- $F_1 = 1$（pure $|\Phi^+\rangle$）：$F' = 1 + 0 = 1$ ✓（entanglement swap 保纯 Bell）
+- $F_1 = 1/4$（maximally mixed）：$F' = 1/16 + (3/4)^2/3 = 1/16 + 9/48 = 3/48 + 9/48 = 12/48 = 1/4$ ✓（maximally mixed 保持）
+- $F_1 = 1 - 3\lambda/4$（from W1），代入：$F' = (1-3\lambda/4)^2 + (3\lambda/4)^2/3 = 1 - 3\lambda/2 + 9\lambda^2/16 + 3\lambda^2/16 = 1 - 3\lambda/2 + 12\lambda^2/16 = 1 - 3\lambda/2 + 3\lambda^2/4$
+
+**严谨性**：**[RECALLED from standard repeater literature, not independently re-derived in this memo]**. 为 [CONJ] → [THM] 升级，需要从 Bell basis algebra 重做逐步代数展开（估计 10 行代数），或引用 Dür-Briegel-Cirac-Zoller 1999 Eq.(12) 的显式状态。
+
+---
+
+## 4. Lemma W3：Werner state 的 QBER 参数化
+
+**引理**：Werner state $W_F$ 在 Z 基 / X 基下均有相同的 QBER：
+
+$$q_Z = q_X = \frac{2(1-F)}{3}.$$
+
+**证明**：
+
+Z 基测量概率（Alice 得 a，Bob 得 b）：
+- $|\Phi^+\rangle, |\Phi^-\rangle$：$P(00) = P(11) = 1/2$（Alice Bob **同结果**）
+- $|\Psi^+\rangle, |\Psi^-\rangle$：$P(01) = P(10) = 1/2$（Alice Bob **反结果**）
+
+对 $W_F$：
+- $P(\text{same}|Z) = F \cdot 1 + \frac{1-F}{3} \cdot 1 + \frac{1-F}{3} \cdot 0 + \frac{1-F}{3} \cdot 0 = F + \frac{1-F}{3} = \frac{2F+1}{3}$
+- $P(\text{different}|Z) = 1 - \frac{2F+1}{3} = \frac{2(1-F)}{3}$
+
+X 基：Bell 态在 X 基下的表示（$|\pm\rangle = (|0\rangle \pm |1\rangle)/\sqrt{2}$）：
+- $|\Phi^+\rangle = \frac{1}{\sqrt{2}}(|++\rangle + |--\rangle)$（same in X）
+- $|\Phi^-\rangle = \frac{1}{\sqrt{2}}(|+-\rangle + |-+\rangle)$（different in X）
+- $|\Psi^+\rangle = \frac{1}{\sqrt{2}}(|++\rangle - |--\rangle)$（same in X）
+- $|\Psi^-\rangle = -\frac{1}{\sqrt{2}}(|+-\rangle - |-+\rangle)$（different in X）
+
+对 $W_F$：$P(\text{different}|X) = \frac{1-F}{3} + \frac{1-F}{3} = \frac{2(1-F)}{3}$（来自 $|\Phi^-\rangle$ 和 $|\Psi^-\rangle$）
+
+$\therefore q_Z = q_X = \frac{2(1-F)}{3}$. ✓
+
+**逆映射**：$F = 1 - \frac{3q}{2}$，即 `Tr[|Φ⁺⟩⟨Φ⁺|·ρ_AB] = 1 - 3q/2`（与 `kamin_sdp_mdi.py:26` docstring 一致）。
+
+**严谨性**：**[THM, elementary]**（纯代数）。
+
+---
+
+## 5. Lemma W4：qubit BB84 Kamin SDP delegation validity
+
+**引理**（**关键的 reduction claim**）：在 §-1.2 假设 A1-A6 下，ideal symmetric MDI-QKD 的 post-BSM conditional Alice-Bob state 为 Werner state $W_{F'}$，其中 $F' = 1 - 3q/2$ 且 $q$ 为 effective MDI QBER。**qubit BB84 的 Kamin Choi SDP 在 QBER = q 时运行于结构相同的 Werner 态**，因此 `kamin_choi_sdp_qubit_bb84(qber=q)` 给出的 `h_per_sift` 值**与 MDI 的对应条件熵数值相同**。
+
+**推导**：
+
+1. W1 + W2（组合）：在 A1-A6 下，post-BSM state on (A, B) 为 Werner with $F' = F_1^2 + (1-F_1)^2/3$，其中 $F_1 = 1 - 3\lambda/4$（单臂 Werner fidelity）
+2. W3：Werner fidelity $F'$ 与 effective MDI QBER 的关系为 $F' = 1 - 3q/2$
+3. qubit BB84 的 Kamin SDP（见 [qkdx/numerics/kamin_sdp.py](../../qkdx/numerics/kamin_sdp.py) `kamin_choi_sdp_qubit_bb84`）输入是 QBER $q_\text{BB84}$，它**隐式假设 Bob 侧收到的 state 是 Werner form**（对称 depolarizing BB84 的 EB dual）。设输入 QBER $q_\text{BB84} = q_\text{MDI}$
+4. 因此：两者的 conditional state structurally 相同（Werner with $F' = 1 - 3q/2$），Kamin SDP 在此 state 上的 h_per_sift 值**与具体协议 provenance 无关**（Choi SDP 操作于 conditional state 本身）
+5. 唯一 protocol-specific 差别：**p_sift**。BB84：$p_\text{sift}^\text{BB84} = 1/2$（basis match）。MDI：$p_\text{sift}^\text{MDI} = 1/4$（basis match × BSM success），已在 `kamin_mdi_h_per_sift` 的 `p_sift_base = 0.25` 字段中正确记录
+
+**结论**：`kamin_mdi_h_per_sift(qber=q)` 通过 delegate 到 `kamin_choi_sdp_qubit_bb84_with_dual` 得到的 h_per_sift 数值**正确**（在 A1-A6 假设下）。
+
+**严谨性**：**[CONJ conditional on A1-A6]**。具体来说：
+- Lemma W1: **[THM]**
+- Lemma W2: **[RECALLED]**（引自 Briegel-Dür-Cirac-Zoller 1998）; 为 [THM] 需要本项目独立代数复现
+- Lemma W3: **[THM]**
+- Lemma W4: **[CONJ]**（组合 W1+W2+W3，加一个未严格验证的 "Kamin SDP 只依赖 conditional state 的 Werner 参数化" 假设 — 这个假设需要 Kamin SDP 实现细节的核对）
+
+整体 reduction claim 停在 **[CONJ]**，待：
+- C1 独立验证（跨家族 AI 读 PDF 或人类纸笔 或 非 AI 工具数值复现）
+- C2 用户签字
+- C3 dev-reviewer PASS
+
+---
+
+## 6. 数值 sanity check
+
+### 6.1 极限 1：无噪声（$\lambda = 0$）
+
+$F_1 = 1$，$F' = 1$，$q = 0$，$h_\text{per_sift} = 1$（每 sifted bit 给出 1 bit key in the ideal BB84/MDI limit）. ✓
+
+### 6.2 极限 2：完全去极化（$\lambda = 1$）
+
+$F_1 = 1/4$，$F' = 1/16 + (3/4)^2/3 = 1/16 + 3/16 = 1/4$，$q = 2 \times (3/4)/3 = 1/2$，$h_\text{per_sift} = 0$（no key extractable at 50% QBER）. ✓
+
+### 6.3 数值 probe：$\lambda = 0.1$
+
+- $F_1 = 1 - 3 \times 0.1/4 = 1 - 0.075 = 0.925$
+- $F' = 0.925^2 + (0.075)^2/3 \approx 0.8556 + 0.00188 \approx 0.8575$
+- $q = 2 \times (1 - 0.8575)/3 = 2 \times 0.1425/3 \approx 0.095$
+- 即 arm-level depolarization $\lambda = 0.1$ 导致 effective MDI QBER $q \approx 0.095$（**略小于** $\lambda$，符合 W2 linear-order 展开 $q \approx \lambda$ 的一致性）
+
+此 sanity check 数字上可由 `python3 -c "lam=0.1; F1=1-3*lam/4; Fp=F1*F1+(1-F1)**2/3; q=2*(1-Fp)/3; print(F1,Fp,q)"` 直接独立复现（作为 C1(c) non-AI tool 独立验证的备选，若需要）。
+
+### 6.4 数值 probe：与 `kamin_sdp_mdi.py` 已有测试对照
+
+[tests/test_numerics/test_kamin_mdi.py](../../tests/test_numerics/test_kamin_mdi.py) 的 5/5 测试已验证：
+- `h_per_sift` 在同 QBER 下 MDI vs BB84 数值一致（至 `abs < 1e-6`）
+- $n=10^{12}, 0$ dB, $q=0.01$: rate $\approx 0.22$（$\approx$ qubit BB84 $\times 1/4$ p_sift）
+
+这些测试**已**提供 C1(c) non-AI tool 独立复现的数值证据 —— 即：**数值 SDP 结果与本推导一致**。但 SDP 本身由 MOSEK 提供（非 AI 工具），可作为 C1(c) 候选；是否足够需要 dev-reviewer 判断。
+
+---
+
+## 7. Scope limits（重申 §-1.2 并 expand）
+
+### 7.1 本文件 **不** 证明的东西
+
+1. 非对称 MDI（$\eta_A \neq \eta_B$ 或 $\lambda_A \neq \lambda_B$）下的 Werner form — 破坏
+2. Misalignment $\neq 0$ 下的 Werner form — 破坏（需 twirling 补）
+3. WCP + 诱骗态 framework（Ma-Razavi 2012 Fig.3）— 需 $Y_{1,1}^L, e_{1,1}^U$ 估计
+4. Finite-size / GEAT 层面 — Kamin 2025 finite-key formula 单独处理，本文件只给 asymptotic conditional state
+5. Charlie BSM outcome 非 $\Psi^-$ 的情形（例如 $\Psi^+, \Phi^\pm$）— Lemma W2 断言"任一 Bell projection" 保 Werner，但本文件只 verbal 引用，未逐 outcome 代数展开
+6. dark count + after-pulsing — 需扩展 POVM
+
+### 7.2 用户若要升级到 [COROLLARY]，需补足
+
+- **C1 independent validation**：
+  - (a) 另一家族 AI（如 GPT-4 / Gemini）读 Lo-Curty-Qi PDF + Briegel-Dür-Cirac-Zoller 1998 PDF 独立复核 W1/W2/W3；**或**
+  - (b) 人类研究者纸笔复核 W2 的代数展开；**或**
+  - (c) 非 AI 工具（Mathematica / SymPy symbolic）独立验证 $F' = F_1^2 + (1-F_1)^2/3$
+- **C2 用户签字**：逐条确认 A1-A6 scope 边界可接受
+- **C3 dev-reviewer PASS**：本 session 内会发起（T1.4）
+
+---
+
+## 8. 与本项目的 bearing
+
+### 8.1 对 Sub-Q2 Phase 1 S2.5 的直接用途
+
+- 当前 `kamin_sdp_mdi.py` 的 docstring 声称"structurally identical to qubit BB84 Werner state at effective QBER" —— 本推导**在 A1-A6 假设下**验证此声称
+- 测试 5/5 pass 提供的数值 sanity 保证**与本推导一致**
+- 本文件**不升级** S2.5 硬验收状态（那需要用户签字 + 独立验证）
+
+### 8.2 对 Sub-Q3 path α / β / γ 的间接 bearing
+
+- Lemma W1 + W2 的组合是 MDI 的**纯态操作级** analysis。与 Pirandola 2019 / Log 07 的 "network capacity" 级 analysis **不在同一层级**
+- 本文件**不影响** umr 上界状态（仍 [CONJ]）
+- 若未来要做 path β（channel-reduction）—— Werner form 可能作为 effective channel 分析的 building block
+
+### 8.3 对 PROSPECTUS 主问题的 bearing
+
+无直接 bearing。本文件是 Sub-Q1 / Sub-Q2 基础设施级论证，不改变主问题答案。
+
+---
+
+## 9. Changelog
+
+- **v0.1**（2026-04-22 autonomous session，commit 待提交）：
+  - 初稿 **[CONJ]**
+  - 明示 scope A1-A6
+  - Lemma W1 独立推导 [THM]
+  - Lemma W2 引用 Briegel-Dür-Cirac-Zoller 1998 + Dür-Briegel-Cirac-Zoller 1999 [RECALLED]，标注"为 [THM] 需代数展开"
+  - Lemma W3 独立推导 [THM]
+  - Lemma W4 [CONJ] 组合
+  - 数值 sanity check 3 种 probe
+  - 待 dev-reviewer 评审（T1.4）
+
+---
+
+## 10. 下一步
+
+1. **T1.4** dev-reviewer 双 Codex 评审本文件（C3 闸门）
+2. 若 PASS：保留 [CONJ]，等用户归来做 C1 + C2（不自主升级）
+3. 若 FAIL：按评审意见修订，进入 Round 2（dev-reviewer 最多 5 轮）
+4. 无论结果如何：**不** 升级 `kamin_sdp_mdi.py` 的 docstring claim；**不** 改 FINDINGS 任何分级
+
+---
+
+*END of v0.1 — [CONJ]*
