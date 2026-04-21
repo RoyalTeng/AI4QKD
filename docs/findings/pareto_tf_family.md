@@ -82,7 +82,7 @@
 | 10⁻⁴ (40 dB) | 7.67e-6 | 9.21e-6 | 0 |
 | 10⁻⁶ (60 dB) | 6.96e-7 | 0 (< cutoff) | 0 |
 
-（PM-QKD rate 列 sync 自 [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv)，与 §2.1 一致；2026-04-21 audit 修正此前与 §2.1 的 10/20/40/60 dB 行不一致问题。MDI rate 列源 [../research/data/mdi_*.csv](../research/data/) 的 Pareto envelope，BB84 列来自 WLC SDP at qber=0 limit，见 [../research/02_mdi_family.md](../research/02_mdi_family.md)）
+（PM-QKD rate 列 sync 自 [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv)，与 §2.1 一致；2026-04-21 audit 修正此前与 §2.1 的 10/20/40/60 dB 行不一致问题。MDI rate 列源 `docs/research/data/mdi_*.csv` 的 Pareto envelope，BB84 列来自 WLC SDP at qber=0 limit，见 [pareto_mdi_family.md](pareto_mdi_family.md) 与 [m2_wlc_mdi_sixstate.md](m2_wlc_mdi_sixstate.md)）
 
 **关键对比点**：
 - 0 dB：BB84 >>> MDI > PM-QKD（低损耗 BB84 最优）

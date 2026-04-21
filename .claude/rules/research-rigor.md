@@ -25,14 +25,18 @@
 
 ### R2.2 研究结论必须多方验证
 
-AI 起草的理论陈述默认 **[CONJ]** 级。升级路径：
+AI 起草的理论陈述默认 **[CONJ]** 级。升级到 **[COROLLARY] 或 [THM]** 的硬路径（单值规则）：
 
-1. 至少 **两个独立评审**（两个不同 AI 代理 + 用户审签，或等价组合）
-2. 两评审**各自独立**返回 PASS / SOUND
-3. 任一评审 UNSOUND / FAIL / REJECTED → **立即撤回**并留痕
-4. 用户审签是升级到 [THM] 或对外引用的**必要**条件
+1. 至少 **两个独立评审** 各自**独立**返回 PASS / SOUND
+2. 任一评审 UNSOUND / FAIL / REJECTED → **立即撤回**并留痕
+3. **用户显式签字**是升级到 **[COROLLARY] 以及 [THM]** 的**必要**条件；对外引用 / 论文 / 展示同样要求
 
-"独立"的含义：不同模型 / 不同 agent 身份 / 不同 prompt 角度 —— 不是同一 AI 两次运行
+"独立"的含义**严格按 [RETRACTION.md §4.1 规则 3](../../docs/research/RETRACTION.md) 执行**：
+
+- **不计入**：同一模型多次运行；同一家族模型互评；纯 AI 审计链（无论多深）
+- **计入**任一：(a) **不同训练偏差源**的模型（例如 Claude + GPT/Codex 跨家族）且双方**直接读 PDF 原文**；(b) **人类**研究者纸笔复核；(c) **非 AI 工具**（SDP 数值 / 符号计算 / proof assistant）独立复现
+
+v1 FINDINGS retraction 因 "Claude 起草 + Claude 多审" 被误当多方验证；**不得**重蹈
 
 ### R2.3 四级严谨性分级（FINDINGS v2 §1.2）
 
@@ -52,7 +56,7 @@ AI 合成**默认** [SYN] 或更低。**禁止**自行升级。
 
 1. **FINDINGS v1 retraction (2026-04-19)**：AI 自行把 [SYN] 升 [COROLLARY]，未审签 → 撤回
 2. **path γ v0.2 retraction (2026-04-21)**：AI 用"简化 adversarial containment"绕过 Log 07 明确要求的三 lemma → 两 reviewer 独立 UNSOUND → 撤回
-3. **WTB Thm 26/47 引用错**：AI 凭记忆写编号，实际 PDF 是 Thm 12/19 → 全局修正（commit 2583ffc）
+3. **WTB 引用精度错 (2026-04-21 Codex 评审发现)**：AI 凭记忆写定理编号 → 全局修正（commit 2583ffc diff 内查证具体数字）
 
 ---
 

@@ -22,12 +22,17 @@
 ### R0.2 研究结论必须多方验证
 
 - **AI 起草的理论陈述默认 [CONJ] 级**。**不得**基于单一 AI session 内的推理链自行升级到 [COROLLARY] 或 [THM]
-- 升级路径：
-  1. 必须至少有 **两个独立评审**（两个不同 AI 代理 + 用户审签，或等价组合）
-  2. 两个评审必须**各自独立**返回 PASS / SOUND
-  3. 任一评审返回 UNSOUND / FAIL / REJECTED → **必须撤回**并记录
-- 评审的"独立"含义：不同模型 / 不同 agent 身份 / 不同 prompt 角度 —— 不是同一 AI 两次运行
-- 用户审签是升级到 [THM] 或对外引用的**必要**条件
+- 升级到 **[COROLLARY] 或 [THM]** 的**硬**路径（单值规则，任何一级越权升级都非法）：
+  1. 必须至少有 **两个独立评审** 各自**独立**返回 PASS / SOUND
+  2. 任一评审返回 UNSOUND / FAIL / REJECTED → **必须撤回**并记录
+  3. **用户显式签字**是升级到 **[COROLLARY] 以及 [THM]** 的**必要**条件，对外引用 / 论文 / 展示稿同样要求
+- 评审的"独立"含义**严格按 [RETRACTION.md §4.1 规则 3](docs/research/RETRACTION.md) 执行**：
+  - **不计入**"独立验证"的组合：同一模型多次运行、同一家族模型（例如 Claude 对 Claude）多 prompt 重评、AI 单层审计链
+  - **计入**"独立验证"的组合须满足**任一**：
+    - (a) **不同训练偏差源**的模型（例如 Claude + Codex/GPT 跨家族）**且** 双方均**直接读 PDF / 原文**而不是复述 AI 综述
+    - (b) 包含**人类研究者**直接纸笔复核
+    - (c) 使用**非 AI 工具**（数值 SDP / 符号计算 / 形式化 proof assistant）独立复现
+  - v1 FINDINGS retraction 正是因为 "Claude 起草 + Claude 多次审" 被当作 "多方验证"；此陷阱**不得**重蹈
 
 ### R0.3 严谨性分级四级制（FINDINGS v2 §1.2 红线）
 
@@ -68,7 +73,7 @@ AI 起草的合成陈述**默认** [SYN] 或更低。
 
 所有定理 / 公式编号必须**对 PDF 原文核对**。Level 3-4 精读 memo 引用的编号如果 AI 凭记忆写，**必须**在文件中标记 `[RECALLED]` 或 `[VERIFIED against PDF on date]`。
 
-先例：WTB 2017 Thm 26→12, Thm 47→19 修正（Codex 评审发现，commit 2583ffc 全局改）。
+**先例索引**（详细数字见 [docs/research/RETRACTION.md](docs/research/RETRACTION.md) 与 [commit 2583ffc] 的 diff，不在本 live policy 文件内重复以免污染）。
 
 ---
 
@@ -175,7 +180,7 @@ AI 起草的合成陈述**默认** [SYN] 或更低。
 
 1. **v1 overclaim retraction (2026-04-19)**：AI 自行把 [SYN] 升级为 [COROLLARY]，未经用户审签。**教训**：AI 合成不得升级分级；必须 triple verification。
 2. **path γ v0.2 retraction (2026-04-21)**：AI "简化论证"绕过 Log 07 明确要求的三 lemma 明写。**教训**：简化不是严谨的捷径；若绕过了 identified gap 而不是 close 它们，就是 v1 陷阱的重复。
-3. **WTB Thm 26/47 引用错 (memo 写成 Thm 26/47，实际 PDF 是 Thm 12/19)**：AI 凭记忆或二手引用写编号。**教训**：引用必须对 PDF 核对，否则标 [RECALLED]。
+3. **WTB 引用精度错（2026-04-21 Codex 评审发现）**：AI 凭记忆或二手引用写定理编号。**教训**：引用必须对 PDF 核对，否则标 [RECALLED]。具体修正 diff 见 commit 2583ffc。
 4. **Codex 大输出 missed verdict (初次 head/tail 错过末尾 verdict)**：**教训**：大输出必须 `grep "VERDICT"`，不是 head/tail。
 
 ---

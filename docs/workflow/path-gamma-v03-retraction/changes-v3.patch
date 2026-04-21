@@ -1,0 +1,232 @@
+diff --git a/.claude/rules/research-rigor.md b/.claude/rules/research-rigor.md
+index bd0ecd8..49a9203 100644
+--- a/.claude/rules/research-rigor.md
++++ b/.claude/rules/research-rigor.md
+@@ -25,14 +25,18 @@
+ 
+ ### R2.2 研究结论必须多方验证
+ 
+-AI 起草的理论陈述默认 **[CONJ]** 级。升级路径：
++AI 起草的理论陈述默认 **[CONJ]** 级。升级到 **[COROLLARY] 或 [THM]** 的硬路径（单值规则）：
+ 
+-1. 至少 **两个独立评审**（两个不同 AI 代理 + 用户审签，或等价组合）
+-2. 两评审**各自独立**返回 PASS / SOUND
+-3. 任一评审 UNSOUND / FAIL / REJECTED → **立即撤回**并留痕
+-4. 用户审签是升级到 [THM] 或对外引用的**必要**条件
++1. 至少 **两个独立评审** 各自**独立**返回 PASS / SOUND
++2. 任一评审 UNSOUND / FAIL / REJECTED → **立即撤回**并留痕
++3. **用户显式签字**是升级到 **[COROLLARY] 以及 [THM]** 的**必要**条件；对外引用 / 论文 / 展示同样要求
+ 
+-"独立"的含义：不同模型 / 不同 agent 身份 / 不同 prompt 角度 —— 不是同一 AI 两次运行
++"独立"的含义**严格按 [RETRACTION.md §4.1 规则 3](../../docs/research/RETRACTION.md) 执行**：
++
++- **不计入**：同一模型多次运行；同一家族模型互评；纯 AI 审计链（无论多深）
++- **计入**任一：(a) **不同训练偏差源**的模型（例如 Claude + GPT/Codex 跨家族）且双方**直接读 PDF 原文**；(b) **人类**研究者纸笔复核；(c) **非 AI 工具**（SDP 数值 / 符号计算 / proof assistant）独立复现
++
++v1 FINDINGS retraction 因 "Claude 起草 + Claude 多审" 被误当多方验证；**不得**重蹈
+ 
+ ### R2.3 四级严谨性分级（FINDINGS v2 §1.2）
+ 
+@@ -52,7 +56,7 @@ AI 合成**默认** [SYN] 或更低。**禁止**自行升级。
+ 
+ 1. **FINDINGS v1 retraction (2026-04-19)**：AI 自行把 [SYN] 升 [COROLLARY]，未审签 → 撤回
+ 2. **path γ v0.2 retraction (2026-04-21)**：AI 用"简化 adversarial containment"绕过 Log 07 明确要求的三 lemma → 两 reviewer 独立 UNSOUND → 撤回
+-3. **WTB Thm 26/47 引用错**：AI 凭记忆写编号，实际 PDF 是 Thm 12/19 → 全局修正（commit 2583ffc）
++3. **WTB 引用精度错 (2026-04-21 Codex 评审发现)**：AI 凭记忆写定理编号 → 全局修正（commit 2583ffc diff 内查证具体数字）
+ 
+ ---
+ 
+diff --git a/CLAUDE.md b/CLAUDE.md
+index ec0dac4..bdde915 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -22,12 +22,17 @@
+ ### R0.2 研究结论必须多方验证
+ 
+ - **AI 起草的理论陈述默认 [CONJ] 级**。**不得**基于单一 AI session 内的推理链自行升级到 [COROLLARY] 或 [THM]
+-- 升级路径：
+-  1. 必须至少有 **两个独立评审**（两个不同 AI 代理 + 用户审签，或等价组合）
+-  2. 两个评审必须**各自独立**返回 PASS / SOUND
+-  3. 任一评审返回 UNSOUND / FAIL / REJECTED → **必须撤回**并记录
+-- 评审的"独立"含义：不同模型 / 不同 agent 身份 / 不同 prompt 角度 —— 不是同一 AI 两次运行
+-- 用户审签是升级到 [THM] 或对外引用的**必要**条件
++- 升级到 **[COROLLARY] 或 [THM]** 的**硬**路径（单值规则，任何一级越权升级都非法）：
++  1. 必须至少有 **两个独立评审** 各自**独立**返回 PASS / SOUND
++  2. 任一评审返回 UNSOUND / FAIL / REJECTED → **必须撤回**并记录
++  3. **用户显式签字**是升级到 **[COROLLARY] 以及 [THM]** 的**必要**条件，对外引用 / 论文 / 展示稿同样要求
++- 评审的"独立"含义**严格按 [RETRACTION.md §4.1 规则 3](docs/research/RETRACTION.md) 执行**：
++  - **不计入**"独立验证"的组合：同一模型多次运行、同一家族模型（例如 Claude 对 Claude）多 prompt 重评、AI 单层审计链
++  - **计入**"独立验证"的组合须满足**任一**：
++    - (a) **不同训练偏差源**的模型（例如 Claude + Codex/GPT 跨家族）**且** 双方均**直接读 PDF / 原文**而不是复述 AI 综述
++    - (b) 包含**人类研究者**直接纸笔复核
++    - (c) 使用**非 AI 工具**（数值 SDP / 符号计算 / 形式化 proof assistant）独立复现
++  - v1 FINDINGS retraction 正是因为 "Claude 起草 + Claude 多次审" 被当作 "多方验证"；此陷阱**不得**重蹈
+ 
+ ### R0.3 严谨性分级四级制（FINDINGS v2 §1.2 红线）
+ 
+@@ -68,7 +73,7 @@ AI 起草的合成陈述**默认** [SYN] 或更低。
+ 
+ 所有定理 / 公式编号必须**对 PDF 原文核对**。Level 3-4 精读 memo 引用的编号如果 AI 凭记忆写，**必须**在文件中标记 `[RECALLED]` 或 `[VERIFIED against PDF on date]`。
+ 
+-先例：WTB 2017 Thm 26→12, Thm 47→19 修正（Codex 评审发现，commit 2583ffc 全局改）。
++**先例索引**（详细数字见 [docs/research/RETRACTION.md](docs/research/RETRACTION.md) 与 [commit 2583ffc] 的 diff，不在本 live policy 文件内重复以免污染）。
+ 
+ ---
+ 
+@@ -175,7 +180,7 @@ AI 起草的合成陈述**默认** [SYN] 或更低。
+ 
+ 1. **v1 overclaim retraction (2026-04-19)**：AI 自行把 [SYN] 升级为 [COROLLARY]，未经用户审签。**教训**：AI 合成不得升级分级；必须 triple verification。
+ 2. **path γ v0.2 retraction (2026-04-21)**：AI "简化论证"绕过 Log 07 明确要求的三 lemma 明写。**教训**：简化不是严谨的捷径；若绕过了 identified gap 而不是 close 它们，就是 v1 陷阱的重复。
+-3. **WTB Thm 26/47 引用错 (memo 写成 Thm 26/47，实际 PDF 是 Thm 12/19)**：AI 凭记忆或二手引用写编号。**教训**：引用必须对 PDF 核对，否则标 [RECALLED]。
++3. **WTB 引用精度错（2026-04-21 Codex 评审发现）**：AI 凭记忆或二手引用写定理编号。**教训**：引用必须对 PDF 核对，否则标 [RECALLED]。具体修正 diff 见 commit 2583ffc。
+ 4. **Codex 大输出 missed verdict (初次 head/tail 错过末尾 verdict)**：**教训**：大输出必须 `grep "VERDICT"`，不是 head/tail。
+ 
+ ---
+diff --git a/docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md b/docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md
+index f8aa845..fae9c17 100644
+--- a/docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md
++++ b/docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md
+@@ -151,16 +151,20 @@ umr 上界判断**回到** FINDINGS v2 §1.1 [CONJ] 基线（仅在放宽版 $\m
+ 
+ ### 若未来重启 umr 上界升级尝试（需用户显式启动）
+ 
+-AI 不得自主再次尝试升级。若用户将来指示重启，三条路径都可考虑但必须**避免** v0.2 的 adversarial containment 简化：
++AI 不得自主再次尝试升级。若用户将来指示重启，三条路径都可考虑但必须**避免** v0.2 的 adversarial containment 简化（按 [Log 07 §3.1 / §4.3-4.5](research/07_pirandola_2019_technical_audit.md) 原定义）：
+ 
+-- **路径 α**（Khatri-Wilde §19-20 monotonicity reduction）：整体 monotonicity 从 trusted 到 umr 的直接继承
+-- **路径 β**（docs/proofs/upper_bound_msen.md §3.2 channel-reduction）：reduction to a single channel via Stinespring
+-- **路径 γ 真版**（PLOB 单边 + data-processing lemma 明写）：Log 07 §3.3 要求的三 lemma 必须**各自**独立证明
++- **路径 α**（monotonicity reduction — Khatri-Wilde §19-20 / FINDINGS v1 隐含使用）：通过 trusted → umr 的整体 monotonicity 继承。此路径要求**明写三条 lemma**（Log 07 §4.3）：
+   - Lemma 1：协议嵌入（honest-Charlie Π 嵌入 umr-attack space 而不给 Eve 额外 workspace / purification 信息）
+   - Lemma 2：安全归约（composable ε-security 在嵌入下保留）
+   - Lemma 3：rate 定义对接（$R_\varepsilon^{\mathcal{A}_\text{tr}}$ 与 $R_\varepsilon^{\mathcal{A}_\text{umr}}$ 的 operational equivalence）
+ 
+-三条 lemma **禁止**用 set-inclusion shortcut 绕过（Log 07 §4.3 明确警告的 monotonicity 陷阱）。
++  三条 lemma **禁止**用 set-inclusion shortcut 绕过（Log 07 §4.3 明确警告的 monotonicity 陷阱 / v0.2 所犯错误）。
++
++- **路径 β**（direct umr converse via channel-reduction — Log 07 §3.2）：把 $\mathcal{T}_\text{umr}$ 建模为单个 effective channel $\tilde{\mathcal{M}}$（Alice / Bob 模式过 $\mathcal{E}_1, \mathcal{E}_2$，Charlie 测量 + 经典广播吸收进 channel），对其直接应用 PLOB 2017 + WTB 2017 two-way converse。优点：完全避开 trust assumption；缺点：$E_R(\tilde{\mathcal{M}})$ 与 $\min\{E_R(\mathcal{E}_1), E_R(\mathcal{E}_2)\}$ 的关系未定，可能更松也可能更紧。参考 [docs/proofs/upper_bound_msen.md §3.2](proofs/upper_bound_msen.md)。
++
++- **路径 γ**（single-edge PLOB + data-processing — Log 07 §4.5 最小可信 baseline）：**不**用 Pirandola 2019。直接对 Alice→Charlie 单边 channel $\mathcal{E}_1$ 应用 PLOB 2017，再**明写一条** data-processing lemma：Eve 对 Alice→Charlie mode 做任意后续操作（包括联合 Bob mode 的 BSM）**不会增加** Alice-Bob mutual information 的上界。此路径结构最简，但"data-processing 那一步"的精确形式（对 bipartite coherent information / smooth max-entropy 的适用性）必须严格给出 —— **不得**用 v0.2 的 adversarial containment 绕过。
++
++三条路径**共同禁止**：用 set-inclusion / "不同 Eve 集合间的 containment" 这类 shortcut 替代 explicit lemma。
+ 
+ ### 其他仍开放工作
+ 
+diff --git a/docs/findings/pareto_tf_family.md b/docs/findings/pareto_tf_family.md
+index 107cf5c..060069c 100644
+--- a/docs/findings/pareto_tf_family.md
++++ b/docs/findings/pareto_tf_family.md
+@@ -82,7 +82,7 @@
+ | 10⁻⁴ (40 dB) | 7.67e-6 | 9.21e-6 | 0 |
+ | 10⁻⁶ (60 dB) | 6.96e-7 | 0 (< cutoff) | 0 |
+ 
+-（PM-QKD rate 列 sync 自 [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv)，与 §2.1 一致；2026-04-21 audit 修正此前与 §2.1 的 10/20/40/60 dB 行不一致问题。MDI rate 列源 [../research/data/mdi_*.csv](../research/data/) 的 Pareto envelope，BB84 列来自 WLC SDP at qber=0 limit，见 [../research/02_mdi_family.md](../research/02_mdi_family.md)）
++（PM-QKD rate 列 sync 自 [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv)，与 §2.1 一致；2026-04-21 audit 修正此前与 §2.1 的 10/20/40/60 dB 行不一致问题。MDI rate 列源 `docs/research/data/mdi_*.csv` 的 Pareto envelope，BB84 列来自 WLC SDP at qber=0 limit，见 [pareto_mdi_family.md](pareto_mdi_family.md) 与 [m2_wlc_mdi_sixstate.md](m2_wlc_mdi_sixstate.md)）
+ 
+ **关键对比点**：
+ - 0 dB：BB84 >>> MDI > PM-QKD（低损耗 BB84 最优）
+diff --git a/docs/proofs/umr_data_processing_gamma.md b/docs/proofs/umr_data_processing_gamma.md
+index cd86507..5140592 100644
+--- a/docs/proofs/umr_data_processing_gamma.md
++++ b/docs/proofs/umr_data_processing_gamma.md
+@@ -168,7 +168,7 @@ $$R_\varepsilon(\Pi; \mathcal{T}_\text{umr}) \leq -\log_2(1 - \min(\eta_A, \eta_
+ - Step 2：**[THM, Pirandola 2019 Thm]** 紧依赖 $\Pi$ 在 $\mathcal{T}_\text{tr}$ 下的 LOCC-assistance
+ - Step 3：**[trivial]**
+ 
+-**综合**：定理 γ 是 **[COROLLARY pending user sign-off on §2.1]**。
++**综合（原 v0.2 自评，已于 v0.3 撤回；不代表项目立场）**：~~定理 γ 是 [COROLLARY pending user sign-off on §2.1]~~ — **本句已作废**，见 §-1 撤回公告。当前立场：**[CONJ]**。
+ 
+ ---
+ 
+@@ -270,4 +270,4 @@ $$\hat{P}_{\mathcal{N}_\eta}^\leftrightarrow(n, \varepsilon) \leq -\log_2(1-\eta
+ 
+ ---
+ 
+-*END OF v0.2 — 等待用户签字升级 [COROLLARY pending sign-off] → [COROLLARY]*
++*END OF v0.2 archival block — v0.2 已于 2026-04-21 撤回（两 reviewer 独立 UNSOUND），不再代表项目立场。当前主定理分级 = **[CONJ]**（见 §0）。原 v0.2 末尾的 "等待用户签字升级" 呼吁 **已作废**。*
+diff --git a/docs/workflow/path-gamma-v03-retraction/workflow-log.md b/docs/workflow/path-gamma-v03-retraction/workflow-log.md
+index 47ef0e1..512acb4 100644
+--- a/docs/workflow/path-gamma-v03-retraction/workflow-log.md
++++ b/docs/workflow/path-gamma-v03-retraction/workflow-log.md
+@@ -2,8 +2,8 @@
+ 
+ **Mode**: review-only (no new implementation)
+ **Base**: 9402e44^ (pre path γ v0.2)
+-**Head**: 2583ffc (HEAD, Codex verdict correction + WTB numbering fix)
+-**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits
++**Head (latest)**: Round 3 (see § below); Round 1 base was 2583ffc; Round 2 commit = 37fa7df
++**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正
+ 
+ ## Round 1 — SETUP done 2026-04-21
+ 
+@@ -29,28 +29,52 @@
+ 
+ **Decision**: enter Round 2 FIX.
+ 
+-### Round 2 — 2026-04-21 FIX (this commit)
++### Round 2 — 2026-04-21 FIX (commit 37fa7df)
+ 
+-**Files modified**:
++**Files modified / added in `37fa7df`**:
++- NEW `CLAUDE.md` (项目级 AI 协作规范，R0.1-R0.3 三红线)
++- NEW `.claude/rules/research-rigor.md` (quick-reference)
++- NEW `docs/workflow/path-gamma-v03-retraction/` (changes-v1.patch + changes-v2.patch + review-diff-1.{json,md} + review-holistic-1.md + workflow-log.md)
+ - `docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md`:
+-  - §4 rewritten: path γ v0.2 审阅项全部 CLOSED（retraction 后不再占用户 queue），重写为非 path-γ 审阅事项
+-  - §5 rewritten: "若 v0.2 通过 → [COROLLARY]" 分支终结；列出未来重启 umr 上界升级时必须避免 v0.2 adversarial containment 简化 + Log 07 §3.3 三 lemma 要求
+-  - WTB Thm 47 → Thm 19 (第 151 行原文)
+-- `docs/PHASE1_LOG.md:471`: Thm 26 → Thm 12 with audit note
+-- `docs/findings/pareto_tf_family.md`:
+-  - §3 PM-QKD rate 列 sync 自 CSV (10 dB 2.50e-4, 20 dB 7.78e-5, 40 dB 7.67e-6, 60 dB 6.96e-7)
+-  - 交叉点描述从 "30-40 dB" → "40-50 dB" 匹配 sync 后的数据
+-  - 数据 / 图表链接从 `data/` / `figures/` → `../research/data/` / `../research/figures/`
+-- `docs/findings/gap_shape_g4_1.md`: 同样的相对路径修正
+-- `docs/research/06_gap_structure.md`: 顶部加 [RETRACTED / ARCHIVAL ONLY] banner（Round 1 已做）
+-- `docs/research/03_network_extension.md`: 顶部加 [PARTIALLY RETRACTED] banner（Round 1 已做）
++  - §4 rewritten: path γ v0.2 审阅项全部 CLOSED
++  - §5 rewritten: "若 v0.2 通过 → [COROLLARY]" 分支终结
++  - WTB Thm 47 → Thm 19
++- `docs/PHASE1_LOG.md:471`: Thm 26 → Thm 12
++- `docs/findings/pareto_tf_family.md`: §3 PM-QKD 列 sync CSV + 相对路径 + 交叉点描述修正
++- `docs/findings/gap_shape_g4_1.md`: 相对路径修正
++- `docs/research/06_gap_structure.md` + `03_network_extension.md`: 加 retraction banner
++- `docs/proofs/umr_data_processing_gamma.md` (touched as part of v0.3 history; actual v0.3 changes 在之前 commits 已做)
+ 
+ **Patch**: `changes-v2.patch` (296 lines)
+ 
+-**Decision**: Round 1 CRITICAL + MAJOR 全部修复。因用户指示 Max 轮次=2（Round 1 PASS 停；FAIL 则修复一轮后 Round 2），本 Round 2 直接 FINALIZE（commit 后不再发起 Round 3 Codex review）。
++### Round 2 review — 2026-04-21 (verdict: FAIL)
+ 
+-## Final outcome
++**Agent 1 (review-diff-2.json, gpt-5.4 xhigh)**: `FAIL` — 3 MAJOR + 1 MINOR
++- MAJOR 1: workflow-log stale（指向 2583ffc 而非 37fa7df；漏 CLAUDE.md + rigor.md）
++- MAJOR 2: conclusions §5 **path α/γ 反转** — 误把 α 的三 lemma 挂在 γ 名下（Log 07 §4.5 path γ 是 single-edge PLOB + data-processing）
++- MAJOR 3: CLAUDE.md + rigor.md 仍含 "WTB Thm 26/47" 字面（live policy 不应保留旧编号）
++- MINOR 1: pareto_tf_family.md:85 引用不存在的 `02_mdi_family.md`
+ 
+-- Retraction cycle complete: v0.2 [COROLLARY pending] → v0.3 [CONJ]，双 reviewer 独立 UNSOUND
+-- Documentation state aligned with FINDINGS v2 §1.1 / CLAUDE.md R2.3
+-- User review queue reduced from 5 items (4-5 day) to 3 items (1-1.5 day)，path γ v0.2 三项 CLOSED
++**Agent 2 (review-holistic-2.md, gpt-5.4 high)**: `FAIL` — 2 MAJOR + 1 MINOR
++- MAJOR 1: 新规则对 "independent review" 定义弱于 RETRACTION.md §4.1 规则 3（允许 "不同 agent / 不同 prompt" 算独立，precedent 要求 "不同训练偏差源 / 人类 / 工具"）
++- MAJOR 2: user sign-off 规则不一致（R0.2 只说 [THM] 必要；R0.3 / §3.1 暗示 [COROLLARY] 也必要）→ 应单值
++- MINOR 1: umr_data_processing_gamma.md:171, 273 残留 "[COROLLARY pending]" 语言（虽在 archival block）
++
++**Decision**: 进入 Round 3 FIX（用户指示 max 轮次 = 标准 5 轮）
++
++### Round 3 — 2026-04-21 FIX (this commit)
++
++**Addressing 5 MAJOR + 2 MINOR 合并 issue set**:
++
++1. ✅ workflow-log 对齐 HEAD (本文件即是 Round 3 更新)
++2. ✅ conclusions §5 path α/γ 反转：α 承担三 lemma；γ 按 Log 07 §4.5 写成 single-edge PLOB + data-processing；β 按 §3.2 写成 channel-reduction。三路径共同禁止 set-inclusion shortcut
++3. ✅ CLAUDE.md + rigor.md 移除 "WTB Thm 26/47" 字面（live policy 改为 "引用精度错 — 具体数字见 RETRACTION.md 或 commit 2583ffc diff"）
++4. ✅ CLAUDE.md R0.2 + rigor R2.2 重写：
++   - sign-off 单值规则：任何 [COROLLARY] 或 [THM] 升级 + 对外引用均**必须**用户签字
++   - "independent review" 严格对齐 RETRACTION §4.1 规则 3：不同训练偏差源模型 (跨家族 + 直读 PDF) OR 人类纸笔 OR 非 AI 工具；同家族多运行 / 纯 AI 审计链不计入
++5. ✅ pareto_tf_family.md:85 改引 `pareto_mdi_family.md` + `m2_wlc_mdi_sixstate.md`（存在的文件）
++6. ✅ umr_data_processing_gamma.md:171 "[COROLLARY pending]" 加 strikethrough + "本句已作废" 标签；:273 末尾行改为明示作废
++
++**Patch**: `changes-v3.patch` (to be saved before commit)
++
++**Next**: Round 3 Codex 评审发起（Round 1/2 模式：Agent 1 diff JSON + Agent 2 holistic md）

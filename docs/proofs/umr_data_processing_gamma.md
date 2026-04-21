@@ -168,7 +168,7 @@ $$R_\varepsilon(\Pi; \mathcal{T}_\text{umr}) \leq -\log_2(1 - \min(\eta_A, \eta_
 - Step 2：**[THM, Pirandola 2019 Thm]** 紧依赖 $\Pi$ 在 $\mathcal{T}_\text{tr}$ 下的 LOCC-assistance
 - Step 3：**[trivial]**
 
-**综合**：定理 γ 是 **[COROLLARY pending user sign-off on §2.1]**。
+**综合（原 v0.2 自评，已于 v0.3 撤回；不代表项目立场）**：~~定理 γ 是 [COROLLARY pending user sign-off on §2.1]~~ — **本句已作废**，见 §-1 撤回公告。当前立场：**[CONJ]**。
 
 ---
 
@@ -270,4 +270,4 @@ $$\hat{P}_{\mathcal{N}_\eta}^\leftrightarrow(n, \varepsilon) \leq -\log_2(1-\eta
 
 ---
 
-*END OF v0.2 — 等待用户签字升级 [COROLLARY pending sign-off] → [COROLLARY]*
+*END OF v0.2 archival block — v0.2 已于 2026-04-21 撤回（两 reviewer 独立 UNSOUND），不再代表项目立场。当前主定理分级 = **[CONJ]**（见 §0）。原 v0.2 末尾的 "等待用户签字升级" 呼吁 **已作废**。*

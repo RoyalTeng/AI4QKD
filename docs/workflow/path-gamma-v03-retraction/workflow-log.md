@@ -2,8 +2,8 @@
 
 **Mode**: review-only (no new implementation)
 **Base**: 9402e44^ (pre path γ v0.2)
-**Head**: 2583ffc (HEAD, Codex verdict correction + WTB numbering fix)
-**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits
+**Head (latest)**: Round 3 (see § below); Round 1 base was 2583ffc; Round 2 commit = 37fa7df
+**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正
 
 ## Round 1 — SETUP done 2026-04-21
 
@@ -29,28 +29,52 @@
 
 **Decision**: enter Round 2 FIX.
 
-### Round 2 — 2026-04-21 FIX (this commit)
+### Round 2 — 2026-04-21 FIX (commit 37fa7df)
 
-**Files modified**:
+**Files modified / added in `37fa7df`**:
+- NEW `CLAUDE.md` (项目级 AI 协作规范，R0.1-R0.3 三红线)
+- NEW `.claude/rules/research-rigor.md` (quick-reference)
+- NEW `docs/workflow/path-gamma-v03-retraction/` (changes-v1.patch + changes-v2.patch + review-diff-1.{json,md} + review-holistic-1.md + workflow-log.md)
 - `docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md`:
-  - §4 rewritten: path γ v0.2 审阅项全部 CLOSED（retraction 后不再占用户 queue），重写为非 path-γ 审阅事项
-  - §5 rewritten: "若 v0.2 通过 → [COROLLARY]" 分支终结；列出未来重启 umr 上界升级时必须避免 v0.2 adversarial containment 简化 + Log 07 §3.3 三 lemma 要求
-  - WTB Thm 47 → Thm 19 (第 151 行原文)
-- `docs/PHASE1_LOG.md:471`: Thm 26 → Thm 12 with audit note
-- `docs/findings/pareto_tf_family.md`:
-  - §3 PM-QKD rate 列 sync 自 CSV (10 dB 2.50e-4, 20 dB 7.78e-5, 40 dB 7.67e-6, 60 dB 6.96e-7)
-  - 交叉点描述从 "30-40 dB" → "40-50 dB" 匹配 sync 后的数据
-  - 数据 / 图表链接从 `data/` / `figures/` → `../research/data/` / `../research/figures/`
-- `docs/findings/gap_shape_g4_1.md`: 同样的相对路径修正
-- `docs/research/06_gap_structure.md`: 顶部加 [RETRACTED / ARCHIVAL ONLY] banner（Round 1 已做）
-- `docs/research/03_network_extension.md`: 顶部加 [PARTIALLY RETRACTED] banner（Round 1 已做）
+  - §4 rewritten: path γ v0.2 审阅项全部 CLOSED
+  - §5 rewritten: "若 v0.2 通过 → [COROLLARY]" 分支终结
+  - WTB Thm 47 → Thm 19
+- `docs/PHASE1_LOG.md:471`: Thm 26 → Thm 12
+- `docs/findings/pareto_tf_family.md`: §3 PM-QKD 列 sync CSV + 相对路径 + 交叉点描述修正
+- `docs/findings/gap_shape_g4_1.md`: 相对路径修正
+- `docs/research/06_gap_structure.md` + `03_network_extension.md`: 加 retraction banner
+- `docs/proofs/umr_data_processing_gamma.md` (touched as part of v0.3 history; actual v0.3 changes 在之前 commits 已做)
 
 **Patch**: `changes-v2.patch` (296 lines)
 
-**Decision**: Round 1 CRITICAL + MAJOR 全部修复。因用户指示 Max 轮次=2（Round 1 PASS 停；FAIL 则修复一轮后 Round 2），本 Round 2 直接 FINALIZE（commit 后不再发起 Round 3 Codex review）。
+### Round 2 review — 2026-04-21 (verdict: FAIL)
 
-## Final outcome
+**Agent 1 (review-diff-2.json, gpt-5.4 xhigh)**: `FAIL` — 3 MAJOR + 1 MINOR
+- MAJOR 1: workflow-log stale（指向 2583ffc 而非 37fa7df；漏 CLAUDE.md + rigor.md）
+- MAJOR 2: conclusions §5 **path α/γ 反转** — 误把 α 的三 lemma 挂在 γ 名下（Log 07 §4.5 path γ 是 single-edge PLOB + data-processing）
+- MAJOR 3: CLAUDE.md + rigor.md 仍含 "WTB Thm 26/47" 字面（live policy 不应保留旧编号）
+- MINOR 1: pareto_tf_family.md:85 引用不存在的 `02_mdi_family.md`
 
-- Retraction cycle complete: v0.2 [COROLLARY pending] → v0.3 [CONJ]，双 reviewer 独立 UNSOUND
-- Documentation state aligned with FINDINGS v2 §1.1 / CLAUDE.md R2.3
-- User review queue reduced from 5 items (4-5 day) to 3 items (1-1.5 day)，path γ v0.2 三项 CLOSED
+**Agent 2 (review-holistic-2.md, gpt-5.4 high)**: `FAIL` — 2 MAJOR + 1 MINOR
+- MAJOR 1: 新规则对 "independent review" 定义弱于 RETRACTION.md §4.1 规则 3（允许 "不同 agent / 不同 prompt" 算独立，precedent 要求 "不同训练偏差源 / 人类 / 工具"）
+- MAJOR 2: user sign-off 规则不一致（R0.2 只说 [THM] 必要；R0.3 / §3.1 暗示 [COROLLARY] 也必要）→ 应单值
+- MINOR 1: umr_data_processing_gamma.md:171, 273 残留 "[COROLLARY pending]" 语言（虽在 archival block）
+
+**Decision**: 进入 Round 3 FIX（用户指示 max 轮次 = 标准 5 轮）
+
+### Round 3 — 2026-04-21 FIX (this commit)
+
+**Addressing 5 MAJOR + 2 MINOR 合并 issue set**:
+
+1. ✅ workflow-log 对齐 HEAD (本文件即是 Round 3 更新)
+2. ✅ conclusions §5 path α/γ 反转：α 承担三 lemma；γ 按 Log 07 §4.5 写成 single-edge PLOB + data-processing；β 按 §3.2 写成 channel-reduction。三路径共同禁止 set-inclusion shortcut
+3. ✅ CLAUDE.md + rigor.md 移除 "WTB Thm 26/47" 字面（live policy 改为 "引用精度错 — 具体数字见 RETRACTION.md 或 commit 2583ffc diff"）
+4. ✅ CLAUDE.md R0.2 + rigor R2.2 重写：
+   - sign-off 单值规则：任何 [COROLLARY] 或 [THM] 升级 + 对外引用均**必须**用户签字
+   - "independent review" 严格对齐 RETRACTION §4.1 规则 3：不同训练偏差源模型 (跨家族 + 直读 PDF) OR 人类纸笔 OR 非 AI 工具；同家族多运行 / 纯 AI 审计链不计入
+5. ✅ pareto_tf_family.md:85 改引 `pareto_mdi_family.md` + `m2_wlc_mdi_sixstate.md`（存在的文件）
+6. ✅ umr_data_processing_gamma.md:171 "[COROLLARY pending]" 加 strikethrough + "本句已作废" 标签；:273 末尾行改为明示作废
+
+**Patch**: `changes-v3.patch` (to be saved before commit)
+
+**Next**: Round 3 Codex 评审发起（Round 1/2 模式：Agent 1 diff JSON + Agent 2 holistic md）

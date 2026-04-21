@@ -151,16 +151,20 @@ umr 上界判断**回到** FINDINGS v2 §1.1 [CONJ] 基线（仅在放宽版 $\m
 
 ### 若未来重启 umr 上界升级尝试（需用户显式启动）
 
-AI 不得自主再次尝试升级。若用户将来指示重启，三条路径都可考虑但必须**避免** v0.2 的 adversarial containment 简化：
+AI 不得自主再次尝试升级。若用户将来指示重启，三条路径都可考虑但必须**避免** v0.2 的 adversarial containment 简化（按 [Log 07 §3.1 / §4.3-4.5](research/07_pirandola_2019_technical_audit.md) 原定义）：
 
-- **路径 α**（Khatri-Wilde §19-20 monotonicity reduction）：整体 monotonicity 从 trusted 到 umr 的直接继承
-- **路径 β**（docs/proofs/upper_bound_msen.md §3.2 channel-reduction）：reduction to a single channel via Stinespring
-- **路径 γ 真版**（PLOB 单边 + data-processing lemma 明写）：Log 07 §3.3 要求的三 lemma 必须**各自**独立证明
+- **路径 α**（monotonicity reduction — Khatri-Wilde §19-20 / FINDINGS v1 隐含使用）：通过 trusted → umr 的整体 monotonicity 继承。此路径要求**明写三条 lemma**（Log 07 §4.3）：
   - Lemma 1：协议嵌入（honest-Charlie Π 嵌入 umr-attack space 而不给 Eve 额外 workspace / purification 信息）
   - Lemma 2：安全归约（composable ε-security 在嵌入下保留）
   - Lemma 3：rate 定义对接（$R_\varepsilon^{\mathcal{A}_\text{tr}}$ 与 $R_\varepsilon^{\mathcal{A}_\text{umr}}$ 的 operational equivalence）
 
-三条 lemma **禁止**用 set-inclusion shortcut 绕过（Log 07 §4.3 明确警告的 monotonicity 陷阱）。
+  三条 lemma **禁止**用 set-inclusion shortcut 绕过（Log 07 §4.3 明确警告的 monotonicity 陷阱 / v0.2 所犯错误）。
+
+- **路径 β**（direct umr converse via channel-reduction — Log 07 §3.2）：把 $\mathcal{T}_\text{umr}$ 建模为单个 effective channel $\tilde{\mathcal{M}}$（Alice / Bob 模式过 $\mathcal{E}_1, \mathcal{E}_2$，Charlie 测量 + 经典广播吸收进 channel），对其直接应用 PLOB 2017 + WTB 2017 two-way converse。优点：完全避开 trust assumption；缺点：$E_R(\tilde{\mathcal{M}})$ 与 $\min\{E_R(\mathcal{E}_1), E_R(\mathcal{E}_2)\}$ 的关系未定，可能更松也可能更紧。参考 [docs/proofs/upper_bound_msen.md §3.2](proofs/upper_bound_msen.md)。
+
+- **路径 γ**（single-edge PLOB + data-processing — Log 07 §4.5 最小可信 baseline）：**不**用 Pirandola 2019。直接对 Alice→Charlie 单边 channel $\mathcal{E}_1$ 应用 PLOB 2017，再**明写一条** data-processing lemma：Eve 对 Alice→Charlie mode 做任意后续操作（包括联合 Bob mode 的 BSM）**不会增加** Alice-Bob mutual information 的上界。此路径结构最简，但"data-processing 那一步"的精确形式（对 bipartite coherent information / smooth max-entropy 的适用性）必须严格给出 —— **不得**用 v0.2 的 adversarial containment 绕过。
+
+三条路径**共同禁止**：用 set-inclusion / "不同 Eve 集合间的 containment" 这类 shortcut 替代 explicit lemma。
 
 ### 其他仍开放工作
 
