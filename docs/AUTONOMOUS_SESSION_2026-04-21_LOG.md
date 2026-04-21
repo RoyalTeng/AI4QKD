@@ -240,6 +240,74 @@ Codex 环境卡住无响应，**替代方案**：spawn Claude-native `general-pu
 
 ---
 
+### D.4 Kamin MDI finite-key 迁移 (commit a8f6b5e)
+
+**手段**：virtual-EB reduction (Lo-Curty-Qi 2012 §II) + 现有 Kamin qubit BB84 SDP 复用
+
+**洞察**：Charlie 成功 Bell 测量后，MDI 的条件 Alice-Bob 态是 Werner form，与 qubit BB84 的 Werner form 结构完全一致。因此 MDI finite-key 可通过：
+1. 调用 `kamin_choi_sdp_qubit_bb84_with_dual` 在 effective MDI QBER 下
+2. 键长公式中把 p_sift_base 从 1/2（BB84）换成 1/4（MDI）
+
+**新模块** `qkdx/numerics/kamin_sdp_mdi.py`：
+- `kamin_mdi_h_per_sift(qber, γ)` — delegates to qubit BB84
+- `kamin_mdi_key_length(qber, n, loss_dB_total, γ, α)`
+- `kamin_mdi_key_length_optimized(qber, n, loss_dB_total)` — (γ, α) grid
+
+**验证**（5 tests pass, 2.8 min MOSEK）：
+- h_per_sift 与 qubit BB84 差 < 1e-6
+- n=10^12 0 dB 率 0.22 ≈ BB84 rate × 0.25 (p_sift ratio)
+- 损耗单调性保持
+- MDI/BB84 比例 ≈ 0.15-0.4 at 0 dB ✓
+
+**Scope**：IDEAL SYMMETRIC MDI only（对称损耗，无 decoy，无 misalignment）。完整 decoy MDI 需要 2-source Kamin SDP on A'⊗B' combined space，归 `scope_tag="partial"` 未来工作。
+
+---
+
+### D.2 WL22 beamsplitter — 调研后延后
+
+尝试分析 decoy Fig.3 ~3x offset 根源（我的每光子 loss vs Kamin 的 WL22 beamsplitter 模型）：
+
+**发现**：对 WCP (Poisson(μ)) 光子数，**两者的 per-round detection rate 完全相同**：
+$$\sum_n P(n|\mu) \cdot (1-\eta)^n = e^{-\mu} \cdot \sum_n \frac{(\mu(1-\eta))^n}{n!} = e^{-\mu\eta}$$
+$$1 - e^{-\mu\eta} = 1 - \sum_n P(n|\mu) \cdot (1-\eta)^n$$
+
+所以 decoy Fig.3 的 ~3x offset 不是 loss 模型本身造成的，根源需另行排查（可能在失准 misalignment 的具体公式、或 squashing map 系数）。此问题留为精细 audit 任务，不在本 session 尝试。
+
+---
+
+### 最终 session 状态
+
+**总计本 session commits**：14 个（按时间序）
+```
+c49b2bf → ccd0090 → 9e3df89 → ffa3c3d → a7b1d9b → 804da71 → 26b11ae
+→ 2238581 → 55ba0ae → f728b7e → a8edc77 → 4066a10 → 6ef2269 → a8f6b5e
+```
+
+**验收对齐**：
+
+| 动作 | 状态 |
+|---|---|
+| D.1 qubit Thm 4 诊断 | ✅ |
+| A.1 MDI Pareto | ✅ 2581 pts |
+| A.1 TF Pareto | ✅ 2831 pts |
+| A.2 PHASE1_REPORT + 族图 | ✅ v1.0 |
+| U3.5 DKW memo | ✅ Level 3 |
+| U3.6 MS-EB 重写 | ✅ 三候选 [CONJ] |
+| U3.7 Layer 5.3 SDP | ✅ 15 tests |
+| U3.8 upper_bound_report | ✅ v0.1 25 页 |
+| G4.1 Gap shape [CONJ] | ✅ |
+| Audit + 4 MAJOR fix | ✅ |
+| D.4 Kamin MDI finite-key | ✅ minimal viable |
+| D.2 WL22 beamsplitter | deferred（发现根源非 loss 模型） |
+| Codex 评审 | 环境卡死，Claude 审计代理替代 |
+
+**总 tests 增量**：~50+ 新 tests 通过（Kamin + sweeps + upper_bound + MDI kamin）
+**产出物**：15 张 PNG/PDF + 9 CSV + 3 长 memo + 多个模块
+
+等待用户返回。
+
+---
+
 ## 总结 — 本 session 工作量（2026-04-21, ~8 小时）
 
 **Commits 数**：9 个重大 commit
