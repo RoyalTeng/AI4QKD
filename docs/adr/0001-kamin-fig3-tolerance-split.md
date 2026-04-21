@@ -1,6 +1,8 @@
 # ADR 0001 — Kamin Fig.3 < 5% tolerance task split
 
-**Status**: Proposed (2026-04-22 autonomous session)
+**Status**: **Accepted** (2026-04-22 via Codex proxy binding per 2026-04-21 user delegation)
+**Proxy verdict**: Agent 1 (xhigh, [review-diff-1.json](../workflow/adr-0001-proxy/review-diff-1.json)) + Agent 2 (high, [review-holistic-1.md](../workflow/adr-0001-proxy/review-holistic-1.md)) both PASS Option B with consistent recommendation. Binding as process-level decision per [feedback memory 2026-04-21](../../.claude/projects/-Users-tengjun-Desktop-ai4qkd--1--AI4QKD/memory/feedback_autonomous_delegation_2026-04-21.md).
+**Required correction (both agents concurred)**: T2-Phase A is a **proxy milestone only**; it does **not** close S2.5 hard acceptance or user 3b sign-off. Both **remain open** until T2-Phase B completes. See §Proxy corrections below.
 **Decider**: User 2026-04-21 delegated process decisions to Codex proxy per [feedback memory](../../.claude/projects/-Users-tengjun-Desktop-ai4qkd--1--AI4QKD/memory/feedback_autonomous_delegation_2026-04-21.md)
 **Binding mechanism**: Two-Codex PASS + verdict 一致 → binding as R0.2 C2 proxy (process / ADR level only; **not** rigor grade upgrade)
 **Trigger**: [AUTONOMOUS_RESEARCH_PLAN T2](../AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md) — user review decision **3b** ("Kamin Fig.3 < 5% tolerance")
@@ -121,10 +123,30 @@ Per 2026-04-21 user delegation:
 
 ## Review record
 
-(To be appended when Codex proxy runs complete)
+**2026-04-22 Codex proxy verdicts** (both PASS + Option B, BINDING):
+
+- [Agent 1 diff review (xhigh)](../workflow/adr-0001-proxy/review-diff-1.json): `PASS` / Option B
+  - "Option B should be accepted as the binding process decision. It is consistent with the pre-existing staged recommendation in Kamin-2025.md §9.3 … Deferring Phase B does not create a unique downstream Sub-Q4 blocker that Option A would remove."
+  - MINOR: ADR overstates compliance by saying "partial-closed"; should be "proxy milestone"
+- [Agent 2 holistic review (high)](../workflow/adr-0001-proxy/review-holistic-1.md): `PASS` / Option B / BINDING = yes
+  - "Adopt the split as the process decision, with one required correction: T2-Phase A must be labeled a proxy milestone only, and S2.5 / user 3b must remain open until Phase B completes."
+
+## Proxy corrections applied (2026-04-22)
+
+1. ~~"T2-Phase A partial-closes S2.5"~~ → **T2-Phase A is a proxy milestone only; does NOT close S2.5 or user 3b**
+2. ~~"Sub-Q4 gap attribution 需要 decoy finite-key baseline, Option A 独立 unlock"~~ → Phase B decoy Fig.3 useful calibration for later Sub-Q3 comparison work, **not** a uniquely Sub-Q4-blocking dependency (Sub-Q4 formally consumes Sub-Q2 lower bounds + Sub-Q3 upper bounds per RESEARCH_PLAN §5)
+3. Phase A / B 工期估计 1-2 / 3-5 weeks 基于当前 `kamin_decoy_sdp.py` 实现审计结果（WL22 modeling + dark counts + explicit loss + Frank-Wolfe），取代 AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md 早期 "3-5 天" 的 placeholder 估计
+
+## Downstream effect (post-acceptance)
+
+- **S2.5 硬验收状态**：**OPEN** (unchanged); 用户 3b **OPEN**
+- **T2-Phase A**：autonomous session 可执行；目标 qubit Fig.1 < 5%；**proxy milestone**
+- **T2-Phase B**：defer 至 Phase 2 Sub-Q3 comparison work；trigger = user 指示 or Sub-Q3 需要精确 decoy baseline
+- [AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md](../AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md) 需相应更新 T2 section
 
 ---
 
 ## Changelog
 
-- **v1.0** (2026-04-22 autonomous session): Proposed. Awaiting Codex proxy decision per user delegation.
+- **v1.1** (2026-04-22 autonomous session, **Accepted**): Codex proxy binding PASS; required corrections applied per Agent 2 recommendation
+- **v1.0** (2026-04-22): Proposed

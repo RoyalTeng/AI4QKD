@@ -56,7 +56,13 @@
 
 ### T2 ≡ S2.5 硬验收复审（Kamin Fig.3 < 5% finite-key 精度）
 
-**RESEARCH_PLAN §3.3 S2.5 硬验收**：
+**[2026-04-22 update per ADR 0001 Accepted]**：T2 **split** to:
+- **T2-A**：Kamin qubit BB84 **Fig.1** < 5%（proxy milestone，autonomous session 可执行，1-2 周估计）
+- **T2-B**：Kamin decoy BB84 **Fig.3** < 5%（defer 至 Phase 2 Sub-Q3 comparison work）
+
+**重要**：T2-A 不 close 原 S2.5 硬验收，也不 close 用户 3b 签字。二者 **继续 open**，直到 T2-B 完成。见 [docs/adr/0001-kamin-fig3-tolerance-split.md](adr/0001-kamin-fig3-tolerance-split.md)。
+
+**RESEARCH_PLAN §3.3 S2.5 硬验收**（unchanged，继续 open）：
 
 > "对 decoy-state BB84，有限密钥率（给定 n, ε_sec, ε_corr）与 Kamin 2025 Fig. 4 / Table 1 误差 < 5%"
 
