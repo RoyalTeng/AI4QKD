@@ -100,9 +100,9 @@
 
 **主要结果**（PLOB 强 converse 升级 + 有限 blocklength）：
 
-- **Thm 26**：对 tele-simulable channel，$R \leq E_R(\mathcal{N})$ 是 **strong converse** rate
+- **Thm 12**：对 tele-simulable channel，$R \leq E_R(\mathcal{N})$ 是 **strong converse** rate （audit 2026-04-21 修正：prior memo "Thm 26"，PDF 实际 Thm 12）
   - 超过该率，error → 1 exponentially（PLOB 只证明 error → not → 0）
-- **Thm 47 second-order expansion** for covariant channels:
+- **Thm 19 second-order expansion** for covariant channels:
   $$\hat{P}_\mathcal{N}^\leftrightarrow(n, \varepsilon) \leq E_R(\mathcal{N}) + \sqrt{V(\mathcal{N}, \varepsilon)/n}\, \Phi^{-1}(\varepsilon) + O(\log n / n)$$
 
 **umr bearing**：继承 Q 同 PLOB；升级强 converse 不改变"Eve 控 Charlie"失效问题
@@ -263,7 +263,7 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
 
 1. **Assumption DP**（候选 A/B）未形式化证明。**用户 Log 07 §3.3 推荐先做**。
 2. **LOPC monotonicity reduction**（候选 C）未证。Khatri-Wilde Ch 20 Thm 20.x 的 umr 版本 open。
-3. **Second-order finite-blocklength** Sub-Q3 未计算。WTB Thm 47 需要 per-channel relative entropy variance $V(\mathcal{N}, \varepsilon)$。
+3. **Second-order finite-blocklength** Sub-Q3 未计算。WTB Thm 19 需要 per-channel relative entropy variance $V(\mathcal{N}, \varepsilon)$。
 
 ### 6.2 数值层
 

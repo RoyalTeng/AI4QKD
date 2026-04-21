@@ -106,11 +106,11 @@ $$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \qquad \forall \Pi \
 
 6. ~~$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B))$ for $\Pi \in \mathcal{T}_\text{umr}$~~
    - 依据：path γ v0.2 adversarial containment + Pirandola 2019
-   - **撤回原因**（Claude audit 2026-04-21 UNSOUND-RETRACT）：
-     - v0.2 "adversarial containment" 是范畴错误，不是 set inclusion
-     - $\mathcal{A}_\text{tr}$ 和 $\mathcal{A}_\text{umr}$ 的 Eve 生活在不同 Hilbert 空间
+   - **撤回原因**（**两个独立 reviewer 同结论**：Claude audit + Codex audit 均 UNSOUND）：
+     - Claude 角度：v0.2 "adversarial containment" 是范畴错误，不是 set inclusion；$\mathcal{A}_\text{tr}$ 和 $\mathcal{A}_\text{umr}$ Eve 在不同 Hilbert 空间
+     - Codex 角度：composable security 下不够严谨，需 embedding lemma（honest-Charlie 可嵌入 umr attack 而不给 Eve workspace/purification 额外信息）+ protocol-syntax lemma（Π 在 trusted Charlie 下是 valid Pirandola LOCC protocol）
      - 结构性重复 FINDINGS v1 retraction (2026-04-19)
-     - 详见 [docs/workflow/path-gamma-review/claude_audit_v1.md](workflow/path-gamma-review/claude_audit_v1.md)
+     - 详见 [docs/workflow/path-gamma-review/claude_audit_v1.md](workflow/path-gamma-review/claude_audit_v1.md) + [codex_audit_v1_summary.md](workflow/path-gamma-review/codex_audit_v1_summary.md)
    - **当前状态**：**[CONJ]**（同 v0.1 之前的 FINDINGS v2 判断）
    - **前进方向**：用户明写 path α / β / γ 真版中任一的 lemma 证明，不能用简化 containment 绕过
 

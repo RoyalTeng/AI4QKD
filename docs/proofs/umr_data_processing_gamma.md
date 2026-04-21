@@ -14,7 +14,9 @@
 
 **2026-04-21 同日 autonomous session 内**，我（AI Claude）起草了 v0.2 并声称主定理升级到 [COROLLARY pending user sign-off]。
 
-**撤回原因**（详见 [docs/workflow/path-gamma-review/claude_audit_v1.md](../workflow/path-gamma-review/claude_audit_v1.md)）：
+**撤回原因**（详见两份独立评审：[Claude audit](../workflow/path-gamma-review/claude_audit_v1.md) + [Codex audit 摘要](../workflow/path-gamma-review/codex_audit_v1_summary.md)）：
+
+**两个 reviewer 独立给出 UNSOUND verdict**。Claude audit 从 "范畴错误 / 不同 Hilbert 空间" 角度；Codex 从 "composable security 下不够严谨 + 缺 embedding lemma + 缺 protocol-syntax lemma" 角度 —— 不同角度验证同一问题：
 
 v0.2 §2.1 "adversarial containment" 论证是**范畴错误**，不是有效 set inclusion：
 
@@ -92,7 +94,7 @@ $$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \quad \text{[CONJ pe
 
 $$C_\text{sec}^\leftrightarrow(\mathcal{N}_\eta) = -\log_2(1 - \eta)$$
 
-严格 strong-converse（WTB 2017 Thm 26）。证明：Pirandola-Laurenza-Ottaviani-Banchi 2017 + teleportation simulation。
+严格 strong-converse（WTB 2017 Thm 12）。证明：Pirandola-Laurenza-Ottaviani-Banchi 2017 + teleportation simulation。
 
 ### 1.2 Pirandola 2019 Eq. 9 / 11（network min-cut）**[THM for trusted relay]**
 
@@ -185,7 +187,7 @@ $$R \leq -\log_2(1 - \sqrt{\eta_A \eta_B})$$
 
 ### 4.1 Asymptotic → Finite blocklength
 
-使用 **WTB 2017 Thm 47** 的 second-order expansion for covariant channels（pure-loss bosonic is Gaussian covariant）：
+使用 **WTB 2017 Thm 19** 的 second-order expansion for covariant channels（pure-loss bosonic is Gaussian covariant）：
 
 $$\hat{P}_{\mathcal{N}_\eta}^\leftrightarrow(n, \varepsilon) \leq -\log_2(1-\eta) + \sqrt{\frac{V(\mathcal{N}_\eta, \varepsilon)}{n}} \Phi^{-1}(\varepsilon) + O\!\left(\frac{\log n}{n}\right)$$
 
@@ -204,7 +206,7 @@ $$\hat{P}_{\mathcal{N}_\eta}^\leftrightarrow(n, \varepsilon) \leq -\log_2(1-\eta
 | 1 | §2.1 adversarial containment 在 Portmann-Renner 框架下的严格性 | 可组合安全定义 + Eve 模型 | 1-2 天 |
 | 2 | §2.2 Step 1 "$\Pi$ 在两种 Eve 模型下同时合法" 的 protocol 等价性 | 协议语法 vs 安全语义分离 | 1 天 |
 | 3 | §2.2 Step 2 "$\Pi$ 在 $\mathcal{T}_\text{tr}$ 下落入 Pirandola 2019 Thm 适用范围" 的检查 | Pirandola 2019 §II-B LOCC-assisted adaptive protocol 定义 | 1 天 |
-| 4 | §4 finite-blocklength 修正的适用性（WTB Thm 47 对 umr 的继承） | WTB 2017 §6 covariant channel 要求 | 1 天 |
+| 4 | §4 finite-blocklength 修正的适用性（WTB Thm 19 对 umr 的继承） | WTB 2017 §6 covariant channel 要求 | 1 天 |
 
 **预计用户总工作**：**4-5 天**（相比 v0.1 [DRAFT] 的 7-10 天，因为 v0.2 用 adversarial containment 绕过了 v0.1 的 L1-L3 proof burden）。
 
@@ -226,7 +228,7 @@ $$\hat{P}_{\mathcal{N}_\eta}^\leftrightarrow(n, \varepsilon) \leq -\log_2(1-\eta
 | 三 lemma L1/L2/L3 stacking | 单一 adversarial containment + Pirandola 2019 Thm |
 | 大量 [CONJ] 标签 | 多数 [THM]，少量 [COROLLARY pending sign-off] |
 | 用户审阅 7-10 天 | 用户审阅 4-5 天 |
-| 不触碰 finite-blocklength | §4 加 WTB Thm 47 二阶展开对接 |
+| 不触碰 finite-blocklength | §4 加 WTB Thm 19 二阶展开对接 |
 | L3 定义对接 [CONJ] | 替换为标准协议语法/安全语义分离（[THM]） |
 
 ---

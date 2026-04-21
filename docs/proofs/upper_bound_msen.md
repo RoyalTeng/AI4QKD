@@ -27,7 +27,7 @@ $$R(\Pi) \leq f(\eta_A, \eta_B)$$
 |---|---|---|---|
 | PLOB 2017 Eq. 19 | $C_\text{loss}(\eta) = -\log_2(1-\eta)$ bosonic pure-loss | 两方直连（单信道） | [THM for original] → [CONJ for umr] |
 | Pirandola 2019 Eq. 9 | $C_\text{loss,chain}(\eta, N) = -\log_2(1-\eta^{1/(N+1)})$ | N 内部 **trusted** repeater | [THM for trusted-relay] → [CONJ for umr] |
-| WTB 2017 Thm 26 | $R \leq E_R(\mathcal{N})$ 对 tele-simulable | 两方直连 | [THM for original] → [CONJ for umr] |
+| WTB 2017 Thm 12 | $R \leq E_R(\mathcal{N})$ 对 tele-simulable | 两方直连 | [THM for original] → [CONJ for umr] |
 | TGW 2014 Eq. 1 | $R \leq \log_2\frac{1+\eta}{1-\eta}$ pure-loss squashed-E | 两方直连 | [THM] → [COROLLARY under tele-sim inheritance] |
 | Khatri-Wilde Thm 19.4 | $\log_2 M \leq \frac{n E_\text{sq}(\mathcal{N}) + g_2(\sqrt\varepsilon)}{1-\sqrt\varepsilon}$ | LOCC-assisted 两方 | [THM for LOCC] → [CONJ for umr] |
 | Khatri-Wilde Thm 19.8 | $\log_2 M \leq n R_\max(\mathcal{N}) + \log_2\frac{1}{1-\varepsilon}$ | LOCC-assisted 两方 | [THM for LOCC] → [CONJ for umr] |
