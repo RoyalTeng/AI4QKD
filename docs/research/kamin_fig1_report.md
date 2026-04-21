@@ -71,3 +71,28 @@ What is **not** (yet) validated:
   than the heuristic Eq. 16 with closed-form V²).
 - Decoy-state extension (Eq. 80 block-diagonal SDP, Fig. 3/4) — A4c
   stretch goal.
+
+## 6. Decisions signed off
+
+### 6.1 User sign-off 2026-04-21 — accept ±6 dB cutoff offset (review item 2a)
+
+**User decision** (2026-04-21 session):
+
+> 接受 "±6 dB 是 Kamin 专有 Frank-Wolfe 全 DoF g 迭代 vs 本项目单次 SDP 的内在差异"。
+
+**Implications for this report**：
+
+- Residual ±6 dB offset at cutoff (my ~32 dB vs Kamin 26 dB at n=10^12 qubit, and similar 5 dB shifts at n=10^6/10^8/10^10) is **not** a bug to fix in this S2.5 iteration
+- Root cause identified: Kamin uses Frank-Wolfe iterative optimization over the full dual variable space `g`, while this implementation solves a single SDP + grid-optimizes `(γ, α)`. Both are legitimate upper bounds on the key rate; Kamin's is tighter at cutoff by an amount that is protocol- and noise-parameter-dependent.
+- The **positive-rate region** accuracy (tracked within ±15% of the analytical Devetak-Winter-at-finite-n envelope) is the primary S2.5 deliverable. Cutoff-region saturation is **out of scope** for this iteration.
+- **Implementation decision**: `kamin_sdp.py` is NOT extended with Frank-Wolfe in this plan. If a future Sub-Q2 iteration requires tighter cutoff, a separate milestone (tentatively "S2.5b Frank-Wolfe refinement") is needed, with an ADR required before starting.
+
+**Rigor grade**: this decision does **not** upgrade any rigor level; it closes review item 2a with a documented scope limitation. Report stays at the level of **numerical reproduction with documented gap** (not a theorem-level statement).
+
+**Traceability**:
+- Review context: [docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md §1.3.1](../AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md) (diagnostic, ruled out grid coarseness / observable structure / V² formula)
+- User-review queue item #2: [conclusions §4](../AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md)
+
+### 6.2 Open items (still pending, not covered by 6.1)
+
+- Fig.3 (decoy BB84) `n=10^12` 10 dB offset — this is a **separate** item, user sign-off **(3b)** requires < 5% precise reproduction, tracked in task **T2** of [AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md](../AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md). Fig.3 and Fig.1 share some infrastructure but Fig.3's 3× finite-key offset is driven by different factors (λ_EC / decoy γ optimization) than Fig.1's ±6 dB cutoff issue.
