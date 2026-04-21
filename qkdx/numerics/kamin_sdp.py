@@ -780,30 +780,76 @@ def kamin_full_key_length_bb84(
 def _kamin_V2_bb84_tight(
     g_Z: float, g_X: float, qber: float, gamma: float, eta_det: float,
 ) -> float:
-    """Tight upper bound on V²(p_hon, f) for qubit BB84 with dual (g_Z, g_X).
+    """Kamin 2025 Eq. 38+39 EXACT Ṽ² for qubit BB84 symmetric Werner with loss.
 
-    Derivation (symmetric BB84 with basis-split γ/2 each):
-        Per-round observation ω_i takes values in
-            {key-round, Z-test-correct, Z-test-error, X-test-correct,
-             X-test-error, no-detect}.
-        The dual g_B estimates ∂rate/∂qber_B; per-round contribution of the
-        error estimator, normalized so that the average recovers qber_B:
-            f(ω_i) = (2/γ) · g_Z · 1{Z-test-error}
-                   + (2/γ) · g_X · 1{X-test-error}
-                   + 0     otherwise.
+    Uses Kamin's Eq. 38 exact variance formula and Eq. 39 Ṽ² wrapper
+    (not an upper bound — this IS the Ṽ(q, g) quantity that appears in
+    Kamin Eq. 42 key length).
 
-        Per-round prob of a B-test error:
-            P(B-test-error) = (γ/2) · η_det · qber.
+    Observation alphabet C \\{⊥} for qubit BB84 with loss:
+        c ∈ {(Z, correct), (Z, error), (X, correct), (X, error), no-detect}
+    Test-conditional honest distribution q (Σ q_c = 1):
+        q_{Z,c} = η·(1-qber)/2,  q_{Z,e} = η·qber/2,
+        q_{X,c} = η·(1-qber)/2,  q_{X,e} = η·qber/2,
+        q_{no-det} = 1 - η.
 
-        V² = Var[f] ≤ E[f²] = (2/γ)² · (γ/2·η_det·qber) · (g_Z² + g_X²)
-                            = (2·η_det·qber/γ) · (g_Z² + g_X²).
+    The 2-DoF SDP duals (g_Z, g_X) = (∂rate/∂qber_Z, ∂rate/∂qber_X)
+    extend to a valid 5-component affine g on C\\{⊥} via the chain rule
+    ∂rate/∂q_{B,e} = g_B · ∂qber_B/∂q_{B,e} = g_B · 2/η (holding
+    q_{B,total} = η/2 fixed):
+        g_{Z,e} = 2·g_Z/η,   g_{X,e} = 2·g_X/η,
+        g_{Z,c} = g_{X,c} = g_{no-det} = 0.
 
-    This is still an UPPER bound (drops the −E[f]² term; E[f]² is negligible
-    for qber ≪ 1).  Strictly tighter than Kamin Eq. 44 by a factor ~
-    2·η_det·qber whenever η_det·qber ≪ 1 (which covers Fig. 1 Kamin
-    parameters: p_depol=0.01, qber=0.005, η ∈ (0, 1]).
+    For BB84 g_Z, g_X ≤ 0, so max(g) = 0.
+
+    Kamin Eq. 38 (exact):
+        Var(p, f) = Σ_{c≠⊥} (q_c/γ)·(max(g) - g_c)² − (max(g) − g·q)²
+
+    Kamin Eq. 39:
+        Ṽ(q, g) = (log₂(1 + 2·d_A^κ) + √(2 + Var))²
+
+    This is the rigorous Ṽ² appearing in Eq. 42; it replaces the earlier
+    heuristic formula that had η in the numerator (wrong — leads to
+    cutoff overshoot at n ≥ 10^8) and omitted the log+sqrt wrapper.
+
+    Args:
+        g_Z, g_X: SDP dual values, ∂(rate_per_sift)/∂qber_B. For BB84
+            expected to be ≤ 0 (privacy decreases with QBER).
+        qber: honest QBER (symmetric Z = X).
+        gamma: test-round probability ∈ (0, 1).
+        eta_det: detection efficiency ∈ (0, 1], eta_det = 10^(−L/10).
     """
-    return (2.0 * eta_det * qber / gamma) * (g_Z ** 2 + g_X ** 2)
+    d_A = 2
+    kappa = 1
+
+    # 5-component affine g on test alphabet via chain rule (η in denom)
+    g_Z_e = 2.0 * g_Z / eta_det
+    g_X_e = 2.0 * g_X / eta_det
+    max_g = max(0.0, g_Z_e, g_X_e)
+
+    # Test-conditional honest distribution
+    q_Z_e = eta_det * qber / 2.0
+    q_X_e = eta_det * qber / 2.0
+    q_Z_c = eta_det * (1.0 - qber) / 2.0
+    q_X_c = eta_det * (1.0 - qber) / 2.0
+    q_no_det = 1.0 - eta_det
+
+    # Kamin Eq. 38 Var(p, f) — EXACT
+    sum_term = (
+        q_Z_e / gamma * (max_g - g_Z_e) ** 2
+        + q_X_e / gamma * (max_g - g_X_e) ** 2
+        + q_Z_c / gamma * (max_g - 0.0) ** 2
+        + q_X_c / gamma * (max_g - 0.0) ** 2
+        + q_no_det / gamma * (max_g - 0.0) ** 2
+    )
+    g_dot_q = q_Z_e * g_Z_e + q_X_e * g_X_e  # correct/no-det have g=0
+    var_pf = sum_term - (max_g - g_dot_q) ** 2
+    if var_pf < 0.0:  # solver noise clamp (Var ≥ 0)
+        var_pf = 0.0
+
+    # Kamin Eq. 39 Ṽ²(q, g)
+    V_inner = math.log2(1.0 + 2.0 * d_A ** kappa) + math.sqrt(2.0 + var_pf)
+    return V_inner ** 2
 
 
 def _kamin_ell_from_sdp_result(
@@ -1191,7 +1237,7 @@ def kamin_fig1_sweep(
     eps_secure: float = 1e-8,
     f_EC: float = 1.16,
     gamma_grid: tuple[float, ...] = (
-        0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+        0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
     ),
     solver: str = "MOSEK",
     epsilon_regularization: float = 1e-9,
@@ -1247,9 +1293,13 @@ def kamin_fig1_sweep(
 
     for i, n in enumerate(n_values):
         inv_sqrt_n = 1.0 / math.sqrt(n)
+        # Fine log-spaced α grid covering the (α-1) balance between
+        # Var penalty ∝ β·V² and log_PA ∝ (α/(α-1))·log(1/ε).
+        # Optimal β ≈ √(log(1/ε) / (n·V²·(ln2/2))); span scales from
+        # 3 orders below √(1/n) (for small V²) to 3 orders above.
         alpha_grid = tuple(
             1.0 + scale * inv_sqrt_n
-            for scale in (0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0)
+            for scale in (0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0)
             if 1.0 + scale * inv_sqrt_n < 1.5
         )
         for j, loss_dB in enumerate(loss_dB_values):

@@ -16,18 +16,18 @@
 
 | n \ loss (dB) | 0 | 3 | 6 | 10 | 15 | 20 | 25 | 30 |
 |---|---|---|---|---|---|---|---|---|
-| 10^6 | +0.8370 | +0.4095 | +0.2005 | +0.0742 | +0.0170 | -0.0008 | -0.0061 | -0.0078 |
-| 10^8 | +0.8862 | +0.4428 | +0.2206 | +0.0872 | +0.0270 | +0.0083 | +0.0024 | +0.0005 |
-| 10^10 | +0.8922 | +0.4470 | +0.2239 | +0.0891 | +0.0281 | +0.0089 | +0.0028 | +0.0009 |
-| 10^12 | +0.8928 | +0.4475 | +0.2243 | +0.0893 | +0.0282 | +0.0089 | +0.0028 | +0.0009 |
+| 10^6 | +0.8220 | +0.3722 | +0.1479 | +0.0111 | -0.0450 | -0.0850 | -0.1364 | -0.2270 |
+| 10^8 | +0.8855 | +0.4354 | +0.2100 | +0.0738 | +0.0120 | -0.0065 | -0.0130 | -0.0225 |
+| 10^10 | +0.8987 | +0.4489 | +0.2234 | +0.0870 | +0.0254 | +0.0059 | -0.0002 | -0.0020 |
+| 10^12 | +0.9008 | +0.4512 | +0.2259 | +0.0895 | +0.0278 | +0.0084 | +0.0022 | +0.0003 |
 
 ## 3. Cutoff-loss comparison vs Kamin Fig. 1 (GEAT column, §6.3)
 
 | n | my cutoff (last positive) | Kamin GEAT cutoff | gap |
 |---|---|---|---|
-| 10^6 | ~ 15 dB | 15 dB | see §3 |
-| 10^8 | > 30 dB | 20 dB | see §3 |
-| 10^10 | > 30 dB | 25 dB | see §3 |
+| 10^6 | ~ 10 dB | 15 dB | see §3 |
+| 10^8 | ~ 15 dB | 20 dB | see §3 |
+| 10^10 | ~ 20 dB | 25 dB | see §3 |
 | 10^12 | > 30 dB | 26 dB | see §3 |
 
 **Observations**:
@@ -35,7 +35,7 @@
 - At **positive-rate** anchors (loss ≤ 15 dB at n=10^6; ≤ 25 dB at n ≥ 10^8),
   our rate tracks `η_det · (1 − H₂(qber) − f_EC · H₂(qber))` within ±15%
   after optimal `(γ*, α*)`.  At `(n=10^12, 0 dB)` we reproduce
-  Kamin §6.3's "≈ 0.9" anchor: **rate = 0.8928**.
+  Kamin §6.3's "≈ 0.9" anchor: **rate = 0.9008**.
 - At **cutoff** the heuristic Eq. 16 form used here gives a **less-tight**
   penalty than Kamin's full Thm 3 + Thm 4 Legendre-Fenchel `f`-optimization.
   This produces small residual-positive rates beyond Kamin's zero-crossing,
