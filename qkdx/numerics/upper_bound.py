@@ -290,41 +290,38 @@ def kraus_amplitude_damping_qubit(gamma: float) -> list[np.ndarray]:
 # ---------------------------------------------------------------------------
 
 def e_r_depolarizing_analytic(p: float) -> float:
-    """E_R(depolarizing channel) for qubit depolarizing with probability p.
+    """E_R(ρ_choi) for qubit depolarizing isotropic Choi state.
 
-    Rains 1999 / Vidal-Werner 2002: for qubit depol p in [0, 4/5]:
-        E_R(N_p) = 1 - H_2((1+3p/4)/2) + (arbitrary; tighter by Bose 99)
+    Reference: Vollbrecht-Werner 2001 / Vidal-Werner 2002; Horodecki et al.
+    1999 for isotropic state E_R.
 
-    For p = 0 (identity): E_R = 1.
-    For p → 4/5 (entanglement-breaking): E_R → 0.
+    Qubit depolarizing channel N_p: ρ → (1-p)·ρ + p·I/2.
+    Choi state ρ_choi = (I ⊗ N_p)(|Φ⁺⟩⟨Φ⁺|) is isotropic with Bell-state
+    fidelity:
+        F(p) = ⟨Φ⁺|ρ_choi|Φ⁺⟩ = (1-p) + p/4 = 1 − 3p/4
 
-    Exact closed form (Vidal-Werner 2002 Eq. (I)):
-        E_R(ρ_depol) = 1 - H_2((1-p')/2) + h((1-p')/2, (1+p')/2; 1/2, 1/2)
-    where p' = 1 - 4p/3 is "effective transmission" — BUT this is for
-    BIPARTITE STATE, not channel.
+    Isotropic E_R (Horodecki et al. 1999) for F > 1/2 (entangled regime):
+        E_R(ρ_iso(F)) = 1 − H₂(F) − (1-F)·log₂(3)
 
-    Simpler validation: at p=0 (identity), E_R = 1 bit.
-    For small p, E_R ≈ 1 - O(p²).
+    Reference values:
+        p=0 → F=1:    E_R = 1 bit  (maximally entangled)
+        p=4/5 → F=0.4: below SEP boundary → E_R = 0
+        p=1 → F=1/4:  E_R = 0
+
+    NOTE: this function is ANALYTIC reference only; not tested by
+    `test_upper_bound.py`.  For validation against e_r_channel_ppt, prefer
+    direct numerical comparison.
     """
     if not (0.0 <= p <= 1.0):
         raise ValueError(f"p must be in [0, 1], got {p}")
-    # For identity channel (p=0): E_R = log(dim) = 1 bit.
-    # For depolarizing with effective Fidelity F:
-    # F = 1 - 3p/4 + p/4 · 1 = 1 - p/2 (probability |Φ⁺⟩ state passes)
-    # E_R(ρ_depol bipartite) = 1 - H_2(F) - (1-F)·log(3) for isotropic states
-    # with F > 1/2 (entangled regime).
-    # This is specifically Vollbrecht-Werner 2001 / Vidal-Werner 2002.
-    F = 1.0 - p / 2.0
-    if F <= 0.25:
-        return 0.0
+    # Corrected Werner fidelity: F = ⟨Φ⁺|(I⊗N_p)(|Φ⁺⟩⟨Φ⁺|)|Φ⁺⟩ = 1 − 3p/4.
+    F = 1.0 - 3.0 * p / 4.0
+    if F <= 0.5:
+        return 0.0  # isotropic state is separable
     if F >= 1.0:
-        return 1.0  # identity → maximally entangled → E_R = 1
-    # Isotropic state E_R formula:
-    h2 = (
-        -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
-        if 0.0 < F < 1.0 else 0.0
-    )
-    return max(0.0, 1.0 - h2 - (1.0 - F) * math.log2(3.0))
+        return 1.0  # identity channel
+    H2 = -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
+    return max(0.0, 1.0 - H2 - (1.0 - F) * math.log2(3.0))
 
 
 # ---------------------------------------------------------------------------
@@ -335,30 +332,42 @@ def e_r_depolarizing_analytic(p: float) -> float:
 # Max-Rains information R_max(N) via Wang-Duan 2016b SDP
 # ---------------------------------------------------------------------------
 
-def r_max_channel_sdp(
+def log_negativity_channel_sdp(
     kraus_ops: list[np.ndarray],
     dim_A: int,
     solver: str = "MOSEK",
     verbose: bool = False,
 ) -> dict:
-    """Max-Rains information R_max(N) of a quantum channel via Wang-Duan SDP.
+    """Log-negativity of the Choi state via SDP (upper bound on max-Rains).
 
-    Reference:
-        - Wang-Duan 2016b, PRA 94:050301 (max-Rains as SDP)
-        - Berta-Wilde 2018, Phys. Rev. Lett. 117:200501
-        - Khatri-Wilde 2024 §19.2.1 Thm 19.8 (strong converse for PPT-assisted Q)
+    References:
+        - Vidal-Werner 2002, PRA 65:032314 (logarithmic negativity)
+        - Wang-Duan 2016b, PRA 94:050301 (full two-cone max-Rains SDP)
+        - Berta-Wilde 2018, PRL 117:200501
+        - Khatri-Wilde 2024 §19.2.1 Thm 19.8
 
-    R_max provides a STRONG CONVERSE upper bound on the n-shot
-    LOCC/PPT-assisted quantum (or private) communication rate:
-        log_2 M ≤ n·R_max(N) + log_2(1/(1-ε))
+    **Scope clarification** (per audit 2026-04-21):
+        This function computes the LOGARITHMIC NEGATIVITY of the channel's
+        Choi state, NOT the strict Wang-Duan 2016b two-cone max-Rains SDP:
+            E_N(N) = log_2 ‖ρ_N^{T_B}‖_1
+        Wang-Duan 2016b Eq. (9) defines R_max(N) via a two-operator form
+        Γ(N) = min{‖Tr_B[V+W]‖_∞ : V, W ≥ 0, (V−W)^{T_B} = ρ^N}.
+        For 2-qubit Choi states, E_N and R_max COINCIDE on identity,
+        fully-depolarizing, and Bell states; for general channels
+        E_N ≥ R_max (log-negativity is a LOOSER upper bound).
 
-    Wang-Duan 2016b SDP (corrected to match log-negativity / max-Rains
-    for Choi state):
-        2^{R_max(N)} = min Tr[V]
-        s.t. V ≥ +ρ^{T_B},  V ≥ -ρ^{T_B},  V ≥ 0  (operator inequalities)
+    Thm 19.8 strong-converse rate uses R_max; using E_N as a substitute
+    still gives a VALID strong-converse upper bound (since E_N ≥ R_max),
+    just not the tightest possible.
 
-    For identity qubit channel, eigenvalues of ρ^{T_B} = (1/2)·SWAP are
-    {1/2, 1/2, 1/2, -1/2}, so min Tr[V] = Σ|eigenvalue| = 2 → R_max = 1 bit.
+    SDP form used here:
+        E_N(ρ) = log_2 min Tr[V]
+        s.t. V ≥ +ρ^{T_B},  V ≥ −ρ^{T_B},  V Hermitian
+        (V ≥ 0 implied by V ≥ ρ^{T_B} + V ≥ −ρ^{T_B} when trace minimized)
+
+    Validation:
+        Identity qubit: eigenvalues of |Φ⁺⟩⟨Φ⁺|^{T_B} = {1/2, 1/2, 1/2, −1/2}
+        min Tr[V] = Σ|λ| = 2, E_N = log_2(2) = 1 bit ✓
 
     Args:
         kraus_ops: channel Kraus operators.
@@ -366,7 +375,8 @@ def r_max_channel_sdp(
 
     Returns:
         dict with:
-          R_max_bits: log_2(optimal trace) in bits
+          log_negativity_bits: E_N = log_2(Tr[V]) in bits (upper bounds R_max)
+          R_max_bits: alias for log_negativity_bits (backward compat)
           V_opt: optimal V variable
           status: solver status
           rho_choi: Choi state used
@@ -393,18 +403,24 @@ def r_max_channel_sdp(
     trace_val = float(prob.value)
     if trace_val <= 0:
         return {
-            "R_max_bits": 0.0,
+            "log_negativity_bits": 0.0,
+            "R_max_bits": 0.0,  # alias for backward compat
             "V_opt": np.array(V.value, dtype=np.complex128),
             "status": prob.status,
             "rho_choi": rho_choi,
         }
-    R_max = math.log2(trace_val)
+    E_N = max(0.0, math.log2(trace_val))
     return {
-        "R_max_bits": max(0.0, R_max),
+        "log_negativity_bits": E_N,
+        "R_max_bits": E_N,  # alias (log-neg upper-bounds strict R_max)
         "V_opt": np.array(V.value, dtype=np.complex128),
         "status": prob.status,
         "rho_choi": rho_choi,
     }
+
+
+# Backward-compat alias: previous API name
+r_max_channel_sdp = log_negativity_channel_sdp
 
 
 def dv_gap_from_achievable(

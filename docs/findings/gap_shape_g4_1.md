@@ -45,39 +45,42 @@ FINDINGS v2 §4.2 的红线被严格遵守：
 
 | loss (dB) | TF-PM-QKD LB | UB cand A/B | UB cand C (E_R^PPT) | PLOB direct (ref, non-umr) |
 |---|---|---|---|---|
-| 0 | 8.25e-4 | ∞ (η_arm=1) | 1.000 | ∞ |
-| 10 | 3.80e-4 | 1.2073 | 0.1934 | 0.152 |
+| 0 | 8.25e-4 | ∞ (η_arm=1; script uses 1e-30 floor → 99.66) | 1.000 | ∞ |
+| 10 | 2.50e-4 | 0.5484 | 0.1934 | 0.1520 |
 | 20 | 7.78e-5 | 0.1520 | 0.0616 | 0.0145 |
-| 30 | — | 0.0453 | 0.0202 | 0.00145 |
-| 40 | 7.67e-6 | 0.01451 | 0.0065 | 1.44e-4 |
-| 60 | 6.96e-7 | 0.00145 | 0.0007 | 1.44e-6 |
-| 80 | 1.51e-7 | 1.45e-4 | 9.9e-5 | 1.44e-8 |
+| 30 | 2.44e-5 | 0.04636 | 0.0202 | 0.00145 |
+| 40 | 7.67e-6 | 0.01450 | 0.0065 | 1.44e-4 |
+| 60 | 6.96e-7 | 0.00144 | 0.0007 | 1.44e-6 |
+| 80 | 9.47e-9 | 1.44e-4 | 9.9e-5 | 1.44e-8 |
+
+（values from [data/gap_shape.csv](data/gap_shape.csv); audit 2026-04-21 corrected 10 dB row previously misrecorded as 1.2073 → 0.5484）
 
 ### 2.2 Gap 比值（UB / LB）
 
 | loss (dB) | candidate A/B / TF | candidate C / TF |
 |---|---|---|
-| 10 | ~3200× | ~510× |
+| 10 | ~2200× | ~770× |
 | 20 | ~1950× | ~790× |
 | 40 | ~1890× | ~850× |
 | 60 | ~2080× | ~1000× |
-| 80 | ~960× | ~650× |
+| 80 | ~15200× | ~10500× |
 
 **关键观察**：
-1. **Gap ratio 相对稳定** in 20-80 dB 区间，~10³ 级（候选 C）到 ~2·10³（候选 A/B）
-2. 候选 A/B（符号形式闭形）比候选 C（SDP 数值）**松 2-4×**
-3. 低损耗区 (< 10 dB) gap 极大（10⁵ 级），但候选 A/B 在 0 dB 发散
+1. **Gap ratio 相对稳定** in 20-60 dB 区间，~800-1000× （候选 C）、~1900-2100× （候选 A/B）
+2. 候选 A/B（符号闭形）比候选 C（SDP 数值）**松 2-3×**
+3. 低损耗区 (< 10 dB) gap 极大，但候选 A/B 在 0 dB 发散
+4. 80 dB 区的 ratio 变大是因为 TF LB 急剧下降（接近 cutoff）
 
-### 2.3 Gap 曲线 log-log 行为
+### 2.3 Gap 曲线 log-log 行为（**conditional sensitivity analysis only**）
+
+**NOTE** — 本小节是 **如果** 某候选路径升级到 [THM] 时的 **sensitivity analysis**，**严格不**构成 Sub-Q4 归因结论。§0 disclaimer 保持有效。
 
 在 log-log 下（loss_dB 是 x 轴）：
-- TF LB 的 slope 约为 **-1/2**（对应 √η scaling）
-- UB cand A/B 的 slope 约为 **-1**（对应 η scaling）
-- 因此 gap 形状在 log scale 下**线性发散**，斜率 1/2（= η^{-1/2}）
+- TF LB 的 slope 约为 **-1/2**（对应 √η scaling）—— [SYN] 来自 Ma-Zeng-Zhou 2018 可达性
+- UB cand A/B 的 slope 约为 **-1**（对应 η scaling）—— [CONJ], 依赖 Log 07 Assumption DP
+- 两斜率差 → gap 形状在 log scale 下**线性发散**
 
-如果候选 A/B 升级为 [THM]（需完成 Log 07 路径 γ 的 Assumption DP 形式化），则**gap 随距离无限增长**，这是**情况 A**（√η 紧）的反证：可能存在**情况 B**（可以构造超越 √η 的协议）。
-
-**警告**：这完全依赖候选 A/B 的 [THM] 升级。当前 [CONJ] 级的数值**不能**做 Sub-Q4 归因结论。
+**Conditional statement only（不 promote 到归因）**：若 Log 07 路径 γ 能把 candidate A/B 升级到 [THM]，则**gap shape 将与情况 B（可构造超越 √η 的协议）一致**。当前 [CONJ] 级，**不**据此做归因。
 
 ---
 

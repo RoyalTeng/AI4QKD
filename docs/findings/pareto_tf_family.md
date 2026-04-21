@@ -34,11 +34,13 @@
 | loss (dB) | rate (bits/signal) | √η 参考 | PLOB (-log₂(1-η)) |
 |---|---|---|---|
 | 0 | 8.25e-4 | 1.0 | ∞ |
-| 10 | 3.80e-4 | 0.316 | 0.152 |
-| 20 | 1.45e-4 | 0.100 | 0.0145 |
-| 40 | 1.63e-5 | 0.010 | 1.44e-4 |
-| 60 | 1.59e-6 | 0.001 | 1.44e-6 |
-| 80 | 1.51e-7 | 3.16e-4 | 1.44e-8 |
+| 10 | 2.50e-4 | 0.316 | 0.152 |
+| 20 | 7.78e-5 | 0.100 | 0.0145 |
+| 40 | 7.67e-6 | 0.010 | 1.44e-4 |
+| 60 | 6.96e-7 | 0.001 | 1.44e-6 |
+| 80 | 9.47e-9 | 3.16e-4 | 1.44e-8 |
+
+（values from [data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv); audit 2026-04-21 corrected memo table previously had 10 dB row misrecorded as 3.80e-4 → 2.50e-4）
 
 **关键观察**：
 - 在 > 60 dB 的高损耗区间，PM-QKD rate 仍 > 0（cutoff > 80 dB），这正是 TF 族的 √η scaling 优势
