@@ -208,6 +208,38 @@ n=10^12 扫描：
 
 ---
 
+### Claude-native 审计代理 (commits a8edc77 + 4066a10)
+
+Codex 环境卡住无响应，**替代方案**：spawn Claude-native `general-purpose` Agent 作 physics-aware 审计代理，任务：
+- 读六份文件（qkdx/numerics/upper_bound.py + tests + U3.6/G4.1/U3.8 + Khatri-Wilde memo）
+- 核对 FINDINGS v2 §1.2 四级分级守则
+- 检查 SDP 公式正确性、umr 继承 overclaim、数值-文档一致性
+
+**审计结果**：**PASS** with 4 MAJOR + 5 MINOR 修正建议。
+
+**4 MAJOR 修正（commit a8edc77 全部 address）**：
+
+1. **`e_r_depolarizing_analytic` Werner fidelity 公式错**：
+   - 旧：F = 1 - p/2（不正确）
+   - 新：F = 1 - 3p/4（正确；来自 ⟨Φ⁺|(I⊗N_p)|Φ⁺⟩⟨Φ⁺||Φ⁺⟩）
+   - 影响：函数只作解析参考，未被任何测试调用，无下游 propagation
+2. **`r_max_channel_sdp` 实际是 log-negativity，不是严格 Wang-Duan 2016b max-Rains**：
+   - 审计正确识别：我的 SDP `min Tr[V] s.t. V ≥ ±ρ^{T_B}` 给 log-negativity
+   - WD 2016b 严格 max-Rains 是两算子 form `min ||Tr_B[V+W]||_∞`
+   - 重命名函数 `log_negativity_channel_sdp` + 保留 `r_max_channel_sdp` 为 alias
+   - docstring 显式声明是 log-negativity（仍是 Thm 19.8 strong-converse 有效上界，只是 loose）
+3. **`gap_shape_g4_1.md` 10 dB 行数值错**（1.2073 → 0.5484）+ TF LB 数值错（3.80e-4 → 2.50e-4 per CSV）：
+   - 同样修 `pareto_tf_family.md`
+   - 重新计算 gap ratios (10 dB: 2200× 而非 3200×)
+4. **`gap_shape_g4_1.md` §2.3 表述越界**：
+   - 旧："反证情况 A" 有潜在 [CONJ]→[THM] 越级嫌疑
+   - 新：显式 "conditional sensitivity analysis only" + "不 promote 到归因"
+   - 保持 §0 disclaimer 严格
+
+**验证**：15 tests still pass 修正后。
+
+---
+
 ## 总结 — 本 session 工作量（2026-04-21, ~8 小时）
 
 **Commits 数**：9 个重大 commit
