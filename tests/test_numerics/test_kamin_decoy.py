@@ -409,6 +409,44 @@ class TestDecoyFiniteKey:
         )
         assert r["ell"] < 0
 
+    def test_thm4_closes_loss_finite_key_gap(self):
+        """Kamin Thm 4 τ-slack SDP gives POSITIVE rate at 10 dB n=10^12.
+
+        Hard-constraint mode (kamin_decoy_full_key_length) gives −∞ at
+        loss > 5 dB due to large g inflating V².  Thm 4 (τ-slack absorbs
+        slack into s(Στ/2) penalty) trades off V² internally → positive.
+        """
+        from qkdx.numerics.kamin_decoy_sdp import (
+            kamin_decoy_thm4_key_length_optimized, honest_q_per_intensity,
+        )
+        intensities = (0.9, 0.02, 0.001)
+        p_mu_given_t = (1/3, 1/3, 1/3)
+        N_ph = 5
+        theta = math.asin(0.1)
+        eta = 0.1  # 10 dB
+        q_per_mu = {}
+        for mu, p in zip(intensities, p_mu_given_t):
+            q_per_mu[mu] = honest_q_per_intensity(
+                mu=mu, N_ph=N_ph, eta_det=eta, theta_misalign=theta,
+                bob_gamma=0.5, p_mu_given_t=p,
+            )
+        r = kamin_decoy_thm4_key_length_optimized(
+            intensities=intensities, p_mu_given_t=p_mu_given_t,
+            q_hon_per_mu=q_per_mu, N_ph=N_ph, n=10**12, loss_dB=10.0,
+            theta_misalign=theta,
+        )
+        print(f"Thm 4 n=10^12 10dB: rate={r['rate_star']:.5f}, γ*={r['gamma_star']:.3f}")
+        assert r["rate_star"] > 0, (
+            f"Thm 4 should give positive rate at 10 dB n=10^12, got {r['rate_star']}"
+        )
+        # Kamin Fig. 3 GEAT at 10 dB n=10^12 ≈ 0.03.  Our model gives ~0.01
+        # (factor ~3 lower).  Attributable to per-photon vs WL22 beamsplitter
+        # honest model.  Test loose range allowing that.
+        assert 0.003 < r["rate_star"] < 0.1, (
+            f"rate {r['rate_star']:.4f} outside [0.003, 0.1] "
+            f"(Kamin Fig.3 GEAT ~0.03, my ~3x lower due to per-photon model)"
+        )
+
     def test_fig3_anchor_0dB_optimized(self):
         """Kamin Fig.3 GEAT finite-n at n=10^12 0 dB.
 
