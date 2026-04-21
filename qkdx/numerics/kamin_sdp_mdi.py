@@ -21,16 +21,30 @@ Reference:
     - qkdx/numerics/kamin_sdp.py (Kamin Choi SDP, reused)
 
 Reduction to qubit BB84 Kamin SDP:
-    In the virtual-EB picture (Lo-Curty-Qi §II), after Charlie's successful
-    Bell projection the conditional Alice-Bob state has the Werner form
-    Tr[|Φ⁺⟩⟨Φ⁺|·ρ_AB] = 1 - 3·qber/2 (for the basis-matched-correct BSM).
-    This is structurally identical to qubit BB84's Werner state at effective
-    QBER, allowing DIRECT reuse of `kamin_choi_sdp_qubit_bb84`.
+    In the virtual-EB picture (Lo-Curty-Qi 2012, Appendix A — NOT §II as
+    earlier drafts stated), after Charlie's successful Bell projection the
+    conditional Alice-Bob state is outcome-dependent Bell-centered Werner
+    (Φ⁻, Ψ⁻, Ψ⁺, or Φ⁺ centered, depending on BSM outcome). After Table I's
+    **classical raw-key bit flip** (basis-dependent post-processing on raw
+    bits — NOT a quantum Pauli operation on the state), the raw-key
+    statistics are Werner-equivalent at effective QBER q = 2(1-F')/3,
+    with F' = F_1² + (1-F_1)²/3 and F_1 = 1 - 3·λ/4.
+
+    BB84 Kamin SDP reuse is therefore a [CONJ]-level delegation conditional
+    on (i) the classical statistics equivalence (Werner Table I ≈ Φ⁺
+    raw QBER) and (ii) the Kamin Choi SDP structural equivalence between
+    BB84 EB-reduced Choi and MDI post-Table-I effective Choi (unresolved
+    gap G1 in `docs/proofs/mdi_werner_reduction.md`).
+
+    See `docs/proofs/mdi_werner_reduction.md` v0.3+ for the conditional
+    argument, scope (A1-A6), limitations, and upgrade path.
 
 Divergence from real MDI:
-    This implementation assumes the ideal virtual-EB reduction; full-rigor
-    MDI finite-key would treat Charlie's Bell POVM explicitly, with a 2-source
-    Kamin SDP on the combined A'⊗B' space (scope_tag="partial", future work).
+    This implementation assumes the ideal virtual-EB reduction with
+    symmetric arms, no misalignment, no decoy, perfect linear-optic BSM,
+    and Lo-Curty-Qi Table I Ψ± post-selection. Full-rigor MDI finite-key
+    would treat Charlie's Bell POVM explicitly with a 2-source Kamin SDP
+    on the combined A'⊗B' space (scope_tag="partial", future work).
 """
 from __future__ import annotations
 
@@ -62,10 +76,13 @@ def kamin_mdi_h_per_sift(
 ) -> dict[str, Any]:
     """Kamin Choi SDP h_per_sift for ideal symmetric MDI-QKD.
 
-    By the virtual-EB reduction (Lo-Curty-Qi 2012), the conditional
-    Alice-Bob state after Charlie's successful Bell measurement is
-    structurally identical to qubit BB84 Werner state at the effective
-    MDI QBER.  Therefore we DELEGATE to the existing qubit BB84 Kamin SDP.
+    By the virtual-EB reduction (Lo-Curty-Qi 2012 Appendix A) + Table I
+    classical raw-key bit-flip post-processing (basis-dependent), the MDI
+    raw-key statistics are Werner-equivalent to qubit BB84 at the same
+    effective QBER. We DELEGATE to the existing qubit BB84 Kamin SDP
+    at [CONJ]-level (see `docs/proofs/mdi_werner_reduction.md` v0.3+
+    for the conditional argument and the unresolved SDP-structural-
+    equivalence gap G1).
 
     Args:
         qber: symmetric Alice-Bob effective QBER.

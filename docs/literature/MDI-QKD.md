@@ -115,7 +115,10 @@ $$\text{observation\_keys} = (\text{qber\_Z}, \text{qber\_X}, \text{p\_sift})$$
 #### 3.3.5 $\mathcal{K}$:密钥映射
 
 - Alice 的 $x \in \{0,1\}$ 作为 raw key
-- Bob 接收 Charlie 公告后,根据 $r$ 决定是否 flip 自己的比特(如 $r = \Psi^-$ 需 flip;$r = \Psi^+$ 不 flip)
+- Bob 接收 Charlie 公告后,根据 **(basis, outcome) pair** 按 **Table I**(§3.2)决定是否 flip 自己的比特:
+  - **Z / rectilinear basis**:$r = \Psi^-$ **或** $r = \Psi^+$ 均 flip
+  - **X / diagonal basis**:$r = \Psi^-$ flip;$r = \Psi^+$ **no flip**(kept 且不需修正)
+- 此 flip 是 **classical raw-key bit XOR**(经典后处理),不是 quantum state Pauli 操作(见 §3.2 的 classical / quantum 区分 + [docs/proofs/mdi_werner_reduction.md §7](../proofs/mdi_werner_reduction.md))
 - 最终 Alice-Bob key 比特匹配
 
 ### 3.4 理想 MDI 的渐近密钥率公式(Level 3 证明)
