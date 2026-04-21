@@ -2,8 +2,8 @@
 
 **Mode**: review-only (no new implementation)
 **Base**: 9402e44^ (pre path γ v0.2)
-**Head (latest)**: Round 3 (see § below); Round 1 base was 2583ffc; Round 2 commit = 37fa7df
-**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正
+**Head (latest)**: Round 4 (see § below); Round 1 base = 2583ffc; Round 2 commit = 37fa7df; Round 3 commit = f5bb30a; Round 4 commit = (this commit, pending)
+**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正 + Round 4 工作流边界 + path β citation 修正
 
 ## Round 1 — SETUP done 2026-04-21
 
@@ -62,19 +62,44 @@
 
 **Decision**: 进入 Round 3 FIX（用户指示 max 轮次 = 标准 5 轮）
 
-### Round 3 — 2026-04-21 FIX (this commit)
+### Round 3 — 2026-04-21 FIX (commit f5bb30a)
 
-**Addressing 5 MAJOR + 2 MINOR 合并 issue set**:
+**Addressed 5 MAJOR + 2 MINOR 合并 issue set** (全部 closed — Round 3 review 确认)：
 
-1. ✅ workflow-log 对齐 HEAD (本文件即是 Round 3 更新)
-2. ✅ conclusions §5 path α/γ 反转：α 承担三 lemma；γ 按 Log 07 §4.5 写成 single-edge PLOB + data-processing；β 按 §3.2 写成 channel-reduction。三路径共同禁止 set-inclusion shortcut
-3. ✅ CLAUDE.md + rigor.md 移除 "WTB Thm 26/47" 字面（live policy 改为 "引用精度错 — 具体数字见 RETRACTION.md 或 commit 2583ffc diff"）
-4. ✅ CLAUDE.md R0.2 + rigor R2.2 重写：
-   - sign-off 单值规则：任何 [COROLLARY] 或 [THM] 升级 + 对外引用均**必须**用户签字
-   - "independent review" 严格对齐 RETRACTION §4.1 规则 3：不同训练偏差源模型 (跨家族 + 直读 PDF) OR 人类纸笔 OR 非 AI 工具；同家族多运行 / 纯 AI 审计链不计入
-5. ✅ pareto_tf_family.md:85 改引 `pareto_mdi_family.md` + `m2_wlc_mdi_sixstate.md`（存在的文件）
-6. ✅ umr_data_processing_gamma.md:171 "[COROLLARY pending]" 加 strikethrough + "本句已作废" 标签；:273 末尾行改为明示作废
+1. ✅ workflow-log 部分对齐 HEAD（Round 4 进一步完善 HEAD 锚点）
+2. ✅ conclusions §5 path α/γ 反转：α 承担三 lemma；γ 按 Log 07 §4.5 写成 single-edge PLOB + data-processing；β 写成 channel-reduction
+3. ✅ CLAUDE.md + rigor.md 移除 "WTB Thm 26/47" 字面
+4. ✅ CLAUDE.md R0.2 + rigor R2.2: sign-off 单值化 + "independent review" 对齐 RETRACTION §4.1 规则 3
+5. ✅ pareto_tf_family.md:85 改引 `pareto_mdi_family.md` + `m2_wlc_mdi_sixstate.md`
+6. ✅ umr_data_processing_gamma.md:171/:273 残留 "[COROLLARY pending]" 加 strikethrough + 作废标签
 
-**Patch**: `changes-v3.patch` (to be saved before commit)
+**Patch**: `changes-v3.patch` (232 lines)
 
-**Next**: Round 3 Codex 评审发起（Round 1/2 模式：Agent 1 diff JSON + Agent 2 holistic md）
+### Round 3 review — 2026-04-21 (verdict: FAIL, 窄范围)
+
+**Agent 1 (review-diff-3.json, gpt-5.4 xhigh)**: `FAIL` — 1 MAJOR + 1 MINOR
+- MAJOR 1: workflow-log 未把 Round 3 明确锚定到 f5bb30a（保留 pre-commit placeholder "this commit"）
+- MINOR 1: conclusions §5 path β 引用 Log 07 §3.2，但 authoritative 位置在 §3.1 + §4.4
+
+**Agent 2 (review-holistic-3.md, gpt-5.4 high)**: `FAIL` — 1 MAJOR
+- MAJOR 1: CLAUDE.md §3 工作流描述与 R0.2 independent-review 定义存在 enforcement 漏洞。§3 强制 dev-reviewer 双 Codex 流程，但未明确"此流程必要但**不单独**满足 R0.2"。同家族 AI 审计链仍可能被误读为独立验证
+- [已 closed] Round 3 确认所有 6 项 Round 2 issues 已关闭（path α/γ 反转、WTB 字面、sign-off 单值化、independence 定义、MDI 链接、archival quarantine）
+
+**Decision**: Round 4 FIX，合并 2 MAJOR + 1 MINOR。
+
+### Round 4 — 2026-04-21 FIX (this commit)
+
+**Addressing 2 MAJOR + 1 MINOR**:
+
+1. ✅ [Agent 1 M1] workflow-log 明确把 Round 3 锚定到 **commit f5bb30a**；Round 4 = this commit
+2. ✅ [Agent 1 m1] conclusions §5 path β 引用修正：Log 07 §3.2 → §3.1 + §4.4（path β 的 authoritative 位置）
+3. ✅ [Agent 2 M1] CLAUDE.md §3 + rigor.md 加入"dev-reviewer 地位边界"红线：
+   - dev-reviewer 双 Codex 是**强制 QA triage**
+   - 但 Codex + Claude 仍属跨家族 AI 审计链，**不单独**满足 R0.2 的 independent-review 条件
+   - PASS **必须**叠加用户签字 / 人类纸笔 / 非 AI 工具任一 (R0.2 的 a/b/c)
+   - 违反边界视同 R0.1 计划外越权
+
+**Patch**: `changes-v4.patch` (to be saved)
+
+**Next**: Round 4 Codex 双 Agent 评审（Round 1-3 模式）
+

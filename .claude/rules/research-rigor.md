@@ -36,6 +36,8 @@ AI 起草的理论陈述默认 **[CONJ]** 级。升级到 **[COROLLARY] 或 [THM
 - **不计入**：同一模型多次运行；同一家族模型互评；纯 AI 审计链（无论多深）
 - **计入**任一：(a) **不同训练偏差源**的模型（例如 Claude + GPT/Codex 跨家族）且双方**直接读 PDF 原文**；(b) **人类**研究者纸笔复核；(c) **非 AI 工具**（SDP 数值 / 符号计算 / proof assistant）独立复现
 
+**dev-reviewer skill 的地位**（硬红线）：自主 session 内 dev-reviewer 双 Codex 评审是**强制 QA triage**，用于捕获 bug / consistency / 引用精度问题 —— **但本身不单独满足 R2.2 的 independent-review 条件**（Claude + Codex 仍是跨家族 AI 审计链，未满足 (a) 的"直读 PDF"双边要求 + 未含 (b)/(c)）。dev-reviewer PASS 仍**必须**叠加用户签字（[COROLLARY]/[THM] 升级）或叠加 (b)/(c) 形式的独立验证。违反此边界的 session 视同 R2.1 计划外越权。
+
 v1 FINDINGS retraction 因 "Claude 起草 + Claude 多审" 被误当多方验证；**不得**重蹈
 
 ### R2.3 四级严谨性分级（FINDINGS v2 §1.2）

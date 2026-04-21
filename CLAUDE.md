@@ -103,13 +103,20 @@ AI 起草的合成陈述**默认** [SYN] 或更低。
 
 ### 3.1 必须经评审的动作
 
-- **升级分级标签**（[CONJ] → [COROLLARY]、[SYN] → [THM] 等）→ **双 reviewer + 用户** triple verification
+- **升级分级标签**（[CONJ] → [COROLLARY]、[SYN] → [THM] 等）→ 按 R0.2 的"独立评审"硬路径（含用户签字）
 - **对外论文 / 展示稿**（哪怕只是摘要）→ **用户审签**
-- **重大理论文档**（upper_bound_report / proofs/*.md 等）→ **双 reviewer**
+- **重大理论文档**（upper_bound_report / proofs/*.md 等）→ **至少**通过 dev-reviewer 工作流；**此流程本身不构成 R0.2 意义下的独立验证**（见 §3.2）
 
-### 3.2 评审工作流
+### 3.2 评审工作流 —— dev-reviewer 的角色边界
 
-项目有 **dev-reviewer skill** 自动化双 Codex 评审。自主 session 内升级任何结论必须走此流程。
+项目有 **dev-reviewer skill** 运行双 Codex Agent 自动化 QA。
+
+**角色定位**（**硬红线**）：
+
+- dev-reviewer 双 Codex 评审是自主 session 内**强制**的 QA triage，用于捕获低级 bug / consistency / 引用精度 / 文档状态一致性等错误
+- **但** dev-reviewer 双 Codex 流程**不单独满足** R0.2 的 independent-review 要求：Codex 与 Claude 属于不同家族但仍是 AI 审计链；R0.2 要求"跨训练偏差源**且**双方直接读 PDF" / 人类纸笔 / 非 AI 工具任一
+- 因此：通过 dev-reviewer 评审**必要但不充分**；PASS 之后仍须用户签字（以及对 [THM] 升级还需按 R0.2 的 (a)/(b)/(c) 满足独立性条件）
+- 违反 §3.2 边界的 AI session 视同 R0.1 计划外越权，须回滚
 
 工作流位置：`docs/workflow/{feature}/`
 - `changes-v{N}.patch`

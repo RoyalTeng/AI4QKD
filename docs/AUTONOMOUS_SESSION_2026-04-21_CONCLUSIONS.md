@@ -160,7 +160,7 @@ AI 不得自主再次尝试升级。若用户将来指示重启，三条路径�
 
   三条 lemma **禁止**用 set-inclusion shortcut 绕过（Log 07 §4.3 明确警告的 monotonicity 陷阱 / v0.2 所犯错误）。
 
-- **路径 β**（direct umr converse via channel-reduction — Log 07 §3.2）：把 $\mathcal{T}_\text{umr}$ 建模为单个 effective channel $\tilde{\mathcal{M}}$（Alice / Bob 模式过 $\mathcal{E}_1, \mathcal{E}_2$，Charlie 测量 + 经典广播吸收进 channel），对其直接应用 PLOB 2017 + WTB 2017 two-way converse。优点：完全避开 trust assumption；缺点：$E_R(\tilde{\mathcal{M}})$ 与 $\min\{E_R(\mathcal{E}_1), E_R(\mathcal{E}_2)\}$ 的关系未定，可能更松也可能更紧。参考 [docs/proofs/upper_bound_msen.md §3.2](proofs/upper_bound_msen.md)。
+- **路径 β**（direct umr converse via channel-reduction — Log 07 §3.1 子节 "路径 β" + §4.4）：把 $\mathcal{T}_\text{umr}$ 建模为单个 effective channel $\tilde{\mathcal{M}}$（Alice / Bob 模式过 $\mathcal{E}_1, \mathcal{E}_2$，Charlie 测量 + 经典广播吸收进 channel），对其直接应用 PLOB 2017 + WTB 2017 two-way converse。优点：完全避开 trust assumption；缺点：$E_R(\tilde{\mathcal{M}})$ 与 $\min\{E_R(\mathcal{E}_1), E_R(\mathcal{E}_2)\}$ 的关系未定，可能更松也可能更紧。参考 [docs/proofs/upper_bound_msen.md §3.2](proofs/upper_bound_msen.md)。
 
 - **路径 γ**（single-edge PLOB + data-processing — Log 07 §4.5 最小可信 baseline）：**不**用 Pirandola 2019。直接对 Alice→Charlie 单边 channel $\mathcal{E}_1$ 应用 PLOB 2017，再**明写一条** data-processing lemma：Eve 对 Alice→Charlie mode 做任意后续操作（包括联合 Bob mode 的 BSM）**不会增加** Alice-Bob mutual information 的上界。此路径结构最简，但"data-processing 那一步"的精确形式（对 bipartite coherent information / smooth max-entropy 的适用性）必须严格给出 —— **不得**用 v0.2 的 adversarial containment 绕过。
 

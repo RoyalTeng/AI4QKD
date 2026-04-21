@@ -1,0 +1,26 @@
+## ROUND_2_ISSUES_CLOSURE
+- `[closed]` Workflow-log staleness is fixed. [workflow-log.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/workflow/path-gamma-v03-retraction/workflow-log.md:1) now reflects the Round 3 scope and Round 2 commit history.
+- `[closed]` The path `α/γ` swap in conclusions is fixed. [AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/AUTONOMOUS_SESSION_2026-04-21_CONCLUSIONS.md:154) now gives `α = monotonicity + three lemmas`, `β = channel reduction`, `γ = single-edge PLOB + data processing`, matching Log 07 and FINDINGS v2.
+- `[closed]` The live policy files no longer preserve the stale `WTB Thm 26/47` wording. See [CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:72) and [.claude/rules/research-rigor.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/.claude/rules/research-rigor.md:55).
+- `[closed]` The independence definition is now aligned with [RETRACTION.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/research/RETRACTION.md:132): same-model/same-family/pure-AI chains do not count; cross-bias-source PDF-reading, human review, or non-AI tool reproduction do. See [CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:22) and [.claude/rules/research-rigor.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/.claude/rules/research-rigor.md:26).
+- `[closed]` The user sign-off rule is now single-valued: both `[COROLLARY]` and `[THM]` upgrades require explicit user sign-off, and so do external citations. This is consistent across [CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:25) and [.claude/rules/research-rigor.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/.claude/rules/research-rigor.md:28).
+- `[closed]` Both Round 2 minors are fixed: the bad MDI reference is repaired in [pareto_tf_family.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/findings/pareto_tf_family.md:85), and the archival `"[COROLLARY pending]"` residuals are explicitly canceled in [umr_data_processing_gamma.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/umr_data_processing_gamma.md:171) and [end block](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/umr_data_processing_gamma.md:273).
+
+## NEW_REGRESSIONS
+- `OPEN`: Round 3 leaves a workflow-layer loophole in [CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:106). R0.2 says same-family reviews do not count as independent ([CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:29)), but §3 still says upgrades require `双 reviewer + 用户 triple verification` and `必须走` an automated `dual Codex` flow ([CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:112)). It never explicitly says that dual-Codex review is necessary but not sufficient. That ambiguity can recreate the very independence confusion Round 2 was meant to close.
+- No broken links or missing referenced files were introduced in the requested document set.
+
+## RIGOR_AIRTIGHTNESS
+Definition-level tightening is now correct: `CLAUDE.md`, `research-rigor.md`, `RETRACTION.md §4.1`, Log 07, and FINDINGS v2 are telling the same conceptual story on `α/β/γ`, on the `[CONJ]` status of the umr upper bound, and on the need for explicit user sign-off.
+
+Enforcement-level airtightness is not yet achieved. The policy now states the right independence rule, but the operational review workflow still points to dual-Codex review without saying that this does not satisfy the independence requirement by itself. Archival quarantine in [umr_data_processing_gamma.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/umr_data_processing_gamma.md:69) is acceptable, though still somewhat heavy-handed rather than minimal.
+
+## VERDICT
+**FAIL**
+
+Round 3 does close the explicit 5 MAJOR + 2 MINOR findings from Round 2. The path `α/γ` correction is now authoritative, the sign-off rule is single-valued, the independence definition matches `RETRACTION.md §4.1 rule 3`, and the residual archival/link issues were cleaned up. But holistically, the review cannot pass because the live workflow text in `CLAUDE.md` still leaves a material loophole: it can be read as if mandatory dual-Codex review satisfies the hard “independent review” path, even though the same file now says same-family model pairs do not count. For this project, that ambiguity is substantive, not cosmetic.
+
+## RECOMMENDATIONS
+- In [CLAUDE.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/CLAUDE.md:110), add one sentence: `dev-reviewer` dual-Codex review is mandatory QA triage only and does not by itself satisfy R0.2 independent-review requirements.
+- Mirror that clarification in [.claude/rules/research-rigor.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/.claude/rules/research-rigor.md:26) or in the workflow template so the rule survives summary/shortcut reading.
+- Optional archival hardening: rename the preserved v0.2 section heads in [umr_data_processing_gamma.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/umr_data_processing_gamma.md:79) with an `ARCHIVED v0.2 CLAIM` prefix to reduce skim-level misreading.
