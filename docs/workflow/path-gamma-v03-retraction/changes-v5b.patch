@@ -1,0 +1,115 @@
+diff --git a/.claude/rules/research-rigor.md b/.claude/rules/research-rigor.md
+index e293546..e3e15d0 100644
+--- a/.claude/rules/research-rigor.md
++++ b/.claude/rules/research-rigor.md
+@@ -55,13 +55,15 @@ v1 FINDINGS retraction 因 "Claude 起草 + Claude 多审" 被误当多方验证
+ 
+ ### R2.3 四级严谨性分级（FINDINGS v2 §1.2）
+ 
+-| 分级 | 可引用？ |
+-|---|---|
+-| **[THM]** 文献定理 + 原始拓扑对齐 + 继承 lemma 验证 | 可 |
+-| **[COROLLARY]** 从 [THM] 机械推导 + 文献每步可查 + 用户签字 | 可（限对应假设） |
+-| **[SYN]** 文献综合 + 无反例 + 未升级定理 | 内部可用；对外禁止 |
+-| **[CONJ]** 方向性假设 + 依赖未证 assumption | 内部 working；对外禁止 |
+-| **[UNKNOWN]** 开放问题 | 明确标 |
++下表仅表述**内容语义**。**任何升级 / 对外引用资格由 R2.2 (C1 ∧ C2 ∧ C3) 统一裁定**；本表不是独立的升级路径，亦不得被读作 R2.2 的替代。
++
++| 分级 | 内容语义 | 对外可引用？ |
++|---|---|---|
++| **[THM]** | 文献定理 + 原始拓扑对齐 + 继承 lemma 验证 | 可（前提：R2.2 C1 ∧ C2 ∧ C3 通过） |
++| **[COROLLARY]** | 从 [THM] 机械推导 + 文献每步可查 | 可（限对应假设；前提：R2.2 C1 ∧ C2 ∧ C3 通过） |
++| **[SYN]** | 文献综合 + 无反例 + 未升级定理 | 内部可用；对外禁止 |
++| **[CONJ]** | 方向性假设 + 依赖未证 assumption | 内部 working；对外禁止 |
++| **[UNKNOWN]** | 开放问题 | 明确标 |
+ 
+ AI 合成**默认** [SYN] 或更低。**禁止**自行升级。
+ 
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 17e744a..ca365b9 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -51,10 +51,12 @@ v1 FINDINGS retraction 正是因为 "Claude 起草 + Claude 多次审" 被当作
+ 
+ ### R0.3 严谨性分级四级制（FINDINGS v2 §1.2 红线）
+ 
+-| 分级 | 含义 | 对外可引用？ |
++下表给出**内容语义**（本条分级的含义）。**任何升级 / 对外引用 eligibility 均由 R0.2 (C1 ∧ C2 ∧ C3) 统一裁定**；本表不构成独立的升级路径，亦不得被读作 R0.2 的替代。
++
++| 分级 | 内容语义 | 对外可引用？ |
+ |---|---|---|
+-| **[THM]** | 来源文献有定理级陈述 + 原始拓扑/假设与本项目对齐 + 已验证继承 lemma | 可引用 |
+-| **[COROLLARY]** | 从 [THM] 经机械推导得出 + 每步在文献可查 + 用户签字 | 可引用（限对应假设） |
++| **[THM]** | 来源文献有定理级陈述 + 原始拓扑/假设与本项目对齐 + 已验证继承 lemma | 可（前提：R0.2 C1 ∧ C2 ∧ C3 通过） |
++| **[COROLLARY]** | 从 [THM] 经机械推导得出 + 每步在文献可查 | 可（限对应假设；前提：R0.2 C1 ∧ C2 ∧ C3 通过） |
+ | **[SYN]** | 文献综合判断 + 无反例 + 但未升级到定理级 | **内部讨论**可用；**论文/展示禁止**单独引用 |
+ | **[CONJ]** | 方向性假设 + 依赖未证 assumption | 内部 working hypothesis 可用；对外**禁止** |
+ | **[UNKNOWN]** | 开放问题 | 明确标记 |
+diff --git a/docs/workflow/path-gamma-v03-retraction/workflow-log.md b/docs/workflow/path-gamma-v03-retraction/workflow-log.md
+index de3132d..49cb483 100644
+--- a/docs/workflow/path-gamma-v03-retraction/workflow-log.md
++++ b/docs/workflow/path-gamma-v03-retraction/workflow-log.md
+@@ -2,8 +2,9 @@
+ 
+ **Mode**: review-only (no new implementation)
+ **Base**: 9402e44^ (pre path γ v0.2)
+-**Head (latest)**: Round 5 (see § below); Round 1 base = 2583ffc; Round 2 commit = 37fa7df; Round 3 commit = f5bb30a; Round 4 commit = bf0b790; Round 5 commit = this commit (pending).
+-**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正 + Round 4 工作流边界 + path β citation 修正 + Round 5 升级规则 invariant (C1 AND C2 AND C3)
++**Head (latest)**: Round 5b cleanup (this commit — pending user decision whether to run narrow Round 6 re-check or FINALIZE).
++**Round commit trail**: Round 1 base = 2583ffc → Round 2 = 37fa7df → Round 3 = f5bb30a → Round 4 = bf0b790 → Round 5 = 149c60a → Round 5b cleanup = this commit.
++**Scope**: path γ retraction cycle (v0.2 → v0.3 [CONJ]) + WTB 编号修正 + user manual edits + CLAUDE.md / rigor-rules 新增 + Round 3 rigor-rule tightening & path α/γ 反转修正 + Round 4 工作流边界 + path β citation 修正 + Round 5 升级规则 invariant (C1 ∧ C2 ∧ C3) + Round 5b R0.3/R2.3 表格 import invariant 声明 + placeholder cleanup
+ 
+ ## Round 1 — SETUP done 2026-04-21
+ 
+@@ -107,22 +108,41 @@
+ 
+ **Decision**: 任一 reviewer FAIL → Round 5 FIX (最终轮)。
+ 
+-### Round 5 — 2026-04-21 FIX (this commit)
++### Round 5 — 2026-04-21 FIX (commit 149c60a)
+ 
+-**Addressing 1 MAJOR + 1 MINOR**:
++**Addressed 1 MAJOR + 1 MINOR**:
+ 
+-1. ✅ [Agent 2 M1] 把 [COROLLARY] / [THM] 升级规则改写为 **invariant AND logic** (C1 ∧ C2 ∧ C3)：
++1. ✅ [Agent 2 M1] [COROLLARY] / [THM] 升级规则改写为 **invariant AND logic** (C1 ∧ C2 ∧ C3)：
+    - **C1** R0.2-compliant independent review PASS（(a)/(b)/(c) 任一）
+    - **C2** 用户显式签字（逐项确认）
+    - **C3** dev-reviewer 双 Codex PASS
+-   - 三条件**并列必要**（AND）；任一缺失即非法
+-   - 显式列**越权示例**（dev-reviewer PASS + 用户签字 缺 C1 → 禁止；等等）
+-   - 显式列**合法示例**（C1 + C2 + C3 完整）
+-   - 对应 [CLAUDE.md R0.2](../../CLAUDE.md) + [CLAUDE.md §3.2](../../CLAUDE.md) + [.claude/rules/research-rigor.md R2.2](../../../.claude/rules/research-rigor.md) 同步收紧
+-2. ✅ [Agent 1 m1] workflow-log 去除 "(this commit, pending)" / "(to be saved)" placeholder，锚定 Round 4 = bf0b790 / Round 5 = this commit
++   - 三条件**并列必要**（AND）；任一缺失即非法；显式列越权 / 合法示例
++   - 对应 CLAUDE.md R0.2 + §3.2 + .claude/rules/research-rigor.md R2.2 同步收紧
++2. ✅ [Agent 1 m1] workflow-log 锚定 Round 4 = bf0b790
+ 
+-**Patch**: `changes-v5.patch` (pending)
++**Patch**: `changes-v5.patch` (185 lines, saved at commit 149c60a)
+ 
+-**Next**: Round 5 Codex 双 Agent 评审（最终轮）；若 PASS → FINALIZE。若仍 FAIL → 转交用户决策
++### Round 5 review — 2026-04-21
++
++**Agent 1 (review-diff-5.json, gpt-5.4 xhigh)**: `FAIL` — 1 MAJOR + 1 MINOR
++- MAJOR 1: R0.3 / R2.3 分级表格未显式 import R0.2 invariant；`[COROLLARY]` 行保留"用户签字"而未列 C1/C3 → 可被误读为第二条弱规则
++- MINOR 1: workflow-log 仍有 Round 5 "(pending)" placeholder（本身承诺已清理但实际未完成）
++
++**Agent 2 (review-holistic-5.md, gpt-5.4 high)**: `PASS` — 0 MAJOR, 1 MINOR
++- MINOR: workflow-log placeholder 同 Agent 1 m1
++- 明示 `READY_FOR_FINALIZE = yes` 前提是 MINOR 可选修复
++- 可选加固建议：分级表 [COROLLARY] 行加 cross-reference R0.2 (C1∧C2∧C3) —— 与 Agent 1 M1 同方向
++
++**Decision**: Agent 1 verdict 自建议 "Transfer to user decision: patch tables + placeholders, then narrow re-check"。Max 5 轮已到。Claude 先完成 **Round 5b 机械 cleanup**（仅两项 text edit），然后转用户审签是否：
++(i) 接受 Round 5b 直接 FINALIZE；(ii) 启动窄范围 Round 6 re-check；(iii) 其他
++
++### Round 5b cleanup — 2026-04-21 (this commit)
++
++1. ✅ [Agent 1 M1] CLAUDE.md R0.3 表格 + rigor.md R2.3 表格 前加声明句 "任何升级 / 对外引用 eligibility 均由 R0.2 (C1 ∧ C2 ∧ C3) 统一裁定；本表不构成独立升级路径" + [COROLLARY] / [THM] 行的 "对外可引用" 列明示 "前提：R0.2 C1 ∧ C2 ∧ C3 通过"。[COROLLARY] 行内容语义列去除独立的 "用户签字" 表述（避免被读作表格级规则）
++2. ✅ [Agent 1 m1 / Agent 2 MINOR] workflow-log 彻底去除 "this commit (pending)" / "(to be saved)" placeholder；Round 5 锚定到 149c60a；Round 5b 标明为 this commit
++
++**Patch**: `changes-v5b.patch` (pending commit)
++
++**Status**: **等用户决策**（Round 6 re-check / 直接 FINALIZE / 其他）
+ 
+ 
