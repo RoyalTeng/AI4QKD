@@ -339,6 +339,23 @@ def _bb84_G_Z_expressions(rho_J_expr: cp.Expression) -> tuple[cp.Expression, cp.
 # Main SDP entry point
 # ---------------------------------------------------------------------------
 
+def _thm4_phi_coefficients_qubit(
+    alpha: float, gamma: float, d_A: int = 2, kappa: int = 1,
+) -> tuple[float, float, float]:
+    """Kamin Eq. 45 φ_0, φ_1, φ_2 coefficients for Thm 4 optimal-g.
+
+    φ_0 = (α-1)/(2-α) · ln2/2 · 1/γ
+    φ_1 = (α-1)/(2-α) · ln2/2 · 2·log(1+2·d_A^κ)/√γ
+    φ_2 = (α-1)/(2-α) · ln2/2 · (2 + log(1+2·d_A^κ)²)
+    """
+    beta_factor = (alpha - 1.0) / (2.0 - alpha) * math.log(2.0) / 2.0
+    log_term = math.log2(1.0 + 2.0 * d_A ** kappa)
+    phi_0 = beta_factor / gamma
+    phi_1 = beta_factor * 2.0 * log_term / math.sqrt(gamma)
+    phi_2 = beta_factor * (2.0 + log_term ** 2)
+    return phi_0, phi_1, phi_2
+
+
 def kamin_choi_sdp_qubit_bb84(
     qber: float,
     gamma: float = 0.01,
@@ -346,6 +363,8 @@ def kamin_choi_sdp_qubit_bb84(
     epsilon_regularization: float = 1e-9,
     return_J: bool = False,
     verbose: bool = False,
+    use_thm4: bool = False,
+    alpha_thm4: float = 1.001,
 ) -> dict[str, Any]:
     """Kamin Choi-state SDP for qubit BB84 — Stage 2 A1.
 
@@ -425,12 +444,21 @@ def kamin_choi_sdp_qubit_bb84(
     from qkdx.protocols.bb84 import _gamma_qber_Z, _gamma_qber_X
     Gamma_Z = _gamma_qber_Z()
     Gamma_X = _gamma_qber_X()
-    constraints.append(
-        cp.real(cp.trace(cp.Constant(Gamma_Z) @ rho_J_expr)) == float(qber)
-    )
-    constraints.append(
-        cp.real(cp.trace(cp.Constant(Gamma_X) @ rho_J_expr)) == float(qber)
-    )
+    qber_Z_expr = cp.real(cp.trace(cp.Constant(Gamma_Z) @ rho_J_expr))
+    qber_X_expr = cp.real(cp.trace(cp.Constant(Gamma_X) @ rho_J_expr))
+
+    tau_var = None
+    if use_thm4:
+        # Thm 4 τ-slack: replace hard qber = Tr[Γ ρ] equality with
+        # soft -τ ≤ qber - Tr[Γ ρ] ≤ τ.  Add s(Στ/2) penalty to objective.
+        tau_var = cp.Variable(2, nonneg=True)  # [τ_Z, τ_X]
+        constraints.append(float(qber) - qber_Z_expr <= tau_var[0])
+        constraints.append(float(qber) - qber_Z_expr >= -tau_var[0])
+        constraints.append(float(qber) - qber_X_expr <= tau_var[1])
+        constraints.append(float(qber) - qber_X_expr >= -tau_var[1])
+    else:
+        constraints.append(qber_Z_expr == float(qber))
+        constraints.append(qber_X_expr == float(qber))
 
     # Objective: D(G(ρ_J) ‖ 𝒵(G(ρ_J)))
     # Use regularization for numerical stability (match _wlc_mosek convention)
@@ -447,7 +475,18 @@ def kamin_choi_sdp_qubit_bb84(
     constraints.append(X_aux == X_reg)
     constraints.append(Y_aux == Y_expr)
 
-    objective = cp.Minimize(cp.quantum_rel_entr(X_aux, Y_aux))
+    obj_expr = cp.quantum_rel_entr(X_aux, Y_aux)
+    if use_thm4:
+        phi_0, phi_1, _phi_2 = _thm4_phi_coefficients_qubit(
+            alpha=alpha_thm4, gamma=gamma,
+        )
+        # s(Στ/2) = (Στ/2 - φ_1)²/(4·φ_0) for Στ/2 ≥ φ_1, else 0
+        sum_tau_half = 0.5 * cp.sum(tau_var)
+        s_expr = cp.square(cp.pos(sum_tau_half - phi_1)) / (4.0 * phi_0)
+        # s_expr is in bits·log²; multiply by ln2 to match quantum_rel_entr nats
+        obj_expr = obj_expr + math.log(2.0) * s_expr
+
+    objective = cp.Minimize(obj_expr)
 
     prob = cp.Problem(objective, constraints)
     mosek_params = {
@@ -473,7 +512,11 @@ def kamin_choi_sdp_qubit_bb84(
         "status": prob.status,
         "value_nat": value_nat,
         "solver": solver,
+        "use_thm4": use_thm4,
     }
+    if use_thm4 and tau_var is not None:
+        result["tau"] = np.asarray(tau_var.value)
+        result["alpha_thm4"] = alpha_thm4
     if return_J:
         result["J"] = np.array(J_var.value, dtype=np.complex128)
     return result
@@ -1336,4 +1379,165 @@ def kamin_fig1_sweep(
         "n_values": tuple(n_values),
         "loss_dB_values": tuple(loss_dB_values),
         "sdp_status": sdp["status"],
+    }
+
+
+# ---------------------------------------------------------------------------
+# D.1: Kamin Thm 4 τ-slack SDP for qubit BB84 (closes §4.1 n=10^12 residual)
+# ---------------------------------------------------------------------------
+
+def kamin_thm4_key_length_bb84(
+    qber: float,
+    n: int,
+    loss_dB: float,
+    gamma: float,
+    alpha: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Kamin Thm 4 τ-slack finite-key length for qubit BB84 with loss.
+
+    Uses `kamin_choi_sdp_qubit_bb84(..., use_thm4=True, alpha_thm4=α)` to
+    solve:
+        inf_{J, τ} W(ρ_J^g) + s(Στ/2)
+        s.t. -τ ≤ qber - (Tr[Γ ρ])/(actual qber constraint) ≤ τ
+    with s() from Kamin Eq. 46.
+
+    The τ-slack mode automatically trades off observation-match strictness
+    against V² penalty.  r_best returned already includes this trade-off.
+
+    Key length (Kamin Eq. 82 simplified, unique acceptance):
+        ℓ ≤ n·η_det·(1-γ)²·r_best − n·β²·K(α) − λ_EC − ⌈log(1/ε_EV)⌉
+            − (α/(α-1))·log(1/ε_PA) + 2
+
+    Note: compared to `kamin_full_key_length_bb84_optimized` (hard-constraint
+    + Eq. 38/39 V² external), this formulation should close the n=10^12
+    residual ±6 dB gap because Thm 4 picks the g* that MINIMIZES the
+    overall penalty, rather than the full-strength SDP dual g.
+    """
+    if not (0.0 <= qber < 0.5):
+        raise ValueError(f"qber must be in [0, 0.5), got {qber}")
+    if n < 1:
+        raise ValueError(f"n must be ≥ 1, got {n}")
+    if loss_dB < 0.0:
+        raise ValueError(f"loss_dB must be ≥ 0, got {loss_dB}")
+    eta_det = 10.0 ** (-loss_dB / 10.0)
+
+    # 1) Solve Thm 4 τ-slack SDP at (γ, α)
+    sdp = kamin_choi_sdp_qubit_bb84(
+        qber=qber, gamma=gamma, solver=solver,
+        epsilon_regularization=epsilon_regularization, verbose=verbose,
+        use_thm4=True, alpha_thm4=alpha,
+    )
+    r_best = sdp["h_per_sift"]  # in bits; W + s(Στ/2)·ln2/ln2 = W + s in bits
+
+    # 2) K(α) — Thm 4 span bounded by log(1+2·d_A^κ)
+    from qkdx.finite_key.kamin_geat import (
+        kamin_K_alpha, optimal_eps_parameters,
+    )
+    d_A = 2
+    kappa = 1
+    log_dA_term = math.log2(1.0 + 2.0 * d_A ** kappa)
+    K_val = kamin_K_alpha(
+        alpha=alpha, d_A=d_A,
+        max_f=log_dA_term, min_sigma_f=-log_dA_term, kappa=kappa,
+    )
+
+    # 3) ε-split (Eq. 57)
+    eps_PA, eps_EV = optimal_eps_parameters(eps_secure=eps_secure, alpha=alpha)
+
+    # 4) λ_EC: (1-γ)² · η_det · f_EC · H_2(qber) per round
+    if qber <= 0.0 or qber >= 1.0:
+        H_qber = 0.0
+    else:
+        H_qber = -qber * math.log2(qber) - (1 - qber) * math.log2(1 - qber)
+    lambda_EC = n * (1.0 - gamma) ** 2 * eta_det * f_EC * H_qber
+
+    # 5) Per-round rate with η scaling and sifting
+    R_per_round = eta_det * (1.0 - gamma) ** 2 * r_best
+
+    # 6) Key length
+    beta = (alpha - 1.0) / (2.0 - alpha)
+    K_penalty = n * beta ** 2 * K_val
+    log_EV = math.ceil(math.log2(1.0 / eps_EV))
+    log_PA = (alpha / (alpha - 1.0)) * math.log2(1.0 / eps_PA)
+    ell = (
+        n * R_per_round - K_penalty - lambda_EC - log_EV - log_PA + 2.0
+    )
+    return {
+        "ell": ell,
+        "rate_per_round": ell / n,
+        "r_best_sdp": r_best,
+        "R_per_round_asymp": R_per_round,
+        "K_alpha": K_val,
+        "lambda_EC": lambda_EC,
+        "eps_PA": eps_PA,
+        "eps_EV": eps_EV,
+        "eta_det": eta_det,
+        "tau": sdp.get("tau"),
+        "sdp_status": sdp["status"],
+    }
+
+
+def kamin_thm4_key_length_bb84_optimized(
+    qber: float,
+    n: int,
+    loss_dB: float,
+    eps_secure: float = 1e-8,
+    f_EC: float = 1.16,
+    gamma_grid: tuple[float, ...] = (
+        0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3,
+    ),
+    alpha_grid: tuple[float, ...] | None = None,
+    solver: str = "MOSEK",
+    epsilon_regularization: float = 1e-9,
+    verbose: bool = False,
+) -> dict[str, Any]:
+    """Grid-optimize (γ, α) for Kamin Thm 4 qubit BB84 key length.
+
+    Unlike the hard-constraint optimizer, each (γ, α) requires a separate
+    SDP solve since both enter the Thm 4 s(Στ/2) penalty via φ_0, φ_1
+    coefficients.  Compensated by better convergence at loss regime.
+    """
+    if alpha_grid is None:
+        inv_sqrt_n = 1.0 / math.sqrt(n)
+        alpha_grid = tuple(
+            1.0 + scale * inv_sqrt_n
+            for scale in (0.3, 1.0, 3.0, 10.0, 30.0, 100.0)
+            if 1.0 + scale * inv_sqrt_n < 1.5
+        )
+
+    best_ell = -math.inf
+    best_gamma = gamma_grid[0]
+    best_alpha = alpha_grid[0]
+    best_result = None
+
+    for gamma in gamma_grid:
+        for alpha in alpha_grid:
+            try:
+                r = kamin_thm4_key_length_bb84(
+                    qber=qber, n=n, loss_dB=loss_dB,
+                    gamma=gamma, alpha=alpha,
+                    eps_secure=eps_secure, f_EC=f_EC,
+                    solver=solver,
+                    epsilon_regularization=epsilon_regularization,
+                    verbose=verbose,
+                )
+            except Exception:
+                continue
+            if r["ell"] > best_ell:
+                best_ell = r["ell"]
+                best_gamma = gamma
+                best_alpha = alpha
+                best_result = r
+
+    return {
+        "ell_star": best_ell,
+        "rate_star": best_ell / n,
+        "gamma_star": best_gamma,
+        "alpha_star": best_alpha,
+        "best_result": best_result,
     }
