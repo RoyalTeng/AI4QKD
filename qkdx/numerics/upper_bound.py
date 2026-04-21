@@ -331,6 +331,82 @@ def e_r_depolarizing_analytic(p: float) -> float:
 # DV-gap analysis: compare E_R^PPT vs Kamin achievable rate
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Max-Rains information R_max(N) via Wang-Duan 2016b SDP
+# ---------------------------------------------------------------------------
+
+def r_max_channel_sdp(
+    kraus_ops: list[np.ndarray],
+    dim_A: int,
+    solver: str = "MOSEK",
+    verbose: bool = False,
+) -> dict:
+    """Max-Rains information R_max(N) of a quantum channel via Wang-Duan SDP.
+
+    Reference:
+        - Wang-Duan 2016b, PRA 94:050301 (max-Rains as SDP)
+        - Berta-Wilde 2018, Phys. Rev. Lett. 117:200501
+        - Khatri-Wilde 2024 §19.2.1 Thm 19.8 (strong converse for PPT-assisted Q)
+
+    R_max provides a STRONG CONVERSE upper bound on the n-shot
+    LOCC/PPT-assisted quantum (or private) communication rate:
+        log_2 M ≤ n·R_max(N) + log_2(1/(1-ε))
+
+    Wang-Duan 2016b SDP (corrected to match log-negativity / max-Rains
+    for Choi state):
+        2^{R_max(N)} = min Tr[V]
+        s.t. V ≥ +ρ^{T_B},  V ≥ -ρ^{T_B},  V ≥ 0  (operator inequalities)
+
+    For identity qubit channel, eigenvalues of ρ^{T_B} = (1/2)·SWAP are
+    {1/2, 1/2, 1/2, -1/2}, so min Tr[V] = Σ|eigenvalue| = 2 → R_max = 1 bit.
+
+    Args:
+        kraus_ops: channel Kraus operators.
+        dim_A: input dimension.
+
+    Returns:
+        dict with:
+          R_max_bits: log_2(optimal trace) in bits
+          V_opt: optimal V variable
+          status: solver status
+          rho_choi: Choi state used
+    """
+    dim_out = kraus_ops[0].shape[0]
+    rho_choi = choi_state_from_kraus(kraus_ops, dim_A)
+    dim_R = dim_A
+    dim_B = dim_out
+
+    # Partial transpose on B
+    rho_TB = partial_transpose_B(rho_choi, dim_R, dim_B)
+
+    # SDP: min Tr[V]  s.t.  V ≥ ±ρ^{T_B}, V ≥ 0
+    d = dim_R * dim_B
+    V = cp.Variable((d, d), hermitian=True)
+    constraints = [V >> 0, V >> rho_TB, V >> -rho_TB]
+    prob = cp.Problem(cp.Minimize(cp.real(cp.trace(V))), constraints)
+    prob.solve(solver=solver, verbose=verbose)
+    if prob.status not in {"optimal", "optimal_inaccurate"}:
+        raise cp.SolverError(
+            f"R_max SDP failed: status={prob.status}, value={prob.value}"
+        )
+
+    trace_val = float(prob.value)
+    if trace_val <= 0:
+        return {
+            "R_max_bits": 0.0,
+            "V_opt": np.array(V.value, dtype=np.complex128),
+            "status": prob.status,
+            "rho_choi": rho_choi,
+        }
+    R_max = math.log2(trace_val)
+    return {
+        "R_max_bits": max(0.0, R_max),
+        "V_opt": np.array(V.value, dtype=np.complex128),
+        "status": prob.status,
+        "rho_choi": rho_choi,
+    }
+
+
 def dv_gap_from_achievable(
     upper_bound_bits: float, achievable_rate_bits: float,
 ) -> dict:

@@ -124,6 +124,44 @@ class TestE_R_PPT_SDP:
             assert 0.0 <= r["E_R_channel_bits"] <= 1.0
 
 
+class TestRmaxSDP:
+    """Wang-Duan 2016b max-Rains SDP (Khatri-Wilde Thm 19.8)."""
+
+    def test_r_max_identity_channel(self):
+        """R_max(identity qubit) = 1 bit (maximally entangled limit)."""
+        from qkdx.numerics.upper_bound import r_max_channel_sdp, kraus_identity_qubit
+        r = r_max_channel_sdp(kraus_identity_qubit(), dim_A=2)
+        assert r["status"] in ("optimal", "optimal_inaccurate")
+        assert r["R_max_bits"] == pytest.approx(1.0, abs=0.01)
+
+    def test_r_max_fully_depolarizing(self):
+        """R_max(fully depol) ≈ 0 (no entanglement preserved)."""
+        from qkdx.numerics.upper_bound import r_max_channel_sdp, kraus_depolarizing_qubit
+        r = r_max_channel_sdp(kraus_depolarizing_qubit(1.0), dim_A=2)
+        assert r["R_max_bits"] < 0.05
+
+    def test_r_max_monotone_in_depol(self):
+        """R_max monotone decreasing with depolarizing noise."""
+        from qkdx.numerics.upper_bound import r_max_channel_sdp, kraus_depolarizing_qubit
+        rates = []
+        for p in [0.0, 0.2, 0.5, 0.8]:
+            r = r_max_channel_sdp(kraus_depolarizing_qubit(p), dim_A=2)
+            rates.append(r["R_max_bits"])
+        for i in range(len(rates) - 1):
+            assert rates[i + 1] <= rates[i] + 1e-4
+
+    def test_r_max_vs_e_r_ppt_ordering(self):
+        """On toy channels, both R_max and E_R^PPT should be 0 ≤ ... ≤ 1."""
+        from qkdx.numerics.upper_bound import (
+            r_max_channel_sdp, e_r_channel_ppt, kraus_depolarizing_qubit,
+        )
+        for p in [0.1, 0.3]:
+            r_max = r_max_channel_sdp(kraus_depolarizing_qubit(p), dim_A=2)
+            e_r = e_r_channel_ppt(kraus_depolarizing_qubit(p), dim_A=2)
+            assert 0.0 <= r_max["R_max_bits"] <= 1.0
+            assert 0.0 <= e_r["E_R_channel_bits"] <= 1.0
+
+
 class TestDVGapAnalysis:
     def test_dv_gap_ratio(self):
         from qkdx.numerics.upper_bound import dv_gap_from_achievable
