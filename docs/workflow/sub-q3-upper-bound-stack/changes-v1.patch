@@ -1,0 +1,1797 @@
+diff --git a/docs/findings/gap_shape_g4_1.md b/docs/findings/gap_shape_g4_1.md
+new file mode 100644
+index 0000000..0625a8d
+--- /dev/null
++++ b/docs/findings/gap_shape_g4_1.md
+@@ -0,0 +1,119 @@
++# Gap 定量形状（G4.1 Sub-Q4 §5.1 初稿）
++
++**版本**：v0.1 [CONJ 级]
++**日期**：2026-04-21
++**状态**：[CONJ] — 依赖 U3.6 三候选路径 α/β/γ 的形式化尚未完成
++**数据**：[data/gap_shape.csv](data/gap_shape.csv)
++**图**：[figures/gap_shape.{png,pdf}](figures/)
++
++---
++
++## 0. 重要免责
++
++本 gap 分析的**所有 upper bound 候选都是 [CONJ] 级**（见 [docs/proofs/upper_bound_msen.md §3](../proofs/upper_bound_msen.md)）。本文档给出 gap 的**形状**（基于候选上界假设），**不**给出 gap 的 [THM] 级数值。
++
++FINDINGS v2 §4.2 的红线被严格遵守：
++> Sub-Q4 归因 α/β/γ 应在 Sub-Q3 完成之后基于定理级上界重新启动，不以本 interim 为预定位
++
++本文档**只做 gap 形状**，**不做归因** A/B/C。
++
++---
++
++## 1. 参与 gap 计算的数据
++
++### 1.1 下界（Sub-Q2 Pareto）
++
++- 来源：[data/tf_family_loss1d.csv](data/tf_family_loss1d.csv)
++- 协议：PM-QKD (Ma-Zeng-Zhou 2018) asymptotic rate
++- 默认参数：η_det=0.145, p_d=8e-8, e_δ=0.015, M=16, f_EC=1.15
++
++### 1.2 上界候选（[CONJ] 级）
++
++| 候选 | 公式 | 严谨性分级 | 原始拓扑 |
++|---|---|---|---|
++| **A** PLOB 最弱 edge | $-\log_2(1 - \min(\eta_A, \eta_B))$ | [CONJ for umr under Assumption DP] | 单信道两方 |
++| **B** Pirandola N=1 | $-\log_2(1 - \sqrt{\eta_\text{end2end}})$ | [CONJ for umr] | trusted-relay chain |
++| **C** E_R^PPT amp-damp | numerical SDP on qubit amp-damp with $\gamma = 1-\eta_\text{arm}$ | [CONJ + qubit abstraction] | qubit-level |
++
++**对称 umr 情形**（$\eta_A = \eta_B = \eta_\text{arm}$，$\eta_\text{end2end} = \eta_\text{arm}^2$）候选 A 与 B 公式一致。
++
++---
++
++## 2. 数值结果
++
++### 2.1 上下界 vs loss
++
++| loss (dB) | TF-PM-QKD LB | UB cand A/B | UB cand C (E_R^PPT) | PLOB direct (ref, non-umr) |
++|---|---|---|---|---|
++| 0 | 8.25e-4 | ∞ (η_arm=1) | 1.000 | ∞ |
++| 10 | 3.80e-4 | 1.2073 | 0.1934 | 0.152 |
++| 20 | 7.78e-5 | 0.1520 | 0.0616 | 0.0145 |
++| 30 | — | 0.0453 | 0.0202 | 0.00145 |
++| 40 | 7.67e-6 | 0.01451 | 0.0065 | 1.44e-4 |
++| 60 | 6.96e-7 | 0.00145 | 0.0007 | 1.44e-6 |
++| 80 | 1.51e-7 | 1.45e-4 | 9.9e-5 | 1.44e-8 |
++
++### 2.2 Gap 比值（UB / LB）
++
++| loss (dB) | candidate A/B / TF | candidate C / TF |
++|---|---|---|
++| 10 | ~3200× | ~510× |
++| 20 | ~1950× | ~790× |
++| 40 | ~1890× | ~850× |
++| 60 | ~2080× | ~1000× |
++| 80 | ~960× | ~650× |
++
++**关键观察**：
++1. **Gap ratio 相对稳定** in 20-80 dB 区间，~10³ 级（候选 C）到 ~2·10³（候选 A/B）
++2. 候选 A/B（符号形式闭形）比候选 C（SDP 数值）**松 2-4×**
++3. 低损耗区 (< 10 dB) gap 极大（10⁵ 级），但候选 A/B 在 0 dB 发散
++
++### 2.3 Gap 曲线 log-log 行为
++
++在 log-log 下（loss_dB 是 x 轴）：
++- TF LB 的 slope 约为 **-1/2**（对应 √η scaling）
++- UB cand A/B 的 slope 约为 **-1**（对应 η scaling）
++- 因此 gap 形状在 log scale 下**线性发散**，斜率 1/2（= η^{-1/2}）
++
++如果候选 A/B 升级为 [THM]（需完成 Log 07 路径 γ 的 Assumption DP 形式化），则**gap 随距离无限增长**，这是**情况 A**（√η 紧）的反证：可能存在**情况 B**（可以构造超越 √η 的协议）。
++
++**警告**：这完全依赖候选 A/B 的 [THM] 升级。当前 [CONJ] 级的数值**不能**做 Sub-Q4 归因结论。
++
++---
++
++## 3. 与 FINDINGS v2 的对齐
++
++FINDINGS v2 §1.1 [SYN] 判断："在放宽版 $\mathcal{T}_\text{umr}^\text{bosonic-asym}$ 下，最可能的紧 scaling 为 $\sqrt{\eta_{AB}}$"。
++
++本 G4.1 初稿给出的数值 gap：
++- **支持 FINDINGS v2 的 [SYN]**：TF 族可达 √η，候选 A/B 上界为 η^{1/2}·(1+O(η^{1/2}))（对称情形），两者同阶
++- **暴露 gap**：候选 A/B 给出的常数 $-\log_2(1-\sqrt{\eta}) \approx \sqrt{\eta}/\ln 2$ 约 1.44·√η，vs TF-PM-QKD 的 ~10⁻³·√η。**常数因子差 1000×**
++- **可能的解读**：要么候选 A/B 的 1.44 常数过松（需更紧的上界），要么 TF-PM-QKD 的 10⁻³ 常数过紧（可构造更优协议）
++- **这是 Sub-Q4 归因的原始数据**，**不是归因结论**
++
++---
++
++## 4. Limitations
++
++1. **所有上界候选 [CONJ] 级**。在 Log 07 路径 γ 升级到 [THM] 之前，本分析只能说"gap 形状是这样的"，不能说"gap 真实值是这样"。
++2. **单光子 qubit-abstraction 假设**（候选 C）：amp-damping channel 不是 bosonic pure-loss 的 qubit analog；qubit-level 上界可能系统性低估真 bosonic E_R。
++3. **协议族仅 PM-QKD**：TF family 还有其他变体（SNS-TF, TF-QKD 原型, MP-QKD 等），未纳入。
++4. **无限密钥情形**：目前 gap 是 asymptotic；有限密钥 gap 更大。
++
++---
++
++## 5. 下一步（G4.2 Sub-Q4 §5.2 触发条件）
++
++触发条件：**U3.8 接缝报告** + **Log 07 路径 γ 形式化完成** + 至少一条候选升级到 [COROLLARY]。
++
++届时可基于这份初稿做：
++- 归因 A/B/C 判定
++- "新协议搜索目标 = 填补 gap 中某位置"的定量指令
++
++当前状态：前两个条件都**未满足**。归因工作**待命**。
++
++---
++
++## Changelog
++
++- **v0.1**（2026-04-21 autonomous session）：首稿 [CONJ] 级 gap 形状分析，基于 PHASE1_REPORT.md 的 TF lower bound + U3.6 / U3.7 的三候选上界。
+diff --git a/docs/findings/upper_bound_report.md b/docs/findings/upper_bound_report.md
+new file mode 100644
+index 0000000..43463f7
+--- /dev/null
++++ b/docs/findings/upper_bound_report.md
+@@ -0,0 +1,356 @@
++# Sub-Q3 上界接缝报告（Upper Bound Report）
++
++**版本**：v0.1
++**日期**：2026-04-21 autonomous session
++**对应**：PROSPECTUS Sub-Q3 验收产出 + RESEARCH_PLAN §4.5 U3.8
++**预期篇幅**：30-50 页（本稿约 25 页等价，可扩展）
++**严谨性**：全文遵循 FINDINGS v2 §1.2 四级分级（[THM]/[COROLLARY]/[CONJ]/[UNKNOWN]），绝不越权
++
++---
++
++## 摘要
++
++**主要发现**：
++
++1. **文献精读完成**：PLOB 2017 / Pirandola 2019 / TGW 2014 / WTB 2017 / Khatri-Wilde 2024 五篇核心文献 Level 3-4 精读（docs/literature/）
++2. **umr 拓扑继承问题显式识别**：五篇文献的上界定理在 umr（untrusted measurement relay）拓扑下的继承**都是 [CONJ] 级**，具体失效点由用户 Log 07 技术审计给出
++3. **三候选修复路径**（Log 07 §3 + Khatri-Wilde §19-20 整合）：路径 α monotonicity reduction / β channel-reduction / γ PLOB+data-processing
++4. **Layer 5.3 SDP 数值工具实施**：`qkdx/numerics/upper_bound.py` 含 E_R^PPT + max-Rains（Wang-Duan 2016b）SDP，15 tests pass
++5. **Gap 定量形状初稿**（[CONJ] 级，G4.1）：`docs/findings/gap_shape_g4_1.md`
++
++**未完成（honest accounting）**：
++
++- 理论级 umr 继承 lemma 形式化（推荐路径 γ，留给用户纸笔工作）
++- 任何 [CONJ] 候选的 [THM] 升级
++- Sub-Q4 归因（依赖上述升级）
++
++---
++
++## 1. 引言与范围
++
++### 1.1 PROSPECTUS Sub-Q3 的核心问题
++
++> 已知的上界工具在 MS-EB 框架下给出什么上界?
++
++具体要回答：
++
++- **(a)** PLOB 精读 + 关键假设识别 + umr 拓扑 bearing
++- **(b)** Pirandola 2019 network extension 在 "两方 + 单中间测量站" 的上界
++- **(c)** WTB 2017 替代证明路线
++- **(d)** 上界 MS-EB 表述（docs/proofs/upper_bound_msen.md）
++- **(e)** 上界 SDP 实施（qkdx/numerics/upper_bound.py）
++
++### 1.2 验收条件
++
++1. 每个上界结论附原始论文定理/方程号
++2. 每个数值结果附 notebook 路径 + commit SHA + 求解器版本
++3. §3 MS-EB 重写至少有一条可计算的 $R_\text{UB}^\text{current}(\eta)$
++
++### 1.3 本报告结构
++
++- §2 文献定理精读精要（六份 memo 浓缩）
++- §3 MS-EB 框架下的重写（从 docs/proofs/upper_bound_msen.md）
++- §4 Layer 5.3 SDP 数值实施
++- §5 数值验证 + gap 分析
++- §6 Limitations + 待续
++- §7 Sub-Q4 handoff
++
++---
++
++## 2. 文献定理精读精要
++
++### 2.1 PLOB 2017 (Pirandola-Laurenza-Ottaviani-Banchi, Nat. Commun. 8:15043)
++
++**主要结果**（原始两方直连拓扑，[THM]）：
++
++- **Eq. 19 pure-loss bosonic**：$C_\text{loss}(\eta) = -\log_2(1 - \eta)$ bits/channel use
++- **Eq. 28 QL amplifier**：$C(g) = -\log_2(1 - 1/g)$
++- **Eq. 39 dephasing**：$C = 1 - H_2(p)$
++- **Eq. 43 erasure**：$C = 1 - p$
++
++**证明技术**（§III）：
++1. Teleportation simulation：tele-simulable channel 等价于 Choi state
++2. Relative entropy of entanglement $E_R$ 在 tele-simulable 上 single-letter
++3. Purity reduction：tele-sim reduces two-way assisted to bipartite state problem
++
++**umr 拓扑 bearing**（Log 07 §1.3）：
++- PLOB 原始安全模型是"Eve 控制 channel 环境"，**relay 是 trusted**
++- umr "Eve 控 Charlie" 严格更强，**PLOB 不直接适用**
++- Assumption DP（data-processing）+ PLOB on single-edge 的组合可能给出 [COROLLARY]
++
++**详细 memo**：[docs/literature/PLOB-2017.md](../literature/PLOB-2017.md)（commit 4d803ce, Level 4 精读）
++
++### 2.2 Pirandola 2019 (Commun. Phys. 2:51)
++
++**主要结果**（network-stretching 推广）：
++
++- **Eq. 11 single-path min-cut**：$\mathcal{K}(a, b) \leq \min_{C \in \mathcal{C}(a,b)} \sum_{(i,j) \in C} E_R(\mathcal{E}_{ij})$
++- **Eq. 9 equispaced chain**：$C_\text{loss,chain}(\eta, N) = -\log_2(1-\eta^{1/(N+1)})$
++
++**关键假设**（Log 07 §2）：
++- §II-A multi-graph 网络 + LOCC-assisted adaptive protocol
++- §II-C 安全模型：Eve 控 **channel environments**，**not** party's internal registers
++- **§IV Proof Step C** cut-partition 假设 relay nodes 可信
++
++**umr 失效点**：Log 07 §2.4 指出 "Eve 控 Charlie" 违反 §II-C 安全模型
++
++**详细 memo**：[docs/literature/Pirandola-2019.md](../literature/Pirandola-2019.md)（commit 186da1a, Level 4 精读）+ [docs/research/07_pirandola_2019_technical_audit.md](../research/07_pirandola_2019_technical_audit.md)（用户亲自审计）
++
++### 2.3 WTB 2017 (Wilde-Tomamichel-Berta, IEEE TIT 63:1792)
++
++**主要结果**（PLOB 强 converse 升级 + 有限 blocklength）：
++
++- **Thm 26**：对 tele-simulable channel，$R \leq E_R(\mathcal{N})$ 是 **strong converse** rate
++  - 超过该率，error → 1 exponentially（PLOB 只证明 error → not → 0）
++- **Thm 47 second-order expansion** for covariant channels:
++  $$\hat{P}_\mathcal{N}^\leftrightarrow(n, \varepsilon) \leq E_R(\mathcal{N}) + \sqrt{V(\mathcal{N}, \varepsilon)/n}\, \Phi^{-1}(\varepsilon) + O(\log n / n)$$
++
++**umr bearing**：继承 Q 同 PLOB；升级强 converse 不改变"Eve 控 Charlie"失效问题
++
++**详细 memo**：[docs/literature/WTB-2017.md](../literature/WTB-2017.md)（commit 8446ced, Level 3 精读）
++
++### 2.4 TGW 2014 (Takeoka-Guha-Wilde, Nat. Commun. 5:5235)
++
++**主要结果**：
++
++- **Eq. 1 squashed-E bound**：$R \leq \log_2 \frac{1+\eta}{1-\eta}$ for pure-loss
++- 松于 PLOB 2×（$2.88\eta$ vs $1.44\eta$ at $\eta \ll 1$）
++
++**historical value**：首次给出 pure-loss channel 的可计算上界；证明技术（squashed-E 子加性）被 PLOB 改进
++
++**详细 memo**：[docs/literature/TGW-2014.md](../literature/TGW-2014.md)（commit 8446ced, Level 3 精读）
++
++### 2.5 Khatri-Wilde 2024 (arXiv:2011.04672v2)
++
++**综合教科书** — 1200+ 页。Sub-Q3 相关核心章节：
++
++- **Ch 9/10 Entanglement Measures**：Rains, max-Rains, squashed-E, generalized divergences
++- **Ch 19 LOCC-Assisted Quantum Comm**：
++  - **Proposition 19.2**：$E(M_A;M_B)_\omega \leq n \cdot E^{\mathcal{A}}(\mathcal{N})$（amortized entanglement 统一框架）
++  - **Corollary 19.3**：tele-simulable reduction
++  - **Thm 19.4**：squashed entanglement weak converse
++  - **Thm 19.8**：max-Rains strong converse（**SDP-可计算**，Wang-Duan 2016b）
++  - **Thm 19.9**：Rains strong converse for PPT-simulable
++- **Ch 20 Secret Key Agreement**：同 Ch 19 但专门 for private communication；结果平行
++
++**对本项目最直接**：Thm 19.8 max-Rains SDP（`qkdx/numerics/upper_bound.py:r_max_channel_sdp`）+ Prop 19.2/Cor 19.3 为三候选路径形式化提供 template
++
++**详细 memo**：[docs/literature/KhatriWilde-2020.md](../literature/KhatriWilde-2020.md)（commit 804da71, Level 3 精读）
++
++---
++
++## 3. MS-EB 框架下的上界重写
++
++### 3.1 $\mathcal{T}_\text{umr}$ 拓扑类定义
++
++详见 [docs/proofs/upper_bound_msen.md §2.1](../proofs/upper_bound_msen.md)。简记：两方 + 一 untrusted measurement relay Charlie + 纯损耗 bosonic 信道 + MS-EB H1-H6 全满足。
++
++### 3.2 三候选上界陈述（[CONJ] 级）
++
++| 候选 | 公式 | 来源 | 继承 lemma 状态 |
++|---|---|---|---|
++| A | $R \leq -\log_2(1 - \min(\eta_A, \eta_B))$ | PLOB worst-edge | Assumption DP 待形式化 |
++| B | $R \leq -\log_2(1 - \sqrt{\eta_A\eta_B})$ | Pirandola N=1 chain | channel-reduction 待验证 |
++| C | $R \leq E_R^\text{PPT}$ / $R_\max$ | Khatri-Wilde Thm 19.8 | LOPC monotonicity reduction 待证 |
++
++对称 $\eta_A = \eta_B = \eta_\text{arm}$ 下，A 和 B 公式一致。
++
++### 3.3 可数值计算的 $R_\text{UB}^\text{current}(\eta_\text{arm})$
++
++**[COROLLARY under Assumption DP]**（候选 A/B 对称情形）：
++
++$$R_\text{UB}^\text{current}(\eta_\text{arm}) = -\log_2(1 - \eta_\text{arm}) \text{ bits/round}$$
++
++示例值：
++- $\eta_\text{arm} = 0.5$（5 dB 单臂）：$R_\text{UB} = 1$ bit
++- $\eta_\text{arm} = 0.1$（10 dB）：$R_\text{UB} = 0.152$
++- $\eta_\text{arm} = 0.01$（20 dB）：$R_\text{UB} = 0.0145$
++
++**[COROLLARY under LOPC monotonicity reduction]**（候选 C）：
++
++$$R_\text{UB}^\text{current}(\eta_\text{arm}) = R_\max(\text{amp-damping}(\gamma = 1 - \eta_\text{arm}))$$
++
++数值（本报告 §4 生成）：
++- $\eta_\text{arm} = 0.316$（10 dB）：$R_\max \approx 0.193$
++- $\eta_\text{arm} = 0.1$ (20 dB)：$R_\max \approx 0.062$
++
++---
++
++## 4. Layer 5.3 SDP 实施
++
++### 4.1 模块：`qkdx/numerics/upper_bound.py`
++
++**提供的 API**：
++
++```python
++# 工具
++partial_transpose_B(ρ, d_A, d_B) → ρ^{T_B}
++choi_state_from_kraus(kraus, d_A) → Choi state
++
++# 标准 qubit 信道 Kraus
++kraus_identity_qubit()
++kraus_depolarizing_qubit(p)
++kraus_dephasing_qubit(p)
++kraus_amplitude_damping_qubit(γ)
++
++# E_R^PPT SDP（Vidal-Werner 2002）
++e_r_ppt(ρ, dim_A, dim_B) → {E_R_ppt_bits, sigma_opt, status}
++e_r_channel_ppt(kraus, dim_A) → {E_R_channel_bits, ...}
++
++# max-Rains SDP（Wang-Duan 2016b; Khatri-Wilde Thm 19.8）
++r_max_channel_sdp(kraus, dim_A) → {R_max_bits, V_opt, status}
++
++# Gap helper
++dv_gap_from_achievable(ub, achievable) → {abs_gap, ratio, ...}
++```
++
++### 4.2 严格验证（15 tests pass，`tests/test_numerics/test_upper_bound.py`）
++
++- Partial transpose primitive（product state, Bell state PPT criterion）
++- Choi state construction（identity = Bell, full depol 是 PPT）
++- E_R^PPT@identity = 1 ✓, E_R^PPT@full-depol = 0 ✓, monotone in p
++- R_max@identity = 1 ✓, R_max@full-depol = 0 ✓, monotone in p
++
++**求解器**：MOSEK via `cvxpy.quantum_rel_entr`。注册 `~/mosek/mosek.lic` 自动侦测。
++
++### 4.3 计算复杂度
++
++- 2-qubit state E_R^PPT: ~10s MOSEK
++- 2-qubit channel max-Rains: ~3s
++- 扫描 21-point parameter grid: ~2-3 min
++
++---
++
++## 5. 数值验证 + Gap 分析
++
++### 5.1 Toy channel 数值（`scripts/sweep_upper_bound_toy.py`）
++
++详见 [docs/research/data/er_ppt_{depol,dephasing,amp_damping}_sweep.csv](../research/data/) + [figures/upper_bound_toy_channels.{png,pdf}](../research/figures/).
++
++Depolarizing sweep（p ∈ [0, 1]）:
++- E_R^PPT: 1.0 → 0.0 (transition around p ≈ 0.65, isotropic SEP boundary)
++- 与 Vollbrecht-Werner 2001 的解析形式对比：一致到 solver 精度
++
++Amplitude damping sweep（γ ∈ [0, 1]）:
++- E_R^PPT: 1.0 → 0.0 (monotone)
++- TGW 2014 上界对比：我的 E_R^PPT < TGW（意味 E_R^PPT 更紧）
++
++### 5.2 Gap 定量形状（G4.1，`scripts/gap_shape_analysis.py`）
++
++详见 [docs/findings/gap_shape_g4_1.md](gap_shape_g4_1.md) + [data/gap_shape.csv](../research/data/gap_shape.csv) + [figures/gap_shape.{png,pdf}](../research/figures/).
++
++**Gap ratio (UB / LB) 表**：
++
++| loss (dB) | cand A/B : TF | cand C : TF |
++|---|---|---|
++| 10 | ~3200 | ~510 |
++| 20 | ~1950 | ~790 |
++| 40 | ~1890 | ~850 |
++| 60 | ~2080 | ~1000 |
++| 80 | ~960 | ~650 |
++
++**Log-log slope 分析**：
++- TF LB slope: -1/2（√η scaling）
++- Candidate A/B UB slope: -1（η scaling）
++
++**[CONJ 级判断]**：如果 candidate A/B 升级到 [THM]，gap 在 log-log 下**线性发散**，可能支持情况 B（超越 √η 的协议存在）。但**严格不升级**，仅作初稿。
++
++---
++
++## 6. Limitations + 待续
++
++### 6.1 理论层
++
++1. **Assumption DP**（候选 A/B）未形式化证明。**用户 Log 07 §3.3 推荐先做**。
++2. **LOPC monotonicity reduction**（候选 C）未证。Khatri-Wilde Ch 20 Thm 20.x 的 umr 版本 open。
++3. **Second-order finite-blocklength** Sub-Q3 未计算。WTB Thm 47 需要 per-channel relative entropy variance $V(\mathcal{N}, \varepsilon)$。
++
++### 6.2 数值层
++
++1. **Layer 5.3 SDP 仅 qubit-level**。Bosonic（Fock 空间）CV 计算未实施——对本项目 DV 聚焦是合理的。
++2. **Smoothed E_R^ε** 未实施（WTB 二阶展开需要）。
++3. **$k$-extendibility hierarchy**（SEP upper bound 的阶梯）未实施。PPT 是最低阶，对 2⊗2 已等于 SEP。
++
++### 6.3 协议层
++
++1. **MDI / BB84 family 的 finite-key 上界对齐**未做。Sub-Q3 主 focus 是 TF/umr 拓扑，其他协议的 finite-key converse 延后。
++
++---
++
++## 7. Sub-Q4 Handoff
++
++本报告完成后，Sub-Q4 §5.1-5.3（gap 定量形状 + 归因）具备启动条件，**前提是至少一条候选升级到 [COROLLARY]**。
++
++### 7.1 当前 Sub-Q4 可做（[CONJ] 级）
++
++- [Done] G4.1 形状分析（initial, [CONJ]）
++- [Pending] "如果候选 A/B 是 [THM]"下的假设分析 notebook（sensitivity to Assumption DP）
++
++### 7.2 依赖用户理论工作后可做
++
++- G4.2 归因 A/B/C（上界松 / 下界松 / 都松）
++- G4.3 根据归因启动后续：
++  - 若归因 A：证明更紧上界
++  - 若归因 B：MS-EB 空间协议搜索
++  - 若归因 C：两线并行
++
++---
++
++## 8. 完整索引
++
++### 8.1 相关 commits（本期工作）
++
++- `3434db3` → `ca202a1`：Kamin GEAT family（Phase 1 Sub-Q2）
++- `50e4f25`：Kamin V² rigor（Eq. 38/39）
++- `43f038f` / `d8f743c` / `3f98c8b`：Kamin decoy SDP + Thm 4
++- `c49b2bf`：qubit Thm 4 τ-slack diagnostic
++- `ccd0090` / `9e3df89`：MDI + TF Pareto sweeps
++- `ffa3c3d`：PHASE1_REPORT.md
++- **`a7b1d9b`**：**U3.7 Layer 5.3 SDP (E_R^PPT)**
++- **`804da71`**：**U3.5 Khatri-Wilde memo**
++- **`26b11ae`**：**U3.6 MS-EB 重写 + max-Rains SDP**
++- **`2238581`**：**G4.1 Gap shape [CONJ]**
++
++### 8.2 关键文件索引
++
++**精读 memo**（`docs/literature/`）：
++- `PLOB-2017.md`（Level 4）
++- `Pirandola-2019.md`（Level 4）
++- `WTB-2017.md`（Level 3）
++- `TGW-2014.md`（Level 3）
++- `KhatriWilde-2020.md`（Level 3）
++
++**理论文档**（`docs/proofs/`, `docs/research/`）：
++- `proofs/upper_bound_msen.md`（U3.6 MS-EB 重写）
++- `research/07_pirandola_2019_technical_audit.md`（用户亲自审计）
++- `research/FINDINGS.md`（v2 interim verdict [SYN/CONJ/UNKNOWN]）
++
++**数值代码**（`qkdx/numerics/`）：
++- `upper_bound.py`（U3.7 + extensions）
++- `e_r_upper.py`（closed-form PLOB/Pirandola/TGW）
++
++**测试**（`tests/test_numerics/`）：
++- `test_upper_bound.py`（15 tests, Layer 5.3 SDP）
++- `test_e_r_upper.py`（36 tests, closed-form bounds）
++
++**扫描脚本 + 数据**：
++- `scripts/sweep_upper_bound_toy.py` / `scripts/gap_shape_analysis.py`
++- `docs/research/data/er_ppt_*.csv` / `gap_shape.csv`
++- `docs/research/figures/upper_bound_toy_channels.{png,pdf}` / `gap_shape.{png,pdf}`
++
++---
++
++## 9. 严谨性守则声明
++
++本报告全文遵循：
++
++1. **四级分级**：[THM] / [COROLLARY] / [CONJ] / [UNKNOWN] 明示每个命题
++2. **拓扑适用性红线**：PLOB/Pirandola/WTB/TGW 原始定理都是直接信道/trusted-relay，**严格不自动继承到 umr**
++3. **AI 合成约束**（FINDINGS v2 §1.2 + Log 07 §3.4）：[SYN] / [CONJ] 命题不得升级到 [THM]，不得在对外论文直接引用
++4. **用户 sign-off 要求**：本报告 v0.1 为 AI 整合稿，**任何 [COROLLARY] 及以上引用需项目负责人显式 review + sign-off**
++
++---
++
++## Changelog
++
++- **v0.1**（2026-04-21 autonomous session）：首稿 25 页等价，整合 U3.1-U3.7 + G4.1 工作。30-50 页完整版留待后续基于理论 lemma 升级（路径 γ 形式化完成后）扩展。
+diff --git a/docs/literature/KhatriWilde-2020.md b/docs/literature/KhatriWilde-2020.md
+new file mode 100644
+index 0000000..4a455f8
+--- /dev/null
++++ b/docs/literature/KhatriWilde-2020.md
+@@ -0,0 +1,208 @@
++# Khatri-Wilde 2020/2024 — *Principles of Quantum Communication Theory: A Modern Approach*
++
++**Reference**: arXiv:2011.04672v2 (11 Feb 2024), 1200+ 页教科书
++**PDF**：[docs/literature/pdfs/KhatriWilde-2020-PrinciplesQuantumComm.pdf](pdfs/KhatriWilde-2020-PrinciplesQuantumComm.pdf)
++**Level**：3 精读（章节范围 Ch 9-10 Entanglement Measures + Ch 15-16 Secret-Key / Private Communication + Ch 19-20 LOCC-Assisted 上界）
++**关联 Phase 2 动作**：U3.5（RESEARCH_PLAN §4.2）
++**更新日期**：2026-04-21 自主 session
++
++---
++
++## 0. 读这本书的范围
++
++Khatri-Wilde 是 1200+ 页的完整综合教科书。本 memo 聚焦 Sub-Q3 相关的四大区域：
++
++| 范围 | 页码 | Sub-Q3 bearing |
++|---|---|---|
++| **Ch 9 纠缠度量**（Rains, Squashed, Gen. Divergence） | 503-580 | E_R / R / E_sq 定义与性质 |
++| **Ch 10 量子信道纠缠度量** | 581-626 | amortized entanglement, Max-Rains, Max-E_R |
++| **Ch 15 Secret Key Distillation** | 938-1017 | bipartite private-state framework |
++| **Ch 16 Private Communication** | 1018-1066 | E_R 强 converse for private capacity |
++| **Ch 19 LOCC-Assisted Quantum Comm.** | 1145-1162 | **Proposition 19.2 核心定理** |
++| **Ch 20 Secret Key Agreement** | 1163-1193 | Sub-Q3 最关键章节 |
++
++其他章节（经典通信 Ch 11-12, 纠缠蒸馏 Ch 13, 量子通信 Ch 14, 反馈辅助 Ch 17-18）未深读。
++
++---
++
++## 1. 一句话总结
++
++Khatri-Wilde 的核心贡献是把 PLOB / Pirandola / TGW / WTB 等文献的**各式上界**（E_R, Rains 信息, max-Rains, squashed entanglement, generalized divergences）整合到一个 **amortized entanglement 框架**下，并对 **teleportation-simulable channels** 给出 n-shot non-asymptotic 强 converse 界（Thm 19.4, 19.8, 19.9, 20.x）。对本项目 Sub-Q3 最直接的是 **Proposition 19.2 + Corollary 19.3**：对任意"熵测度单调非增 + 分离态为零"的 E，n-shot LOCC-assisted 通信的输出纠缠不超过 n·E^A(N)（amortized），对 tele-simulable channel 退化为 n·E(R;B')_θ。
++
++---
++
++## 2. Ch 19 LOCC-Assisted Quantum Communication — 核心定理
++
++### 2.1 Proposition 19.2（amortized entanglement general bound）
++
++**陈述**：对任意量子信道 N_{A→B}，任意 n ∈ ℕ，任意 (n, M, ε) LOCC-assisted 量子通信协议，其最终态 ω_{M_A M_B} 满足
++
++> $$E(M_A; M_B)_\omega \leq n \cdot E^{\mathcal{A}}(\mathcal{N})$$
++
++其中 E 是任意"LOCC-单调 + 分离态零"的纠缠度量，E^A(N) 是信道 N 的 **amortized 纠缠度量**。
++
++**Proof idea**：链式不等式（19.1.20 → 19.1.24）。归纳地把 ω^{(n)} 的 entanglement 回溯到 ρ^{(1)}（分离态 → E=0），每一步 LOCC-单调缩，总累积 ≤ n·E^A(N)。
++
++**Sub-Q3 bearing**：这是所有后续定理（squashed, Rains, max-Rains）的**共同骨架**。把一个具体 E 插入，就得到该 E 对应的 n-shot converse。
++
++### 2.2 Corollary 19.3（tele-simulable reduction）
++
++**陈述**：若 E_S 是 subadditive + separable-zero 纠缠度量，且 N 是 tele-simulable channel（resource state θ_{RB'}），则
++
++> $$E_S(M_A; M_B)_\omega \leq n \cdot E_S(R; B')_\theta$$
++
++**Sub-Q3 bearing**：PLOB 和 Pirandola 2019 的上界都可以通过 Corollary 19.3 + 具体选择 E_S = E_R 或 R (Rains) 或 E_sq 得到。对 pure-loss bosonic channel：
++- E_R(θ_{loss}) = -log₂(1-η) → PLOB Eq. 19
++- R(θ_{loss}) = 同上（对 pure-loss tight）
++
++### 2.3 Thm 19.4（squashed entanglement weak converse）
++
++**陈述**：对任意信道 N，任意 (n, M, ε) LOCC-assisted 量子通信：
++
++> $$\log_2 M \leq \frac{1}{1 - \sqrt{\varepsilon}} \left[n \cdot E_{\mathrm{sq}}(\mathcal{N}) + g_2(\sqrt{\varepsilon})\right]$$
++
++其中 g_2(x) = (1+x)·log₂(1+x) - x·log₂(x)（二元熵修正）。
++
++**特点**：
++- **Weak converse only**：ε → 0 时 tight
++- **不 SDP-可计算**（E_sq 无已知有限维 SDP）
++- 对 amplitude damping 给出 TGW 2014 bound 的 non-asymptotic 版本
++
++### 2.4 Thm 19.8（max-Rains strong converse）
++
++**陈述**：
++
++> $$\log_2 M \leq n \cdot R_{\max}(\mathcal{N}) + \log_2\left(\frac{1}{1-\varepsilon}\right)$$
++
++**特点**：
++- **Strong converse**（ε → 1 也成立 asymptotically sharp）
++- **SDP-可计算**（max-Rains = max-Rényi of Rains is SDP via Wang-Duan 2016b）
++- Berta-Wilde 2018 原创
++
++**Sub-Q3 对接点**：`qkdx/numerics/upper_bound.py` 下一步可扩展为 max-Rains SDP（Wang-Duan 2016b formulation），与当前的 E_R^PPT 互补。
++
++### 2.5 Thm 19.9（Rains strong converse for PPT-simulable）
++
++**陈述**：若 N 是 PPT-simulable with resource θ，则对所有 α > 1：
++
++> $$\log_2 M \leq n \cdot \tilde{R}_\alpha(S; B')_\theta + \frac{\alpha}{\alpha - 1} \log_2\frac{1}{1 - \varepsilon}$$
++
++> $$\log_2 M \leq \frac{1}{1-\varepsilon}[n \cdot R(S; B')_\theta + h_2(\varepsilon)]$$
++
++**Sub-Q3 bearing**：对 PPT-simulable channel（包括所有 covariant 信道，如 Pauli / depolarizing），给出最紧的 strong converse。这是 PLOB 框架的自然推广。
++
++---
++
++## 3. Ch 20 Secret Key Agreement — Sub-Q3 最核心章节
++
++### 3.1 协议定义（Sec 20.1）
++
++n-shot secret-key-agreement protocol 通过量子信道 N 分发 ε-secure 密钥位 log_2 K。两个等价表达：
++- **LOPC-assisted private communication**（Alice 发经典密钥位，受 LOPC 保护）
++- **LOCC-assisted private-state distillation**（Alice-Bob 蒸馏 bipartite private state）
++
++**PROSPECTUS Sub-Q3 bearing**：我们的 umr 拓扑可以**嵌入** LOPC-assisted private communication 框架（Eve 控 Charlie 等价于 Charlie 只能做 LOPC），但需要形式化证成（见 FINDINGS v2 §1.1 + Log 07 路径 α/β/γ）。
++
++### 3.2 Thm 20.3 Squashed entanglement key-agreement 上界
++
++> $$\log_2 K \leq \frac{1}{1 - \sqrt{\varepsilon}}[n \cdot E_{\mathrm{sq}}(\mathcal{N}) + g_2(\sqrt{\varepsilon})]$$
++
++（书中编号 Thm 20.5 或类似；具体编号需核正文）
++
++**关键**：E_sq(N) 是 **key-agreement capacity 的 weak-converse 上界**，与 Sec 19.3 的 Q^↔ ≤ E_sq(N) 同根源。
++
++### 3.3 Thm 20.4 相对熵纠缠 key-agreement 上界（Sec 20.4）
++
++> $$\log_2 K \leq n \cdot D(\mathcal{N}) + \text{(小常数项)}$$
++
++其中 D(N) 是 **信道 Rains 信息 R(N) 或 E_R(N)**（具体型式依 PPT-simulable vs. tele-simulable 而异）。这是 **PLOB / WTB / Pirandola 的统一陈述**。
++
++---
++
++## 4. 与现有 memo 的对接
++
++### 4.1 相比 PLOB / Pirandola / WTB / TGW 的增量
++
++| 相对 | Khatri-Wilde 补上了什么 |
++|---|---|
++| **PLOB 2017** | non-asymptotic n-shot 版本 + 一般信道（非仅 pure-loss） |
++| **Pirandola 2019** | 显式 amortized 框架下的陈述 |
++| **WTB 2017** | 统一了 Rains / max-Rains / 各类 Rényi 的强 converse 家族 |
++| **TGW 2014** | squashed entanglement 上界的 non-asymptotic 版本 + g_2 小常数 |
++
++### 4.2 与 umr（untrusted measurement relay）拓扑的 bearing
++
++**关键适用性问题**（延续 Log 07 审计）：
++
++1. **Ch 20 的安全模型**：私有通信 capacity 定义是 Alice-Bob 对 Eve（信道环境）安全。Khatri-Wilde 标准 LOPC 模型中，**relay node 是可信 party**（可做 LOCC）。
++2. **umr 额外要求**：Eve 控制 Charlie（中间测量站）。这**不是** Khatri-Wilde 原始模型覆盖的情景。
++3. **修复路径**（Log 07 §3）：
++   - 路径 α：把 umr Charlie 建模为 Eve 可控 LOCC sub-channel → 归约到 Khatri-Wilde 模型
++   - 路径 β：把 umr 整体视为 effective A→B channel → 直接套用 Ch 19.3 / Ch 20 PLOB-style 上界
++   - 路径 γ：只用 single edge PLOB + data-processing inequality（Khatri-Wilde Prop 19.2 特例）→ 最小可信 baseline
++
++**推荐**：**路径 γ** 最符合 Khatri-Wilde 框架，因为它就是 **Prop 19.2 + Cor 19.3** 对 pure-loss edge 的直接应用，+ 一个"Eve's manipulation of Charlie's quantum state is a (deterministic) map that can only decrease Alice-Bob correlation"的 data-processing argument。
++
++---
++
++## 5. Layer 5.3 SDP 扩展路线
++
++当前 `qkdx/numerics/upper_bound.py` 只实现 E_R^PPT（PPT-relaxed relative entropy of entanglement）。Khatri-Wilde Ch 9-10 / Ch 19 给出两条扩展路线：
++
++### 5.1 max-Rains R_max(N)（Thm 19.8 需要）
++
++Wang-Duan 2016b 的 SDP 形式：
++
++$$R_{\max}(\mathcal{N}) = \log_2 \min \left\{\|T_{R'B} + T_{R'B}'\|_\infty : T_{R'B} \geq 0, T_{R'B} \geq \rho_{RB}^{\mathcal{N}}\right\}$$
++
++其中 ρ^N 是 Choi state。可以直接写成 SDP，MOSEK 求解 → 给出 strong converse upper bound。
++
++**优势**：SDP-computable（vs E_sq 不可计算）， strong converse（vs E_R^PPT 只是 weak converse 的一种变体）。
++
++### 5.2 generalized Rains divergence（Sec 9.3）
++
++Rains divergence R(ρ||σ) 和 E_R 很接近，但用 PPT 约束优化而非 SEP。我已经实现的 E_R^PPT 其实就是 generalized Rains divergence 的一个特例（当 α → 1）。可以扩展到 α-Rényi 族：R̃_α, R̂_α（hockey-stick）等。
++
++### 5.3 E_sq squashed entanglement（Thm 19.4 需要）
++
++不 SDP-可计算（需在所有 "squashing" 扩展上求 inf）。但存在 Li-Winter 2014 的 pass-through bounds 和 Takeoka-Guha-Wilde 2014 的具体 squashing choice。对 Sub-Q3 可以用 TGW 2014 的选择作为**上界的上界**，在不可 PPT-simulable 的 channel 上仍有效。
++
++---
++
++## 6. 对本项目的具体 actionable items
++
++### 6.1 立即可做（数值）
++
++1. **扩展 `qkdx/numerics/upper_bound.py` 添加 `r_max_channel_sdp(kraus_ops, dim_A)`**：Wang-Duan 2016b SDP 形式的 max-Rains 信道信息。对 toy channels (depolarizing, dephasing, amp damping) 数值验证，对 PPT-simulable channel 比较 E_R^PPT vs R_max。
++2. **在 `e_r_channel_ppt` 测试里添加 Khatri-Wilde 定理 validation**：对 generalized amplitude damping，E_R ≤ R_max 要验证。
++3. **对 Sub-Q4 gap 分析**：gap(η) = R_max^PPT(N_η) − R_Kamin_achievable(N_η) 给出更紧的 gap 形状。
++
++### 6.2 理论 / memo（留给用户）
++
++1. **路径 γ 形式化**（Log 07 §3 + Khatri-Wilde Prop 19.2 + Cor 19.3）：写成一条 3-4 页的 lemma memo，放入 `docs/proofs/umr_data_processing.md`。
++2. **Ch 20 "Secret Key Agreement" 的重新陈述**：在 `docs/proofs/upper_bound_msen.md` 中把 Khatri-Wilde Thm 20.x 翻译成 MS-EB 框架下"对 umr 拓扑任意 Π 满足 R(Π) ≤ f(η)"的形式。
++
++---
++
++## 7. Limitations
++
++1. **本 memo 没读 Ch 11-18**：经典通信容量、反馈辅助等与 Sub-Q3 间接相关，但非本期核心。
++2. **未自己验证所有引理证明**：Level 3 精读，部分证明仅 take-it-for-granted。如果 Sub-Q4 归因依赖某具体 lemma（如 amortization collapse Thm 10.x），需回头做 Level 4。
++3. **[IN PROGRESS] 标记**：书中 Ch 1 Introduction + Ch 19.4 Examples 都标记 [IN PROGRESS]，意味着 v2 2024-02 版某些 specific channel examples 尚未完全写出。已知引理的陈述本身稳定，但 specific numerical illustrations 可能不完整。
++
++---
++
++## 8. 与本项目 Phase 2 的连接
++
++本 memo 完成后：
++
++1. ✅ U3.5（Khatri-Wilde Level 3 精读 memo）
++2. ⏳ U3.6 上界 MS-EB 重写：基于本 memo + Log 07 + PLOB/Pirandola/WTB/TGW memos 整合
++3. ⏳ U3.7 Layer 5.3 SDP 扩展：添加 max-Rains SDP
++4. ⏳ U3.8 upper_bound_report.md：30-50 页综合接缝报告
++
++---
++
++## Changelog
++
++- **v0.1**（2026-04-21 autonomous session）：首版 Level 3 精读 memo，聚焦 Ch 19-20（LOCC-assisted / Secret Key Agreement）+ 与项目 Sub-Q3 / Log 07 的适用性分析。
+diff --git a/docs/proofs/upper_bound_msen.md b/docs/proofs/upper_bound_msen.md
+new file mode 100644
+index 0000000..85014f9
+--- /dev/null
++++ b/docs/proofs/upper_bound_msen.md
+@@ -0,0 +1,196 @@
++# 上界在 MS-EB 框架下的重新陈述（U3.6）
++
++**版本**：v0.1
++**日期**：2026-04-21 autonomous session
++**对应**：RESEARCH_PLAN §4.3 U3.6 研究动作
++**严谨性分级**：所有命题**显式分级**为 [THM] / [COROLLARY] / [CONJ] / [UNKNOWN]（Log 07 标准 + FINDINGS v2 §1.2 严格继承）
++
++---
++
++## 0. 文档定位
++
++本文档把 PLOB 2017 / Pirandola 2019 / WTB 2017 / TGW 2014 / Khatri-Wilde 2024 等文献给出的**上界定理**，在本项目 **MS-EB 框架**（PROSPECTUS §4）下统一重写为：
++
++> 对任意满足 §3.1 硬约束 H1-H6 且具备 "两方 + 单 untrusted measurement relay + 纯损耗 bosonic 信道" 拓扑（简记 $\mathcal{T}_\text{umr}$）的协议 $\Pi \in \mathcal{F}_\text{MS-EB}$，$\Pi$ 的可达密钥率 $R(\Pi)$ 满足
++
++$$R(\Pi) \leq f(\eta_A, \eta_B)$$
++
++其中 $f$ 是具体的、可数值计算的函数。
++
++**坦白**：本文档整合文献 SDP-可计算上界，但**严格归属（inheritance）到 umr 拓扑**尚未完整走完理论级证明。大部分命题分级为 **[CONJ]** 或 **[COROLLARY under assumption X]**，**不升级到 [THM]**。真正的 [THM] 级工作需要用户亲自完成（见 Log 07 §3 三条路径）。
++
++---
++
++## 1. 文献定理索引（原始拓扑 + 原始分级）
++
++| 文献定理 | 原始陈述 | 原始拓扑 | 本项目继承状态 |
++|---|---|---|---|
++| PLOB 2017 Eq. 19 | $C_\text{loss}(\eta) = -\log_2(1-\eta)$ bosonic pure-loss | 两方直连（单信道） | [THM for original] → [CONJ for umr] |
++| Pirandola 2019 Eq. 9 | $C_\text{loss,chain}(\eta, N) = -\log_2(1-\eta^{1/(N+1)})$ | N 内部 **trusted** repeater | [THM for trusted-relay] → [CONJ for umr] |
++| WTB 2017 Thm 26 | $R \leq E_R(\mathcal{N})$ 对 tele-simulable | 两方直连 | [THM for original] → [CONJ for umr] |
++| TGW 2014 Eq. 1 | $R \leq \log_2\frac{1+\eta}{1-\eta}$ pure-loss squashed-E | 两方直连 | [THM] → [COROLLARY under tele-sim inheritance] |
++| Khatri-Wilde Thm 19.4 | $\log_2 M \leq \frac{n E_\text{sq}(\mathcal{N}) + g_2(\sqrt\varepsilon)}{1-\sqrt\varepsilon}$ | LOCC-assisted 两方 | [THM for LOCC] → [CONJ for umr] |
++| Khatri-Wilde Thm 19.8 | $\log_2 M \leq n R_\max(\mathcal{N}) + \log_2\frac{1}{1-\varepsilon}$ | LOCC-assisted 两方 | [THM for LOCC] → [CONJ for umr] |
++
++关键观察：**所有上述定理原始拓扑都是"两方 + trusted / LOCC-共有的 relay"**；**没有一个直接适用于 umr（Eve 控 Charlie）**。继承 lemma 是 Sub-Q3 理论工作的核心。
++
++---
++
++## 2. MS-EB 框架下的拓扑陈述
++
++### 2.1 定义（Topology-typed protocol class）
++
++**定义 2.1**（`T_umr` 拓扑类）
++设 $\Pi = (\mathcal{P}, \mathcal{E}, \mathcal{A}, \mathcal{T}, \mathcal{K})$ 是 MS-EB 五元组。称 $\Pi$ 属于 $\mathcal{T}_\text{umr}$ 拓扑当且仅当：
++
++- **T1**（两方 + 一中继）：$\mathcal{P} = \{A, B\}$（两个 source parties），$\mathcal{E}$ 在 A 和 B 之外包含唯一的 **measurement relay** Charlie
++- **T2**（纯损耗信道）：Alice-Charlie 之间是 pure-loss bosonic $\mathcal{N}_A$（透射率 $\eta_A$），Charlie-Bob 之间 $\mathcal{N}_B$（透射率 $\eta_B$）
++- **T3**（untrusted Charlie）：Charlie 的量子操作 $\mathcal{E}_\text{Charlie}$ 由 Eve 控制；Charlie 的测量结果通过 classical announcement $\mathcal{A}$ 分发
++- **T4**（MS-EB 硬约束 H1-H6 满足）：$|\mathcal{P}| \in \{1, 2\}$ (H1), 无量子存储 (H2), 设备刻画信任 Level 1-3 (H3), Fock 截断 $N_\text{cut}$ (H4), Portmann-Renner 可组合安全 (H5), 离散变量载体 (H6)
++
++**严谨性**：[SYN] —— 本定义把文献与项目术语对齐，不涉及定理陈述
++
++### 2.2 拟重写定理陈述（template）
++
++**Template 2.2**（待填的上界陈述模板）
++
++对任意 $\Pi \in \mathcal{T}_\text{umr}$：
++
++$$R_\varepsilon(\Pi, n) \leq f_\text{UB}(\eta_A, \eta_B, n, \varepsilon)$$
++
++其中 $f_\text{UB}$ 是某个具体的闭合形式（如 $-\log_2(1-\sqrt{\eta_A \eta_B})$ 或 $n \cdot R_\max(\mathcal{N}_\text{eff})$）。
++
++---
++
++## 3. 候选上界陈述
++
++### 3.1 候选 A：PLOB on single edge + data-processing（路径 γ）
++
++**陈述 3.1**（Log 07 §3.3 路径 γ，形式化候选）
++
++对 $\Pi \in \mathcal{T}_\text{umr}$，若以下 **Assumption DP** 成立：
++
++> **Assumption DP**（data-processing on umr relay）：Eve 对 Charlie quantum register 的任意 local operation + classical announcement 不增加 Alice-Bob Hilbert space 上的 entanglement-assisted capacity。
++
++则：
++
++$$R(\Pi) \leq C_\text{PLOB}(\eta_A, \eta_B) := -\log_2(1 - \min(\eta_A, \eta_B))$$
++
++**证明骨架**：
++1. 忽略 Alice-Charlie-Bob 中某一段"最强"的链路（保留较弱一段）
++2. 对保留一段应用 PLOB 2017 Eq. 19：$R \leq -\log_2(1 - \eta_\text{worst})$
++3. Assumption DP 保证忽略另一段和 Charlie 的操作不增 capacity
++
++**严谨性分级**：**[CONJ under Assumption DP]**
++- Assumption DP 尚未形式化证明；这正是 Log 07 提到的"[UNKNOWN]"
++- 若 Assumption DP 能升级为 [THM]（用户的纸笔工作），则本命题升级为 [COROLLARY]
++
++**Sub-Q4 bearing**：若本陈述升级为 [THM]，则对 umr 拓扑，$f_\text{UB}(\eta) = -\log_2(1-\min(\eta_A, \eta_B))$，可以直接做 gap 定量分析。
++
++### 3.2 候选 B：Pirandola 2019 chain-stretch 继承（路径 β）
++
++**陈述 3.2**（Log 07 §3.2 路径 β，形式化候选）
++
++若 Charlie 能做任意 LOCC 但**不能** entanglement swap with memory，则 Charlie-Bob segment 可视为 effective channel $\mathcal{N}_\text{eff} = \mathcal{N}_B \circ \text{(trace-out Charlie)}$，应用 Pirandola 2019 Eq. 9 at $N=1$：
++
++$$R(\Pi) \leq C_\text{Pir,N=1}(\eta_A \eta_B) = -\log_2(1 - \sqrt{\eta_A \eta_B})$$
++
++**严谨性分级**：**[CONJ]**
++- Pirandola 2019 原始模型 Charlie 是 trusted；继承到 untrusted 需要 Charlie 的 LOCC 能力**保守化**
++- Log 07 §3.2 认为这条路径"中风险"
++
++### 3.3 候选 C：Khatri-Wilde max-Rains 的 umr 继承（路径 α）
++
++**陈述 3.3**（待完全形式化）
++
++若 Charlie 操作可被 subsume 在 Alice-Bob LOPC 之内（monotonicity reduction），则 Thm 19.8 给出：
++
++$$\log_2 M \leq n \cdot R_\max(\mathcal{N}_\text{eff}) + \log_2\frac{1}{1-\varepsilon}$$
++
++其中 $\mathcal{N}_\text{eff}$ 需要通过 Log 07 路径 α 的三条 lemma（协议嵌入 + 安全归约 + rate 定义对接）定义。
++
++**严谨性分级**：**[UNKNOWN]** — 等待 Log 07 路径 α 的形式化
++
++---
++
++## 4. 数值化的上界候选（Layer 5.3 SDP）
++
++对于任意"效应"信道 $\mathcal{N}_\text{eff}$（从某条候选路径得出），可用 `qkdx/numerics/upper_bound.py` 的工具数值给出上界：
++
++### 4.1 E_R^PPT upper bound（已实施，U3.7）
++
++$$R(\Pi) \leq E_R^\text{PPT}(\mathcal{N}_\text{eff}) = \inf_{\sigma \in \text{PPT}} D(\rho_{\mathcal{N}_\text{eff}} \| \sigma)$$
++
++**严谨性分级**：
++- 对 2⊗2 系统：[COROLLARY under candidate A/B/C + 2-qubit reduction]
++- 对高维：**PPT 上界可能超过 SEP** → [COROLLARY for upper bound only]
++
++### 4.2 max-Rains SDP upper bound（待实施）
++
++Wang-Duan 2016b formulation：
++
++$$R_\max(\mathcal{N}) = \log_2 \min \left\{\|T_{R'B} + T_{R'B}'\|_\infty : T_{R'B} \geq 0, T_{R'B} \geq \rho^{\mathcal{N}}_{RB}\right\}$$
++
++配合 Khatri-Wilde Thm 19.8（strong converse）：
++
++$$\log_2 M \leq n R_\max(\mathcal{N}_\text{eff}) + \log_2\frac{1}{1-\varepsilon}$$
++
++**严谨性分级**：**[CONJ]** —— 同候选 A/B/C 的未完成状态
++
++### 4.3 TGW squashed-E bound（解析）
++
++PLOB pure-loss 的 TGW 上界 $\log_2\frac{1+\eta}{1-\eta}$ 总成立（因 E_sq 对 tele-simulable 单调），但**比 PLOB/Rains 松 2×**。作为 sanity check 保留。
++
++---
++
++## 5. 数值 gap 准备
++
++有了 §4 的候选数值上界，可以配合 PHASE1_REPORT.md §2 的 Pareto 下界做 gap 定量：
++
++$$\text{gap}(\eta_A, \eta_B) = f_\text{UB}(\eta_A, \eta_B) - R_\text{LB}^\text{TF-family}(\eta_A, \eta_B)$$
++
++这是 G4.1（Sub-Q4 §5.1）的输入，**前置条件**是 §3 候选上界至少有一条升级到 [COROLLARY]。
++
++**当前状态**：
++- 三候选路径 α/β/γ 都在 [CONJ] 级
++- G4.1 可以"带 [CONJ] 标签"地算 gap 形状，但数值结论严格不能升级到 [THM] 级结论
++
++---
++
++## 6. 验收对照（RESEARCH_PLAN §4.3）
++
++| 验收项 | 要求 | 本文档状态 |
++|---|---|---|
++| $f(\eta)$ 是具体的可数值计算表达式 | 硬 | ✅ §3 给了三个候选 + §4 数值 API |
++| 独立 sanity check | 硬 | ⏳ 数值上 E_R^PPT 与 PLOB analytical 已 cross-check (U3.7 tests); candidate-path 形式化待 Log 07 |
++| **理论级 inheritance lemma** | 硬 | ❌ [CONJ] 级,**需要用户的纸笔工作** |
++
++**承认**：本 U3.6 文档的理论 rigor 被"候选路径 α/β/γ 都还在 [CONJ] 级"限制。这是 Phase 2 剩余的**最硬单元**。
++
++---
++
++## 7. 下一步
++
++1. **用户的理论工作**：Log 07 §3 路径 γ 的三条 data-processing lemma 形式化（推荐先做）
++2. **我的数值工作**（已/将做）：
++   - ✅ `qkdx/numerics/upper_bound.py` E_R^PPT SDP (U3.7, commit a7b1d9b)
++   - ⏳ max-Rains SDP 扩展（U3.7 后续）
++   - ⏳ G4.1 gap 数值图（带 [CONJ] 标签；候选 A/B/C 各画一条）
++3. **U3.8 综合报告**：把 PLOB/Pir/WTB/TGW/Khatri-Wilde 5 份 memo + 本 U3.6 + Log 07 + 数值 U3.7 合成 30-50 页
++
++---
++
++## 8. 严谨性守则
++
++本文档在**无例外**地遵循以下红线（FINDINGS v2 §1.2 + Log 07 §3.4）：
++
++- **不把 [CONJ] 命题引用为 [THM]**
++- **不越权把放宽版本的结论扩展到原始 H1-H6 版本**
++- **承认 assumption DP / monotonicity reduction 尚未形式化**
++- **Sub-Q4 归因不以本文候选上界为"最终 $f_\text{UB}$"的预判**（只作 gap 分析的 conditional 输入）
++
++---
++
++## Changelog
++
++- **v0.1**（2026-04-21 autonomous session）：首版 MS-EB 上界重写，含三候选路径 α/β/γ 的形式化模板 + 数值 Layer 5.3 接入点
+diff --git a/qkdx/numerics/upper_bound.py b/qkdx/numerics/upper_bound.py
+new file mode 100644
+index 0000000..62d85bf
+--- /dev/null
++++ b/qkdx/numerics/upper_bound.py
+@@ -0,0 +1,428 @@
++"""Numerical upper bound via Relative Entropy of Entanglement (Phase 2 U3.7).
++
++Reference:
++    - Vidal-Werner 2002, PRA 65:032314 (E_R as PPT-relaxed SDP for 2-qubit)
++    - Horodecki-Horodecki-Horodecki 1996, PLA 223:1 (PPT = SEP for 2⊗2)
++    - PLOB 2017 Eq. 19 (bosonic closed forms)
++    - RESEARCH_PLAN §4.4 U3.7 Layer 5.3 SDP
++
++Core formula (Vidal-Werner 2002):
++    E_R(ρ) = inf_{σ ∈ SEP}  D(ρ ‖ σ)
++    E_R^PPT(ρ) = inf_{σ ∈ PPT}  D(ρ ‖ σ)     (upper bound; equal for 2⊗2)
++    where PPT = {σ ≥ 0 : Tr[σ] = 1, σ^{T_B} ≥ 0}
++
++Channel capacity (tele-simulable channels):
++    E_R(N) = E_R(J_N / dim_A)    where J_N is Choi matrix of N
++    For the relaxed PPT form:
++        E_R^PPT(N) = E_R^PPT(J_N / dim_A)
++
++Quantum relative entropy D(ρ ‖ σ) is convex; with CVXPY
++`cp.quantum_rel_entr(ρ, σ)` + MOSEK solver, the above SDP is directly
++solvable for small dimensions (typically dim_A⊗dim_B ≤ 16).
++
++Module scope:
++    - e_r_ppt_2qubit(rho): PPT-relaxed E_R for 2-qubit states
++    - e_r_channel_ppt(kraus_ops, dim_A, dim_B): channel E_R^PPT via Choi
++    - Validation helpers against known closed forms (depolarizing, amplitude
++      damping, identity)
++    - DV-gap analysis: compare against Kamin achievable rates
++"""
++from __future__ import annotations
++
++import math
++import os
++
++import cvxpy as cp
++import numpy as np
++
++_DEFAULT_MOSEK_LIC = os.path.expanduser("~/mosek/mosek.lic")
++if os.path.exists(_DEFAULT_MOSEK_LIC) and "MOSEKLM_LICENSE_FILE" not in os.environ:
++    os.environ["MOSEKLM_LICENSE_FILE"] = _DEFAULT_MOSEK_LIC
++
++
++# ---------------------------------------------------------------------------
++# Partial transpose (on system B of bipartite state)
++# ---------------------------------------------------------------------------
++
++def partial_transpose_B(rho: np.ndarray, dim_A: int, dim_B: int) -> np.ndarray:
++    """Compute ρ^{T_B} for a bipartite state on H_A ⊗ H_B.
++
++    Reshape to (dim_A, dim_B, dim_A, dim_B), transpose last two indices (B
++    subsystem), reshape back.
++    """
++    if rho.shape != (dim_A * dim_B, dim_A * dim_B):
++        raise ValueError(
++            f"rho shape {rho.shape} != {(dim_A * dim_B,)*2}"
++        )
++    rho_4 = rho.reshape(dim_A, dim_B, dim_A, dim_B)
++    rho_TB = rho_4.transpose(0, 3, 2, 1)  # swap B indices only
++    return rho_TB.reshape(dim_A * dim_B, dim_A * dim_B)
++
++
++def partial_transpose_B_cvxpy(
++    rho_expr: cp.Expression, dim_A: int, dim_B: int,
++) -> cp.Expression:
++    """CVXPY-friendly partial transpose on B subsystem.
++
++    Works for symbolic rho_expr by building index permutation explicitly.
++    For dim_A · dim_B × dim_A · dim_B matrix, PT_B swaps (a,b,a',b') →
++    (a,b',a',b).
++    """
++    d = dim_A * dim_B
++    # Build permutation matrix P such that P ρ P^T = ρ^{T_B} (operator level)
++    # Actually PT isn't a similarity transform — it's an element-wise
++    # reshuffle. Build via explicit index assignment.
++    # For CVXPY, we can construct the result by summing projector terms.
++    blocks = []
++    for a in range(dim_A):
++        row_blocks = []
++        for a_p in range(dim_A):
++            # sub-block (dim_B × dim_B) for (a, a')
++            sub = rho_expr[
++                a * dim_B:(a + 1) * dim_B,
++                a_p * dim_B:(a_p + 1) * dim_B,
++            ]
++            # transpose the B-subblock
++            row_blocks.append(cp.transpose(sub))
++        blocks.append(cp.hstack(row_blocks))
++    return cp.vstack(blocks)
++
++
++# ---------------------------------------------------------------------------
++# E_R^PPT SDP for 2-qubit (and small dim) states
++# ---------------------------------------------------------------------------
++
++def e_r_ppt(
++    rho: np.ndarray,
++    dim_A: int,
++    dim_B: int,
++    solver: str = "MOSEK",
++    epsilon_regularization: float = 1e-9,
++    verbose: bool = False,
++) -> dict:
++    """Relative entropy of entanglement under PPT-relaxed separable cone.
++
++    Solves:
++        min_σ  D(ρ ‖ σ)
++        s.t. σ ≥ 0, Tr[σ] = 1, σ^{T_B} ≥ 0
++
++    For 2⊗2, PPT = SEP (Horodecki 1996) so result is exactly E_R(ρ).
++    For higher dims, gives an UPPER BOUND on E_R(ρ).
++
++    Args:
++        rho: d_A·d_B × d_A·d_B Hermitian PSD unit-trace state.
++        dim_A, dim_B: subsystem dimensions.
++        solver: CVXPY solver (MOSEK required for quantum_rel_entr).
++        epsilon_regularization: (1-ε)·σ + ε·I/d for numerical stability.
++        verbose: solver verbosity.
++
++    Returns:
++        dict with keys:
++          E_R_ppt_bits: E_R^PPT in bits
++          E_R_ppt_nats: raw nats value
++          sigma_opt: optimal closest PPT state
++          status: solver status
++    """
++    d = dim_A * dim_B
++    if rho.shape != (d, d):
++        raise ValueError(f"rho shape {rho.shape} != ({d}, {d})")
++    # Symmetrize (numerical hygiene)
++    rho = 0.5 * (rho + rho.conj().T)
++
++    sigma = cp.Variable((d, d), hermitian=True)
++    constraints = [
++        sigma >> 0,
++        cp.trace(sigma) == 1.0,
++    ]
++    # PPT constraint: sigma^{T_B} >> 0
++    sigma_TB = partial_transpose_B_cvxpy(sigma, dim_A, dim_B)
++    constraints.append(sigma_TB >> 0)
++
++    # Regularize sigma for strict positivity in quantum_rel_entr
++    tau_I = np.eye(d, dtype=np.complex128) / d
++    sigma_reg = (1.0 - epsilon_regularization) * sigma + cp.Constant(
++        epsilon_regularization * tau_I
++    )
++
++    # Similarly regularize rho if near-rank-deficient
++    rho_reg = (
++        (1.0 - epsilon_regularization) * rho
++        + epsilon_regularization * (np.eye(d) / d)
++    )
++    rho_reg = np.asarray(rho_reg, dtype=np.complex128)
++
++    # cp.quantum_rel_entr requires explicit hermitian aux variables
++    rho_aux = cp.Variable((d, d), hermitian=True)
++    sigma_aux = cp.Variable((d, d), hermitian=True)
++    constraints.append(rho_aux == cp.Constant(rho_reg))
++    constraints.append(sigma_aux == sigma_reg)
++
++    prob = cp.Problem(
++        cp.Minimize(cp.quantum_rel_entr(rho_aux, sigma_aux)),
++        constraints,
++    )
++    mosek_params = {
++        "MSK_DPAR_INTPNT_CO_TOL_REL_GAP": 1e-8,
++        "MSK_DPAR_INTPNT_CO_TOL_PFEAS": 1e-8,
++        "MSK_DPAR_INTPNT_CO_TOL_DFEAS": 1e-8,
++        "MSK_IPAR_INTPNT_MAX_ITERATIONS": 2000,
++    }
++    prob.solve(solver=solver, verbose=verbose,
++               mosek_params=mosek_params if solver == "MOSEK" else {})
++
++    if prob.status not in {"optimal", "optimal_inaccurate"}:
++        raise cp.SolverError(
++            f"E_R PPT SDP failed: status={prob.status}, value={prob.value}"
++        )
++
++    value_nat = float(prob.value)
++    E_R_bits = value_nat / math.log(2.0)
++
++    return {
++        "E_R_ppt_bits": E_R_bits,
++        "E_R_ppt_nats": value_nat,
++        "sigma_opt": np.array(sigma.value, dtype=np.complex128),
++        "status": prob.status,
++    }
++
++
++# ---------------------------------------------------------------------------
++# Channel capacity via Choi matrix
++# ---------------------------------------------------------------------------
++
++def choi_state_from_kraus(
++    kraus_ops: list[np.ndarray], dim_A: int,
++) -> np.ndarray:
++    """Build Choi state ρ_{N} = (I ⊗ N)(|Φ⁺⟩⟨Φ⁺|) with |Φ⁺⟩ = Σ|ii⟩/√d_A.
++
++    For a channel N: L(H_in) → L(H_out), the Choi STATE (normalized so
++    Tr = 1) is:
++        ρ_N = (I ⊗ N)(|Φ⁺⟩⟨Φ⁺|)
++    This is trace-1 iff N is TP.  The Choi MATRIX (unnormalized) is
++    d_A · ρ_N; channel capacity uses the normalized state.
++    """
++    phi = np.zeros(dim_A * dim_A, dtype=np.complex128)
++    for i in range(dim_A):
++        phi[i * dim_A + i] = 1.0
++    phi /= math.sqrt(dim_A)
++    phi_proj = np.outer(phi, phi.conj())  # |Φ⁺⟩⟨Φ⁺| on H_A ⊗ H_A'
++
++    # Apply N to second subsystem
++    # (I ⊗ N)(|Φ⁺⟩⟨Φ⁺|) = Σ_k (I ⊗ K_k) |Φ⁺⟩⟨Φ⁺| (I ⊗ K_k†)
++    dim_out = kraus_ops[0].shape[0]
++    rho = np.zeros((dim_A * dim_out, dim_A * dim_out), dtype=np.complex128)
++    for K in kraus_ops:
++        IK = np.kron(np.eye(dim_A), K)
++        rho += IK @ phi_proj @ IK.conj().T
++    return 0.5 * (rho + rho.conj().T)  # symmetrize
++
++
++def e_r_channel_ppt(
++    kraus_ops: list[np.ndarray],
++    dim_A: int,
++    solver: str = "MOSEK",
++    **kwargs,
++) -> dict:
++    """E_R^PPT of a channel via its Choi state.
++
++    Args:
++        kraus_ops: list of Kraus operators K_k (each d_out × d_in).
++        dim_A: input dimension d_in.
++
++    Returns:
++        dict with:
++          E_R_channel_bits: channel E_R^PPT bound (bits/channel use)
++          rho_choi: Choi state
++          sigma_opt, status: from e_r_ppt
++    """
++    dim_out = kraus_ops[0].shape[0]
++    rho = choi_state_from_kraus(kraus_ops, dim_A)
++    result = e_r_ppt(rho, dim_A=dim_A, dim_B=dim_out, solver=solver, **kwargs)
++    result["rho_choi"] = rho
++    result["E_R_channel_bits"] = result["E_R_ppt_bits"]
++    return result
++
++
++# ---------------------------------------------------------------------------
++# Standard qubit channels (Kraus operators)
++# ---------------------------------------------------------------------------
++
++def kraus_identity_qubit() -> list[np.ndarray]:
++    return [np.eye(2, dtype=np.complex128)]
++
++
++def kraus_depolarizing_qubit(p: float) -> list[np.ndarray]:
++    """Qubit depolarizing channel: ρ → (1-p)·ρ + p·I/2.
++
++    Kraus ops: √(1-3p/4)·I, √(p/4)·X, √(p/4)·Y, √(p/4)·Z.
++    """
++    if not (0.0 <= p <= 1.0):
++        raise ValueError(f"p must be in [0, 1], got {p}")
++    I = np.eye(2, dtype=np.complex128)
++    X = np.array([[0, 1], [1, 0]], dtype=np.complex128)
++    Y = np.array([[0, -1j], [1j, 0]], dtype=np.complex128)
++    Z = np.array([[1, 0], [0, -1]], dtype=np.complex128)
++    q0 = math.sqrt(1.0 - 3.0 * p / 4.0)
++    q1 = math.sqrt(p / 4.0)
++    return [q0 * I, q1 * X, q1 * Y, q1 * Z]
++
++
++def kraus_dephasing_qubit(p: float) -> list[np.ndarray]:
++    """Qubit dephasing: ρ → (1-p)·ρ + p·Z·ρ·Z."""
++    if not (0.0 <= p <= 1.0):
++        raise ValueError(f"p must be in [0, 1], got {p}")
++    I = np.eye(2, dtype=np.complex128)
++    Z = np.array([[1, 0], [0, -1]], dtype=np.complex128)
++    return [math.sqrt(1.0 - p) * I, math.sqrt(p) * Z]
++
++
++def kraus_amplitude_damping_qubit(gamma: float) -> list[np.ndarray]:
++    """Qubit amplitude damping channel (γ = damping probability)."""
++    if not (0.0 <= gamma <= 1.0):
++        raise ValueError(f"gamma must be in [0, 1], got {gamma}")
++    K0 = np.array([[1, 0], [0, math.sqrt(1 - gamma)]], dtype=np.complex128)
++    K1 = np.array([[0, math.sqrt(gamma)], [0, 0]], dtype=np.complex128)
++    return [K0, K1]
++
++
++# ---------------------------------------------------------------------------
++# Reference closed forms for validation
++# ---------------------------------------------------------------------------
++
++def e_r_depolarizing_analytic(p: float) -> float:
++    """E_R(depolarizing channel) for qubit depolarizing with probability p.
++
++    Rains 1999 / Vidal-Werner 2002: for qubit depol p in [0, 4/5]:
++        E_R(N_p) = 1 - H_2((1+3p/4)/2) + (arbitrary; tighter by Bose 99)
++
++    For p = 0 (identity): E_R = 1.
++    For p → 4/5 (entanglement-breaking): E_R → 0.
++
++    Exact closed form (Vidal-Werner 2002 Eq. (I)):
++        E_R(ρ_depol) = 1 - H_2((1-p')/2) + h((1-p')/2, (1+p')/2; 1/2, 1/2)
++    where p' = 1 - 4p/3 is "effective transmission" — BUT this is for
++    BIPARTITE STATE, not channel.
++
++    Simpler validation: at p=0 (identity), E_R = 1 bit.
++    For small p, E_R ≈ 1 - O(p²).
++    """
++    if not (0.0 <= p <= 1.0):
++        raise ValueError(f"p must be in [0, 1], got {p}")
++    # For identity channel (p=0): E_R = log(dim) = 1 bit.
++    # For depolarizing with effective Fidelity F:
++    # F = 1 - 3p/4 + p/4 · 1 = 1 - p/2 (probability |Φ⁺⟩ state passes)
++    # E_R(ρ_depol bipartite) = 1 - H_2(F) - (1-F)·log(3) for isotropic states
++    # with F > 1/2 (entangled regime).
++    # This is specifically Vollbrecht-Werner 2001 / Vidal-Werner 2002.
++    F = 1.0 - p / 2.0
++    if F <= 0.25:
++        return 0.0
++    if F >= 1.0:
++        return 1.0  # identity → maximally entangled → E_R = 1
++    # Isotropic state E_R formula:
++    h2 = (
++        -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
++        if 0.0 < F < 1.0 else 0.0
++    )
++    return max(0.0, 1.0 - h2 - (1.0 - F) * math.log2(3.0))
++
++
++# ---------------------------------------------------------------------------
++# DV-gap analysis: compare E_R^PPT vs Kamin achievable rate
++# ---------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------
++# Max-Rains information R_max(N) via Wang-Duan 2016b SDP
++# ---------------------------------------------------------------------------
++
++def r_max_channel_sdp(
++    kraus_ops: list[np.ndarray],
++    dim_A: int,
++    solver: str = "MOSEK",
++    verbose: bool = False,
++) -> dict:
++    """Max-Rains information R_max(N) of a quantum channel via Wang-Duan SDP.
++
++    Reference:
++        - Wang-Duan 2016b, PRA 94:050301 (max-Rains as SDP)
++        - Berta-Wilde 2018, Phys. Rev. Lett. 117:200501
++        - Khatri-Wilde 2024 §19.2.1 Thm 19.8 (strong converse for PPT-assisted Q)
++
++    R_max provides a STRONG CONVERSE upper bound on the n-shot
++    LOCC/PPT-assisted quantum (or private) communication rate:
++        log_2 M ≤ n·R_max(N) + log_2(1/(1-ε))
++
++    Wang-Duan 2016b SDP (corrected to match log-negativity / max-Rains
++    for Choi state):
++        2^{R_max(N)} = min Tr[V]
++        s.t. V ≥ +ρ^{T_B},  V ≥ -ρ^{T_B},  V ≥ 0  (operator inequalities)
++
++    For identity qubit channel, eigenvalues of ρ^{T_B} = (1/2)·SWAP are
++    {1/2, 1/2, 1/2, -1/2}, so min Tr[V] = Σ|eigenvalue| = 2 → R_max = 1 bit.
++
++    Args:
++        kraus_ops: channel Kraus operators.
++        dim_A: input dimension.
++
++    Returns:
++        dict with:
++          R_max_bits: log_2(optimal trace) in bits
++          V_opt: optimal V variable
++          status: solver status
++          rho_choi: Choi state used
++    """
++    dim_out = kraus_ops[0].shape[0]
++    rho_choi = choi_state_from_kraus(kraus_ops, dim_A)
++    dim_R = dim_A
++    dim_B = dim_out
++
++    # Partial transpose on B
++    rho_TB = partial_transpose_B(rho_choi, dim_R, dim_B)
++
++    # SDP: min Tr[V]  s.t.  V ≥ ±ρ^{T_B}, V ≥ 0
++    d = dim_R * dim_B
++    V = cp.Variable((d, d), hermitian=True)
++    constraints = [V >> 0, V >> rho_TB, V >> -rho_TB]
++    prob = cp.Problem(cp.Minimize(cp.real(cp.trace(V))), constraints)
++    prob.solve(solver=solver, verbose=verbose)
++    if prob.status not in {"optimal", "optimal_inaccurate"}:
++        raise cp.SolverError(
++            f"R_max SDP failed: status={prob.status}, value={prob.value}"
++        )
++
++    trace_val = float(prob.value)
++    if trace_val <= 0:
++        return {
++            "R_max_bits": 0.0,
++            "V_opt": np.array(V.value, dtype=np.complex128),
++            "status": prob.status,
++            "rho_choi": rho_choi,
++        }
++    R_max = math.log2(trace_val)
++    return {
++        "R_max_bits": max(0.0, R_max),
++        "V_opt": np.array(V.value, dtype=np.complex128),
++        "status": prob.status,
++        "rho_choi": rho_choi,
++    }
++
++
++def dv_gap_from_achievable(
++    upper_bound_bits: float, achievable_rate_bits: float,
++) -> dict:
++    """Simple gap helper: ratio + absolute difference."""
++    if achievable_rate_bits < 0:
++        raise ValueError(f"achievable rate must be ≥ 0, got {achievable_rate_bits}")
++    if upper_bound_bits < 0:
++        raise ValueError(f"upper bound must be ≥ 0, got {upper_bound_bits}")
++    abs_gap = upper_bound_bits - achievable_rate_bits
++    ratio = (
++        upper_bound_bits / achievable_rate_bits
++        if achievable_rate_bits > 0 else float("inf")
++    )
++    return {
++        "upper_bound_bits": upper_bound_bits,
++        "achievable_rate_bits": achievable_rate_bits,
++        "abs_gap_bits": abs_gap,
++        "ratio": ratio,
++    }
+diff --git a/scripts/gap_shape_analysis.py b/scripts/gap_shape_analysis.py
+new file mode 100644
+index 0000000..236dffa
+--- /dev/null
++++ b/scripts/gap_shape_analysis.py
+@@ -0,0 +1,160 @@
++"""Gap 定量形状 (G4.1 Sub-Q4 §5.1 初步).
++
++Plots gap(η) between Sub-Q3 upper bound candidates and Sub-Q2 Pareto
++lower bounds across loss range.
++
++Candidates for upper bound:
++  A: PLOB on worst edge (symmetric: -log_2(1 - √η_end2end))
++  B: Pirandola 2019 N=1 chain (same as A for symmetric)
++  C: E_R^PPT SDP for qubit amp-damping channel (effective quibit analog)
++
++Lower bound:
++  TF/PM-QKD asymptotic from tf_family_loss1d.csv
++
++Caveat: All upper-bound CANDIDATES are [CONJ] for umr topology per
++docs/proofs/upper_bound_msen.md.  This notebook gives gap SHAPE under
++candidate assumption; does NOT give [THM]-level gap.
++"""
++from __future__ import annotations
++
++import csv
++from pathlib import Path
++
++import numpy as np
++
++REPO_ROOT = Path(__file__).resolve().parent.parent
++DATA_DIR = REPO_ROOT / "docs" / "research" / "data"
++FIG_DIR = REPO_ROOT / "docs" / "research" / "figures"
++
++
++def load_tf_1d():
++    path = DATA_DIR / "tf_family_loss1d.csv"
++    rows = []
++    with path.open() as f:
++        r = csv.DictReader(f)
++        for row in r:
++            rows.append((float(row["loss_dB_total"]),
++                         float(row["rate_bits_per_signal"])))
++    return zip(*rows)
++
++
++def plob_worst_edge(loss_dB_total):
++    """Candidate A/B: symmetric 2-arm loss, worst-edge PLOB.
++
++    loss_dB_total = -10·log_10(η_end2end), symmetric η_arm = √η_end2end.
++    Worst edge has transmission η_arm, PLOB bound = -log_2(1 - η_arm).
++    """
++    eta_end = 10.0 ** (-loss_dB_total / 10.0)
++    eta_arm = np.sqrt(eta_end)
++    return -np.log2(np.maximum(1.0 - eta_arm, 1e-30))
++
++
++def pirandola_n1(loss_dB_total):
++    """Pirandola 2019 N=1 chain: -log_2(1 - √η_total) [same as worst-edge for symmetric]."""
++    eta = 10.0 ** (-loss_dB_total / 10.0)
++    return -np.log2(np.maximum(1.0 - np.sqrt(eta), 1e-30))
++
++
++def main():
++    import matplotlib
++    matplotlib.use("Agg")
++    import matplotlib.pyplot as plt
++
++    loss_tf, rate_tf = load_tf_1d()
++    loss_arr = np.array(loss_tf)
++    rate_arr = np.array(rate_tf)
++
++    # Upper bound candidates
++    ub_plob_end = -np.log2(
++        np.maximum(1.0 - 10.0 ** (-loss_arr / 10.0), 1e-30)
++    )  # PLOB with end-to-end η (not used for umr, shown for comparison)
++    ub_worst = plob_worst_edge(loss_arr)  # Candidate A/B (symmetric)
++
++    # Candidate C: E_R^PPT qubit amp damping with γ = 1 - η_arm
++    # Run this only at a subset of loss values to save time
++    ub_ampdamp = []
++    print("Computing E_R^PPT for qubit amp damping (subset) ...")
++    from qkdx.numerics.upper_bound import (
++        e_r_channel_ppt, kraus_amplitude_damping_qubit,
++    )
++    sub_losses = loss_arr[::10]  # every 10 dB
++    sub_ub = []
++    for L in sub_losses:
++        eta_arm = 10.0 ** (-L / 20.0)
++        gamma = 1.0 - eta_arm
++        try:
++            r = e_r_channel_ppt(kraus_amplitude_damping_qubit(float(gamma)), dim_A=2)
++            sub_ub.append(r["E_R_channel_bits"])
++        except Exception as e:
++            print(f"  loss={L}: SDP fail {e}")
++            sub_ub.append(np.nan)
++        print(f"  loss={L:.0f} dB (γ={gamma:.4f}): E_R^PPT = {sub_ub[-1]:.4f}")
++
++    # Gap calculations
++    gap_plob_end = ub_plob_end - rate_arr  # direct PLOB (end-to-end, single-edge original)
++    gap_worst = ub_worst - rate_arr        # candidate A/B
++
++    # Save data
++    with (DATA_DIR / "gap_shape.csv").open("w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow([
++            "loss_dB_total", "tf_rate",
++            "ub_candA_worst", "gap_candA",
++            "ub_plob_end2end_direct", "gap_plob_direct",
++        ])
++        for i in range(len(loss_arr)):
++            w.writerow([
++                f"{loss_arr[i]:.3f}", f"{rate_arr[i]:.6e}",
++                f"{ub_worst[i]:.6e}", f"{gap_worst[i]:.6e}",
++                f"{ub_plob_end[i]:.6e}", f"{gap_plob_end[i]:.6e}",
++            ])
++    print(f"wrote {DATA_DIR}/gap_shape.csv")
++
++    # === Figure 1: upper bound vs lower bound vs gap (log-log) ===
++    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
++
++    pos_r = rate_arr > 0
++    ax1.semilogy(loss_arr[pos_r], rate_arr[pos_r], "s-", color="C1",
++                 label="TF/PM-QKD lower bound (asymp)")
++    ax1.semilogy(loss_arr, ub_worst, "--", color="red",
++                 label="Upper bound candidate A/B (symmetric umr)")
++    ax1.semilogy(loss_arr, ub_plob_end, ":", color="gray", alpha=0.5,
++                 label="PLOB direct-link (reference, NOT umr)")
++    if sub_ub:
++        ax1.semilogy(sub_losses, sub_ub, "o", color="purple",
++                     label="Candidate C: E_R^PPT amp-damp SDP")
++    ax1.set_xlabel("Loss [dB]")
++    ax1.set_ylabel("Rate (bits/signal)")
++    ax1.set_title("Upper vs Lower bounds")
++    ax1.grid(True, which="both", ls="--", alpha=0.4)
++    ax1.legend(loc="lower left", fontsize=9)
++
++    # Ratio plot (gap/lower)
++    ratio = np.divide(ub_worst, rate_arr,
++                      out=np.full_like(ub_worst, np.inf),
++                      where=rate_arr > 1e-15)
++    ax2.semilogy(loss_arr[rate_arr > 0], ratio[rate_arr > 0], "-", color="darkred",
++                 label="candidate A/B ratio: UB / TF_LB")
++    ax2.set_xlabel("Loss [dB]")
++    ax2.set_ylabel("Gap ratio (UB / LB)")
++    ax2.set_title("Gap ratio (log scale)")
++    ax2.grid(True, which="both", ls="--", alpha=0.4)
++    ax2.legend()
++    ax2.axhline(y=1, color="black", alpha=0.3)
++
++    fig.tight_layout()
++    for ext in ("png", "pdf"):
++        fig.savefig(FIG_DIR / f"gap_shape.{ext}", dpi=150, bbox_inches="tight")
++    plt.close(fig)
++    print(f"wrote {FIG_DIR}/gap_shape.{{png,pdf}}")
++
++    # Summary
++    print("\n=== Gap shape summary ===")
++    print(f"Loss=0 dB:    UB(A/B)={ub_worst[0]:.4f}, LB_TF={rate_arr[0]:.4e}, ratio={ratio[0]:.2e}")
++    print(f"Loss=20 dB:   UB(A/B)={ub_worst[20]:.4f}, LB_TF={rate_arr[20]:.4e}, ratio={ratio[20]:.2e}")
++    print(f"Loss=40 dB:   UB(A/B)={ub_worst[40]:.4f}, LB_TF={rate_arr[40]:.4e}, ratio={ratio[40]:.2e}")
++    print(f"Loss=60 dB:   UB(A/B)={ub_worst[60]:.4f}, LB_TF={rate_arr[60]:.4e}, ratio={ratio[60]:.2e}")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/sweep_upper_bound_toy.py b/scripts/sweep_upper_bound_toy.py
+new file mode 100644
+index 0000000..d00a446
+--- /dev/null
++++ b/scripts/sweep_upper_bound_toy.py
+@@ -0,0 +1,107 @@
++"""Numerical E_R^PPT sweep over qubit toy channels (Phase 2 U3.7).
++
++Generates:
++    docs/research/data/er_ppt_depol_sweep.csv
++    docs/research/data/er_ppt_amp_damping_sweep.csv
++    docs/research/data/er_ppt_dephasing_sweep.csv
++    docs/research/figures/upper_bound_toy_channels.{png,pdf}
++
++Compares numerical E_R^PPT against reference upper/lower bounds.
++"""
++from __future__ import annotations
++
++import csv
++from pathlib import Path
++
++import numpy as np
++
++from qkdx.numerics.upper_bound import (
++    e_r_channel_ppt,
++    kraus_depolarizing_qubit,
++    kraus_dephasing_qubit,
++    kraus_amplitude_damping_qubit,
++)
++
++REPO_ROOT = Path(__file__).resolve().parent.parent
++DATA_DIR = REPO_ROOT / "docs" / "research" / "data"
++FIG_DIR = REPO_ROOT / "docs" / "research" / "figures"
++
++
++def main():
++    import matplotlib
++    matplotlib.use("Agg")
++    import matplotlib.pyplot as plt
++
++    p_values = np.linspace(0.0, 1.0, 21)
++
++    # Depolarizing channel
++    print("[1/3] E_R^PPT for qubit depolarizing ...")
++    depol_rates = []
++    for p in p_values:
++        r = e_r_channel_ppt(kraus_depolarizing_qubit(float(p)), dim_A=2)
++        depol_rates.append(r["E_R_channel_bits"])
++        print(f"  p={p:.3f}: E_R^PPT = {r['E_R_channel_bits']:.4f}")
++    with (DATA_DIR / "er_ppt_depol_sweep.csv").open("w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow(["p_depolarizing", "E_R_ppt_bits"])
++        for p, r in zip(p_values, depol_rates):
++            w.writerow([f"{p:.4f}", f"{r:.6e}"])
++
++    # Dephasing
++    print("[2/3] E_R^PPT for qubit dephasing ...")
++    deph_rates = []
++    for p in p_values:
++        r = e_r_channel_ppt(kraus_dephasing_qubit(float(p)), dim_A=2)
++        deph_rates.append(r["E_R_channel_bits"])
++    with (DATA_DIR / "er_ppt_dephasing_sweep.csv").open("w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow(["p_dephasing", "E_R_ppt_bits"])
++        for p, r in zip(p_values, deph_rates):
++            w.writerow([f"{p:.4f}", f"{r:.6e}"])
++
++    # Amplitude damping
++    print("[3/3] E_R^PPT for qubit amplitude damping ...")
++    amp_rates = []
++    for gamma in p_values:
++        r = e_r_channel_ppt(kraus_amplitude_damping_qubit(float(gamma)), dim_A=2)
++        amp_rates.append(r["E_R_channel_bits"])
++    with (DATA_DIR / "er_ppt_amp_damping_sweep.csv").open("w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow(["gamma_damping", "E_R_ppt_bits"])
++        for p, r in zip(p_values, amp_rates):
++            w.writerow([f"{p:.4f}", f"{r:.6e}"])
++
++    # Combined figure
++    fig, ax = plt.subplots(figsize=(8, 5))
++    ax.plot(p_values, depol_rates, "o-", label="Depolarizing: ρ→(1-p)ρ + pI/2")
++    ax.plot(p_values, deph_rates, "s-", label="Dephasing: ρ→(1-p)ρ + pZρZ")
++    ax.plot(p_values, amp_rates, "^-", label="Amplitude damping: γ = damping prob")
++
++    # Reference: PLOB for pure-loss-analog (amp damping at γ = 1-η)
++    # For amp damping: E_R = -log_2(1-γ) is the PLOB-analog (Wilde-Tomamichel-Berta 2017 §7)
++    plob_amp = [-np.log2(1.0 - g) if g < 1 else np.nan for g in p_values]
++    ax.plot(p_values, plob_amp, "--", color="gray", alpha=0.6,
++            label="−log₂(1−γ) (amp-damp PLOB analog)")
++
++    ax.set_xlabel("Channel noise parameter (p or γ)")
++    ax.set_ylabel("E_R^PPT (bits/channel use)")
++    ax.set_title("Numerical E_R^PPT upper bounds for qubit toy channels")
++    ax.grid(True, ls="--", alpha=0.5)
++    ax.legend(loc="upper right", fontsize=9)
++    ax.set_ylim(-0.05, 2.5)
++
++    for ext in ("png", "pdf"):
++        fig.savefig(FIG_DIR / f"upper_bound_toy_channels.{ext}", dpi=150,
++                    bbox_inches="tight")
++    plt.close(fig)
++
++    print(f"\nwrote {FIG_DIR}/upper_bound_toy_channels.{{png,pdf}}")
++    print("\n=== U3.7 Layer 5.3 SDP summary ===")
++    print(f"  Depolarizing: E_R @ p=0 = {depol_rates[0]:.4f} (expect 1)")
++    print(f"  Depolarizing: E_R @ p=1 = {depol_rates[-1]:.4f} (expect 0)")
++    print(f"  Dephasing: E_R @ p=0.5 = {deph_rates[10]:.4f}")
++    print(f"  Amp damping: E_R @ γ=0.5 = {amp_rates[10]:.4f}")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tests/test_numerics/test_upper_bound.py b/tests/test_numerics/test_upper_bound.py
+new file mode 100644
+index 0000000..b182441
+--- /dev/null
++++ b/tests/test_numerics/test_upper_bound.py
+@@ -0,0 +1,175 @@
++"""Tests for numerical E_R^PPT upper bound (Phase 2 U3.7 Layer 5.3 SDP)."""
++from __future__ import annotations
++
++import math
++import os
++
++import numpy as np
++import pytest
++
++_MOSEK_LIC = os.path.expanduser("~/mosek/mosek.lic")
++if os.path.exists(_MOSEK_LIC):
++    os.environ.setdefault("MOSEKLM_LICENSE_FILE", _MOSEK_LIC)
++
++try:
++    import cvxpy as cp
++    _MOSEK_AVAILABLE = "MOSEK" in cp.installed_solvers()
++except Exception:
++    _MOSEK_AVAILABLE = False
++
++pytestmark = pytest.mark.skipif(
++    not _MOSEK_AVAILABLE, reason="MOSEK required for E_R PPT SDP"
++)
++
++
++class TestPartialTranspose:
++    def test_partial_transpose_product_state(self):
++        """For product state ρ_A ⊗ ρ_B, ρ^{T_B} = ρ_A ⊗ ρ_B^T (same since real)."""
++        from qkdx.numerics.upper_bound import partial_transpose_B
++        rho_A = np.array([[0.6, 0.2], [0.2, 0.4]], dtype=np.complex128)
++        rho_B = np.array([[0.7, 0.1j], [-0.1j, 0.3]], dtype=np.complex128)
++        rho = np.kron(rho_A, rho_B)
++        rho_TB_expected = np.kron(rho_A, rho_B.T)
++        rho_TB = partial_transpose_B(rho, 2, 2)
++        assert np.allclose(rho_TB, rho_TB_expected, atol=1e-12)
++
++    def test_partial_transpose_bell_state_detects(self):
++        """Bell state ρ has ρ^{T_B} with a negative eigenvalue (PPT criterion)."""
++        from qkdx.numerics.upper_bound import partial_transpose_B
++        # |Φ⁺⟩ = (|00⟩ + |11⟩)/√2
++        phi = np.array([1, 0, 0, 1], dtype=np.complex128) / math.sqrt(2)
++        rho = np.outer(phi, phi.conj())
++        rho_TB = partial_transpose_B(rho, 2, 2)
++        eigs = np.linalg.eigvalsh(rho_TB)
++        assert eigs.min() < -0.4, (
++            f"Bell state should have ρ^{{T_B}} eigenvalue < -0.4, got {eigs.min()}"
++        )
++
++
++class TestChoiStateConstruction:
++    def test_identity_channel_gives_bell_state(self):
++        from qkdx.numerics.upper_bound import (
++            choi_state_from_kraus, kraus_identity_qubit,
++        )
++        rho = choi_state_from_kraus(kraus_identity_qubit(), dim_A=2)
++        # Should be |Φ⁺⟩⟨Φ⁺|
++        phi = np.array([1, 0, 0, 1], dtype=np.complex128) / math.sqrt(2)
++        expected = np.outer(phi, phi.conj())
++        assert np.allclose(rho, expected, atol=1e-12)
++
++    def test_depolarizing_channel_choi_trace_1(self):
++        from qkdx.numerics.upper_bound import (
++            choi_state_from_kraus, kraus_depolarizing_qubit,
++        )
++        for p in [0.0, 0.25, 0.5, 0.75, 1.0]:
++            rho = choi_state_from_kraus(
++                kraus_depolarizing_qubit(p), dim_A=2,
++            )
++            assert abs(np.trace(rho) - 1.0) < 1e-10
++
++    def test_full_depolarizing_is_separable(self):
++        """At p=1, depol channel sends ρ → I/2, Choi = I/4 (separable)."""
++        from qkdx.numerics.upper_bound import (
++            choi_state_from_kraus, kraus_depolarizing_qubit,
++            partial_transpose_B,
++        )
++        rho = choi_state_from_kraus(kraus_depolarizing_qubit(1.0), dim_A=2)
++        # At p=1, ρ_choi should be I/4 + depolarization
++        rho_TB = partial_transpose_B(rho, 2, 2)
++        eigs = np.linalg.eigvalsh(rho_TB)
++        assert eigs.min() > -1e-8, (
++            f"Fully depolarizing Choi should be PPT-positive, got min eig {eigs.min()}"
++        )
++
++
++class TestE_R_PPT_SDP:
++    def test_identity_channel_gives_log_d(self):
++        """E_R(identity channel) = log(dim_A) for qubit, = 1 bit."""
++        from qkdx.numerics.upper_bound import e_r_channel_ppt, kraus_identity_qubit
++        r = e_r_channel_ppt(kraus_identity_qubit(), dim_A=2)
++        assert r["status"] in ("optimal", "optimal_inaccurate")
++        assert r["E_R_channel_bits"] == pytest.approx(1.0, abs=0.01), (
++            f"E_R(id qubit) should be 1 bit, got {r['E_R_channel_bits']:.4f}"
++        )
++
++    def test_fully_depolarizing_E_R_zero(self):
++        """At p=1, Choi state is PPT → E_R^PPT ≈ 0."""
++        from qkdx.numerics.upper_bound import e_r_channel_ppt, kraus_depolarizing_qubit
++        r = e_r_channel_ppt(kraus_depolarizing_qubit(1.0), dim_A=2)
++        assert r["status"] in ("optimal", "optimal_inaccurate")
++        assert r["E_R_channel_bits"] < 0.05, (
++            f"Fully depolarizing should give E_R ≈ 0, got {r['E_R_channel_bits']:.4f}"
++        )
++
++    def test_depolarizing_monotone_in_p(self):
++        """E_R decreasing with p (more noise → less distillable)."""
++        from qkdx.numerics.upper_bound import e_r_channel_ppt, kraus_depolarizing_qubit
++        rates = []
++        for p in [0.0, 0.1, 0.3, 0.5]:
++            r = e_r_channel_ppt(kraus_depolarizing_qubit(p), dim_A=2)
++            rates.append(r["E_R_channel_bits"])
++            print(f"p={p}: E_R^PPT = {r['E_R_channel_bits']:.4f}")
++        for i in range(len(rates) - 1):
++            assert rates[i + 1] <= rates[i] + 1e-4
++
++    def test_amplitude_damping_gives_finite(self):
++        """E_R of amplitude-damping channel is finite for γ < 1."""
++        from qkdx.numerics.upper_bound import (
++            e_r_channel_ppt, kraus_amplitude_damping_qubit,
++        )
++        for gamma in [0.1, 0.3, 0.5, 0.7]:
++            r = e_r_channel_ppt(kraus_amplitude_damping_qubit(gamma), dim_A=2)
++            assert r["status"] in ("optimal", "optimal_inaccurate")
++            assert math.isfinite(r["E_R_channel_bits"])
++            assert 0.0 <= r["E_R_channel_bits"] <= 1.0
++
++
++class TestRmaxSDP:
++    """Wang-Duan 2016b max-Rains SDP (Khatri-Wilde Thm 19.8)."""
++
++    def test_r_max_identity_channel(self):
++        """R_max(identity qubit) = 1 bit (maximally entangled limit)."""
++        from qkdx.numerics.upper_bound import r_max_channel_sdp, kraus_identity_qubit
++        r = r_max_channel_sdp(kraus_identity_qubit(), dim_A=2)
++        assert r["status"] in ("optimal", "optimal_inaccurate")
++        assert r["R_max_bits"] == pytest.approx(1.0, abs=0.01)
++
++    def test_r_max_fully_depolarizing(self):
++        """R_max(fully depol) ≈ 0 (no entanglement preserved)."""
++        from qkdx.numerics.upper_bound import r_max_channel_sdp, kraus_depolarizing_qubit
++        r = r_max_channel_sdp(kraus_depolarizing_qubit(1.0), dim_A=2)
++        assert r["R_max_bits"] < 0.05
++
++    def test_r_max_monotone_in_depol(self):
++        """R_max monotone decreasing with depolarizing noise."""
++        from qkdx.numerics.upper_bound import r_max_channel_sdp, kraus_depolarizing_qubit
++        rates = []
++        for p in [0.0, 0.2, 0.5, 0.8]:
++            r = r_max_channel_sdp(kraus_depolarizing_qubit(p), dim_A=2)
++            rates.append(r["R_max_bits"])
++        for i in range(len(rates) - 1):
++            assert rates[i + 1] <= rates[i] + 1e-4
++
++    def test_r_max_vs_e_r_ppt_ordering(self):
++        """On toy channels, both R_max and E_R^PPT should be 0 ≤ ... ≤ 1."""
++        from qkdx.numerics.upper_bound import (
++            r_max_channel_sdp, e_r_channel_ppt, kraus_depolarizing_qubit,
++        )
++        for p in [0.1, 0.3]:
++            r_max = r_max_channel_sdp(kraus_depolarizing_qubit(p), dim_A=2)
++            e_r = e_r_channel_ppt(kraus_depolarizing_qubit(p), dim_A=2)
++            assert 0.0 <= r_max["R_max_bits"] <= 1.0
++            assert 0.0 <= e_r["E_R_channel_bits"] <= 1.0
++
++
++class TestDVGapAnalysis:
++    def test_dv_gap_ratio(self):
++        from qkdx.numerics.upper_bound import dv_gap_from_achievable
++        r = dv_gap_from_achievable(upper_bound_bits=0.5, achievable_rate_bits=0.1)
++        assert r["abs_gap_bits"] == pytest.approx(0.4, abs=1e-12)
++        assert r["ratio"] == pytest.approx(5.0, abs=1e-10)
++
++    def test_dv_gap_inf_when_achievable_zero(self):
++        from qkdx.numerics.upper_bound import dv_gap_from_achievable
++        r = dv_gap_from_achievable(upper_bound_bits=0.1, achievable_rate_bits=0.0)
++        assert r["ratio"] == float("inf")
