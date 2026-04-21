@@ -68,5 +68,52 @@
 
 ## Pending Codex decisions
 
-- **Werner R2**: verdict pending → determines T1 next step (FINALIZE at [CONJ] or R3 FIX)
-- **ADR 0001**: Codex proxy decision pending launch → determines T2 approach (split vs attack)
+- **MQ audit**: review pending (Agent 1 xhigh running) → verify no overclaim in [SYN] aggregate doc
+
+## Day 1 summary (2026-04-22)
+
+**Commits**: 13 commits since session start
+- `e2b30da` T3 S2.5 2a Limitations
+- `20d99d4` T1.3 Werner v0.1 (REJECTED)
+- `fb483b4` T1.4 R2 Werner v0.2 (REJECTED — classical/quantum error)
+- `e7ad0c7` ADR 0001 T2 split draft
+- `6aea25a` Session log update
+- `f50bfd8` T1.4 R3 Werner v0.3 (classical raw-key equivalence rewrite)
+- `9ede1fd` T1.4 R4 downstream fixes
+- `5dc7733` T1 FINALIZE
+- `fbdaee1` ADR 0001 Accepted via Codex proxy BINDING
+- `49486eb` Sub-Q main question interim audit [SYN]
+
+**Codex runs**: 10 (Werner R1/R2/R3 + ADR 0001 + MQ audit)
+
+**Rigor discipline**:
+- All outputs at [CONJ] or [SYN]; no [COROLLARY]/[THM] upgrades
+- C1+C2+C3 invariant preserved (per CLAUDE.md R0.2)
+- dev-reviewer 走 max 4 rounds on Werner (3-round STOP rule 不触发 per Agent 1 R3)
+- ADR 0001 as process-level binding via Codex proxy (2026-04-21 user delegation)
+
+**Research progress snapshot**:
+- T1 (Werner reduction) FINALIZED at [CONJ] v0.3 — pending user C1 + C2
+- T2 split into T2-A (proxy milestone, in queue) + T2-B (deferred to Phase 2)
+- T3 (2a records) done
+- T4 (literature stack) audit verified at required level
+- Sub-Q1 ✅ CLOSED; Sub-Q2 mostly; Sub-Q3 path γ [CONJ]; Sub-Q4 blocked
+
+**Blockers**:
+- None at AI-autonomous level; all upgrades require user C1 + C2
+- T2-A (Kamin qubit Fig.1 < 5%): 1-2 weeks of SDP tuning; not started (deferred to save autonomous budget + reduce risk)
+- G4.2 Sub-Q4 attribution: blocked on umr upper bound upgrade (needs user)
+
+**Files created/modified this session (unique)**:
+- NEW docs/AUTONOMOUS_SESSION_2026-04-22_LOG_v2.md
+- NEW docs/proofs/mdi_werner_reduction.md (v0.1 → v0.2 → v0.3)
+- NEW docs/workflow/werner-reduction/ (workflow-log, patches, 3 rounds of review)
+- NEW docs/adr/0001-kamin-fig3-tolerance-split.md
+- NEW docs/workflow/adr-0001-proxy/
+- NEW docs/findings/main_question_interim_status_2026-04-22.md
+- NEW docs/workflow/main-question-audit/
+- MODIFIED docs/literature/MDI-QKD.md (Table I basis-dependent correction)
+- MODIFIED qkdx/numerics/kamin_sdp_mdi.py (docstring rewrite)
+- MODIFIED docs/research/kamin_fig1_report.md (§6.1 user 2a signoff record)
+- MODIFIED docs/AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md (T2 split note)
+- UPDATED ~/.claude/.../memory/feedback_autonomous_delegation_2026-04-21.md + MEMORY.md index
