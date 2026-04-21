@@ -57,9 +57,22 @@ MDI-QKD 把**测量设备移出安全模型**:Alice/Bob 只做制备,Charlie 做
 
 ### 3.2 Charlie 成功 Bell 测量的效果
 
-$|\Phi^+\rangle_{AA'} \otimes |\Phi^+\rangle_{BB'}$ 分解后包含 $|\Psi^+\rangle_{A'B'} \otimes \dots$ 等项。Charlie 在 $A'B'$ 上测得 $|\Psi^+\rangle$ ⇒ 塌缩后 $(AB)$ 的态是某个纠缠态,具体依赖 Bell 选择。
+$|\Phi^+\rangle_{AA'} \otimes |\Phi^+\rangle_{BB'}$ 分解后包含 $|\Psi^+\rangle_{A'B'} \otimes \dots$ 等项。Charlie 在 $A'B'$ 上测得 $|\Psi^\pm\rangle$ ⇒ 塌缩后 $(AB)$ 的态是对应 Bell-centered 纠缠态。
 
-具体:对于 Charlie 测到 $|\Psi^-\rangle$ 的情形($\Psi^-$ 是最易产生的 Bell 态,因为 HOM 干涉),塌缩后的 $(AB)$ 态是 $|\Psi^-\rangle_{AB}$(单重态) —— Alice 与 Bob 在同基下 **反关联**(类似 Ekert91)。因此**双方一方需取非运算**后得到 correlated raw key。
+具体:对于 Charlie 测到 $|\Psi^-\rangle$ 的情形,塌缩后的 $(AB)$ 态是 $|\Psi^-\rangle_{AB}$(单重态) —— Alice 与 Bob 在同基下 **反关联**。$|\Psi^+\rangle$ outcome 类似,塌缩到 $|\Psi^+\rangle_{AB}$。
+
+**注**:linear-optic BSM **物理上只能 unambiguously 识别** $|\Psi^\pm\rangle$ 两个 Bell outcome;$|\Phi^\pm\rangle$ outcome 使两光子出现在同一探测器,与 vacuum + 2-photon 事件混淆,故 Lo-Curty-Qi 2012 Table I **不包含** $\Phi^\pm$ outcome。
+
+**Table I 的 bit-flip 规则(Lo-Curty-Qi 2012 PDF page 2,direct reading)**:
+
+| Alice-Bob 基 | BSM outcome $\|\Psi^-\rangle$ | BSM outcome $\|\Psi^+\rangle$ |
+|---|---|---|
+| **Rectilinear**(Z 基) | bit flip | bit flip |
+| **Diagonal**(X 基) | bit flip | **no flip**(例外) |
+
+**重要区分**:Table I 的 "bit flip" 是对 **classical raw-key bit 做 XOR**(**经典 post-processing**),**不是** quantum state 上的 Pauli 算子。这两者**物理意义不同**:经典 flip 改变 raw-key sampling 的统计分布,但 quantum state $|\Psi^\pm\rangle_{AB}$ **保持不变**。
+
+**classical flip 的等效效果**:使各 $\Psi^\pm$ outcome 经 Table I 修正后 raw-key agreement 统计**与** $|\Phi^+\rangle$-centered 情形相同(数值上 QBER 一致)。形式化证明见 [docs/proofs/mdi_werner_reduction.md §7](../proofs/mdi_werner_reduction.md)。
 
 ### 3.3 MS-EB 五元组 $\Pi_{\text{MDI}} = (\mathcal{P}, \mathcal{E}, \mathcal{A}, \mathcal{T}, \mathcal{K})$
 
