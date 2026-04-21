@@ -16,34 +16,15 @@
 
 ## 1. 今天的新增实质性产出（按重要性）
 
-### 1.1 **path γ v0.2 → v0.3 RETRACTED**
+### 1.1 **path γ v0.2 → v0.3 RETRACTED 【HISTORICAL RECORD】**
 
-**v0.2 试图升级到 [COROLLARY pending sign-off] → Claude audit verdict UNSOUND-RETRACT → 同日撤回到 [CONJ] (v0.3)**
+**状态**：**[CONJ]**（v0.3 最终版；v0.2 "adversarial containment" 论证被 Claude + Codex 两 reviewer 独立 UNSOUND 拒绝，已撤回）。
 
-**文件**：[docs/proofs/umr_data_processing_gamma.md](proofs/umr_data_processing_gamma.md) v0.2 (commit 9402e44)
+**当前正式立场**：见 [docs/proofs/umr_data_processing_gamma.md](proofs/umr_data_processing_gamma.md) v0.3 §0 —— umr 上界仍 **[CONJ]**，与 FINDINGS v2 §1.1 一致。**不含** "若通过签字升级" 的 cascade。
 
-**核心论证**（不再是 v0.1 的三 lemma L1/L2/L3 堆叠，改为 **adversarial containment 单步**）：
+**v0.2 的 adversarial containment 论证 NOT the key tool**：两 reviewer 指出该简化是 Log 07 §4.3 明确警告的 monotonicity 陷阱；Log 07 要求三条 lemma 明写（协议嵌入 + 安全归约 + rate 定义对接），不能用 set-inclusion shortcut 绕过。
 
-1. **观察**（**[THM]**，严格来自 Renner 2005 thesis + Portmann-Renner 2022）：若 adversary 集合 $\mathcal{A}_1 \subseteq \mathcal{A}_2$，则 $R(\Pi; \mathcal{A}_2) \leq R(\Pi; \mathcal{A}_1)$。
-
-2. **关键事实**（用户待审）：$\mathcal{T}_\text{umr}$ 的 Eve 集合 $\mathcal{A}_\text{umr}$ **严格包含** Pirandola 2019 trusted-relay 模型的 Eve 集合 $\mathcal{A}_\text{tr}$。
-   - 证明：umr Eve 的合法操作 = (控 $\mathcal{N}_A, \mathcal{N}_B$ 环境) **+** (控 Charlie 操作) ⊇ Pirandola Eve 的 (控 $\mathcal{N}_A, \mathcal{N}_B$ 环境)
-   - umr Eve 可以**特例化**为"honest Charlie + 偷信道环境" = Pirandola Eve
-
-3. **应用**：同一协议 $\Pi$ 在 umr 下的 rate ≤ 在 Pirandola-trusted 下的 rate（因 Eve 更强 → rate 更低）
-
-4. **代入 Pirandola 2019 min-cut Thm**：在 trusted-relay 下 rate ≤ $\min(E_R(\mathcal{N}_A), E_R(\mathcal{N}_B))$ = $-\log_2(1-\min(\eta_A, \eta_B))$。
-
-**结论**：
-$$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \qquad \forall \Pi \in \mathcal{T}_\text{umr}$$
-
-**当前严谨性**：**[COROLLARY pending user sign-off on 关键事实 §2 的严格性]**（用户审阅 4-5 天工作量，详见 doc §5）
-
-**若通过签字升级**：
-- docs/proofs/upper_bound_msen.md 候选 A 从 [CONJ] → [COROLLARY]
-- FINDINGS v2 §1.1 "$R \leq 1.44\sqrt{\eta_{AB}}$ [CONJ]" → **[COROLLARY]**（对称情形）
-- docs/findings/gap_shape_g4_1.md gap 数值上界 → [COROLLARY]
-- **Sub-Q4 归因 A/B/C 可启动**
+**详细 v0.2 文本 + retraction rationale**：见 [umr_data_processing_gamma.md §-1 + §0](proofs/umr_data_processing_gamma.md)（v0.3 保留 v0.2 文本作 cautionary record，明确标 "已撤回，不代表项目立场"）+ [两份独立 audit](workflow/path-gamma-review/)。
 
 ---
 
@@ -129,46 +110,63 @@ $$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \qquad \forall \Pi \
 11. Kamin Eq. 38/39 精确 V² vs heuristic UB 差 100×（commit 50e4f25 closed）
 12. qubit Kamin ±6 dB 残余源于 Kamin 的 Frank-Wolfe 全 DoF g 迭代 vs 单次 SDP
 13. decoy Kamin asymptotic 20% offset 可接受；finite-key 3x ratio 主要来自 λ_EC
-14. adversarial containment 是 umr 上界继承的关键工具（vs 之前考虑的 L1/L2/L3 stacking）
+14. ~~adversarial containment 是 umr 上界继承的关键工具~~ **[RETRACTED 2026-04-21]** 经 Claude + Codex 两 reviewer 独立 UNSOUND 判定，adversarial containment 简化论证**不适用**于 umr 拓扑。Log 07 §4.3 坚持要求的三 lemma 明写（path α）或 "PLOB 单边 + data-processing 明写"（path γ 真版）才是正确工具
 
 ---
 
-## 3. 按 FINDINGS v2 红线的诚实声明
+## 3. 按 FINDINGS v2 红线 + CLAUDE.md R2 的诚实声明
 
 - **没有**把任何 [CONJ] 升级到 [THM]
 - **没有**把 AI 起草的 path γ 标记为用户已签字
 - **没有**在对外文档/发表格式中引用本项目的任何 [CONJ] 作为定理
-- 今天新增的 path γ v0.2 **明确**为 [COROLLARY pending user sign-off]，不是 [COROLLARY]
+- 今天尝试升级的 path γ v0.2 因 Claude + Codex 独立 UNSOUND 判定**已撤回到 [CONJ]** (v0.3, commit 6369e34)
+
+**Scope caveat**（Agent 2 holistic review 提出）：本 retraction 把 umr 上界状态**恢复** to FINDINGS v2 §1.1 的 **[CONJ]**（仅在放宽版 $\mathcal{T}_\text{umr}^\text{bosonic-asym}$ 下）。FINDINGS v2 明确保留 PROSPECTUS 原始 H1-H6 版本为 **[UNKNOWN]**；本 retraction **不** certify full H1-H6/composable rigor。
 
 ---
 
-## 4. 用户审阅优先级（若逐项处理）
+## 4. 用户审阅优先级（path γ v0.2 已 CLOSED — 不再作为 pending review 项）
 
-| # | 项目 | 重要性 | 工作量 |
-|---|---|---|---|
-| 1 | path γ v0.2 §2.1 关键事实严格性 | **最高**：决定情况 A 能否推进 | 2 天 |
-| 2 | path γ v0.2 §2.2 Step 1 adversarial containment | **最高**：主定理核心 | 1 天 |
-| 3 | path γ v0.2 §4 finite-blocklength 继承（WTB Thm 47） | 中 | 1 天 |
-| 4 | docs/AUTONOMOUS_SESSION_2026-04-21_LOG.md 历史记录 | 低（confirmatory） | 0.5 天 |
-| 5 | D.4 Kamin MDI virtual-EB reduction 的 Werner 假设 | 中 | 0.5 天 |
+**状态重置**（2026-04-21 retraction 后）：§1.1 列出的 path γ v0.2 三项审阅（§2.1 关键事实 / §2.2 Step 1 containment / §4 finite-blocklength 继承）已因 Claude + Codex 双独立 UNSOUND 判定而**全部 CLOSED**，不再挂在用户 queue 上。当前仅保留以下**非 path-γ** 性质的用户审阅事项：
 
-**总计用户审阅工作量**：4-5 个工作日
+| # | 项目 | 重要性 | 工作量 | 备注 |
+|---|---|---|---|---|
+| 1 | D.4 Kamin MDI virtual-EB reduction 的 Werner 假设 | 中 | 0.5 天 | 未被 retraction 涉及 |
+| 2 | qubit Kamin ±6 dB 残余（Frank-Wolfe vs 单次 SDP）接受决策 | 低 | 0.5 天 | 诊断已 commit，等用户签字确认 |
+| 3 | decoy Kamin finite-key 3x offset 接受决策 | 低 | 0.5 天 | 同上 |
+
+**总计用户审阅工作量**：1-1.5 个工作日（path γ v0.2 已 retracted，不再占据审阅带宽）
+
+**已关闭事项**（不再需要用户评审）：
+- ~~path γ v0.2 §2.1 / §2.2 / §4（WTB Thm 19）~~ — 2026-04-21 retraction 后 CLOSED
+- path γ 真版（不含 adversarial containment 简化）若未来要启动，须**从零**重新起稿 Log 07 §3.3 要求的三 lemma，作为新 review cycle 对待
 
 ---
 
-## 5. 后续（取决于审阅结果）
+## 5. 后续（retraction 已终结 path γ v0.2 分支）
 
-### 若 path γ v0.2 通过 → [COROLLARY]
+### 主干状态
 
-- **Sub-Q4 启动**：G4.1/G4.2 归因 A/B/C
-- **若归因 A**：改进 $E_R$ upper bound 证明
-- **若归因 B**：MS-EB 空间的新协议搜索（AI 可介入）
-- **若归因 C**：双线并行
+umr 上界判断**回到** FINDINGS v2 §1.1 [CONJ] 基线（仅在放宽版 $\mathcal{T}_\text{umr}^\text{bosonic-asym}$ 下）。原计划的 "path γ v0.2 通过 → Sub-Q4 归因启动" 分支**已终结**，不再作为 active branch。
 
-### 若 path γ v0.2 未通过 → 转备选
+### 若未来重启 umr 上界升级尝试（需用户显式启动）
 
-- **路径 β**：docs/proofs/upper_bound_msen.md §3.2 channel-reduction
-- **路径 α**：Khatri-Wilde §19-20 monotonicity reduction
+AI 不得自主再次尝试升级。若用户将来指示重启，三条路径都可考虑但必须**避免** v0.2 的 adversarial containment 简化：
+
+- **路径 α**（Khatri-Wilde §19-20 monotonicity reduction）：整体 monotonicity 从 trusted 到 umr 的直接继承
+- **路径 β**（docs/proofs/upper_bound_msen.md §3.2 channel-reduction）：reduction to a single channel via Stinespring
+- **路径 γ 真版**（PLOB 单边 + data-processing lemma 明写）：Log 07 §3.3 要求的三 lemma 必须**各自**独立证明
+  - Lemma 1：协议嵌入（honest-Charlie Π 嵌入 umr-attack space 而不给 Eve 额外 workspace / purification 信息）
+  - Lemma 2：安全归约（composable ε-security 在嵌入下保留）
+  - Lemma 3：rate 定义对接（$R_\varepsilon^{\mathcal{A}_\text{tr}}$ 与 $R_\varepsilon^{\mathcal{A}_\text{umr}}$ 的 operational equivalence）
+
+三条 lemma **禁止**用 set-inclusion shortcut 绕过（Log 07 §4.3 明确警告的 monotonicity 陷阱）。
+
+### 其他仍开放工作
+
+- Sub-Q3 上界精读：Pirandola 2019 / WTB 2017 / DKW 2020 / Khatri-Wilde §19-20 (仍在 Phase 0 M1 stack)
+- Sub-Q2 协议族比较图 A.2 PHASE1_REPORT 综合（需用户审签）
+- 完整 2-source MDI SDP（D.4 当前只覆盖 virtual-EB 情形）
 
 ---
 

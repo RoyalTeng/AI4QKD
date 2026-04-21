@@ -2,13 +2,13 @@
 
 **生成时间**：2026-04-21 自主 session
 **扫描脚本**：[scripts/sweep_tf_family.py](../../scripts/sweep_tf_family.py)
-**数据文件**：
-- [data/tf_family_loss1d.csv](data/tf_family_loss1d.csv) (81 pts)
-- [data/tf_family_loss_x_edelta.csv](data/tf_family_loss_x_edelta.csv) (1250 pts)
-- [data/tf_family_loss_x_pdark.csv](data/tf_family_loss_x_pdark.csv) (1250 pts)
-- [data/tf_family_loss_x_M.csv](data/tf_family_loss_x_M.csv) (250 pts)
+**数据文件**（实际落盘路径在 `docs/research/data/`）：
+- [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv) (81 pts)
+- [../research/data/tf_family_loss_x_edelta.csv](../research/data/tf_family_loss_x_edelta.csv) (1250 pts)
+- [../research/data/tf_family_loss_x_pdark.csv](../research/data/tf_family_loss_x_pdark.csv) (1250 pts)
+- [../research/data/tf_family_loss_x_M.csv](../research/data/tf_family_loss_x_M.csv) (250 pts)
 
-**图表**：[figures/tf_family_*](figures/)（PNG + PDF）
+**图表**：[../research/figures/](../research/figures/)（`tf_family_*.png` + `tf_family_*.pdf`）
 
 **总扫描点**：2831，满足 S2.2 硬验收 ≥ 1000。
 
@@ -40,7 +40,7 @@
 | 60 | 6.96e-7 | 0.001 | 1.44e-6 |
 | 80 | 9.47e-9 | 3.16e-4 | 1.44e-8 |
 
-（values from [data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv); audit 2026-04-21 corrected memo table previously had 10 dB row misrecorded as 3.80e-4 → 2.50e-4）
+（values from [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv); audit 2026-04-21 corrected memo table previously had 10 dB row misrecorded as 3.80e-4 → 2.50e-4）
 
 **关键观察**：
 - 在 > 60 dB 的高损耗区间，PM-QKD rate 仍 > 0（cutoff > 80 dB），这正是 TF 族的 √η scaling 优势
@@ -77,16 +77,18 @@
 | η_end2end | PM-QKD rate | MDI rate | BB84 rate (WLC SDP qber→0) |
 |---|---|---|---|
 | 1.0 (0 dB) | 8.25e-4 | 1.9e-3 | ~0.5 |
-| 0.1 (10 dB) | 3.80e-4 | 1.12e-3 | 0 (< cutoff) |
-| 0.01 (20 dB) | 1.45e-4 | 3.85e-4 | 0 |
-| 10⁻⁴ (40 dB) | 1.63e-5 | 9.21e-6 | 0 |
-| 10⁻⁶ (60 dB) | 1.59e-6 | 0 (< cutoff) | 0 |
+| 0.1 (10 dB) | 2.50e-4 | 1.12e-3 | 0 (< cutoff) |
+| 0.01 (20 dB) | 7.78e-5 | 3.85e-4 | 0 |
+| 10⁻⁴ (40 dB) | 7.67e-6 | 9.21e-6 | 0 |
+| 10⁻⁶ (60 dB) | 6.96e-7 | 0 (< cutoff) | 0 |
+
+（PM-QKD rate 列 sync 自 [../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv)，与 §2.1 一致；2026-04-21 audit 修正此前与 §2.1 的 10/20/40/60 dB 行不一致问题。MDI rate 列源 [../research/data/mdi_*.csv](../research/data/) 的 Pareto envelope，BB84 列来自 WLC SDP at qber=0 limit，见 [../research/02_mdi_family.md](../research/02_mdi_family.md)）
 
 **关键对比点**：
 - 0 dB：BB84 >>> MDI > PM-QKD（低损耗 BB84 最优）
 - 20 dB：MDI > PM-QKD > BB84（cutoff 后 BB84 无解）
-- 40 dB：PM-QKD > MDI（√η 开始主导）
-- **交叉点 ≈ 30-40 dB**：超过后 TF 族领先
+- 40 dB：MDI 与 PM-QKD 同阶（MDI 9.21e-6 vs PM-QKD 7.67e-6；此区间 MDI 略优于 PM-QKD，但两者 scaling 分离点在此附近）
+- **交叉点 ≈ 40-50 dB**：超过后 TF 族 √η scaling 领先（60 dB 处 MDI 已 < cutoff，PM-QKD 仍 6.96e-7）
 
 这与 FINDINGS v2 §1.1 中的 "TF-QKD 族 √η 可达" [THM] 结论一致。
 

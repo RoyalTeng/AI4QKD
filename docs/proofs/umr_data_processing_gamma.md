@@ -38,9 +38,11 @@ v0.2 §2.1 "adversarial containment" 论证是**范畴错误**，不是有效 se
 
 ## 0. 当前状态（v0.3）
 
-**主定理分级**：**[CONJ]**（严格按 Log 07 + RETRACTION 红线）
+**主定理分级**：**[CONJ]**（严格按 Log 07 + RETRACTION 红线 + CLAUDE.md R2.3）
 
 $$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \quad \Pi \in \mathcal{T}_\text{umr} \qquad \text{[CONJ]}$$
+
+**Scope 说明**：本 [CONJ] 与 FINDINGS v2 §1.1 一致，**仅**在放宽版 $\mathcal{T}_\text{umr}^\text{bosonic-asym}$（允许无穷维 Fock + asymptotic + collective attack）下作为 working hypothesis。FINDINGS v2 明示 PROSPECTUS 原始 H1-H6 版本（含 Fock 截断 $N_\text{cut}$ + Portmann-Renner 可组合 + 纯 DV）仍为 **[UNKNOWN]**。本文件**不** certify full H1-H6/composable coverage。
 
 **待进展路径**（择一，全部需**用户**严肃纸笔工作）：
 - **path α**：Khatri-Wilde §19-20 monotonicity reduction + 三 lemma（L1 协议嵌入 / L2 LOCC 单调 / L3 rate 定义对接）**明写**

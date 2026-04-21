@@ -1,5 +1,18 @@
 # Log 03:网络 capacity 推广 — Pirandola 2019 与 min-cut bound
 
+> # ⚠️ **[PARTIALLY RETRACTED / MIXED STATUS]** (banner added 2026-04-21)
+>
+> 本 Log 03 中的**部分 [COROLLARY] 分级已被 FINDINGS v2 降级**：
+> - 命题 3.3 ($\mathcal{T}_\text{umr}$ 上界 [COROLLARY]) → **[SYN / CONJ]** per FINDINGS v2 §2.2 v4 修订表
+> - 命题 3.4 (对称 scaling 上界 [COROLLARY]) → **[SYN / CONJ]** per 同表
+> - 命题 3.5 (Untrusted 不放松 [COROLLARY]) → **[SYN]** per 同表
+>
+> path γ v0.2 (2026-04-21) 再次试图把这些命题升级到 [COROLLARY]，被 Claude + Codex 两 reviewer 独立 UNSOUND 拒（见 [docs/workflow/path-gamma-review/](../workflow/path-gamma-review/) + path γ v0.3 retraction）。
+>
+> **当前权威立场**：[FINDINGS.md v2 §1.1 + §2.2](FINDINGS.md)（umr 上界 [CONJ]） + [CLAUDE.md R2.3](../../CLAUDE.md)。本文件 §1-§5 作**历史记录**保留，命题分级以 FINDINGS v2 v4 修订表为准。
+>
+> ---
+
 **日期**:2026-04-19
 **子任务**:把 Pirandola 2019 的网络 secret-key capacity 精确陈述,应用到 $\mathcal{T}_{\text{umr}}$ 拓扑(两方 + 一个 untrusted measurement relay)。
 

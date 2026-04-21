@@ -3,8 +3,8 @@
 **版本**：v0.1 [CONJ 级]
 **日期**：2026-04-21
 **状态**：[CONJ] — 依赖 U3.6 三候选路径 α/β/γ 的形式化尚未完成
-**数据**：[data/gap_shape.csv](data/gap_shape.csv)
-**图**：[figures/gap_shape.{png,pdf}](figures/)
+**数据**：[../research/data/gap_shape.csv](../research/data/gap_shape.csv)
+**图**：[../research/figures/](../research/figures/)（`gap_shape.png` / `gap_shape.pdf`）
 
 ---
 
@@ -23,7 +23,7 @@ FINDINGS v2 §4.2 的红线被严格遵守：
 
 ### 1.1 下界（Sub-Q2 Pareto）
 
-- 来源：[data/tf_family_loss1d.csv](data/tf_family_loss1d.csv)
+- 来源：[../research/data/tf_family_loss1d.csv](../research/data/tf_family_loss1d.csv)
 - 协议：PM-QKD (Ma-Zeng-Zhou 2018) asymptotic rate
 - 默认参数：η_det=0.145, p_d=8e-8, e_δ=0.015, M=16, f_EC=1.15
 
@@ -53,7 +53,7 @@ FINDINGS v2 §4.2 的红线被严格遵守：
 | 60 | 6.96e-7 | 0.00144 | 0.0007 | 1.44e-6 |
 | 80 | 9.47e-9 | 1.44e-4 | 9.9e-5 | 1.44e-8 |
 
-（values from [data/gap_shape.csv](data/gap_shape.csv); audit 2026-04-21 corrected 10 dB row previously misrecorded as 1.2073 → 0.5484）
+（values from [../research/data/gap_shape.csv](../research/data/gap_shape.csv); audit 2026-04-21 corrected 10 dB row previously misrecorded as 1.2073 → 0.5484）
 
 ### 2.2 Gap 比值（UB / LB）
 

@@ -1,5 +1,17 @@
 # Log 06:Gap 结构分析 — scaling 级 vs prefactor 级
 
+> # 🛑 **[RETRACTED / ARCHIVAL ONLY]** (banner added 2026-04-21)
+>
+> §6.2 (情况 B 排除)、§6.3 (情况 C 排除)、§6.4 (情况 A 成立) 作为 [COROLLARY of 4.1] 已被 FINDINGS v1 retraction (2026-04-19) + path γ v0.2 retraction (2026-04-21) **间接撤回**。
+>
+> 根源：依赖定理 4.1 的 [COROLLARY] 分级；但 FINDINGS v2 §1.1 把 umr 上界明示为 **[CONJ]**。path γ v0.2 简化升级被 Claude + Codex 独立 UNSOUND 拒（见 [docs/workflow/path-gamma-review/](../workflow/path-gamma-review/)）。
+>
+> **当前权威立场**：[FINDINGS.md v2 §1.1](FINDINGS.md) + [CLAUDE.md R2.3](../../CLAUDE.md)。
+>
+> 本文件作**历史记录**保留，**不得**作为 Sub-Q4 归因的合法输入。
+>
+> ---
+
 **日期**:2026-04-19
 **子任务**:把 Log 04(上界)与 Log 05(下界)并列,分析 gap 的定量形状,为 PROSPECTUS Sub-Q4 的归因 A/B/C 做初步映射。
 

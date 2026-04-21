@@ -468,7 +468,7 @@ Ma-Razavi 物理参数确认:η_a/η_b 为包含探测器效率的总臂传输�
 **关键发现**:
 - **升级 PLOB weak converse 为 strong converse**:对 tele-simulable channels,rate > $E_R(\mathcal{N})$ ⇒ ε → 1 **指数衰减**(not just "not → 0")
 - 技术核心:**meta-converse + privacy test**(Def 8 + Lemma 9/10)
-- **Thm 26**:$P_\leftrightarrow^\dagger(\mathcal{N}) \leq E_R(\mathcal{N})$ for tele-simulable
+- **Thm 12**(原备忘录误写为 Thm 26；2026-04-21 audit 修正):$P_\leftrightarrow^\dagger(\mathcal{N}) \leq E_R(\mathcal{N})$ for tele-simulable
 - **对 pure-loss + QL amplifier**:PLOB bound 实际上是 strong converse + finite-blocklength strong converse
 - **Second-order expansion**(§6):对 covariant channels,$\hat{P}(n, \varepsilon) \leq E_R(\mathcal{N}) + \sqrt{V/n}\Phi^{-1}(\varepsilon) + O(\log n/n)$ — 与 Kamin 2025 GEAT achievable 形成 finite-blocklength sandwich
 
