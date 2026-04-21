@@ -1,32 +1,84 @@
-# Path γ 证明：umr 拓扑 PLOB-style 上界
+# Path γ 证明：umr 拓扑 PLOB-style 上界 **[v0.3 RETRACTED TO [CONJ]]**
 
-**版本**：v0.2 **[AI-drafted, pending user sign-off; rigor目标 [COROLLARY]]**
-**日期**：2026-04-21 autonomous session
-**前身**：v0.1（三-lemma 结构 + 大量 [CONJ]），v0.2 整体替换为更清洁的 adversarial containment 论证
+**版本**：v0.3 **[CONJ]**（2026-04-21 autonomous session，根据 Claude audit UNSOUND-RETRACT verdict）
+**前身**：
+- v0.1（三-lemma 结构 + 大量 [CONJ]）— 保守 [DRAFT]
+- v0.2（adversarial containment + Pirandola 2019）— **已撤回**，见 §-1
+- v0.3（本版）— 主定理回到 [CONJ]，保留 v0.2 文本作 cautionary record + 添加 retraction 说明
+
 **对应**：Log 07 §3.3 路径 γ + docs/proofs/upper_bound_msen.md §3.1 候选 A
 
 ---
 
-## ⚠️ 授权状态
+## -1. v0.2 撤回公告
 
-- **起草**：AI (Claude), 2026-04-21
-- **基于**：docs/literature/ 五篇 memo（PLOB/Pirandola/WTB/TGW/Khatri-Wilde）+ Log 07 用户技术审计 + Khatri-Wilde 2024 Ch 19-20
-- **目标分级**：**[COROLLARY]**（基于 PLOB 2017 + Pirandola 2019 + 标准 adversarial containment 论证）
-- **用户工作**：
-  - 验证 adversarial containment 论证在 Portmann-Renner 可组合安全框架下无 subtle gap
-  - 签字把 [COROLLARY pending sign-off] 升级到 [COROLLARY]
+**2026-04-21 同日 autonomous session 内**，我（AI Claude）起草了 v0.2 并声称主定理升级到 [COROLLARY pending user sign-off]。
 
-本 [DRAFT] **严格不得**在对外论文/展示被引用为定理。
+**撤回原因**（详见 [docs/workflow/path-gamma-review/claude_audit_v1.md](../workflow/path-gamma-review/claude_audit_v1.md)）：
+
+v0.2 §2.1 "adversarial containment" 论证是**范畴错误**，不是有效 set inclusion：
+
+- Pirandola 2019 §II-C 定义 Eve 系统 $E$ **只**包含 channel 环境 purification，**不**含 Charlie 量子寄存器
+- umr 中 Charlie 量子寄存器**在** $E$
+- 两个 Eve 集合生活在**不同 Hilbert 空间 / 不同安全博弈**
+- 不能直接写 $\mathcal{A}_\text{tr} \subseteq \mathcal{A}_\text{umr}$ —— 这不是 well-formed set-theoretic relation
+
+**这是 2026-04-19 FINDINGS v1 retraction 的结构性重复**（见 [RETRACTION.md](../research/RETRACTION.md) §1.1, §4.2）。Log 07 §4.3 已**明确警告**此类 monotonicity move 需要三条 lemma 明写（协议嵌入 + 安全归约 + rate 定义对接），v0.2 把三条 lemma 合并到**一个未审查的 containment claim**。
+
+**Audit 决议**：**UNSOUND-RETRACT**，回到 [CONJ]。
+
+**经验教训**：
+1. AI 起草理论证明时"简化论证"如果绕过了已识别的 gap 而不是 close 它们，就是 v1 retraction 的同类陷阱
+2. 今后 path γ 形式化**必须明写三 lemma** 或等价严格论证，否则停在 [CONJ]
+3. 用户说"不降级"不等于 AI 可自行升级 [CONJ] → [COROLLARY]；AI 应 **最大化 proof completeness**，但分级仍由文献证据决定
 
 ---
 
-## 0. 主定理陈述（目标）
+## 0. 当前状态（v0.3）
 
-**Theorem γ** [AI-drafted, pending sign-off → target [COROLLARY]]
+**主定理分级**：**[CONJ]**（严格按 Log 07 + RETRACTION 红线）
+
+$$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \quad \Pi \in \mathcal{T}_\text{umr} \qquad \text{[CONJ]}$$
+
+**待进展路径**（择一，全部需**用户**严肃纸笔工作）：
+- **path α**：Khatri-Wilde §19-20 monotonicity reduction + 三 lemma（L1 协议嵌入 / L2 LOCC 单调 / L3 rate 定义对接）**明写**
+- **path β**：把 umr 建 effective A→B channel，绕过 Pirandola，直接 apply PLOB + WTB 到 effective channel
+- **path γ 真版**：PLOB 单边 + 明写 data-processing lemma（Charlie operation adversarial 与否不能增 Alice-Bob mutual info beyond weaker-arm PLOB）—— 不用 Pirandola 2019
+
+**各路径的正确做法都是"明写 lemma"，不是"claim containment"**。
+
+---
+
+## ⚠️ 授权状态（v0.3）
+
+- **起草**：AI (Claude), 2026-04-21
+- **目标分级**：**[CONJ]**（严格；不再越级到 [COROLLARY]）
+- **用户工作**（若要升级到 [COROLLARY]）：
+  - 选择 α / β / γ 真版之一
+  - **明写** 路径中每一条 lemma 的证明（不是 "apply standard result"；是把 standard result 的前提条件逐一验证 against umr 设定）
+  - 签字
+
+本 [DRAFT] **严格不得**在对外论文/展示被引用为定理。v0.2 文档历史保留在 Git 历史（commit 9402e44）供 cautionary reference，但**不再代表项目立场**。
+
+---
+
+## ⚠️ 以下 §1-§9 为 v0.2 撤回稿内容
+
+**下列章节保留作 cautionary record**，显示 v0.2 试图使用 adversarial containment 绕过 Log 07 明确要求的三-lemma stacking。审阅 Claude audit 结论（UNSOUND-RETRACT）后被撤回。
+
+**不代表项目当前立场**；请阅读 §-1 + §0 获得当前（v0.3）立场。
+
+以下 §1-§9 主体文本保留未删，以便用户和后续 AI session 读到并理解**这类简化论证为何失败**。
+
+---
+
+## 0-v0.2. 主定理陈述（目标，v0.2 版，**已撤回**）
+
+**Theorem γ** [v0.2 claim, **UNSOUND per audit 2026-04-21 — retracted**]
 
 对任意满足 docs/PROSPECTUS.md §3.1 硬约束 H1-H6 的 MS-EB 协议 $\Pi \in \mathcal{T}_\text{umr}$，其可组合 ε-secure 密钥率满足
 
-$$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \quad \text{[bits/channel use]}$$
+$$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \quad \text{[CONJ per v0.3]}$$
 
 在 asymptotic $n \to \infty$ 极限下。有限密钥修正见 §4。
 
@@ -202,8 +254,15 @@ $$\hat{P}_{\mathcal{N}_\eta}^\leftrightarrow(n, \varepsilon) \leq -\log_2(1-\eta
 
 ## Changelog
 
-- **v0.2** (2026-04-21 AI autonomous session): 整体替换 v0.1。用 adversarial containment 直接对接 Pirandola 2019 Thm，绕过 L1-L3 stacking。主定理从 [CONJ] 升级到 [COROLLARY pending sign-off]。用户审阅时长减半。
-- **v0.1** (2026-04-21 AI autonomous session, 同日早些): 首版 L1/L2/L3 结构，过保守地停在 [DRAFT / CONJ]。被 v0.2 替换。
+- **v0.3** (2026-04-21 AI autonomous session, 晚些): **撤回 v0.2 回到 [CONJ]**。
+  原因：Claude-native audit 返回 UNSOUND-RETRACT — v0.2 "adversarial containment" 是范畴错误，
+  不是 set inclusion；结构性重复 FINDINGS v1 retraction。添加 §-1 撤回公告 +
+  §0 当前状态修订。v0.2 主体文本 (§1-§9) **保留作 cautionary record**，
+  但标记 "v0.2 已撤回，不代表项目立场"。
+- **v0.2** (2026-04-21 AI autonomous session, 中午): 整体替换 v0.1。用 adversarial containment
+  直接对接 Pirandola 2019 Thm，绕过 L1-L3 stacking。主定理从 [CONJ] 升级到
+  [COROLLARY pending sign-off]。用户审阅时长减半。**已于当日晚些撤回** (见 v0.3)。
+- **v0.1** (2026-04-21 AI autonomous session, 早些): 首版 L1/L2/L3 结构，过保守地停在 [DRAFT / CONJ]。被 v0.2 替换（后 v0.2 撤回后 v0.1 思路仍有价值，见 §0 path α 选项）。
 
 ---
 

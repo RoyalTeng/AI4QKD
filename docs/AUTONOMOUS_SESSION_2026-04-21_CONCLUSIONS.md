@@ -16,7 +16,9 @@
 
 ## 1. 今天的新增实质性产出（按重要性）
 
-### 1.1 **path γ v0.2**：umr 上界从 [CONJ] 升级候选到 **[COROLLARY pending user sign-off]**
+### 1.1 **path γ v0.2 → v0.3 RETRACTED**
+
+**v0.2 试图升级到 [COROLLARY pending sign-off] → Claude audit verdict UNSOUND-RETRACT → 同日撤回到 [CONJ] (v0.3)**
 
 **文件**：[docs/proofs/umr_data_processing_gamma.md](proofs/umr_data_processing_gamma.md) v0.2 (commit 9402e44)
 
@@ -100,11 +102,17 @@ $$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B)) \qquad \forall \Pi \
 4. **QBER 阈值**：BB84 11.00%, 六态 12.75%（与 Shor-Preskill / Scarani 一致）
 5. **qubit BB84 at n=10^12, 0 dB, qber=0.005: rate = 0.893**（vs Kamin §6.3 ~0.9，误差 < 1%）
 
-### [COROLLARY pending user sign-off] (**本 session 新增**)
+### ~~[COROLLARY pending user sign-off]~~ → **[CONJ] (RETRACTED)**
 
-6. **$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B))$ for $\Pi \in \mathcal{T}_\text{umr}$**
+6. ~~$R_\varepsilon(\Pi) \leq -\log_2(1 - \min(\eta_A, \eta_B))$ for $\Pi \in \mathcal{T}_\text{umr}$~~
    - 依据：path γ v0.2 adversarial containment + Pirandola 2019
-   - 审签状态：等用户确认 §2.1 严格性
+   - **撤回原因**（Claude audit 2026-04-21 UNSOUND-RETRACT）：
+     - v0.2 "adversarial containment" 是范畴错误，不是 set inclusion
+     - $\mathcal{A}_\text{tr}$ 和 $\mathcal{A}_\text{umr}$ 的 Eve 生活在不同 Hilbert 空间
+     - 结构性重复 FINDINGS v1 retraction (2026-04-19)
+     - 详见 [docs/workflow/path-gamma-review/claude_audit_v1.md](workflow/path-gamma-review/claude_audit_v1.md)
+   - **当前状态**：**[CONJ]**（同 v0.1 之前的 FINDINGS v2 判断）
+   - **前进方向**：用户明写 path α / β / γ 真版中任一的 lemma 证明，不能用简化 containment 绕过
 
 ### [SYN / 文献共识]
 
