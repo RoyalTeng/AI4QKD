@@ -94,7 +94,7 @@
 
 **Sub-Q3 明确结论**（autonomous 级）：
 
-> umr 拓扑的 scaling upper bound **最可能为** $\sqrt{\eta_{AB}}$（per literature synthesis），**但** 严格 converse 继承仍为 **[CONJ]**。Log 07 path α (monotonicity + 三 lemma) / β (channel-reduction) / γ (single-edge PLOB + data-processing 真版) 三条路径任一由**用户** 形式化可升级。
+> umr 拓扑的 scaling upper bound **最可能为** $\sqrt{\eta_{AB}}$（per literature synthesis），**但** 严格 converse 继承仍为 **[CONJ]**。Log 07 path α (monotonicity + 三 lemma) / β (channel-reduction) / γ (single-edge PLOB + data-processing 真版) 三条路径任一的**用户形式化工作**可 close 技术层的 converse gap（此时用户纸笔可满足 R0.2 C1(b)）；**但** 由此技术闭合到 rigor 分级 [COROLLARY] 的升级**仍**单独需要 C2（用户明示签字）+ C3（dev-reviewer PASS），按 CLAUDE.md R0.2 的 C1 ∧ C2 ∧ C3 invariant **三条件并列必要**。
 
 ---
 
