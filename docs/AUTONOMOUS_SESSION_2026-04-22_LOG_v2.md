@@ -84,7 +84,17 @@
 - `fbdaee1` ADR 0001 Accepted via Codex proxy BINDING
 - `49486eb` Sub-Q main question interim audit [SYN]
 
-**Codex runs**: 10 (Werner R1/R2/R3 + ADR 0001 + MQ audit)
+**Codex runs**: 12 (Werner R1/R2/R3 + ADR 0001 + MQ audit R1/R2)
+
+### Addendum — MQ audit full cycle
+
+- MQ audit R1 (xhigh): REJECTED (1 CRITICAL + 3 MAJOR)
+  - CRITICAL: S4 "Gap 归因 γ 最可能" was v1 FINDINGS retracted claim revived — reviewer caught retraction-pattern recurrence
+- MQ audit R2 FIX (commit d70b21d): 4-issue full rewrite
+- MQ audit R2 review (high): FAIL (1 MAJOR — line 97 upgrade wording leftover)
+  - Reviewer confirmed 3/4 Round 1 issues closed including the CRITICAL retraction fix was genuine
+- MQ audit R3 FIX (commit 3aea24d): minimal C3 invariant wording fix
+- **Decision**: FINALIZE MQ audit at [SYN] after R3; core retraction pattern closed; remaining MAJOR was precise wording; no further review rounds
 
 **Rigor discipline**:
 - All outputs at [CONJ] or [SYN]; no [COROLLARY]/[THM] upgrades
