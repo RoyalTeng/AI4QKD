@@ -259,11 +259,16 @@
 
 γ toy bound ≈ 1× Pirandola 在低损耗区 — 与 Log 07 §4.5 "最小可信 baseline" 预期一致。
 
-**β vs γ toy 对比**:
-- β (post-BSM, all-Bell summed): ~0.19× Pir at η=0.1 (potentially tighter)
-- γ (single-edge amp-damp): ~0.90× Pir at η=0.1 (≈ Pirandola)
+**β vs γ toy numeric 并列** (descriptive only, NOT directional claim):
+- β toy surrogate (post-BSM, all-Bell summed): ~0.19× Pir at η=0.1
+- γ toy surrogate (single-edge amp-damp Choi LN): ~0.90× Pir at η=0.1
 
-**Agnostic interpretation**: 若 β 正确 formal 成立，会给约 5× tighter than γ。但**两者都 toy qubit, 不是 definitive**。Q1 决策 (β main + γ safety) **不变**。
+**严格 local 解读**: 在 η=0.1 toy 点，两个 surrogate 数值相差 ~4.7× (0.19 vs 0.90 relative to Pirandola)。
+- **不 predict** formal β-vs-γ 序列（两者 DPI/channel-to-state reduction lemma 仍 [CONJ] open; β.G3 toy 本身在 §11.0.2 已 agnostic）
+- **不 justify** "fast-track β over γ" —— Q1 决策 (β main + γ safety net) 的 rationale 来自 formal path feasibility 分析，**非** toy 数值
+- 两者均为 qubit toy，与 bosonic CV physical channel 不直接 corresponding
+
+Q1 决策 (β main + γ safety) **不受 toy 数值影响**，保持不变。
 
 详见 [scripts/gamma_path_numerical_single_edge.py](../../scripts/gamma_path_numerical_single_edge.py) + [docs/research/data/gamma_path_single_edge_toy.csv](../research/data/gamma_path_single_edge_toy.csv)
 
