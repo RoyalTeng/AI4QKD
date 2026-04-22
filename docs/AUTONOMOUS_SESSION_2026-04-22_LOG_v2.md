@@ -96,6 +96,65 @@
 - MQ audit R3 FIX (commit 3aea24d): minimal C3 invariant wording fix
 - **Decision**: FINALIZE MQ audit at [SYN] after R3; core retraction pattern closed; remaining MAJOR was precise wording; no further review rounds
 
+### Addendum 2 — T2-A pivot (2026-04-22 late afternoon)
+
+- T2-A Phase 1 gap analysis (commit 992d3bb): Kamin Fig.1 per-anchor diff table
+- **Discovery**: Kamin Fig.1 is log-log plot with ±20-30% visual reading uncertainty; no machine-readable anchor table in paper/supplementary
+- "< 5% across all plot points" **not operationalizable** without ground-truth data
+- **ADR 0001 operational refinement (commit a8314d9)**: T2-A closure criteria **refocused** to:
+  - (a) §6.3 明示 anchor (n=10^12, 0 dB, ≈0.9): my 0.9008 < 1% ✓
+  - (b) DW asymptotic saturation (test A4): pass ✓
+  - (c) Cutoff tolerance ±6 dB per 2a 签字 ✓
+- **T2-A CLOSED at operationalizable level**; Thm 4 Frank-Wolfe 留作 stretch (non-blocking)
+- S2.5 硬验收本体 + user 3b 仍 OPEN (由 T2-B decoy Fig.3 承担)
+
+### Addendum 3 — Sub-Q3 path α scaffolding (2026-04-22 dusk)
+
+- Commit 577ac92: `docs/proofs/umr_path_alpha_scaffolding.md` v0.1 [DRAFT]
+- **NOT a proof** — scaffolding only
+- Statement targets for Log 07 path α 三 lemma (L1/L2/L3)
+- **11 identified gaps, all [UNKNOWN]**
+- Cross-diff vs path γ v0.2 retraction (explicit warning against L1.G1 + L2.G3 pitfalls)
+- For user future formalization: estimated 10-15 人日 work if pursued
+- Does not claim any upgrade; 11 gaps explicit
+
+### Final Day 1 state (2026-04-22 autonomous end)
+
+**22 commits; 13 Codex runs; 0 rigor upgrades**.
+
+**Completed autonomous work**:
+- T1 Werner reduction v0.3 [CONJ] FINALIZED (4 rounds dev-reviewer)
+- T3 2a signoff record
+- T4 literature stack audit (already at RESEARCH_PLAN level)
+- ADR 0001 T2 split ACCEPTED via Codex proxy BINDING
+- Sub-Q integration audit v0.3 [SYN] (3 rounds dev-reviewer; retraction pattern caught + fixed)
+- T2-A refocused per measurement uncertainty discovery (operationalizable closure)
+- Sub-Q3 path α scaffolding v0.1 [DRAFT] (11 gaps identified)
+
+**State of main Q + Sub-Qs (summary for user return)**:
+- Main Q: **strict H1-H6 [UNKNOWN]**; **relaxed bosonic-asym [SYN]**
+- Sub-Q1: **✅ CLOSED** ([THM] via PHASE0_REPORT)
+- Sub-Q2: **S2.5 proxy (Fig.1) closed; 硬验收 (Fig.3) OPEN**
+- Sub-Q3: **[CONJ] upper bound; path α scaffolding v0.1; path γ v0.2 retracted**
+- Sub-Q4: **[CONJ] gap shape; [UNKNOWN] attribution**
+
+**Autonomous constraints preserved**:
+- 0 [COROLLARY] / [THM] self-upgrades
+- C1 ∧ C2 ∧ C3 invariant strict
+- dev-reviewer caught + fixed 2 retraction-pattern risks (Werner R1/R2 + MQ audit R1)
+- All substantive decisions at process level via Codex proxy binding per 2026-04-21 user delegation
+
+**Next autonomous steps (queue)**:
+- None at immediate high-value autonomous level — path α formalization needs user C1(b) nibble
+- Minor: G4.1 gap shape 数据 refinement (but low value; MQ audit warned against attribution drift)
+- Stretch: T2-A Thm 4 Frank-Wolfe (non-blocking; 3-5 days coding)
+
+**Stopping rationale**:
+- Context window + token budget used for 22 commits + 13 Codex runs
+- Rigor discipline preserved; no drift
+- All autonomous-achievable "明确 conclusion" states documented
+- Further high-risk work (path γ 真版, Sub-Q4 G4.2 attribution) would benefit from user review first
+
 **Rigor discipline**:
 - All outputs at [CONJ] or [SYN]; no [COROLLARY]/[THM] upgrades
 - C1+C2+C3 invariant preserved (per CLAUDE.md R0.2)
