@@ -1,8 +1,16 @@
 # umr upper bound — path β derivation (channel-reduction + PLOB/WTB on effective channel)
 
-**版本**：v0.2 **[CONJ]** — AI autonomous derivation (2026-04-22 Round 2 FIX 响应 Codex FAIL)
+**版本**：v0.3 **[CONJ]** — AI autonomous scaffolding v0.3 (2026-04-22 Day 2 late evening, **user 决定选 β 作主攻** 后的深化 scaffolding)
 **对应 Log 07**：§3.1 子节 "路径 β" + §4.4 ("direct umr converse via channel-reduction")
-**用途**：提供 path β derivation attempt; 所有 gap 显式
+**用户决策引用**：[q1_decision_record_2026-04-22.md](../findings/q1_decision_record_2026-04-22.md) — β 主攻 + γ safety net
+
+**v0.3 主要扩展**（相对 v0.2+R3）：
+- 每个 β.G1-G5 gap 加 **sub-gaps + literature references + user action sub-steps**
+- 新增 §6 **数值 roadmap**：E_R^∞(M_tilde) SDP 实施指导
+- 新增 §7 **user formal work 推荐顺序** (按 gap 难度排序)
+- 本文件仍 **[CONJ] / scaffolding-only**; **不**自我声称 derivation
+
+---
 
 ## ⚠️ Round 2 FIX notice
 
@@ -156,12 +164,136 @@ $f(\eta_A, \eta_B)$ 的具体数值与 Pirandola 2019 min-cut bound $-\log_2(1-\
 
 ## 5. 严谨性
 
-- 本文件 **[CONJ]**
-- **5 gaps explicit** (v0.2: 4 original + β.G5 新增)
+- 本文件 **[CONJ] / scaffolding-only**
+- **5 gaps explicit** (β.G1-G5)
 - **不**升级 任何分级
-- Codex R2 FAIL 的 tightness residual 已 v0.2 §2.3 + §2.5 修正为 agnostic
-- 等 Codex R3 review
+
+---
+
+## 6. v0.3 deepened sub-gaps + literature + user action sub-steps
+
+### 6.1 β.G1 (MINOR) — Two-source → single bipartite input 合并
+
+**Precise statement**: PLOB 2017 Thm 1 standard formulation 要求 **single bipartite input** $\rho_{AA'}$；umr 有 **two independent sources** $\rho_{AA'} \otimes \sigma_{BB'}$（Alice 与 Bob 的 source 独立, 因为 QKD 协议假设双方无 pre-shared entanglement）。
+
+**Sub-steps to close**:
+- **Step 6.1.1** (~0.5 天): 形式化 "two separate sources in LOPC context" = "single bipartite product-state input"（via tensor structure）
+- **Step 6.1.2** (~0.5 天): 验证 PLOB 2017 Theorem 1 证明 step-by-step 不依赖 input 是 entangled，只依赖 tele-simulable channel 性质
+- **Step 6.1.3**: 结论: β.G1 **实际上是 labeling**，可在 ~1 天内 close
+
+**Literature reference**:
+- PLOB 2017 §III.C (teleportation-simulable channels)
+- Khatri-Wilde 2020 §15 (bipartite secret-key framework)
+
+**Severity after sub-step analysis**: MINOR → ~1 人日
+
+### 6.2 β.G2 (MAJOR) — PLOB 2017 apply to 2-to-2 broadcast channel
+
+**Precise statement**: Standard PLOB 2017 Thm 1 是 **single-sender single-receiver point-to-point** channel $\mathcal{N}: A \to B$。$\tilde{\mathcal{M}}$ 是 **two-sender** (Alice, Bob) **three-output** (A, B, classical c) channel — formally 是 **multi-party broadcast channel with classical side channel**。
+
+**Sub-steps to close**:
+- **Step 6.2.1** (~1 天): 把 $\tilde{\mathcal{M}}$ 看作 Alice-to-(Bob, Charlie) 的 **broadcast channel**，其中 Bob input 作 **separate non-malleable side channel** (Bob's $B$ to $B$ identity). 这减少到 $\mathcal{E}_1: A \to (\hat{A}, c)$ effective，Bob 的 role 是 LOPC 下一方。
+- **Step 6.2.2** (~1 天): 引用 **Wilde-Tomamichel-Berta 2017 §V.B** (broadcast channel strong converse) — WTB 扩展 PLOB 到 broadcast。
+- **Step 6.2.3** (~1 天): 适用 **Khatri-Wilde 2020 Ch 20 secret key agreement** — bipartite private state framework 对 multi-output channel。
+
+**Key decision point**: 使用 **WTB 2017** (broadcast converse) **或** **Khatri-Wilde 2020 Ch 20** (bipartite private state)。两条 framework 都可以但 details 不同。建议先试 WTB 2017 因为 single-letter 更强 (PLOB-style)。
+
+**Literature reference stack**:
+- WTB 2017, "Converse bounds for private communication over quantum channels", IEEE TIT 63(3):1792, arXiv:1602.08898 (Thm 12 已 VERIFIED against PDF in WTB-2017.md)
+- Khatri-Wilde 2020, Ch 20 "Secret Key Agreement"
+- Berta-Wilde 2018, "Weak converse for classical communication via entanglement", IEEE TIT 64(10):7220 (扩展 WTB framework)
+
+**Severity**: MAJOR, estimated **2-3 人日**
+
+### 6.3 β.G3 (MAJOR) — $E_R^\infty(\tilde{\mathcal{M}})$ 数值/闭式
+
+**Precise statement**: 若 β.G1 + β.G2 close, target bound becomes $R \leq E_R^\infty(\tilde{\mathcal{M}})$。但 $E_R^\infty(\tilde{\mathcal{M}})$ 的 **具体数值** 作为 $(\eta_A, \eta_B)$ 函数 **未知**。
+
+**Numerical roadmap** (AI autonomous 可做部分):
+- **Step 6.3.1** (AI autonomous, ~0.5 天): 扩展 `qkdx/numerics/upper_bound.py` 增加 `e_r_channel_sdp(kraus_list, dim_A, dim_B)` 计算 single-letter $E_R(\rho_{\mathcal{M}})$ via Wang-Duan 2016b SDP hierarchy
+- **Step 6.3.2** (AI autonomous, ~1 天): 对 toy $\tilde{\mathcal{M}}$ (qubit 版 Alice + qubit Bob + Bell-projection Charlie + binary classical outcome) 计算 $E_R^\infty$ 上界 via log-negativity
+- **Step 6.3.3** (AI autonomous, ~1 天): 扫描 $(\eta_A, \eta_B)$ grid, 得到 $E_R$ vs Pirandola min-cut 对比图表
+- **Step 6.3.4** (用户 ~1-2 天): 分析数值结果 — 是否显示 $E_R^\infty(\tilde{\mathcal{M}}) < -\log_2(1-\sqrt{\eta_A\eta_B})$? 若是, path β 潜在 novel bound.
+
+**Literature reference**:
+- Wang-Duan 2016b, "Semidefinite programming strong converse bounds for quantum channel capacity", IEEE TIT 62:2001, arXiv:1509.07127
+- Berta-Wilde 2018 (above)
+- Christandl-Winter 2004 (squashed entanglement definition; 与 $E_R$ 互补)
+
+**Severity**: MAJOR, **用户工作 1-2 天** + **AI numerical 2-3 天**
+
+### 6.4 β.G4 (MAJOR) — Eve model 跨 topology 转换
+
+**Precise statement**: $\mathcal{A}_\text{umr}$ (Eve 控 $E_1, E_2$ + Charlie reg) vs LOPC Eve (只控 $E_1, E_2$)。目标证明 $R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq R_\varepsilon^\text{LOPC}(\tilde{\mathcal{M}})$.
+
+**Sub-steps**:
+- **Step 6.4.1** (~1 天): 观察 **umr = LOPC + Eve 额外 Charlie 控制 power**; 等价地, umr 是 LOPC 的特殊 strategy family (under umr Eve model).
+- **Step 6.4.2** (~1 天): LOPC Eve 可 **模拟** umr Eve (用 $\mathcal{E}_1, \mathcal{E}_2$ environments 的 purifications 代替 Charlie register). 因此 "LOPC rate" ≥ "umr rate".
+- **Step 6.4.3** (~1 天): 严格 Portmann-Renner composable framework formulate: $R_\varepsilon^{\mathcal{A}_\text{umr}}$ 定义下 $\varepsilon$ 是 secret + correct + complete 三合; transfer to LOPC $\varepsilon$ 保 monotonicity.
+
+**Literature reference**:
+- Portmann-Renner 2022, "Security in quantum cryptography", Rev. Mod. Phys. 94:025008
+- Khatri-Wilde 2020 §15.1 (bipartite private states)
+
+**Severity**: MAJOR, **2-3 人日**
+
+### 6.5 β.G5 (MAJOR, Codex R1 新增) — Adversarial effective-channel reduction
+
+**Precise statement**: umr 是 **n-shot adversarial process/comb**（Eve/Charlie 可跨轮 adapt strategy based on all prior announcements），不是 i.i.d. fixed channel。把 umr 等效为 "repeated use of fixed $\tilde{\mathcal{M}}$" 需要 reduction argument.
+
+**Sub-steps**:
+- **Step 6.5.1** (~1 天): 利用 **Kamin 2025 GEAT framework** 的 entropy accumulation technique, 每轮 effective $\tilde{\mathcal{M}}_i$ (allowing adaptive) bounded by single-round $E_R(\tilde{\mathcal{M}})$
+- **Step 6.5.2** (~1 天): 替代: 使用 **Pirandola-style teleportation stretching** — 但 teleportation stretching 假设 cooperative structure; 需 check 在 umr 下 valid 吗?
+- **Step 6.5.3** (~1 天): 最可能 framework: **Khatri-Wilde 2020 Ch 20 "secret key agreement over quantum channels"** — 含 amortized-Rains bound 处理 adaptive strategies.
+
+**Literature reference**:
+- Kamin 2025 §4 GEAT adaptation
+- Khatri-Wilde 2020 Prop 20.6 (LOCC-assisted amortized bound)
+
+**Severity**: **MAJOR**, **2-3 人日**
+
+### 6.6 Summary of user work estimate
+
+| Sub-gap | AI-assistable? | 用户人日 |
+|---|---|---|
+| β.G1 | partial (labeling argument) | 1 |
+| β.G2 | partial (literature pointer) | 2-3 |
+| β.G3 | **YES** (SDP numerical) | 1-2 (user analysis of AI-computed data) |
+| β.G4 | partial (framework adaptation) | 2-3 |
+| β.G5 | partial (framework choice) | 2-3 |
+| **Total** | | **8-12 人日** |
+
+(Matches early estimate ~7-10 人日; updated to 8-12 given β.G5 added)
+
+---
+
+## 7. User formal work 推荐顺序
+
+**Phase 1** (low-hanging fruit): β.G1 + β.G4 sub-steps 6.4.1-6.4.3 (**~3-4 天**)
+- β.G1 基本是 labeling
+- β.G4 用 Portmann-Renner
+
+**Phase 2** (core novelty question): β.G3 (**AI numerical ~2-3 天 + 用户 analysis ~1-2 天**)
+- **关键 decision**: E_R^∞(M_tilde) 数值结果
+- 若 **严格小于** Pirandola → continue to β.G2 + β.G5 for formal write-up
+- 若 **≥** Pirandola → β 与 γ 等价, fallback to γ safety net
+
+**Phase 3** (if Phase 2 positive): β.G2 + β.G5 formal write-up (**~4-5 天**)
+
+**Phase 4**: dev-reviewer + C2 签字 (**~1-2 天**)
+
+**Total**: **10-15 天** per decision flow
+
+---
+
+## 8. γ safety net sync (parallel)
+
+若用户 Phase 2 (β.G3 numerical) 显示 $E_R^\infty(\tilde{\mathcal{M}}) \geq$ Pirandola (即 β 不紧于 Pirandola)，则 **fallback** to γ v0.4+R3 safety net. 详见 [umr_path_gamma_v0_4_derivation.md](umr_path_gamma_v0_4_derivation.md) + `docs/findings/q1_decision_record_2026-04-22.md`。
+
+---
 
 ## Changelog
 
+- **v0.3** (2026-04-22 Day 2 late evening, **user decided β 主攻**): deepen 5 gaps with sub-steps + literature + numerical roadmap; add §6-§8 for user formal work guidance
+- **v0.2** (2026-04-22 Round 2 FIX): +β.G5 adversarial reduction; tightness agnostic
 - **v0.1** (2026-04-22 autonomous)：channel-reduction approach, 4 gaps identified

@@ -147,10 +147,108 @@ v0.4 **严格实施** Log 07 §4.5:
 
 ## 5. 严谨性
 
-- **[CONJ]** overall
+- **[CONJ]** overall / **scaffolding-only**
 - **5 gaps explicit** (v0.4 R3 修正)
 - **不**升级任何分级
 - **v0.2 + v0.3 两种 cross-space 陷阱 都 avoid**; v0.4 R3 加上**未 claim cross-task capacity transfer**
+
+---
+
+## 6. v0.5 deepened sub-gaps (2026-04-22 Day 2, **user 选 γ safety net**)
+
+γ path 作为 β 主攻的 fallback safety net; 若 β.G3 numerical 显示 β 不紧于 Pirandola, 则 γ 承担 baseline [COROLLARY] 升级。
+
+### 6.1 γ.B.G1 (MAJOR) — Step B target DPI lemma formal formulation
+
+**Precise statement**: Formally state: "Eve 对 Charlie 收到的 Alice mode 所做的任意 downstream operations（含 joint BSM with Bob mode + classical broadcast）**不能增加** Alice-Bob secret key correlation 超过对 Alice's output mode 的 PLOB bound。"
+
+**Sub-steps**:
+- **Step 6.1.1** (~1 天): Operator-algebra formulation: define "Alice-Bob secret key correlation" as **bipartite private state distance** (Horodecki 2005, PRL 94:160502). 
+- **Step 6.1.2** (~1 天): LOCC monotonicity of private state distance: 标准定理 (Horodecki 2005, Thm 2)。关键 check: umr 下 Charlie classical broadcast $c$ 是 **公共 classical** 信道，对 Alice-Bob LOCC structure 是 **side info**, 保 monotonicity.
+- **Step 6.1.3** (~1 天): 连接: Alice-Charlie PLOB bound $E_R^\infty(\mathcal{E}_1)$ bound Eve 可提取信息; 通过 monotonicity, Alice-Bob 的 secret key correlation 受同 bound。
+
+**Literature reference**:
+- Horodecki 2005, "Secure key from bound entanglement", PRL 94:160502
+- Khatri-Wilde 2020 §15 bipartite private state framework
+- PLOB 2017 Theorem 1
+
+**Severity**: MAJOR, **~2-3 人日**
+
+### 6.2 γ.B.G2 (MAJOR) — Charlie joint BSM 是 quantum+classical operation
+
+**Precise statement**: Charlie 对 (Alice mode, Bob mode) 做 BSM 是 **joint quantum operation** (not classical). 输出: quantum post-state on (A, B) + classical outcome $c$. DPI lemma 必须 handle 此 structure.
+
+**Sub-steps**:
+- **Step 6.2.1** (~0.5 天): 形式化 BSM 为 quantum-to-classical-quantum (QCQ) channel: $\mathcal{B}: \hat{A} \otimes \hat{B} \to \mathcal{A}_\text{post} \otimes \mathcal{B}_\text{post} \otimes \mathcal{C}_\text{classical}$
+- **Step 6.2.2** (~1 天): BSM 可被 "dilated" 到 purely quantum operation via Stinespring (classical $c$ 等同 quantum register with orthogonal basis). 应用 quantum DPI.
+- **Step 6.2.3** (~0.5 天): quantum DPI 给: $I(A : \mathcal{B}(\hat{A}, \hat{B}))_\rho \leq I(A : \hat{A})_\rho = I(A : \mathcal{E}_1(A))_\rho \leq$ PLOB bound。
+
+**Literature reference**:
+- Nielsen-Chuang 2010 Thm 12.11 (quantum data processing inequality)
+- Wilde 2017 QIT textbook §11.9 (QCQ channels + DPI)
+
+**Severity**: MAJOR, **~1-2 人日**
+
+### 6.3 γ.B.G3 (MAJOR) — Alice-Charlie PLOB bound ↔ Alice-Bob key rate operational link
+
+**Precise statement**: PLOB 给 **two-way private capacity** on single channel Alice↔Charlie. Need connect to **Alice-Bob secret key rate** in umr (different party set).
+
+**Sub-steps**:
+- **Step 6.3.1** (~1 天): 关键观察: umr 的 key generation 是 Alice-Bob (not Alice-Charlie). Bob 的 info 来自 Charlie broadcast (classical) + Bob own measurements on $\hat{B}$ (post-$\mathcal{E}_2$).
+- **Step 6.3.2** (~1 天): 分两路:
+  - (i) 对称: repeat argument with $\mathcal{E}_2$ replaced — 给 $-\log_2(1-\eta_B)$ bound.
+  - (ii) Combine: min over two channels.
+- **Step 6.3.3** (~1 天): Rigorous via bipartite private state framework: Alice-Bob secret key $\leq$ min of each point-to-point bound.
+
+**Literature reference**:
+- Log 07 §4.5 (用户原文 intuition)
+- Khatri-Wilde 2020 Prop 15.2
+
+**Severity**: MAJOR, **~2-3 人日**
+
+### 6.4 γ.G3 (MAJOR) — ε-composable transfer
+
+**Precise statement**: PLOB 2017 asymptotic capacity → $\varepsilon$-composable finite rate
+
+**Sub-steps**:
+- Apply Devetak-Winter finite-size framework, or Portmann-Renner composable wrap.
+
+**Severity**: MAJOR, **~1-2 人日** (可能借用 Kamin GEAT 2025 结果)
+
+### 6.5 γ.G4 (MINOR) — Classical announcement LOCC processing
+
+**Sub-steps**:
+- Standard LOCC monotonicity argument; Horodecki 2009 §V.
+
+**Severity**: MINOR, **~0.5 天** (textbook)
+
+### 6.6 Summary γ user workload
+
+| Sub-gap | AI-assistable? | 用户人日 |
+|---|---|---|
+| γ.B.G1 | partial (literature pointer) | 2-3 |
+| γ.B.G2 | partial (framework pointer) | 1-2 |
+| γ.B.G3 | partial | 2-3 |
+| γ.G3 | substantial (Kamin 2025 可直接 use) | 1-2 |
+| γ.G4 | textbook (AI 可起草 draft) | 0.5 |
+| **Total** | | **6.5-10.5 人日** |
+
+**Matches early estimate 5-7 人日 if user reuses Kamin + textbook results liberally**。γ 工期比 β 短 **if** β.G3 numerical 发现 β ≥ Pirandola (这时 γ 兜底 + user 节省 β.G2+G5 工时)。
+
+---
+
+## 7. γ as safety net — decision point
+
+γ 触发条件 (user workflow):
+1. β Phase 1 (β.G1 + β.G4) close → proceed
+2. β Phase 2 (β.G3 numerical): **AI computes E_R^∞(M_tilde) sweep**
+3. 若 result < Pirandola min-cut → β promising, continue β.G2 + β.G5
+4. 若 result ≥ Pirandola → **fallback γ**:
+   - β.G1 + β.G4 work **部分 reusable** for γ (Portmann-Renner framework identical)
+   - γ.B.G1 + γ.B.G2 + γ.B.G3 **新工作** ~5-8 人日
+   - 总工期: β Phase 1 (~3-4 天) + γ fallback (~5-8 天) = **~8-12 天 total** (vs β 完整 10-15 天)
+
+---
 
 ---
 
