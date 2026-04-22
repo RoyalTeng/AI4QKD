@@ -30,7 +30,7 @@
 ## 0. 严谨性声明 (R0.2 compliance)
 
 - AI autonomous draft → **[CONJ-DRAFT, open-only]**
-- Citation fidelity taxonomy (四级, 均 明示 per citation):
+- Citation fidelity taxonomy (五级, 均 明示 per citation):
   - **[VERIFIED against PDF]** — 已对 PDF 原文核对 (本项目内罕见; 须 explicit)
   - **[MEMO-LEVEL QUOTE]** — reproduced from `docs/literature/*.md` 本地 memo; memo 已对 PDF 做过 Level 3 精读, 但 memo 本身非 PDF 原文; 用户须对照 PDF verify
   - **[SUMMARY]** / **[SUMMARY, not direct quote]** — 本地 memo 或 AI 的 paraphrased summary, 非原文 quote; PDF verify required
