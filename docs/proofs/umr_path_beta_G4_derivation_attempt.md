@@ -79,22 +79,19 @@ Construction:
 - LOPC Eve 不 "broadcast" classical info to Alice-Bob; 那是 Alice-Bob 之间的 classical side channel
 - 所以 LOPC Eve 不 simulate umr Charlie's role; 两者 structurally 不同
 
-### 2.5 Reframing attempt 2 — "LOPC 外加一个 side channel"
+### 2.5 Reframing attempt 2 — "LOPC 外加一个 side channel" (R2 correction, no claim)
 
-Consider extended protocol class: **LOPC + public classical side channel from Eve**. 这 essentially 把 umr 的 Charlie broadcast 看作 "Eve's gift to Alice-Bob". 但 this class is **strictly more permissive** than standard LOPC — adding Eve's classical gifts only helps Alice-Bob.
+Consider hypothetical extended protocol class: **LOPC + public classical side channel from Eve** (heuristic model). 这 essentially 把 umr 的 Charlie broadcast 看作 "Eve's classical announcement to Alice-Bob".
 
-结果: $R^{\text{LOPC+gift}}(\tilde{\mathcal{M}}) \geq R^{\mathcal{A}_\text{umr}}(\Pi)$. 但 **我们的 target** 是 standard LOPC, 不是 LOPC+gift.
+**R2 correction per Codex R1**: 本 draft **不声称** LOPC+gift 与 standard LOPC 或 umr 之间任何 rate inequality. 原 draft 曾 asserted $R^{\text{LOPC+gift}} \geq R^{\mathcal{A}_\text{umr}}(\Pi)$ 并 called LOPC+gift "strictly more permissive", 但**未**提供 formal quantifier-level definition of extended model 或 inf/sup order over Eve strategies. 该 assertion 撤回.
 
-**Inequality hierarchy (conjectural)**:
-$$R^{\mathcal{A}_\text{umr}} \stackrel{?}{\leq} R^{\text{LOPC+gift}} \leq R^{\text{LOPC}}$$
-
-第一个 ≤ 看似成立 (umr 多一个 Charlie BSM constraint 等于 structured LOPC+gift). 第二个 ≤ **不一定成立** — LOPC+gift 允许 Eve 给 Alice-Bob classical side info, 这可能**增加** rate (Alice-Bob 获得额外信息) 或**减少** rate (Eve 的 gift 其实是 leak). 方向 agnostic.
+LOPC+gift **可能**作为 heuristic bridge useful, 但 **无 rate inequality 在本 draft 已 established**. 实际方向 (是否更松/更紧/agnostic) 需 user 或后续工作 formalize extended model 定义 + Eve strategy quantifier 后才能判定.
 
 ### 2.6 Gap summary (after this draft attempt)
 
-- **Claim β.G4.α** 的 direct simulation construction **不成立** (per 2.4)
-- **LOPC+gift 作桥** 可能给 $R^\text{umr} \leq R^\text{LOPC+gift}$ 但 **不直接给** $R^\text{umr} \leq R^\text{LOPC}$
-- 本 draft attempt 实际上 **reaffirms β.G4 as open structural gap**, 无 valid reduction path identified
+- **§2.3 attempted direct simulation construction 失败** (per §2.4 argument, 仅针对 该 specific construction)
+- **LOPC+gift 作 heuristic bridge**: 未 established rate inequality to either LOPC 或 umr
+- 本 draft attempt **reaffirms β.G4 as open structural gap**; 本 draft 未 rule out 其他 simulation map, 只 invalidate §2.3 的 specific construction
 
 ---
 
@@ -137,7 +134,8 @@ $$R^{\mathcal{A}_\text{umr}} \stackrel{?}{\leq} R^{\text{LOPC+gift}} \leq R^{\te
 | Aspect | Status |
 |---|---|
 | β.G4 claim $R^\text{umr} \leq R^\text{LOPC}(\tilde{\mathcal{M}})$ | **still OPEN** |
-| Direct simulation map | **disproven via 2.4 argument** (LOPC Eve 不 force broadcast) |
+| §2.3 direct simulation construction | **invalidated by §2.4 argument** (针对 that specific construction) |
+| Other direct-simulation maps | **未排除** (本 draft 仅 invalidate §2.3 construction, 非 disprove all possible simulations) |
 | Paths forward | **Path A / B / C enumerated** (no AI proof on any) |
 | 升级可能性 | **只能通过 user research-level work on Path C** |
 

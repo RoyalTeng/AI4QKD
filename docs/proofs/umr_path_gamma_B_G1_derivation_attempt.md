@@ -72,18 +72,15 @@ for **some** corresponding $K'$ bound by Alice-Charlie channel capacity.
 - Charlie 作为独立 party, BSM 是 Charlie 的 local operation on $(\hat{A}, \hat{B})$, 不是 Alice-Bob 的 LOCC
 - Charlie 把 $c$ broadcast 给 Alice-Bob → 等效于 "Alice-Bob 获得 classical info from Charlie's measurement on their shared-but-not-directly-held state"
 
-**形式化尝试**: $I(A : B | c)_\rho$ (conditional mutual information of Alice-Bob given Charlie's broadcast) is the relevant quantity for secret key.
+**形式化尝试**: 相关候选 quantity 是 $I(A : B | c)_\rho$ (conditional mutual information of Alice-Bob given Charlie's broadcast) 或其他 secret-key-relevant 量, but precise form 未定.
 
-**Issue**: $I(A : B | c) \leq I(A : B)$ (conditioning on broadcast **不增加** joint info). 但 $I(A : B)$ on the four-party state **依赖 Charlie's BSM choice** — Charlie adversarial means Charlie 选 BSM 使 $I(A : B | c)$ 最小.
+**Issue 1 (R2 correction per Codex R1)**: $I(A : B | c) \leq I(A : B)$ (conditioning 不增加 joint info) **是错的** — conditional mutual information 与 unconditional mutual information 之间**无 general monotonicity**, 方向可正可负取决于 state structure. 本 draft 原先的 "conditioning 不增加" 声明**撤回**.
 
-**Conclusion**: Approach B 给 $I(A : B | c) \leq I(A : \hat{A})_\rho + I(B : \hat{B})_\rho$ (by some DPI sequence) — 但 **这不是** γ.B.G1 陈述 (不是 Alice-Bob secret key ≤ Alice-Charlie capacity). Different quantity.
+**Issue 2**: 即使有某个 DPI chain 给 mutual information bound, **bridge to $E_R(\mathcal{E}_1)$ still fails** because $I \not\leq E_R$ generally (Codex R1 §3 已指出). 所以 Approach B 即使 technical mutual-info chain 可走通, 仍不 close γ.B.G1.
 
-**Approach B 部分 progress**:
-- $I(A : B | c) \leq \min(I(A : \hat{A})_\rho, I(B : \hat{B})_\rho)$ 是 **intuitive** but 需 formalization
-- **问题**: mutual information ≤ relative entropy of entanglement 一般**不成立** (Codex R1 已指出 $I \not\leq E_R$ generally)
-- 所以 $I(A : B | c) \leq \min(E_R(\mathcal{E}_1), E_R(\mathcal{E}_2))$ **不 follow** from Approach B
-
-**Conclusion**: Approach B **部分 informative** 但 **未 close** γ.B.G1.
+**Conclusion**: Approach B **未 close** γ.B.G1. 两个 blocker:
+- 需要 well-defined candidate DPI chain (未找到 rigorous one)
+- 即使找到, 到 $E_R$ 的 bridge 仍 open ($I \not\leq E_R$ generally)
 
 ### 2.3 Approach C — squashed entanglement framework [SUMMARY, unverified]
 
@@ -115,12 +112,18 @@ for **some** corresponding $K'$ bound by Alice-Charlie channel capacity.
 
 从 Approach A/B/C/D 失败 + 部分 insights 总结:
 
-**Insight γ.B.G1.INS1 [CONJ-DRAFT]**: 
-> umr key rate 不是 "Alice-Charlie capacity + Alice-Bob reduction" 的 sum; 它是 **Charlie's broadcast information content** 的 function, 该 content 本身受 $(\mathcal{E}_1, \mathcal{E}_2)$ joint constraint.
+**Conjecture γ.B.G1.CONJ1 [CONJ-DRAFT, speculation only]** (R2 correction per Codex R1):
 
-这意味着 γ.B.G1 target lemma 的 correct formulation **不是** 单边 $E_R(\mathcal{E}_1)$ bound Alice-Bob key rate, 而是 joint bound on Charlie's broadcast entropy 或类似量.
+> 4 个 approaches 的 failure **可能 suggest** (但**未 prove**): γ path 的 single-edge PLOB 分解 intuition 可能**不是**正确 formulation — umr key rate 或许 essentially 是某种 joint multi-edge quantity (例如 Charlie broadcast information content 或类似), 不 decomposable 成 single-edge $E_R(\mathcal{E}_1)$ bound.
 
-**Consequence**: γ path (Log 07 §4.5) 的 "单边 PLOB + DPI transfer" intuition **可能 intrinsically 不 work** because key rate 不 decomposes 成 single-edge bounds.
+**注意**: 这是 **speculation**, 非 established. 4 approaches 失败只证明当前 single-edge-transfer program **目前 unclosed**, **不 establish** 正确 formulation 必然 NOT single-edge. 可能存在 approach E/F/... 我未想到.
+
+**Possible alternative formulations (candidates, unverified)**:
+- Joint bound on Charlie's classical broadcast information content (受 joint $(\mathcal{E}_1, \mathcal{E}_2)$ constraint)
+- Multi-edge amortized framework (与 β.G5 同类)
+- Different entropy measure avoiding $I \not\leq E_R$ obstacle
+
+**Consequence (tentative, [CONJ-DRAFT])**: γ path 原 intuition "单边 PLOB + DPI transfer" **可能 need reformulation**; 但本 draft 不 prove it 必须 reformulation, 只 identify 现 approaches 全 fail.
 
 ### 3.1 Candidate reformulation
 
@@ -130,16 +133,18 @@ for **some** corresponding $K'$ bound by Alice-Charlie channel capacity.
 
 ## 4. Honest conclusion — γ.B.G1 remains OPEN (with structural doubts)
 
-本 draft 尝试 4 个 approaches (Prop 19.2 amortized, Horodecki private state, squashed entanglement, broadcast-channel-with-classical-side). **均失败** — 都遇到同一 cross-task transfer 障碍.
+本 draft 尝试 4 个 approaches (Prop 19.2 amortized, Horodecki private state, squashed entanglement, broadcast-channel-with-classical-side). **4 个 approaches 均 fail** — 遇到不同障碍 (circular, $I \not\leq E_R$, cross-task obstacle, receiver-side asymmetry).
 
-**更深的 insight**: γ path's **一开始**假设 (单边 PLOB transfer 给 umr key rate) 可能是 structurally 错的. Charlie's classical broadcast 的 information content 是 multi-edge joint quantity, 不能简单 decompose.
+**Speculation (R2 correction, CONJ1 only)**: γ path 单边 PLOB 分解 intuition 或许 **structurally 不 work**, 但本 draft **不 prove** 这一点; 只 prove 现 4 approaches 全 fail. 可能存在 approach E/F/... AI 未想到.
 
-### 4.1 Paths forward (for user decision)
+### 4.1 Paths forward (for user decision, agnostic)
 
-- **Path A** (Original γ): 如果 single-edge transfer 真的 intrinsically 不 work, γ path 无法达到 $-\log_2(1-\eta_\text{arm})$ scaling. 需 fallback 到 Pirandola 2019 trusted-relay $-\log_2(1-\sqrt{\eta_A\eta_B})$ 或类似 weaker bound.
-- **Path B** (Reformulate γ): 把 γ 重新 target broadcast classical capacity, 接受 weaker/different scaling.
-- **Path C** (Drop γ, push β): 直接让 β 承担 main Sub-Q3 task, γ 不再 safety net.
-- **Path D** (User research-level): 用户直读 Khatri-Wilde Ch 20 + Horodecki 2005 PDF + 纸笔尝试 bridge. 可能发现 AI 遗漏的 technical path.
+- **Path A** (Continue γ original target): user research-level 尝试 additional approach E/F beyond AI's 4. 可能 close γ.B.G1 on original $-\log_2(1-\eta_\text{arm})$ target.
+- **Path B** (Reformulate γ): 改换 target quantity (e.g., Charlie broadcast capacity, multi-edge joint bound). Scaling 可能 different, 需 user 决定 reformulated target 是否仍值得.
+- **Path C** (Drop γ): 放弃 γ safety net, 纯 β-centric Sub-Q3. 若 β 也 fail 则整体 Sub-Q3 upper bound regresses.
+- **Path D** (Fallback to other literature bound): 寻找 已 established 的 umr-specific upper bound 文献 (若存在). 本 draft 未做 exhaustive 搜索.
+
+**Agnostic note**: 本 draft **不 claim** γ path fallback to Pirandola trusted-relay bound — trusted-relay 假设 umr 不满足 (RETRACTION.md §1.1 已讨论), 所以 trusted-relay bound 对 umr **不直接 apply**. γ weakening 的 concrete form 未 established.
 
 ### 4.2 Literature pointers (no AI application)
 
@@ -153,18 +158,20 @@ for **some** corresponding $K'$ bound by Alice-Charlie channel capacity.
 
 | Aspect | Status |
 |---|---|
-| γ.B.G1 claim (single-edge Alice-Charlie bound transfers to Alice-Bob) | **still OPEN, with STRUCTURAL DOUBT** |
-| Approaches A/B/C/D tried | **all fail, different cross-task obstacles** |
-| Key insight | **γ path's single-edge decomposition possibly wrong starting assumption** |
-| 升级可能性 | **only via user research-level work on Path A-D decisions** |
+| γ.B.G1 claim (single-edge Alice-Charlie bound transfers to Alice-Bob) | **still OPEN** |
+| Approaches A/B/C/D tried | **all fail**, various obstacles (circular / $I \not\leq E_R$ / cross-task / receiver asymmetry) |
+| CONJ1 (single-edge decomposition may be wrong) | **speculation [CONJ-DRAFT]**, not established by 4 failures |
+| 升级可能性 | **only via user research-level work on Path A/B/C/D** |
 
-### 5.1 Implication for Q1 decision (β main + γ safety)
+### 5.1 Implication for Q1 decision (β main + γ safety) — agnostic
 
-本 draft 发现 γ safety net 可能 **structurally weaker than previously assumed**. User Q1 决策 (β main + γ safety) **仍合理** 因为:
-- β main 继续有效 (β path 独立 of γ)
-- γ safety 变 "may not achieve full $-\log_2(1-\eta_\text{arm})$" — 可能退化到 Pirandola trusted-relay bound
+本 draft 发现 γ safety net **可能**比 previously assumed weaker, 但 **agnostic about specific form**:
+- **β main 继续有效** (β path 独立 of γ, 不受 γ.B.G1 的 4 approach failures 影响)
+- **γ safety 状态**: currently **open** — 本 draft 不 prove γ 必然 fail, 也不 establish 具体 fallback bound
 
-建议 user: 接受 γ 可能提供 **weaker** fallback than originally hoped, 或 reformulate γ target.
+**不声明** fallback 到 Pirandola trusted-relay bound — 后者 assumes trusted relay, umr violation (per RETRACTION.md §1.1). 若 γ 真的 reformulate, specific fallback target 需 user research-level analysis 决定.
+
+**Agnostic takeaway for Q1**: Q1 决策 (β main + γ safety) 的 rationale 基于 β / γ 的 research direction 可行性 analysis, 本 draft failure 不 shift decision, 但 adds caveat that γ path may need additional work or reformulation.
 
 ---
 
