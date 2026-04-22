@@ -104,7 +104,11 @@ for **some** corresponding $K'$ bound by Alice-Charlie channel capacity.
 
 **Partial insight**: Alice-Bob 的 key material 实际来自 "Alice 发送 mode → Charlie → Charlie broadcast $c$ → Alice-Bob combine with their own operations + $c$ to distill key". 所以 Alice-Bob 的 "effective channel" 在 $\mathcal{E}_1$ edge 上**仅 contribute through Charlie's side**.
 
-**Conclusion**: Approach D 揭示 $\mathcal{E}_1$ **不 directly** bound Alice-Bob key rate. Alice-Bob key 来自 **Charlie's broadcast + Alice-Bob local operations**, 其中 Charlie's broadcast 的 information content 受 $\mathcal{E}_1$ 和 $\mathcal{E}_2$ 的 **joint** capacity 约束, 不是单边.
+**Conclusion (R3 correction per Codex R2)**: Approach D 的 rigorously supported point 仅:
+
+> $\tilde{\mathcal{M}}_\text{one-edge}: A' \to (\hat{A}, c)$ 的 one-edge reduction **不 directly** 产生 Alice-to-Bob channel bound — Bob 在此 reduction 下 没直接 receive from $\mathcal{E}_1$ edge.
+
+**Conjectural interpretation (candidate reformulation, [CONJ-DRAFT])**: 一个 possible but **未 established** reformulation 是把 Alice-Bob key rate 表达为 Charlie's broadcast information content 的 function, 该 content **也许** 受 $(\mathcal{E}_1, \mathcal{E}_2)$ joint capacity 约束 — 但 本 draft 不 prove 此 reformulation 是 correct 或 necessary. 见 §3 CONJ1 speculation.
 
 ---
 
