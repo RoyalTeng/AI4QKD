@@ -209,8 +209,48 @@
 
 ---
 
+## 11. Day 2 late-evening status additions (2026-04-22)
+
+### 11.1 T2-A Frank-Wolfe stretch empirically invalidated
+
+- commit dc021cf: [docs/findings/t2a_thm4_empirical_finding_2026-04-22.md](t2a_thm4_empirical_finding_2026-04-22.md)
+- 实测 at (n=10^10, 10 dB): Hard rate 0.0870 vs Thm 4 rate 0.0854 vs Kamin visual ~0.06
+- Thm 4 vs Hard improvement: **~1.8% only**
+- 40-45% offset vs Kamin **not fixable** by τ-slack or FW outer loop
+- 结论: my `kamin_choi_sdp_qubit_bb84(use_thm4=True)` 直接求解 Eq. 49 (不是 affine 下界), MOSEK 能 close optimum → **FW outer loop 不提供额外改进** (per Kamin §5.2.1 end)
+- Offset 源 = plot-reading uncertainty ±20-30% + (γ, α) grid granularity + λ_EC 实现差异
+- **T2-A stretch 工作已实证否定启动 value** — 保持 operational closure 状态
+
+### 11.2 M4B TF-QKD 硬验收 (log-log slope 0.5 ± 0.05) 确认通过
+
+- Per [docs/families/tfqkd_family.md:187, 234](../families/tfqkd_family.md)
+- 实测 log-log slope = **0.519** (target 0.5 ± 0.05) ✓
+- Follow-up gaps (documented, 非 blocker):
+  - rel=0.05 绝对值验收未达 (需 k-photon error model)
+  - F6 `partial → covered` 门槛未达 (需 Fock truncation + R_A phase register)
+- **M4B 主要硬验收通过**; 可视为 Phase 0.5 effectively closed
+
+### 11.3 Autonomous plateau reached (Day 2 close)
+
+Remaining autonomous-achievable work:
+- T2-A FW outer loop: **实证否定** (§11.1)
+- M4B: **slope 验收通过** (§11.2)
+- 三 paths: [CONJ]/scaffolding fully closed
+- Sub-Q audit integration: v0.3 snapshot 当前
+
+**进一步升级** 的 autonomous path 全部 blocked on user action:
+- 选 path α/β/γ 中哪条做 formal (Q1)
+- T2-B decoy Fig.3 trigger 时机 (Q2)
+- Werner reduction C2 签字 + C1 验证 (Q4)
+
+---
+
 ## Changelog
 
+- **v0.4** (2026-04-22 Day 2 late evening autonomous plateau):
+  - §11.1 T2-A stretch 实证否定记录
+  - §11.2 M4B log-log slope 确认通过记录
+  - §11.3 autonomous plateau statement + 升级 path blocked on user
 - **v0.3** (2026-04-22 Day 2 evening，paths cycle 完成后补充)：
   - Sub-Q3 §4 表格新增 path α/β/γ 的具体状态行（scaffolding / [CONJ]-derivation / v0.4+R3）
   - 反映 Codex 5-round paths review 的最终状态
