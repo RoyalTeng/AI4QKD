@@ -30,7 +30,12 @@
 ## 0. 严谨性声明 (R0.2 compliance)
 
 - AI autonomous draft → **[CONJ-DRAFT, open-only]**
-- Citations: **[VERIFIED against PDF]** 或 **[RECALLED]** 明示
+- Citation fidelity taxonomy (四级, 均 明示 per citation):
+  - **[VERIFIED against PDF]** — 已对 PDF 原文核对 (本项目内罕见; 须 explicit)
+  - **[MEMO-LEVEL QUOTE]** — reproduced from `docs/literature/*.md` 本地 memo; memo 已对 PDF 做过 Level 3 精读, 但 memo 本身非 PDF 原文; 用户须对照 PDF verify
+  - **[SUMMARY]** / **[SUMMARY, not direct quote]** — 本地 memo 或 AI 的 paraphrased summary, 非原文 quote; PDF verify required
+  - **[INFERENCE, unverified]** — AI 的 reading / 推断, 无 PDF 直接支持; user must verify
+  - **[RECALLED]** — AI 记忆, 未核对 memo 或 PDF; lowest confidence
 - 所有 structural gaps 保持 OPEN; **不** AI draft proof sketch
 - 用户 R0.2 C1+C2+C3 升级 pathway 仅适用 **post-proof review**
 
@@ -211,7 +216,7 @@ umr 每轮 Charlie 可 adapt strategy based on prior rounds' announcements → n
 - **[CONJ-DRAFT, open-only]** — 所有 structural gaps 保持 OPEN
 - **不**声称 combined chain inequality 成立
 - **不**升级任何分级
-- Citations 严格 [VERIFIED] / [RECALLED] 区分
+- Citations 使用 §0 定义的 5 级 taxonomy: **[VERIFIED]** / **[MEMO-LEVEL QUOTE]** / **[SUMMARY]** / **[INFERENCE, unverified]** / **[RECALLED]**; 非 PDF-verified 项 caveats 明示
 - AI autonomous **不** draft proof sketch for structural gaps (per feedback memory 2026-04-22)
 
 ---
