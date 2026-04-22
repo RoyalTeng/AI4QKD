@@ -211,6 +211,35 @@
 
 ## 11. Day 2 late-evening status additions (2026-04-22)
 
+### 11.0 User Q1 decision — β main + γ safety net (Option 2)
+
+**User 2026-04-22**: "我选择 beta，第二个方案"
+
+实施状态:
+- [q1_decision_record_2026-04-22.md](q1_decision_record_2026-04-22.md) 正式记录
+- [umr_path_beta_derivation.md](../proofs/umr_path_beta_derivation.md) v0.3 (§6-§8 deepened scaffolding)
+- [umr_path_gamma_v0_4_derivation.md](../proofs/umr_path_gamma_v0_4_derivation.md) v0.5 (§6-§7 safety-net deepening)
+- [umr_path_alpha_derivation.md](../proofs/umr_path_alpha_derivation.md): **dormant** (per user decision, α 不启动 formal 工作)
+
+### 11.0.1 β.G3 numerical early signal (cross-over finding)
+
+**[beta_G3_numerical_finding_2026-04-22.md](beta_G3_numerical_finding_2026-04-22.md)**: tensor-product log-negativity in qubit amp-damp model:
+
+| η_arm | LN_tensor | Pirandola | ratio |
+|---|---|---|---|
+| 0.9 | 1.85 | 3.32 | **0.56** (upstream tighter) |
+| 0.5 | 1.17 | 1.00 | 1.17 |
+| 0.1 | 0.275 | 0.152 | **1.81** (upstream looser 2×) |
+| 0.01 | 0.029 | 0.015 | **1.98** (实际 QKD) |
+
+- **Practical regime (η ≤ 0.1, 实际 QKD)**: tensor-product upstream 2× Pirandola 松 — β 要 tighter 必需 Charlie BSM LOCC 救场
+- **Low-loss regime (η ≥ 0.5)**: upstream 已经 tighter, β 自然更紧
+- **Direct E_R(M̃_β) SDP** 在本地 MOSEK OOM — 留给用户 desktop 环境 verify
+
+**Cautionary signal**: 在实际 QKD regime, β 可能**不**给 tighter bound via tensor-product route; 用户 Phase 2 β.G3 direct SDP 是决策节点。建议 user Phase 1 (β.G1 + β.G4) 先做 — 对 γ fallback 也 useful。
+
+
+
 ### 11.1 T2-A Frank-Wolfe stretch empirically invalidated
 
 - commit dc021cf: [docs/findings/t2a_thm4_empirical_finding_2026-04-22.md](t2a_thm4_empirical_finding_2026-04-22.md)
