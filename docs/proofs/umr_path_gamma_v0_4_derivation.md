@@ -97,11 +97,15 @@ $$K_\text{A-C}^{\text{LOPC}}(\mathcal{E}_1) \leq E_R^\infty(\mathcal{E}_1) = -\l
 
 **严谨性**：**[CONJ, γ.G3]**
 
-### 2.5 Step E — Combine scaling
+### 2.5 Step E — Combine scaling **[conditional on γ.B.G1-G3 + γ.G3]**
 
-$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq -\log_2(1-\eta_\text{arm})$, $\eta_\text{arm} = \min(\eta_A, \eta_B)$
+**Conditional** on Step B target lemma 的 formal establishment + Step D ε-transfer:
+
+$$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq -\log_2(1-\eta_\text{arm}), \quad \eta_\text{arm} = \min(\eta_A, \eta_B) \qquad \text{[CONJ]}$$
 
 High-loss: $\approx \eta_\text{arm}/\ln 2 = \sqrt{\eta_{AB}}/\ln 2$ (for symmetric)
+
+**注**: 本 Step E 的 inequality **依赖** Step B + Step D 的所有 gaps 被 close。任一 gap unresolved → Step E 不成立。本文件**不**独立声称此 inequality。
 
 ---
 

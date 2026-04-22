@@ -150,7 +150,7 @@ $f(\eta_A, \eta_B)$ 的具体数值与 Pirandola 2019 min-cut bound $-\log_2(1-\
 | Bound scaling (targeted) | $\sqrt{\eta_{AB}}$ (same as Pirandola trusted-relay) | **unknown**: could be smaller, comparable, or larger vs Pirandola min-cut (per Log 07 §4.4 agnostic) | $\sqrt{\eta_{AB}}$ (same as PLOB single-edge) |
 | Gaps count (after Codex R1) | **demote to scaffolding** (identity-embedding is same class as v0.2 retracted) | 5 (4 MAJOR + 1 MINOR) | 5 (4 MAJOR); **v0.3 super-receiver 也是 hidden cross-space** |
 | Risk of v1/v0.2 pattern recurrence | **HIGH** (Codex R1 REJECTED) | MEDIUM (β.G5 adversarial reduction open) | MEDIUM (super-receiver is new but 仍 cross-space) |
-| Recommendation (Codex R1-informed) | demote 到 scaffolding until Portmann-Renner embedding/security-transfer formal | 需 close β.G5 adversarial-channel reduction + SDP numerical | rewrite v0.4 without super-receiver merge |
+| Recommendation (Codex R1-R3-informed, updated R4) | v0.2+R4: scaffolding-only record (see `umr_path_alpha_scaffolding.md`) until Portmann-Renner embedding/security-transfer formal | v0.2+R3: need to close β.G5 adversarial-channel reduction + SDP numerical; tightness agnostic | v0.4+R3: Step B downgraded to target DPI lemma (not K_AB≤K_AC capacity transfer); 5 gaps at [CONJ] |
 
 ---
 
