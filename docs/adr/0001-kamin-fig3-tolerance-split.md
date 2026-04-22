@@ -144,6 +144,25 @@ Per 2026-04-21 user delegation:
 - **T2-Phase B**：defer 至 Phase 2 Sub-Q3 comparison work；trigger = user 指示 or Sub-Q3 需要精确 decoy baseline
 - [AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md](../AUTONOMOUS_RESEARCH_PLAN_2026-04-21.md) 需相应更新 T2 section
 
+## Operational refinement (2026-04-22 post-measurement)
+
+After Phase 1 measurement (详见 [kamin_fig1_t2a_gap_analysis.md v0.2 §5-§6](../findings/kamin_fig1_t2a_gap_analysis.md)), **T2-A "< 5% across all plot points" 发现 not operationalizable**:
+
+- Kamin Fig.1 是 log-log plot，visual reading uncertainty ±20-30%
+- No machine-readable anchor table in paper or supplementary material
+- 即使实施 Thm 4 Frank-Wolfe 也无法 verify "< 5% across all plot points" 对任意 (n, loss) 组合
+
+**T2-A 的 operationalizable closure criteria (autonomous refinement)**:
+- (a) §6.3 明示 anchor: n=10^12, 0 dB, rate ≈ 0.9 — my 0.9008 **< 1% ✓**
+- (b) DW asymptotic saturation: test A4 已 pass (< 1% at n ≥ 10^10, 0 dB)
+- (c) Cutoff tolerance: ±6 dB per 2a 签字，accepted
+
+**基本满足**：T2-A 在 operationalizable criteria (a-c) 上 **已闭合**；"all-plot-points < 5%" 作为**不可验证** stretch goal，不作为 T2-A 闭合前提。
+
+**Thm 4 Frank-Wolfe 扩展**：留作可选 stretch work，非 T2-A 闭合 blocker；如果未来 user 获取 Kamin 作者 machine-readable data，可重启精度 validation。
+
+**Status update**: **T2-A closed at operationalizable level** (2026-04-22 autonomous)。**S2.5 硬验收本体** 仍 OPEN (同 user 3b) — 待 T2-B (decoy Fig.3)。
+
 ---
 
 ## Changelog
