@@ -1,0 +1,12 @@
+0eb0de5 feat(β.G3 plot): visualization of β bound vs Pirandola (plateau ~0.19× stable)
+0359aaa feat(β.G3 dense sweep): 14-point η sweep + all-Bell-outcomes avg β bound ≈ 0.19 × Pir stable
+f40c152 docs(MQ snapshot v0.6): β.G3 v0.3 definitive result integrated
+fb75f2b docs(β.G3 finding v0.3): definitive pure-loss qubit post-BSM result
+c0bfda1 feat(β.G3 amp-damp post-BSM): true conditional E_R under pure-loss qubit model
+b2f4253 feat(β.G3 MDI-Werner): 含 Charlie BSM LOCC 的 E_R 直接计算 — β 方向强 positive signal
+09c8876 docs(MQ snapshot v0.5): integrate Q1 decision + β.G3 numerical signal
+da9771d docs/scripts(β.G3 numerical): tensor-product log-negativity cross-over finding
+833f132 docs(Sub-Q3 scaffolding): β v0.3 + γ v0.5 深化 — for user β-main + γ-safety work
+afd1dfd docs(Q1 decision record): 用户 2026-04-22 选 β 主攻 + γ safety net (Option 2)
+0c64b02 docs(Q1 decision-aid): Path α/β/γ 选择分析 — 用户决策辅助
+ba1d106 docs(MQ snapshot v0.4): Day 2 late-evening additions — T2-A stretch invalidated + M4B slope ✓

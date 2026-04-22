@@ -221,23 +221,32 @@
 - [umr_path_gamma_v0_4_derivation.md](../proofs/umr_path_gamma_v0_4_derivation.md) v0.5 (§6-§7 safety-net deepening)
 - [umr_path_alpha_derivation.md](../proofs/umr_path_alpha_derivation.md): **dormant** (per user decision, α 不启动 formal 工作)
 
-### 11.0.2 β.G3 definitive numerical result (v0.3)
+### 11.0.2 β.G3 toy-model numerical exploration (v0.4 — R2 FIX after Codex R1 REJECTED)
 
-**Day 2 late-evening 最终 converged result** (commit fb75f2b):
+**诚实版本** (commit pending): v0.3 曾被 over-claim为 "definitive / β 真实值"; 经 Codex R1 review REJECTED (2 CRITICAL), 现 v0.4 降级:
 
-三种 numerical analysis 的收敛 picture:
+**三种 toy qubit variants** (all **toy abstract**, not physical MDI):
 
-| Analysis | η=0.1 ratio | 物理含义 |
+| Variant | η=0.1 ratio | 标签 |
 |---|---|---|
-| Tensor-product upstream (v0.1, 无 LOCC) | 1.81× | β upstream (**太松**) |
-| Werner heuristic (v0.2, depol model) | ~0 (artifact) | β lower bound (**太紧**) |
-| **Amp-damp post-BSM (v0.3, physical)** | **0.095×** | **β 真实值 (qubit pure-loss)** |
+| A. Tensor-product upstream (no LOCC) | 1.81× | valid **upper bound** on β (β ≤ 2× Pir, 不紧) |
+| B. Werner **heuristic surrogate** (depol substitution) | 0 (artifact) | **heuristic only**, NOT formal β lower bound |
+| C. Post-BSM toy projection (all-Bell summed) | **0.19×** | toy qubit estimate; **p_BSM scaling 与物理 MDI 不符** |
 
-v0.3 结果: β per-round bound ≈ **0.094 × Pirandola**, 紧约 **10 倍**, ratio 在所有 η 下稳定 (0.054-0.095)。
+**Canonical convention (R2 fix)**: all-Bell summed (Variant C), giving plateau ≈ 0.19× across η ∈ [0.001, 0.5].
 
-**关键 implication**: β 方向 **strong positive signal** — 潜在 novel bound 比 Pirandola 紧 ~10×。建议用户 **fast-track β formal work** (Phase 1-3)。γ safety net 保留但 less urgent。
+**Honest interpretation**:
+- Direction: Variant C→A reduction factor ~10× 是 plausibility signal that β-via-Charlie-BSM-LOCC **可能** tighter than Pirandola
+- **BUT**: p_BSM scaling 不符 physical MDI linear-optic BSM; qubit 非 bosonic CV
+- β-vs-Pirandola direction **仍 agnostic** per Log 07 §4.4
+- **不足以** justify fast-tracking β over γ safety net
 
-Desktop direct $E_R^{PPT}$ SDP 预期 confirm (log_neg ≥ E_R^PPT ≥ E_R^∞).
+**User decision bearing**:
+- β 路径**仍 [CONJ] pending β.G1-G5 formal work** (~7-10 人日)
+- γ safety net equally important; decision between β/γ 不 由 toy numerical 决定
+- Desktop bosonic SDP verification **critical** for real answer
+
+详见 [beta_G3_numerical_finding_2026-04-22.md v0.4](beta_G3_numerical_finding_2026-04-22.md)
 
 ---
 

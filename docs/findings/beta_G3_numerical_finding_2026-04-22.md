@@ -1,212 +1,166 @@
-# β.G3 numerical finding: tensor-product log-negativity 在实际高损耗不 tighter than Pirandola
+# β.G3 numerical exploration — toy qubit model [CONJ exploratory]
 
-**版本**：v0.1 **[numerical finding, qubit abstraction, no rigor upgrade]**
+**版本**：v0.4 **[CONJ, exploratory numerical only]** (2026-04-22 R2 FIX 响应 Codex R1 REJECTED)
 **日期**：2026-04-22 Day 2 late evening autonomous
-**目的**：为用户 β-main + γ-safety 决策 (Q1 Option 2) 提供 β.G3 "β bound 是否更紧" 的 early numerical signal
+**定位**：**toy-model 探索性 numerical signal**；**非** β.G3 definitive answer；不作为"β path 是否值得做" 决定依据
 
 ---
 
 ## 0. 严谨性 scope
 
-- **Qubit abstraction** (amplitude damping)，**不是** bosonic pure-loss
-- 计算 log-negativity (not E_R directly; log-negativity bounds and relates to channel capacity)
-- 未 include Charlie BSM LOCC — 只是 upstream $E_1 \otimes E_2$ tensor product
-- **directional signal only**; **不**作为 β.G3 definitive answer
-- 不升级 FINDINGS / Log 07 / 任何 rigor
+### 0.1 本文件 IS
+
+- **toy qubit single-rail exploration** (amp-damping channel as approximate pure-loss analog)
+- 一种 **directional signal** 关于 E_R(β's effective channel) 可能的量级
+- Numerical exercise at **[CONJ]** 级，**不**改变任何 path 的 formal 状态
+
+### 0.2 本文件 IS NOT
+
+- **NOT** a physical MDI model (see §0.3 scaling mismatch)
+- **NOT** a proof that $E_R(\tilde{\mathcal{M}}_\beta) < $ Pirandola bound
+- **NOT** a justification to "fast-track β" — 该决定**仍**依赖 formal β.G1-G5 gap closure + desktop bosonic SDP
+
+### 0.3 Known model limitations (Codex R1 明示)
+
+- **p_BSM scaling mismatch**: 本 toy 模型给 $p_{\Psi-}(\eta_\text{sym}) = \eta(2-\eta)/4$（低 η 线性）— 与 physical MDI linear-optic BSM 的 $p \sim \eta^2/2$（二次）**不符**。原因：amp-damp 把 "loss" 等同于 $|0\rangle$ 吸收，非 vacuum mode ejection
+- **Single-rail vs dual-rail**: real MDI photons 是 dual-rail polarization encoded; 本 toy 是 single-rail qubit
+- **No HOM dip model**: Hong-Ou-Mandel 干涉 visibility 未 model
+- **No dark count / misalignment**
+- **Qubit abstraction vs bosonic CV**: real 协议 bosonic; 结果 direction 可能 differ
+
+### 0.4 对 β path formal 决策的 bearing
+
+**本 numerical signal 本身 不足以** make the β-vs-Pirandola comparison definitive。真实 answer 依赖:
+- β.G1-G5 formal gap closure (用户纸笔)
+- β.G3 direct E_R^PPT SDP on **bosonic pure-loss** model (desktop)
+
+本文件**只**给 directional plausibility,不 justifies fast-tracking β over γ safety net.
 
 ---
 
-## 1. 实证数据
+## 1. Three toy-model variants
 
-Script: [scripts/beta_G3_analytical_log_negativity.py](../../scripts/beta_G3_analytical_log_negativity.py)
-Implementation: direct NumPy eigenvalue (no MOSEK SDP)
+本 numerical exploration 尝试了三种 qubit 近似 for β's effective channel $\tilde{\mathcal{M}}$：
 
-| η_arm | LN_single | LN_tensor (=2×LN_single) | Pirandola_trusted | PLOB_single | LN_tensor / Pir |
-|---|---|---|---|---|---|
-| 0.9 | 0.926 | 1.852 | 3.322 | 3.322 | **0.558** |
-| 0.7 | 0.766 | 1.531 | 1.737 | 1.737 | **0.882** |
-| 0.5 | 0.585 | 1.170 | 1.000 | 1.000 | 1.170 |
-| 0.316 | 0.396 | 0.792 | 0.548 | 0.548 | 1.446 |
-| 0.1 | 0.138 | 0.275 | 0.152 | 0.152 | **1.809** |
-| 0.0316 | 0.045 | 0.090 | 0.046 | 0.046 | **1.938** |
-| 0.01 | 0.014 | 0.029 | 0.015 | 0.015 | **1.980** |
+| Variant | Model assumption | 含 LOCC? | Script | 结果 ratio to Pirandola at η=0.1 |
+|---|---|---|---|---|
+| A. Tensor-product upstream | $E_1 \otimes E_2$ (parallel amp-damp) | **No** (LOCC 未 apply) | [beta_G3_analytical_log_negativity.py](../../scripts/beta_G3_analytical_log_negativity.py) | **1.81** (松) |
+| B. Werner heuristic | 把 loss 替换为 depolarizing, Werner reduction | Yes | [beta_G3_mdi_effective_channel_werner.py](../../scripts/beta_G3_mdi_effective_channel_werner.py) | **0** (artifact, η<0.5 E_R=0) |
+| C. Post-BSM projection (toy) | amp-damp + project(A',B')→Bell + trace | Yes | [beta_G3_post_BSM_conditional_amp_damp.py](../../scripts/beta_G3_post_BSM_conditional_amp_damp.py) | **0.19** (all-Bell summed) |
 
-**Additivity check**: LN of tensor product = 2 × LN of single arm (confirmed numerically).
-
-**注**: Pirandola trusted-relay at symmetric η_A = η_B = η_arm 等于 $-\log_2(1-\eta_\text{arm})$ = PLOB single edge。这是因为 $\sqrt{\eta_A \eta_B} = \eta_\text{arm}$ 对称情形。
+**All three are toy qubit models with caveats** (see §0.3). None is definitive for physical MDI.
 
 ---
 
-## 2. Interpretation
+## 2. Canonical comparison convention (R2 FIX: pick one)
 
-### 2.1 Cross-over behavior
+**Codex R1 正确指出**: `0.094×` (Ψ⁻ only) vs `0.19×` (all-Bell summed) 在 v0.1/v0.2/v0.3 不 consistent。R2 FIX 固定 **单一 canonical convention**:
 
-**High η (low loss) regime (η_arm = 0.7-0.9)**: LN_tensor < Pirandola, 两者 ratio 0.56-0.88
-- 在这个 regime, **tensor-product upstream bound 比 Pirandola 更紧**
-- 这是 research-interesting 的 regime (bosonic 等价 ~1.5 dB 或更少 loss)
-- 但**不是**实际 QKD 工作 regime
+**Canonical**: **Summed over all 4 Bell outcomes**（$\Phi^\pm, \Psi^\pm$）— 对应 **ideal 4-outcome Bell measurement** (not linear-optic 2-outcome)。
 
-**Low η (high loss) regime (η_arm ≤ 0.316)**: LN_tensor > Pirandola, ratio → 2 as η → 0
-- 在高损耗 (实际 QKD 规模), tensor-product upstream bound **2× 于 Pirandola** (松 2 倍)
-- 这是 **实际 QKD 工作 regime** (QKD 通常 20+ dB loss, η ≤ 0.01)
+$$\text{β per-round bound}^\text{canonical} = \sum_c p_c \cdot \text{LN}(\rho_{AB|c})$$
 
-### 2.2 对 β path 价值的 bearing
+其中 $c$ 遍历四个 Bell state。**这是本文件的 main comparison quantity**。
 
-**关键理解**: Tensor product 是 **β.G3 的 upstream bound**, 不是 β 的 actual bound:
-- $E_R(\tilde{\mathcal{M}}_\beta) \leq E_R(\mathcal{E}_1 \otimes \mathcal{E}_2) \leq LN_\text{tensor}$
-- Charlie BSM 是 LOCC → 只能**降低** $E_R$
-- 所以 $E_R(\tilde{\mathcal{M}}_\beta) \leq LN_\text{tensor}$ 但具体 gap 未知
+**Other conventions 作 sensitivity**（非 main claim）:
+- Ψ⁻ only: 0.094 × Pir at low η (used in v0.3 initial prose — R2 移除作 main claim)
+- Linear-optic BSM (Ψ±  only): ~0.13× at low η (未重新 compute)
+- Physical MDI (Ψ± + post-selection on HOM dip): 需要 separate modeling
 
-**Case 1** (high loss): LN_tensor > Pirandola. $E_R(\tilde{\mathcal{M}}_\beta)$ 可能:
-- (a) 大于 Pirandola → β 不 tighter than Pirandola
-- (b) 小于 Pirandola 但大于 single-arm bound → β tighter than Pirandola (Charlie BSM saves the day)
-- (c) 等于 single-arm bound → β 恢复 Pirandola min-cut
-
-**Case 2** (low loss): LN_tensor < Pirandola. $E_R(\tilde{\mathcal{M}}_\beta) \leq LN_\text{tensor} <$ Pirandola  
-- → β **potentially** tighter than Pirandola (证 via Charlie BSM LOCC reduces)
-- 但需 exact $E_R$ SDP 确认
-
-### 2.3 Practical QKD regime signal (cautionary)
-
-在**实际 QKD loss 范围 (η ≤ 0.1, i.e., ≥ 10 dB loss)**:
-- LN_tensor 是 **PLOB single-edge 的 2 倍** (additivity 下的 parallel two-arm bound)
-- 要 β 比 Pirandola 更紧, 需要 **Charlie BSM LOCC 把 tensor product 收缩到 ≤ Pirandola**
-- Charlie BSM 是 rank-1 projector onto Bell subspace → significant entanglement collapse
-- 但 is it enough to bring the factor of 2 down?  **需要 direct SDP 确认**
-
-**Tentative signal**: 在实际 regime, β 可能 **不给更紧 bound** — 仅 recover Pirandola 或甚至松。
+**R2 决定**：整个文件以 all-Bell-summed convention (0.19× plateau) 为 main reference;只在 §3 sensitivity subsection 提及 其他 convention 数值。
 
 ---
 
-## 3. 对 user decision workflow 的 impact
+## 3. Canonical toy-model data (Variant C, all-Bell summed)
 
-User 2026-04-22 Q1 Option 2 (β main + γ safety) 的 workflow:
+Data from [docs/research/data/beta_G3_post_BSM_sweep.csv](../research/data/beta_G3_post_BSM_sweep.csv), plot [docs/research/figures/beta_G3_post_BSM_vs_pirandola.png](../research/figures/beta_G3_post_BSM_vs_pirandola.png):
 
-**Phase 1** (β.G1 + β.G4 low-hanging): 不受 β.G3 signal 影响, 可照常做 (~3-4 天) — 这些 work 也对 γ fallback useful (Portmann-Renner framework shared)
+| η_arm | Σ_c p_c · LN_c (Variant C) | Pirandola reference | ratio |
+|---|---|---|---|
+| 0.001 | 2.7×10⁻⁴ | 1.4×10⁻³ | 0.188 |
+| 0.01 | 2.7×10⁻³ | 1.5×10⁻² | 0.188 |
+| 0.10 | 2.9×10⁻² | 1.5×10⁻¹ | 0.190 |
+| 0.50 | 0.187 | 1.00 | 0.187 |
+| 0.95 | 0.927 | 4.32 | 0.215 |
 
-**Phase 2** (β.G3 numerical):
-- **本文件** 是 Phase 2 的 early signal
-- tentative cautionary: 在实际 QKD regime, tensor-product upstream 不 tighter
-- **但** Charlie BSM LOCC effect **未测**; 可能 recover tight bound
-- **用户决策**: 继续 β.G2 + β.G5 formal (~4-5 天) **如果** β.G3 direct SDP 仍显示 tighter
-- **fallback γ**: 如果 β.G3 最终 ≥ Pirandola, γ 兜底 (~5-8 天)
+**观察**: ratio ≈ 0.19 plateau stable across η ∈ [0.001, 0.5].
 
-**Revised time estimate**:
-- If β succeeds: β.G3 direct SDP + formal = 10-15 天 (as planned)
-- If β 不 tighter (cautionary): **β.G1 + β.G4 + γ fallback** = **~8-12 天** (保留大部分 work for γ)
+**Caveat**: 这个 "per-round bound" 用 $p_c$ 来 average LN, 不等价于 $E_R$ of 完整 effective channel (那个需要 Choi-level SDP)。$E_R^\infty(\tilde{\mathcal{M}})$ 与 $\sum_c p_c \cdot \text{LN}(\rho|c)$ 不严格相等；差异取决于 channel structure 如何处理 classical outcome c.
 
-### 3.1 User 具体决策点
+### 3.1 Sensitivity: other conventions (non-canonical)
 
-**建议 immediate action**: 继续 **β.G1 + β.G4 formal work** (~3-4 天) 因为:
-1. 这些 work 对 γ 也有用 (framework shared)
-2. 不 depend on β.G3 outcome
-3. 用户可以在此期间思考 β 是否值得 push 更深
+- **Ψ⁻ single outcome** (early v0.3 claim): $p_{\Psi-} \cdot \text{LN}_{\Psi-}$ ≈ 0.094 × Pir at η=0.1 — 因为只取 1/4 outcome，丢了 3/4 的概率质量
+- **Linear-optic BSM (Ψ± only)**: ≈ 2/4 × all-Bell = ~0.10× Pir — physical MDI 更接近此
+- **E_R (rather than LN)**: E_R ≤ LN 通常，所以 $\sum p_c \cdot E_R \leq $ 0.19× Pir — **但 AI 未 compute E_R 直接**(需 SDP)
 
-**Pending on β.G3 direct SDP**: 
-- 需要 bigger MOSEK environment / cluster 来 compute $E_R(\tilde{\mathcal{M}})$ directly (16x16 PPT SDP)
-- **AI 当前 session 环境内 MOSEK OOM-killed** — 无法 compute
-- 可以考虑: 用户侧 Mathematica / Python with MOSEK academic license on desktop run SDP
+**这些 sensitivity numbers 互相 consistent，但都是 toy qubit artifact，不 应作 β path 的 definitive numerical verdict**。
 
 ---
 
-## 4. 与 Log 07 §4.4 对齐
+## 4. Variant B (Werner heuristic) — explicit heuristic-only label
 
-Log 07 §4.4 原文:
-> "因为 umr 约束 Charlie 为 measure-only, 实际 capacity 应该**严格小于** trust capacity。Pirandola min-cut 给出的 $-\log(1-\sqrt{\eta})$ 在 umr 下可能是 loose 的。Sub-Q4 的 gap analysis 若走路径 β, 可能拿到一个 $\mathcal{K}_\text{umr} \leq f(\eta)$ 的新上界, $f(\eta) < -\log(1-\sqrt{\eta})$"
+**v0.2 Werner 分析** (commit b2f4253):
+- 把 pure loss 替换为 λ = 1-η depolarizing (**heuristic substitution**)
+- 应用项目 Werner reduction [CONJ] 给 $W_{F'}$
+- 算 $E_R(W_F) = 1 - H_2(F)$ for $F > 1/2$ (Rains 1999 标准)
+- 结果:
+  | η | E_R(W_F') | Pir | ratio |
+  | 0.95 | 0.62 | 4.32 | 0.14 |
+  | ≤0.50 | 0 | ≥1 | 0 (artifact) |
 
-本 numerical finding 是**部分支持**但**不确认** Log 07 §4.4 的推测:
-- 在**高 η regime** (0.7-0.9): LN_tensor **已**小于 Pirandola → β 方向正确
-- 在**低 η regime** (实际 QKD): LN_tensor **大于** Pirandola (factor 2) → 需要 Charlie BSM LOCC 救场
-- **未测**: direct $E_R(\tilde{\mathcal{M}})$ 含 Charlie BSM
-
-Log 07 推测如果正确, 则 Charlie BSM LOCC 把 LN_tensor 从 2x 降到 ≤1x Pirandola in low-η regime. 这是 **open** problem。
-
----
-
-## 5. Recommendation for user Phase 2 action
-
-**Low-commitment option**: 用户先做 **β.G1 + β.G4 formal** (~3-4 天, 对 γ 也有用)
-
-**High-commitment option (if user has MOSEK academic)**: 用户先 run **direct $E_R(\tilde{\mathcal{M}}_\beta)$ SDP** (16x16 PPT, MOSEK academic ≥ 2 min/point), 确认 Case 1/2/3 which. 这决定:
-- 若 Case 2 (β 确 tighter): Phase 3 β.G2 + β.G5 有意义 (~4-5 天)
-- 若 Case 1/3 (β 不 tighter): fallback γ (~5-8 天)
-
-**Risk mitigation**: 两 option 都 keep γ as parallel safety; final commit to β only if Case 2 confirmed.
+**Codex R1 correct critique**: Werner heuristic 把 loss 当 depolarizing 是 **不 physical** substitution; η ≤ 0.5 artifact (E_R=0) 非 genuine lower bound on β, 仅 **heuristic surrogate**。R2 标签修正: "Werner heuristic surrogate, **not** β lower bound".
 
 ---
 
-## 6. Changelog
+## 5. Variant A (tensor-product upstream) — upper bound of β via LOCC monotonicity
 
-- **v0.1** (2026-04-22 Day 2 late evening autonomous):
-  - 计算 LN 在 parallel two-arm amp-damping (7 η points)
-  - Cross-over observed: high η favors β direction, low η doesn't
-  - Practical QKD regime (η ≤ 0.1): β upstream bound 2× Pirandola
-  - Direct $E_R(\tilde{\mathcal{M}}_\beta)$ SDP **阻塞**于 local MOSEK OOM
-  - Cautionary signal for user β-main decision, 但 NOT definitive
+Since Charlie BSM is LOCC, $E_R(\tilde{\mathcal{M}}_\beta) \leq E_R(\mathcal{E}_1 \otimes \mathcal{E}_2) \leq \text{LN}_{E_1 \otimes E_2}$.
 
-- **v0.3** (2026-04-22 Day 2 最终 definitive result, **tension resolved**):
-  - 新增 [scripts/beta_G3_post_BSM_conditional_amp_damp.py](../../scripts/beta_G3_post_BSM_conditional_amp_damp.py): **真实 pure-loss qubit model**
-  - 构造 |Φ+⟩_{AA'} ⊗ |Φ+⟩_{BB'} → amp-damp on A', B' → 投影 |Ψ-⟩ on (A',B') → trace
-  - 得到 Alice-Bob 条件态 ρ_{AB}
-  - 计算 log_negativity(ρ_{AB})
-  - 结果 (physical pure-loss qubit):
+So Variant A gives **valid upper bound on β's true bound**, but not tight (doesn't include Charlie BSM effect).
 
-    | η_arm | p_BSM | log_neg(cond) | p_BSM × LN | Pirandola | ratio |
-    |---|---|---|---|---|---|
-    | 0.95 | 0.249 | 0.93 | 0.23 | 4.32 | **0.054** |
-    | 0.50 | 0.188 | 0.50 | 0.09 | 1.00 | **0.093** |
-    | 0.10 | 0.048 | 0.30 | 0.014 | 0.15 | **0.095** |
-    | 0.01 | 0.005 | 0.27 | 0.001 | 0.015 | **0.094** |
+At η=0.1: LN_{E_1 ⊗ E_2} = 0.275 = 1.81 × Pirandola.
 
-  - **β 方向 per-round bound ≈ 0.094 × Pirandola 稳定** (紧约 10 倍)
+**结论**: 如果 $E_R(\tilde{\mathcal{M}}_\beta) \leq 0.275$ at η=0.1, β could potentially be tighter than Pirandola (0.152). 但 Variant A **only证明 β ≤ 2× Pirandola**, 不 prove β < Pirandola.
 
-## 3. Three analyses 收敛 picture
+---
 
-| Analysis | η=0.1 ratio | 物理含义 |
-|---|---|---|
-| Tensor-product (无 LOCC, v0.1) | 1.81× | 上界 of β (太松) |
-| Werner heuristic (depol loss, v0.2) | ~0 (artifact) | 下界 of β (太紧) |
-| **Amp-damp post-BSM (v0.3)** | **0.095×** | **接近物理真值** (qubit) |
+## 6. 综合 interpretation for user decision
 
-**结论**: β 路径在 qubit pure-loss 模型下**比 Pirandola 紧约 10 倍** — **strong positive signal for β formal work**.
+Given **three toy qubit variants** (Variant A loose upper, Variant B heuristic surrogate with artifacts, Variant C toy post-BSM with wrong p_BSM scaling):
 
-**Direct SDP (on user desktop)** 预期 refine 0.094× 为 slightly tighter value (log_neg ≥ E_R^PPT ≥ E_R^∞)。
+- **Variant C (0.19× plateau)** is the most detailed calculation 但 **p_BSM scaling incompatible** with physical MDI
+- **Consistent direction**: LOCC reduces entanglement, Variant A → Variant C shows 1.81 → 0.19× reduction factor of ~10×
+- **仍不 definitive**: 需 (a) physical p_BSM model + (b) direct SDP on bosonic CV
 
-## 4. Updated user decision guidance
+**β 是否 tighter than Pirandola** 的真实 answer **仍然 agnostic** per Log 07 §4.4:
+- 方向上有 plausibility signal (Variant C at 0.19×)
+- 但 model artifacts prevent 确 conclusion
+- **必须 desktop bosonic SDP + β.G1-G5 formal** 才能 resolve
 
-基于 v0.3 definitive data:
-- **β 有明确 novel bound potential** (紧 ~10×)
-- **建议 user fast-track β formal work** — Phase 1-3 全部做
-- γ safety net **仍然保留** but less urgent
-- Phase 2 β.G3 direct SDP 用户 desktop verify 本 qubit 结果 (expected confirm)
+---
 
-### Changelog
-  - 新增 [scripts/beta_G3_mdi_effective_channel_werner.py](../../scripts/beta_G3_mdi_effective_channel_werner.py): **含 Charlie BSM LOCC**
-  - 用项目 Werner reduction + 已知 Werner state $E_R$ 闭式 (Rains 1999)
-  - 结果 (含 LOCC):
-    | η_arm | E_R(Werner) | Pirandola | ratio |
-    | 0.95 | 0.62 | 4.32 | **0.14×** |
-    | 0.90 | 0.41 | 3.32 | **0.12×** |
-    | 0.70 | 0.04 | 1.74 | **0.02×** |
-    | ≤0.50 | 0 | ≥1 | 0 (heuristic cutoff) |
-  - **Charlie BSM LOCC 完全翻转了 signal 方向** — β 从"松 2×"变为"紧 7-40×"
-  - **但**: 此 Werner 分析使用 λ ≈ 1-η_arm **heuristic** (treat loss as depolarizing), η≤0.5 时 E_R=0 是 artifact
-  - Real bosonic pure-loss channel 答案**介于**两者之间 (松 2× ... 紧 0.02×)
-  - **唯一 definitive 答案**是 user 侧 desktop direct bosonic SDP
+## 7. Updated user guidance (R2 FIX — agnostic)
 
-## 2.4 v0.2 Tension Summary
+**本文件 NOT 推荐 fast-track β**（R1 v0.3 过度 claim）:
 
-两种 numerical 计算给出**完全不同**的 β 方向:
+- β 路径**仍 [CONJ] pending β.G1-G5 formal work** (~7-10 人日)
+- **γ safety net 仍然 equally important** (numerical signal 不决定 formal 路径选择)
+- Phase 1 β.G1 + β.G4 先做 (对 γ 也 useful) — unchanged
+- Phase 2 desktop direct SDP + bosonic model 验证: **critical**, but the outcome **unknown**
+- β.G3 numerical 本文件 仅提供 **plausibility** that β direction *could* give tighter bound; definitive proof 依赖 formal work
 
-| Analysis | η_arm=0.1 (实际 QKD) | 信号 |
-|---|---|---|
-| Tensor-product upstream (无 LOCC) | 1.81 × Pir (松) | β **不**tighter |
-| Werner heuristic (含 LOCC + depolarizing loss) | ~0.02 × Pir (紧) | β **much** tighter |
+---
 
-**Resolution 待 direct SDP on real pure-loss bosonic model**。
+## Changelog
 
-对 user decision 的 implication:
-- 两种 analysis 都支持 **β path 值得 formal work** (至少潜在有 novel value)
-- 真正的 β bound magnitude **未知** — 只 desktop SDP 能 confirm
-- Phase 1 (β.G1 + β.G4) 仍建议先做 (对 γ fallback 也有用)
-- Phase 2 desktop direct SDP 是 **决定 β 是否产出新定理** 的关键
+- **v0.4** (2026-04-22 R2 FIX per Codex REJECTED R1):
+  - 主 convention 固定为 all-Bell-summed (0.19×); 移除 inconsistent "0.094×"作 main claim
+  - Demote "definitive / real value / fast-track β" → "toy model [CONJ] exploratory"
+  - Add §0.3 model limitations (p_BSM scaling, qubit vs bosonic)
+  - Label Variant B as "heuristic surrogate" not "lower bound"
+  - §6 interpretation 改 agnostic
+  - §7 user guidance 改为 "β path remains [CONJ], numerical 不决定 fast-track"
+  - Clean structure: 3 variants as subsections
+- **v0.3** (2026-04-22 Day 2 evening, **over-claimed**): amp-damp post-BSM toy = "physical β bound ~0.094/0.19×"; **REJECTED by Codex R1**
+- **v0.2** (2026-04-22 Day 2): Werner heuristic surrogate (labeled incorrectly as "lower bound"); **corrected in v0.4**
+- **v0.1** (2026-04-22 Day 2 early): tensor-product upstream (valid upper bound of β)
