@@ -145,7 +145,9 @@
 
 详见 [docs/proofs/upper_bound_msen.md §2.1](../proofs/upper_bound_msen.md)。简记：两方 + 一 untrusted measurement relay Charlie + 纯损耗 bosonic 信道 + MS-EB H1-H6 全满足。
 
-### 3.2 三候选上界陈述（[CONJ] 级）
+### 3.2 三候选上界陈述（[CONJ] 级）+ 三 formal path 分析
+
+**候选公式表**：
 
 | 候选 | 公式 | 来源 | 继承 lemma 状态 |
 |---|---|---|---|
@@ -154,6 +156,33 @@
 | C | $R \leq E_R^\text{PPT}$ / $R_\max$ | Khatri-Wilde Thm 19.8 | LOPC monotonicity reduction 待证 |
 
 对称 $\eta_A = \eta_B = \eta_\text{arm}$ 下，A 和 B 公式一致。
+
+### 3.2.1 三条 formal path 的现状（2026-04-22 Codex 5-round 确认 [CONJ]）
+
+用户 2026-04-22 指示 "三个 path 你都推导一下，并让 codex 确认" 后的当前状态：
+
+**path α (monotonicity reduction via Khatri-Wilde §19-20)** — [scaffolding-only]
+- 文档：[docs/proofs/umr_path_alpha_scaffolding.md](../proofs/umr_path_alpha_scaffolding.md) + [umr_path_alpha_derivation.md](../proofs/umr_path_alpha_derivation.md) v0.2+R4
+- 11 authoritative gaps (scaffolding §5)
+- Codex R1-R5 一致判定：identity-embedding 与 retracted v0.2 set-inclusion **同类 cross-space 陷阱**
+- 升级前提：用户纸笔 formal Portmann-Renner embedding + security-transfer lemma (预估 10-15 人日)
+
+**path β (channel-reduction + PLOB/WTB on effective channel)** — [CONJ], 5 gaps
+- 文档：[docs/proofs/umr_path_beta_derivation.md](../proofs/umr_path_beta_derivation.md) v0.2+R3
+- 5 gaps (4 MAJOR + 1 MINOR): β.G1 two-source merge / β.G2 PLOB on 2-to-2 broadcast / β.G3 $E_R^\infty(\tilde{\mathcal{M}})$ closed form / β.G4 Eve model transfer / β.G5 adversarial-channel reduction
+- Tightness vs Pirandola min-cut **agnostic** — Log 07 §4.4 原文即 agnostic
+- 潜在价值：若 SDP numerics 显示 $f(\eta_A, \eta_B) <$ Pirandola bound，可作 Sub-Q3 新上界
+
+**path γ (single-edge PLOB + DPI target lemma, Log 07 §4.5 minimal baseline)** — [CONJ], 5 gaps
+- 文档：[docs/proofs/umr_path_gamma_v0_4_derivation.md](../proofs/umr_path_gamma_v0_4_derivation.md) v0.4+R3
+- 5 gaps (4 MAJOR + 1 MINOR): γ.B.G1 DPI lemma formal / γ.B.G2 BSM 是 quantum+classical joint / γ.B.G3 Alice-Charlie 与 Alice-Bob 的 operational 联系 / γ.G3 ε-composable transfer / γ.G4 classical announcement
+- 历史：v0.2 retracted (set-inclusion)，v0.3 FAIL (super-receiver merge)，v0.4+R3 目前最干净
+- Step B 明示 **target DPI lemma**（不是 $K_\text{A-B} \leq K_\text{A-C}$ capacity transfer）
+
+**package level**：三路径 cycle 经 Codex 5-round review (workflow `docs/workflow/paths-review/`) 确认 at [CONJ] / scaffolding level。**没有** any path 升到 [COROLLARY]；升级仍需 R0.2 C1 ∧ C2 ∧ C3。
+
+**Codex 5-round 教训汇总**（防止未来 derivation 重蹈 retraction pattern）：
+任何声称 "umr 与 trusted-relay 之间的 continuity / embedding / inclusion / monotonicity / reduction shortcut"（无论措辞如何：identity-embedding、super-receiver merge、adversarial containment、cross-task capacity transfer），**都是** Portmann-Renner cross-space framework 的 un-closed gap。Codex R1-R5 反复捕获 4 类 drift: math errors / wording / partial-demotion / cross-file stale refs。
 
 ### 3.3 可数值计算的 $R_\text{UB}^\text{current}(\eta_\text{arm})$
 
