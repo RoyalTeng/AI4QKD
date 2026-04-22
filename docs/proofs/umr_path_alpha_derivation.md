@@ -1,9 +1,27 @@
 # umr upper bound — path α derivation (monotonicity reduction via Khatri-Wilde §19-20)
 
-**版本**：v0.1 **[CONJ]** — AI autonomous derivation (2026-04-22)
+**版本**：v0.2 **[CONJ, scaffolding-only — NOT a derivation]** — AI autonomous (2026-04-22 Round 2 FIX 响应 Codex REJECTED verdict)
 **对应 Log 07**：§3.1 子节 "路径 α" + §4.3 "路径 α (monotonicity) 是正确路径,但需要写出来"
 **前置 scaffolding**：[umr_path_alpha_scaffolding.md](umr_path_alpha_scaffolding.md) v0.1
-**用途**：从 11-gap scaffolding 升级到 attempted derivation；所有仍未 close 的 gap 显式
+**用途**：此前 v0.1 claimed "attempted derivation"，被 Codex REJECTED 为 **not materially different from v0.2 containment retraction**; v0.2 降级为 **scaffolding-only**
+
+---
+
+## ⚠️ Round 2 demotion notice
+
+[v0.1 Codex verdict (REJECTED)](../workflow/paths-review/review-diff-1.json):
+
+> "Path α is REJECTED. Claimed 'identity embedding of operations' is not materially different from the retracted v0.2 containment move, because Step 4 still depends on comparing trusted-relay and umr adversary powers across different protocol/security partitions without a formal Portmann-Renner-style embedding/security-transfer theorem. Step 2 invokes Khatri-Wilde Ch.19-style LOCC/amortized-entanglement machinery as if it directly bounded the trusted-relay secret-key rate; the missing secret-key/rate-definition bridge from the α scaffolding is no longer explicit, so the 6-gap list is incomplete."
+
+**Response**：**accepted**。本 v0.2:
+- **降级为 scaffolding** — v0.1 的 Step 1-5 derivation attempt **全部撤回** 作为 cautionary record
+- 恢复 scaffolding 的 11-gap + 显式加回 rate-definition/secret-key-alignment gap
+- 明示：**identity embedding 与 v0.2 set-inclusion 属同类陷阱**（Eve spaces + security partition 未经 Portmann-Renner 严格处理）
+- path α 在 **没有用户纸笔 Portmann-Renner embedding + security-transfer 定理之前**，**不**应声称有 derivation
+
+本 v0.2 是 **unproven scaffolding only**；与 [umr_path_alpha_scaffolding.md](umr_path_alpha_scaffolding.md) v0.1 等同地位；唯一 diff 是合并 v0.1 被 retract 的细节作教训。
+
+---
 
 ---
 
@@ -26,7 +44,12 @@ Scaling 推论（对称 $\eta$）: $R \leq \sqrt{\eta_{AB}}/\ln 2 + O(\eta_{AB})
 
 ---
 
-## 2. Derivation chain (attempted)
+## 2. ~~Derivation chain (attempted)~~ **— v0.1 RETRACTED, 以下作 cautionary record**
+
+**❌ 下列 §2.1-§2.5 是 v0.1 的 derivation attempt，被 Codex REJECTED。v0.2 撤回这些声称。**
+**❌ Reader 勿 interpret 为 proof；它们展示 "identity-embedding 也是 v0.2 同类陷阱" 的 cautionary record。**
+
+---
 
 ### 2.1 Step 1 — Protocol embedding $\iota$ 构造
 
@@ -104,7 +127,29 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \overset{\text{G5,G6}}{\leq} R_\va
 
 ---
 
-## 3. Gap summary (upgrade from scaffolding)
+## 3. Gap summary — **v0.2 restored scaffolding gap list + explicit secret-key/rate-alignment gap**
+
+**注**：本小节恢复 11-gap scaffolding list；**不再声称是 derivation**。
+
+| Gap | 描述 | Severity | 状态 |
+|---|---|---|---|
+| α.L1 | 协议 embedding $\iota$（Log 07 §4.3 Lemma 1） | MAJOR | open, needs explicit Portmann-Renner-style construction |
+| α.L2 | 安全归约（composable ε）| **CRITICAL** (**v1 / v0.2 类陷阱**) | open |
+| α.L3 | Rate 定义对接（LOPC/LOCC 在 umr vs trusted relay 下 operational equivalence） | MAJOR | open, **Codex R1 明示此 gap 在 v0.1 被遗漏** |
+| α.G2 (v0.1 gap) | Khatri-Wilde Prop 19.2 apply to channel stack | MAJOR | open |
+| α.G4 (v0.1 gap) | $E^A_\text{stack}$ vs min$_i E^A(\mathcal{E}_i)$ | MAJOR | open |
+
+**Bottom line**：path α **没有** derivation at [CONJ] 级别 without user 先 establish L1/L2/L3 formally。本 v0.2 仅 **scaffolding + Round 1 Codex 教训** record。
+
+**Codex R1 原文警告**：
+
+> "Step 4 still depends on comparing trusted-relay and umr adversary powers across different protocol/security partitions without a formal Portmann-Renner-style embedding/security-transfer theorem. ... Restore the missing rate-definition/secret-key-alignment gap explicitly, and do not describe the identity-embedding move as distinct from v0.2 until the cross-space protocol embedding and security-transfer lemmas are actually written."
+
+**v0.2 完全接受此 verdict**，以 scaffolding 状态结束。
+
+---
+
+## ~~3-old. Gap summary (from v0.1)~~  — 以下 retracted ↓
 
 | Gap (derivation) | From scaffolding | Severity | 状态 |
 |---|---|---|---|

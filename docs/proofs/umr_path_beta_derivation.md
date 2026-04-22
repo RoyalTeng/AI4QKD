@@ -1,8 +1,21 @@
 # umr upper bound — path β derivation (channel-reduction + PLOB/WTB on effective channel)
 
-**版本**：v0.1 **[CONJ]** — AI autonomous derivation (2026-04-22)
+**版本**：v0.2 **[CONJ]** — AI autonomous derivation (2026-04-22 Round 2 FIX 响应 Codex FAIL)
 **对应 Log 07**：§3.1 子节 "路径 β" + §4.4 ("direct umr converse via channel-reduction")
 **用途**：提供 path β derivation attempt; 所有 gap 显式
+
+## ⚠️ Round 2 FIX notice
+
+[v0.1 Codex verdict (FAIL)](../workflow/paths-review/review-diff-1.json):
+- MAJOR: "The derivation packages one honest-BSM round into a fixed CPTP map $\tilde{M}$, but the converse target is the full adaptive umr protocol class with adversarial Charlie. The current 4-gap list does not flag the missing reduction from that n-shot adversarial process/comb to repeated use of a fixed effective channel."
+- MINOR: "Relative-tightness discussion stronger than Log 07 §4.4 supports; effective-channel REE could end up looser."
+
+**Response (v0.2)**:
+- 加入 **β.G5 adversarial-channel-reduction gap**
+- 重写 §4 比较表为 agnostic ("could be tighter, comparable, or looser")
+- 删除 "highest research value" overread
+
+---
 
 ---
 
@@ -32,7 +45,7 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq E_R^\infty(\tilde{\mathcal{M}
 
 其中 $E_R^\infty(\tilde{\mathcal{M}})$ 是 effective channel 的 regularized relative entropy of entanglement。
 
-**Scaling 预期** (Log 07 §4.4)：$E_R^\infty(\tilde{\mathcal{M}})$ 可能**严格小于** Pirandola 2019 min-cut bound $-\log_2(1-\sqrt{\eta_{AB}})$, because umr 约束 Charlie 为 measure-only (classical broadcast), 损耗 Eve 可提取的量子信息。
+**Scaling 预期** (Log 07 §4.4 agnostic 表述, **v0.2 修正**)：$E_R^\infty(\tilde{\mathcal{M}})$ 的数值未知 — 可能 **小于** Pirandola 2019 min-cut bound (Log 07 §4.4 推测 direction)，**等于**，**或大于** (若 $\tilde{\mathcal{M}}$ 的 input dimensions / Eve workspace 反而放大 REE)。precise comparison 需要 SDP solve or analytic estimate。**v0.1 声称 "严格小于" 是 overread**, v0.2 修正 为 agnostic。
 
 ---
 
@@ -122,7 +135,9 @@ Chain: $R^{\mathcal{A}_\text{umr}}(\Pi) \overset{\text{G4}}{\leq} R^\text{LOPC}(
 | β.G3 | $E_R^\infty(\tilde{\mathcal{M}})$ closed form unknown | MAJOR | SDP solve; 可能 analytic closed form 不存在 |
 | β.G4 | Eve model 跨 topology 转换 | MAJOR | 用户 Portmann-Renner adaptation; 1-2 天 |
 
-**Total: 4 gaps, 3 MAJOR + 1 MINOR**。estimated **5-7 人日**。
+**β.G5 (新增 v0.2, Codex R1 MAJOR)**: **Adversarial effective-channel reduction** —— 从 full adaptive adversarial Charlie umr class 到 "repeated use of a fixed CPTP map $\tilde{\mathcal{M}}$" 的 reduction。umr 是 **n-shot adversarial process/comb** (Eve/Charlie 可跨轮 adapt strategy based on all prior announcements)，不是 i.i.d. fixed channel。Kamin 2025 GEAT framework handle comb case via entropy accumulation; Pirandola 2017/2019 converse 用 teleportation stretching 把 comb 等效为 fixed channel — 但 **umr 的 Charlie 是 adversary，teleportation stretching 假设 honest cooperative structure**。此 reduction 未 established for umr。**MAJOR gap**; 可能需要 Portmann-Renner composable framework 或 Kamin GEAT 式处理。
+
+**Total: 5 gaps, 4 MAJOR + 1 MINOR** (v0.2 加 β.G5)。estimated **7-10 人日** (revised upward after Codex R1)。
 
 ---
 
@@ -132,11 +147,10 @@ Chain: $R^{\mathcal{A}_\text{umr}}(\Pi) \overset{\text{G4}}{\leq} R^\text{LOPC}(
 |---|---|---|---|
 | Core tool | Khatri-Wilde §19-20 monotonicity | Channel-reduction + PLOB on composite | PLOB on single edge + data-processing inequality |
 | Primary ref | Khatri-Wilde 2020/2024 | PLOB 2017 + WTB 2017 | PLOB 2017 + Nielsen-Chuang |
-| Bound scaling | $\sqrt{\eta_{AB}}$ (same as Pirandola) | possibly **tighter** than $\sqrt{\eta_{AB}}$ | $\sqrt{\eta_{AB}}$ (same as PLOB single-edge) |
-| Gaps count | 11 (all [UNKNOWN]) | 4 (3 MAJOR) | 5 (4 MAJOR) |
-| Risk of v1/v0.2 pattern recurrence | LOW (explicit 11 gaps) | MEDIUM (Eve model transfer G4) | LOW (avoid set-inclusion by construction) |
-| Potential tightness | same as Pirandola 2019 | **better**! possibly strict inequality | same as Pirandola 2019 single-edge |
-| Recommendation | scaffolding only (not yet derivation) | **highest research value** (new bound) | **safest baseline** (Log 07 recommendation) |
+| Bound scaling (targeted) | $\sqrt{\eta_{AB}}$ (same as Pirandola trusted-relay) | **unknown**: could be smaller, comparable, or larger vs Pirandola min-cut (per Log 07 §4.4 agnostic) | $\sqrt{\eta_{AB}}$ (same as PLOB single-edge) |
+| Gaps count (after Codex R1) | **demote to scaffolding** (identity-embedding is same class as v0.2 retracted) | 5 (4 MAJOR + 1 MINOR) | 5 (4 MAJOR); **v0.3 super-receiver 也是 hidden cross-space** |
+| Risk of v1/v0.2 pattern recurrence | **HIGH** (Codex R1 REJECTED) | MEDIUM (β.G5 adversarial reduction open) | MEDIUM (super-receiver is new but 仍 cross-space) |
+| Recommendation (Codex R1-informed) | demote 到 scaffolding until Portmann-Renner embedding/security-transfer formal | 需 close β.G5 adversarial-channel reduction + SDP numerical | rewrite v0.4 without super-receiver merge |
 
 ---
 
