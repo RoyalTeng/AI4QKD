@@ -83,7 +83,10 @@
 | U3.6 上界 MS-EB 重写 | partial ([upper_bound_msen.md](../proofs/upper_bound_msen.md) 196 行) |
 | U3.7 Relative entropy SDP toy channels | ✅ ([upper_bound_report.md §4](upper_bound_report.md)) |
 | U3.8 接缝报告 30-50 页 | partial ([upper_bound_report.md](upper_bound_report.md) 356 行) |
-| Pirandola 2019 适用性 (untrusted relay) | **[CONJ]** — Log 07 path α / β / γ 三路径都未形式化；v1 FINDINGS + v0.2 path γ 都已 retract |
+| Pirandola 2019 适用性 (untrusted relay) | **[CONJ]** — Log 07 path α / β / γ 三路径状态（2026-04-22 update）见下 |
+| path α (monotonicity reduction) | **scaffolding-only** ([umr_path_alpha_scaffolding.md](../proofs/umr_path_alpha_scaffolding.md) 11 gaps); Codex 5-round: identity-embedding = v0.2 containment class, 不能作 derivation |
+| path β (channel-reduction) | **[CONJ]** derivation attempt ([umr_path_beta_derivation.md](../proofs/umr_path_beta_derivation.md) v0.2+R3, 5 gaps); tightness vs Pirandola min-cut **agnostic** per Log 07 §4.4 |
+| path γ v0.4+R3 (Log 07 §4.5 minimal baseline) | **[CONJ]** derivation attempt ([umr_path_gamma_v0_4_derivation.md](../proofs/umr_path_gamma_v0_4_derivation.md), 5 gaps); v0.2 (set-inclusion) + v0.3 (super-receiver) retracted 之后的 v0.4 是最干净版；Step B 降级 target DPI lemma 非 capacity transfer |
 
 **硬结论**：
 
@@ -208,6 +211,9 @@
 
 ## Changelog
 
+- **v0.3** (2026-04-22 Day 2 evening，paths cycle 完成后补充)：
+  - Sub-Q3 §4 表格新增 path α/β/γ 的具体状态行（scaffolding / [CONJ]-derivation / v0.4+R3）
+  - 反映 Codex 5-round paths review 的最终状态
 - **v0.2** (2026-04-22 Round 2 FIX, 响应 MQ audit REJECTED verdict):
   - **CRITICAL**: 去除 v0.1 表 S4 "Gap 归因 γ (两端松) 最可能" 的 revived retracted claim — v1 FINDINGS 模式重现被 reviewer 捕获
   - MAJOR: Upgrade path 全部显式写 C1 ∧ C2 ∧ C3 三条件；user 纸笔满足 C1(b) 不替代 C2 + C3
