@@ -327,8 +327,64 @@ Remaining autonomous-achievable work:
 
 ---
 
+## 12. Day 3 additions (2026-04-23, autonomous session continuation)
+
+### 12.1 β v0.4-R4 + γ v0.6-R2 detailed drafts PASS (FINALIZED)
+
+[commit 7813810] 双 Codex review cycle 关闭:
+- β: R1 REJECTED (structural traps) → R2 FAIL → R3 FAIL → R4 PASS (4 轮)
+- γ: R1 REJECTED → R2 PASS (2 轮)
+
+两个 drafts 均 stay **[CONJ-DRAFT, open-only]**:
+- Structural gaps (β.G2/G4/G5, γ.B.G1/G3, γ.G3) 全 OPEN
+- Citation 5 级 taxonomy (VERIFIED / MEMO-LEVEL QUOTE / SUMMARY / INFERENCE / RECALLED) per-citation caveats
+- §9 分 PDF-check vs novel-proof
+
+**第 5 次 cross-space trap** 记录在 [RETRACTION.md §7](../research/RETRACTION.md)。
+
+### 12.2 β.G4 + γ.B.G1 structural derivation attempts (open, 诚实 negative results)
+
+[commit c586610 → 037d20a]
+
+**β.G4 attempt (v0.2 after R1 FAIL fix)**:
+- §2.3 attempted direct simulation (LOPC Eve simulates umr Eve via environments) — §2.4 invalidated 该 specific construction
+- §2.5 LOPC+gift heuristic bridge — R2 撤回 rate inequality assertion (无 formal quantifier-level argument)
+- Paths A/B/C for user
+- **状态**: β.G4 open, 无 simulation-based reduction identified
+
+**γ.B.G1 attempt (v0.2 after R1 FAIL fix)**:
+- Approach A (Prop 19.2): circular
+- Approach B (Horodecki private state + CMI): CMI monotonicity claim false (R2 撤回), 且 $I \not\leq E_R$ generally block
+- Approach C (squashed entanglement): same cross-task obstacle
+- Approach D (broadcast channel classical side): Bob 不 directly receive from E_1 edge
+- **Conjecture CONJ1 [CONJ-DRAFT speculation]**: γ path 单边 PLOB 分解可能 structurally 不 work — 4 approach failures **suggest but not prove**
+- **状态**: γ.B.G1 open; Q1 影响 agnostic (β main 继续, γ safety currently open)
+
+### 12.3 β.G3 E_R SDP qubit numerical (running)
+
+[task bj271ov11] PYTHONPATH set, qubit amp-damp Choi state E_R^PPT via cvxpy+MOSEK.
+Result 未 available, 后台运行 expected 几十分钟至几小时.
+
+### 12.4 用户 Day 3 autonomous 授权 + policy 澄清
+
+User 2026-04-22 late:
+- "你不能替我做推公式的事情吗" → AI 可 draft structural proofs at [CONJ-DRAFT] (non-silent-upgrade discipline required)
+- "让 codex 评审做决策" → Codex verdicts control iteration (PASS/FAIL/REJECTED)
+- "不要擅自停下来" → autonomous continuation, Codex makes decisions, everything logged for user audit
+
+Feedback memory [feedback_ai_draft_structural_gaps.md](../../../.claude/projects/-Users-tengjun-Desktop-ai4qkd--1--AI4QKD/memory/feedback_ai_draft_structural_gaps.md) updated to **v2** reflecting this clarified policy.
+
+### 12.5 AI autonomous remaining scope
+
+- **Not do**: 升级分级 (C1+C2+C3 仅 post-proof review)
+- **Do**: structural gap drafts at [CONJ-DRAFT] + Codex iteration, numerical scaffolding, MQ snapshot updates, literature synthesis, session logs
+
+---
+
 ## Changelog
 
+- **v0.5** (2026-04-23 Day 3 autonomous session continuation):
+  - §12 新增 Day 3 additions: β v0.4+γ v0.6 FINALIZE, β.G4+γ.B.G1 structural attempts, β.G3 SDP running, policy v2 clarification
 - **v0.4** (2026-04-22 Day 2 late evening autonomous plateau):
   - §11.1 T2-A stretch 实证否定记录
   - §11.2 M4B log-log slope 确认通过记录
