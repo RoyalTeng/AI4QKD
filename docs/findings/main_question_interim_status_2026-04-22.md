@@ -248,6 +248,25 @@
 
 详见 [beta_G3_numerical_finding_2026-04-22.md v0.4](beta_G3_numerical_finding_2026-04-22.md)
 
+### 11.0.3 γ path toy numerical (parallel to β.G3)
+
+**Companion numerical** (commit 8bc6fc0): single-edge amp-damp log-negativity.
+
+| η_arm | LN(E_1) toy | Pirandola single | ratio |
+|---|---|---|---|
+| 0.10 | 0.138 | 0.152 | **0.90×** |
+| 0.01 | 0.014 | 0.015 | **0.99×** |
+
+γ toy bound ≈ 1× Pirandola 在低损耗区 — 与 Log 07 §4.5 "最小可信 baseline" 预期一致。
+
+**β vs γ toy 对比**:
+- β (post-BSM, all-Bell summed): ~0.19× Pir at η=0.1 (potentially tighter)
+- γ (single-edge amp-damp): ~0.90× Pir at η=0.1 (≈ Pirandola)
+
+**Agnostic interpretation**: 若 β 正确 formal 成立，会给约 5× tighter than γ。但**两者都 toy qubit, 不是 definitive**。Q1 决策 (β main + γ safety) **不变**。
+
+详见 [scripts/gamma_path_numerical_single_edge.py](../../scripts/gamma_path_numerical_single_edge.py) + [docs/research/data/gamma_path_single_edge_toy.csv](../research/data/gamma_path_single_edge_toy.csv)
+
 ---
 
 ### 11.0.1 β.G3 numerical early signal (cross-over finding)
