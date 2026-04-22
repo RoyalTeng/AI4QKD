@@ -143,14 +143,14 @@ $f(\eta_A, \eta_B)$ 的具体数值与 Pirandola 2019 min-cut bound $-\log_2(1-\
 
 ## 4. Comparison with path α and path γ
 
-| Aspect | α (monotonicity) | β (channel-reduction) | γ v0.3 (single-edge PLOB + data-processing) |
+| Aspect | α (monotonicity) — scaffolding-only | β (channel-reduction) [this file] | γ v0.4+R3 (single-edge PLOB + DPI target lemma) |
 |---|---|---|---|
-| Core tool | Khatri-Wilde §19-20 monotonicity | Channel-reduction + PLOB on composite | PLOB on single edge + data-processing inequality |
-| Primary ref | Khatri-Wilde 2020/2024 | PLOB 2017 + WTB 2017 | PLOB 2017 + Nielsen-Chuang |
-| Bound scaling (targeted) | $\sqrt{\eta_{AB}}$ (same as Pirandola trusted-relay) | **unknown**: could be smaller, comparable, or larger vs Pirandola min-cut (per Log 07 §4.4 agnostic) | $\sqrt{\eta_{AB}}$ (same as PLOB single-edge) |
-| Gaps count (after Codex R1) | **demote to scaffolding** (identity-embedding is same class as v0.2 retracted) | 5 (4 MAJOR + 1 MINOR) | 5 (4 MAJOR); **v0.3 super-receiver 也是 hidden cross-space** |
-| Risk of v1/v0.2 pattern recurrence | **HIGH** (Codex R1 REJECTED) | MEDIUM (β.G5 adversarial reduction open) | MEDIUM (super-receiver is new but 仍 cross-space) |
-| Recommendation (Codex R1-R3-informed, updated R4) | v0.2+R4: scaffolding-only record (see `umr_path_alpha_scaffolding.md`) until Portmann-Renner embedding/security-transfer formal | v0.2+R3: need to close β.G5 adversarial-channel reduction + SDP numerical; tightness agnostic | v0.4+R3: Step B downgraded to target DPI lemma (not K_AB≤K_AC capacity transfer); 5 gaps at [CONJ] |
+| Core tool | Khatri-Wilde §19-20 monotonicity | Channel-reduction + PLOB on composite | PLOB on single edge (Step A) + DPI/LOCC-monotonicity target lemma (Step B) |
+| Primary ref | Khatri-Wilde 2020/2024 | PLOB 2017 + WTB 2017 | PLOB 2017 + Nielsen-Chuang + Log 07 §4.5 |
+| Bound scaling (targeted) | $\sqrt{\eta_{AB}}$ (same as Pirandola trusted-relay) | **unknown**: could be smaller, comparable, or larger vs Pirandola min-cut (per Log 07 §4.4 agnostic) | $\sqrt{\eta_{AB}}$ (conditional on target lemma) |
+| Status (Codex R1-R4) | v0.2+R4: **scaffolding-only** record | v0.2+R3: 5 gaps at [CONJ] (β.G1-G5) | v0.4+R3: 5 gaps at [CONJ] (γ.B.G1-G3 + γ.G3 + γ.G4); Step E conditional |
+| Risk of retraction pattern (historically observed) | HIGH — identity-embedding is same class as retracted v0.2 set-inclusion | MEDIUM — β.G5 adversarial-channel reduction open | MEDIUM — avoided v0.2/v0.3 cross-space traps; Step B is target-only |
+| Recommended next action | Await user纸笔 Portmann-Renner embedding + security-transfer (Lessons §4) | Close β.G5 (adversarial-channel reduction) + SDP numerical | Establish γ.B.G1-G3 DPI target lemma (user 形式化) |
 
 ---
 
