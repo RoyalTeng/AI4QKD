@@ -1,0 +1,95 @@
+diff --git a/docs/findings/main_question_interim_status_2026-04-22.md b/docs/findings/main_question_interim_status_2026-04-22.md
+index ed0a86a..e0d0b22 100644
+--- a/docs/findings/main_question_interim_status_2026-04-22.md
++++ b/docs/findings/main_question_interim_status_2026-04-22.md
+@@ -259,11 +259,16 @@
+ 
+ γ toy bound ≈ 1× Pirandola 在低损耗区 — 与 Log 07 §4.5 "最小可信 baseline" 预期一致。
+ 
+-**β vs γ toy 对比**:
+-- β (post-BSM, all-Bell summed): ~0.19× Pir at η=0.1 (potentially tighter)
+-- γ (single-edge amp-damp): ~0.90× Pir at η=0.1 (≈ Pirandola)
++**β vs γ toy numeric 并列** (descriptive only, NOT directional claim):
++- β toy surrogate (post-BSM, all-Bell summed): ~0.19× Pir at η=0.1
++- γ toy surrogate (single-edge amp-damp Choi LN): ~0.90× Pir at η=0.1
+ 
+-**Agnostic interpretation**: 若 β 正确 formal 成立，会给约 5× tighter than γ。但**两者都 toy qubit, 不是 definitive**。Q1 决策 (β main + γ safety) **不变**。
++**严格 local 解读**: 在 η=0.1 toy 点，两个 surrogate 数值相差 ~4.7× (0.19 vs 0.90 relative to Pirandola)。
++- **不 predict** formal β-vs-γ 序列（两者 DPI/channel-to-state reduction lemma 仍 [CONJ] open; β.G3 toy 本身在 §11.0.2 已 agnostic）
++- **不 justify** "fast-track β over γ" —— Q1 决策 (β main + γ safety net) 的 rationale 来自 formal path feasibility 分析，**非** toy 数值
++- 两者均为 qubit toy，与 bosonic CV physical channel 不直接 corresponding
++
++Q1 决策 (β main + γ safety) **不受 toy 数值影响**，保持不变。
+ 
+ 详见 [scripts/gamma_path_numerical_single_edge.py](../../scripts/gamma_path_numerical_single_edge.py) + [docs/research/data/gamma_path_single_edge_toy.csv](../research/data/gamma_path_single_edge_toy.csv)
+ 
+diff --git a/scripts/gamma_path_numerical_single_edge.py b/scripts/gamma_path_numerical_single_edge.py
+index 3c78d3a..0cf53e8 100644
+--- a/scripts/gamma_path_numerical_single_edge.py
++++ b/scripts/gamma_path_numerical_single_edge.py
+@@ -1,23 +1,23 @@
+-"""γ path numerical toy analog: single-edge PLOB on E_1 under amp-damp.
++"""γ path toy Choi-state diagnostic: single amp-damp channel log-negativity.
+ 
+-γ path (Log 07 §4.5 minimal baseline):
+-  R_A-B ≤ K_A-C_single-edge(E_1) + data-processing transfer
++**Scope**: toy Choi-state numerical diagnostic ONLY, 非 γ path derivation.
+ 
+-Target for γ: $R \leq E_R^\infty(\mathcal{E}_1)$ for single amp-damp channel.
++γ path (Log 07 §4.5) 的 formal target 是:
++  R ≤ E_R^∞(E_1) via single-edge PLOB + data-processing inequality (DPI)
+ 
+-For amp-damp channel with γ = 1 - η:
+-- Choi state = (I ⊗ N)(|Φ+⟩⟨Φ+|)
+-- Compute log-negativity (upper bound on E_R)
++**重要 caveat**: γ path 的 DPI transfer step 仍是 [CONJ] target lemma (见
++[docs/proofs/umr_path_gamma_v0_4_derivation.md](../docs/proofs/umr_path_gamma_v0_4_derivation.md)
++v0.5 §6.1 γ.B.G1)，**未 formal established**。本 script 不 establish γ derivation。
+ 
+-Compare with Pirandola 2019 trusted-relay at symmetric η_A = η_B = η_arm:
+-  Pirandola_sym = -log(1 - sqrt(η^2)) = -log(1 - η) = PLOB single-edge at η
++本 script 仅 compute: single amp-damp channel Choi state 的 log-negativity，
++作为 qubit toy diagnostic 对比 Pirandola single-edge -log(1-η)。
+ 
+-So γ bound via single-edge PLOB on E_1 = Pirandola single-edge (trivially
+-same formula). The γ path doesn't claim numerical tightening vs Pirandola
+-(per Log 07 §4.5 "最小可信 baseline"), only provides rigorous derivation
+-via data-processing monotonicity.
++**未**声称:
++- LN(E_1) = γ bound (需 channel-to-state reduction lemma，本 script 未含)
++- γ path 的 rigorous 性 (DPI lemma 仍 open)
++- formal β vs γ 序列
+ 
+-Output: log_neg(E_1) vs -log(1-η) for qubit amp-damp.
++Output: log_neg(E_1 Choi state) vs -log(1-η) — toy diagnostic only.
+ """
+ from __future__ import annotations
+ 
+@@ -82,17 +82,17 @@ def main():
+     print(f"\nCSV saved to: {csv_path}")
+ 
+     print()
+-    print("Interpretation:")
+-    print("  LN(E_1) = log-negativity of single amp-damp channel Choi state")
+-    print("  Pir_single = -log(1-η) (PLOB single-edge bound)")
+-    print("  ratio = LN / Pir")
++    print("Interpretation (toy diagnostic only):")
++    print("  LN_Choi(E_1) = log-negativity of single amp-damp channel Choi state (toy)")
++    print("  Pir_single   = -log(1-η) (bosonic single-edge PLOB baseline, ref)")
++    print("  ratio        = LN_Choi / Pir_single (informational)")
+     print()
+-    print("Note: γ path claims R ≤ E_R^∞(E_1), and E_R ≤ LN generally.")
+-    print("So γ bound ≤ LN(E_1). Pirandola single-edge is -log(1-η) (ref).")
+-    print()
+-    print("If ratio < 1: γ's single-channel LN IS already tighter than classical PLOB formula")
+-    print("             (because amp-damp qubit ≠ bosonic pure-loss exactly).")
+-    print("Both quantities refer to different abstract models; direct comparison is informational.")
++    print("Caveats:")
++    print("  - LN_Choi is NOT the γ bound.  γ formal target E_R^∞(E_1) requires")
++    print("    channel-to-state reduction lemma (NOT provided by this script).")
++    print("  - amp-damp qubit ≠ bosonic pure-loss; different abstract models.")
++    print("  - Direct numeric comparison serves as descriptive companion to β.G3 toy only,")
++    print("    and does NOT predict the formal β-vs-γ ordering.")
+ 
+ 
+ if __name__ == "__main__":

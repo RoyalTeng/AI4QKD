@@ -70,3 +70,43 @@ Reconcile with 实测 numbers:
 - β Phase 1 (β.G1 + β.G4) first, useful for γ fallback too
 - β.G3 direct bosonic SDP on desktop = critical decision point
 - γ safety net equally preserved
+
+---
+
+## γ toy numerical companion review (parallel to β.G3)
+
+**Feature**: γ path toy Choi-state diagnostic (single amp-damp log-negativity)
+**Authorization**: user "推进吧" autonomous
+**Max rounds**: 5
+**Outcome**: PASS after Round 2
+
+### Round 1 (commit 83ff61a)
+
+**Codex verdict**: FAIL (3 MAJORs)
+- MAJOR-1: MQ §11.0.3 line 266 "若 β 正确 formal 成立，会给约 5× tighter than γ" → directional formal claim
+- MAJOR-2: γ script docstring "rigorous derivation via data-processing monotonicity" → silent rigor upgrade (DPI 仍 [CONJ])
+- MAJOR-3: γ script interpretation "γ bound ≤ LN(E_1)" → overstates without channel-to-state reduction lemma
+
+### Round 2 FIX (commit 476e912)
+
+- γ script docstring: relabel "toy Choi-state diagnostic ONLY, 非 γ path derivation"; explicit DPI [CONJ] caveat
+- γ script interpretation block: "LN_Choi is NOT the γ bound"; "does NOT predict formal β-vs-γ ordering"
+- MQ §11.0.3: replace "若 β formal 成立" with "严格 local 解读：两个 surrogate 数值相差 ~4.7×... 不 predict formal β-vs-γ 序列"
+- Add "Q1 决策不受 toy 数值影响" 明示
+
+### Round 2 review
+
+**Codex verdict**: **PASS** (0 issues)
+- All 3 R1 MAJORs closed
+- No regression; math consistency verified (LN = log2(1+η_arm) matches reported toy values)
+- §11.0.2 agnostic β.G3 stance consistent with reworded §11.0.3
+
+"Ready to commit - None" recommendation.
+
+### FINALIZE (γ toy)
+
+**Outcome**: γ toy numerical cycle closed at [CONJ] informational level.
+- 0 rigor upgrades
+- Toy Choi-state LN 数据 保留 (log2(1+η_arm) baseline)
+- β/γ toy 对比 descriptive only, 不 drive formal decision
+- Q1 决策 (β main + γ safety net) 不受 toy numerics 影响
