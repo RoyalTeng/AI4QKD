@@ -155,6 +155,72 @@
 - All autonomous-achievable "明确 conclusion" states documented
 - Further high-risk work (path γ 真版, Sub-Q4 G4.2 attribution) would benefit from user review first
 
+---
+
+## Day 2 continued (2026-04-22 evening, user 指示 "继续 autonomous" + "三个 path 都推导")
+
+### User Day 2 instructions
+- (a) 继续 Day 2 autonomous T2-A Thm 4 Frank-Wolfe
+- (b) 三个 path 都推导一下，并让 codex 确认
+
+### Autonomous execution (22 → 32 commits)
+
+**(a) T2-A Thm 4 audit**:
+- Discovery: `kamin_thm4_key_length_bb84` + `use_thm4=True` 已实现 in earlier session (D.1 c49b2bf)
+- τ-slack SDP Eq. 49/53 direct implementation confirmed
+- ±6 dB Frank-Wolfe outer-loop residual accepted per 2a signoff
+- **T2-A closed at operationalizable** level (commit 70228e0)
+
+**(b) 三 paths derivation + Codex 5-round cycle**:
+- R1 draft (fb104e2): 三 paths v0.1 [CONJ]
+- Codex R1 FAIL: α REJECTED (identity-embedding = v0.2 class); β FAIL (missing adversarial-channel gap + tightness overread); γ v0.3 FAIL (super-receiver merge)
+- R2 FIX (b9bc766): 3 MAJOR → text cleanup
+- Codex R2 FAIL: 3 MAJOR residual
+- R3 FIX (e0af0c5): 3 MAJOR → R3 text fixes  
+- Codex R3 FAIL: 1 MAJOR α + 2 MINORs
+- R4 cleanup (bdecd76): α complete rewrite + β/γ minors
+- Codex R4 FAIL: 1 MINOR β stale ref
+- R5 cleanup (5d72a08): β table update
+- Codex R5 FAIL: 1 style MINOR (row 152 v0.3 mention)
+- R5+ trivial (993e532): **FINALIZED at [CONJ]/scaffolding-only**
+
+**Final three-path package**:
+- α: scaffolding-only (11 authoritative gaps in scaffolding.md)
+- β: [CONJ] 5 gaps (β.G1-G5)
+- γ v0.4+R3: [CONJ] 5 gaps (γ.B.G1-G3 + γ.G3 + γ.G4; Step B = target DPI lemma)
+
+**Integration updates**:
+- commit be9ee08: upper_bound_report.md §3.2.1 integrate 三 path 状态 + Codex 教训
+- commit 9bbd60d: main_question_interim_status v0.3 reflect paths cycle
+
+### Day 2 final totals
+
+**32 commits; 18 Codex runs; 0 rigor upgrades**.
+
+**Codex 5-round paths cycle 教训**:
+- 捕获 4 类 drift:
+  - R1: substantive math errors (cross-space retraction pattern across all 3 paths)
+  - R2: wording (< vs agnostic, gap count mismatch)
+  - R3: partial-demotion drift (α retaining derivation framing)
+  - R4-R5: cross-file stale refs (γ column "v0.3")
+- 证实 dev-reviewer 在 autonomous mode 下有效防止 retraction-class issues leak
+
+### Pending stretch work (not started; user 可 trigger)
+- T2-A Frank-Wolfe outer loop (3-5 天 coding; ±6 dB closure)
+- Phase 0.5 M4B TF-QKD (optional per RESEARCH_PLAN §2.7)
+- U3.6/U3.7 expansion
+- 任何一条 path formalization (用户纸笔 10-15 人日 per path)
+
+### State of main Q + 4 Sub-Qs (Day 2 close)
+- 主 Q: strict H1-H6 [UNKNOWN]; 放宽 bosonic-asym [SYN]
+- Sub-Q1: ✅ CLOSED
+- Sub-Q2: S2.5 proxy closed; 硬验收 (Fig.3) OPEN per ADR
+- Sub-Q3: [CONJ] upper bound; 三 paths [CONJ]/scaffolding at derivation-attempt level
+- Sub-Q4: [CONJ] gap shape; [UNKNOWN] attribution (blocked on Sub-Q3 upgrade)
+
+**未升级的 [COROLLARY]/[THM] 升级路径**: 对所有 path 均为
+user C1(b) 纸笔 formal + C2 签字 + C3 dev-reviewer PASS。
+
 **Rigor discipline**:
 - All outputs at [CONJ] or [SYN]; no [COROLLARY]/[THM] upgrades
 - C1+C2+C3 invariant preserved (per CLAUDE.md R0.2)
