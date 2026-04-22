@@ -1,6 +1,27 @@
-# umr upper bound — path γ v0.6 detailed draft derivation
+# [RETRACTED / ARCHIVAL ONLY] umr upper bound — path γ v0.6 detailed draft derivation
 
-**版本**: v0.6 **[CONJ-DRAFT]** — AI autonomous detailed derivation (2026-04-22 Day 3)
+> **⚠️ RETRACTION BANNER**
+>
+> **2026-04-22**: Codex R1 verdict **REJECTED** ([review-gamma-r1.json](../workflow/path-beta-gamma-detailed-draft/review-gamma-r1.json))
+>
+> **1 CRITICAL + 4 MAJOR issues (retraction-pattern repeat)**:
+> - **CRITICAL (γ.B.1/γ.B.3/combined chain)**: Forbidden v0.4 cross-task transfer **reintroduced in substance**. Lines 89, 146-147, 215 assert "$R \leq \log K_\text{A-B} \leq E_R^\varepsilon(\mathcal{E}_1)$" — exact unproved Alice-Bob-to-Alice-Charlie transfer that γ v0.4 had **explicitly ruled out**
+> - MAJOR (γ.B.2): Invalid DPI chain — $I(A : \mathcal{B}(\hat{A},\hat{B})) \leq I(A : \hat{A},\hat{B}) \leq I(A : \hat{A})$ requires Markov condition not provided; also $I \leq E_R$ generally false
+> - MAJOR (citations): Khatri-Wilde Prop 19.2 misdescribed as "any LOCC-compatible entanglement measure is monotone under LOCC" — actual content is specifically n-shot amortized entanglement converse $E(M_A;M_B)_\omega \leq n E^\mathcal{A}(\mathcal{N})$
+> - MAJOR (upgrade): Silent upgrade via labels "[CONJ-DRAFT → CLOSE]" (γ.B.2) and "[STANDARD, close]" / "[CLOSE]" (γ.4) despite §9.3 C1+C2+C3 discipline
+> - MAJOR (§9.1): Understates remaining work — γ.B.2 NOT "~0.5 day textbook close" because proof sketch depends on broken steps
+>
+> **Action per dev-reviewer skill rule** (REJECTED → 停止):
+> - This file **RETRACTED** — not to be used as basis for further derivation
+> - Prior [docs/proofs/umr_path_gamma_v0_4_derivation.md](umr_path_gamma_v0_4_derivation.md) v0.4 R3 scaffolding retained (honest scaffolding with target DPI lemma, NOT cross-task transfer)
+> - **Lesson (R0.2 compliance)**: Third time this class of trap (v0.2 set-inclusion, v0.3 super-receiver, now v0.6 cross-task transfer disguised as DPI chain). Any operational link between Alice-Charlie bound and Alice-Bob key rate **cannot** be sketched in AI draft — must stay OPEN target lemma pending user research-level proof.
+> - **Retraction record** in [docs/research/RETRACTION.md](../research/RETRACTION.md) (pending user review)
+>
+> **Original draft content preserved below as cautionary record**.
+
+---
+
+**版本**: v0.6 **[RETRACTED]** — originally [CONJ-DRAFT] AI autonomous draft (2026-04-22 Day 3)
 **对应 Log 07**: §4.5 strict reading — single-edge PLOB + DPI/LOCC-monotonicity lemma
 **关系**:
 - v0.2 (2026-04-21): adversarial containment — retracted

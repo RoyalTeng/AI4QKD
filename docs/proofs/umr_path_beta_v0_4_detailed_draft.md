@@ -1,6 +1,26 @@
-# umr upper bound — path β v0.4 detailed draft derivation
+# [RETRACTED / ARCHIVAL ONLY] umr upper bound — path β v0.4 detailed draft derivation
 
-**版本**: v0.4 **[CONJ-DRAFT]** — AI autonomous detailed derivation (2026-04-22 Day 3)
+> **⚠️ RETRACTION BANNER**
+>
+> **2026-04-22**: Codex R1 verdict **REJECTED** ([review-beta-r1.json](../workflow/path-beta-gamma-detailed-draft/review-beta-r1.json))
+>
+> **1 CRITICAL + 3 MAJOR issues (retraction-pattern repeat)**:
+> - CRITICAL (β.5): Applied Khatri-Wilde Prop 19.2 beyond its scope — Prop 19.2 is for **n uses of a fixed channel**, NOT reduction from adversarial comb to fixed channel. Line 184 "amortized bound inherits even for adversarial Charlie" = cross-space transfer (exact v0.3 class trap)
+> - MAJOR (β.4): LOPC Eve simulating Charlie's register from $\text{Env}(\mathcal{E}_1) \cup \text{Env}(\mathcal{E}_2)$ is **unsupported premise** — no degrading/simulation map provided
+> - MAJOR (narrative): Section titles "closes β.G4" / "(partial close of β.G5)" silently upgrade despite body admitting gaps remain
+> - MAJOR (§9): Phase 1/2/3/4 plan misclassifies β.G4/β.G5 as literature-check when they require **new structural arguments**
+>
+> **Action per dev-reviewer skill rule** (REJECTED → 停止):
+> - This file **RETRACTED** — not to be used as basis for any further derivation work
+> - Prior scaffolding [docs/proofs/umr_path_beta_derivation.md](umr_path_beta_derivation.md) v0.3 retained (honest scaffolding, no cross-space transfer)
+> - **Lesson (R0.2 compliance)**: "Lemma closes gap" wording silently upgrades even within [CONJ-DRAFT] framework. Must keep structural blockers explicitly OPEN with no draft proof sketch until a comb-to-fixed-channel reduction or Eve simulation map is actually established.
+> - **Retraction record** in [docs/research/RETRACTION.md](../research/RETRACTION.md) (pending user review)
+>
+> **Original draft content preserved below as cautionary record**.
+
+---
+
+**版本**: v0.4 **[RETRACTED]** — originally [CONJ-DRAFT] AI autonomous draft (2026-04-22 Day 3)
 **对应 Log 07**: §3.1 子节"路径 β" + §4.4
 **关系**:
 - v0.3 (commit 83ff61a 之前): scaffolding + 5 gaps identified (β.G1-G5)

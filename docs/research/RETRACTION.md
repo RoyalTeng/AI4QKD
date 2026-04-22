@@ -183,7 +183,96 @@ Claude + codex + 其他 LLM 即便独立部署,**仍可能共享训练语料偏�
 ## Changelog
 
 - **v1.0**(2026-04-19):首次落盘。作为 [FINDINGS.md](FINDINGS.md) v1.0 的正式撤回声明。
+- **v1.1**(2026-04-22):追加 §7 — path β v0.4 draft + path γ v0.6 draft 同步撤回
 
 ---
 
-*RETRACTION 结束。FINDINGS 状态:已撤回。Sub-Q3 状态:开放,未开始。*
+## 7. β v0.4 + γ v0.6 detailed drafts 撤回 (2026-04-22)
+
+**撤回文件**:
+- [docs/proofs/umr_path_beta_v0_4_detailed_draft.md](../proofs/umr_path_beta_v0_4_detailed_draft.md)
+- [docs/proofs/umr_path_gamma_v0_6_detailed_draft.md](../proofs/umr_path_gamma_v0_6_detailed_draft.md)
+
+**commit 引入**: 5ed30ee
+**触发 review**: Codex 双 R1 评审
+- [review-beta-r1.json](../workflow/path-beta-gamma-detailed-draft/review-beta-r1.json) → **REJECTED** (1 CRITICAL + 3 MAJORs)
+- [review-gamma-r1.json](../workflow/path-beta-gamma-detailed-draft/review-gamma-r1.json) → **REJECTED** (1 CRITICAL + 4 MAJORs)
+
+### 7.1 问题清单
+
+#### 7.1.1 γ v0.6 — cross-task transfer 第三次重现 [CRITICAL]
+
+- γ v0.2: adversarial containment set-inclusion — retracted 2026-04-21
+- γ v0.3: super-receiver Bob-Charlie-Eve merge — FAIL 2026-04-22
+- γ v0.4: cross-task $K_\text{A-B} \leq K_\text{A-C}^\text{LOPC}$ — FAIL 2026-04-22
+- **γ v0.6 (this)**: 以 "DPI chain" 语言重新包装**相同** cross-task transfer. Lines 89, 146-147, 215: "$R \leq \log K_\text{A-B} \leq E_R^\varepsilon(\mathcal{E}_1)$" — exact unproved Alice-Bob-to-Alice-Charlie transfer that γ v0.4 had ruled out
+
+**教训**: 同一类 trap **第三次**以新的包装出现。cross-task operational link (Alice-Charlie bound ↔ Alice-Bob key rate) **不能**由 AI draft sketch, must stay OPEN target lemma pending user research-level proof.
+
+#### 7.1.2 β v0.4 — cross-space transfer 通过 amortized framework 包装 [CRITICAL]
+
+- β.5 Lemma 将 Khatri-Wilde Prop 19.2 (n uses of **fixed** channel) 应用到 **adversarial comb → fixed channel reduction**, 结论 "amortized bound inherits even for adversarial Charlie"
+- Prop 19.2 的 scope 是 fixed channel n 次使用, **不 cover** adversarial comb reduction
+- β.4 LOPC Eve 从 $\text{Env}(\mathcal{E}_1) \cup \text{Env}(\mathcal{E}_2)$ 模拟 Charlie register — **无 simulation map proof**
+
+**教训**: Khatri-Wilde Prop 19.2 amortized framework 是 n 次固定信道 converse, 不 resolve "adversarial comb → fixed channel" 结构 gap. 误用 amortized framework 作 reduction shortcut = 越权.
+
+#### 7.1.3 Silent upgrade via section titles [MAJOR, both]
+
+- β.4 header: "(closes β.G4)" — body admits lemma 不 closable
+- γ.B.2 label: "[CONJ-DRAFT → CLOSE]" — 违反 §11 "CONJ-DRAFT throughout"
+- γ.4 label: "[CLOSE]" — 同
+
+**教训**: Section titles + labels silently upgrade even when body/changelog stay [CONJ-DRAFT]. R0.2 discipline 必须 textual consistency, 不 just nominal label.
+
+#### 7.1.4 Citation misdescription [MAJOR]
+
+- Khatri-Wilde Prop 19.2 描述为 "any LOCC-compatible entanglement measure is monotone under LOCC" — 实际内容 specifically 是 n-shot amortized converse $E(M_A;M_B)_\omega \leq n E^\mathcal{A}(\mathcal{N})$
+
+**教训**: 即使 [VERIFIED against PDF] tag, AI paraphrase 可能扭曲 theorem content. Literal quote safer than paraphrase.
+
+#### 7.1.5 γ.B.2 broken DPI chain [MAJOR]
+
+- $I(A : \mathcal{B}(\hat{A},\hat{B})) \leq I(A : \hat{A},\hat{B}) \leq I(A : \hat{A})$ 需 Markov condition (not provided)
+- $I(A : \mathcal{E}_1(A')) \leq E_R(\mathcal{E}_1)$ 一般**不成立** — quantum mutual information 不总是 $\leq$ REE
+
+**教训**: "Textbook-closable" ≠ "half day write-up". γ.B.2 proof sketch 实际包含 broken math steps.
+
+### 7.2 Action (per dev-reviewer skill rule "REJECTED → 停止")
+
+- **β v0.4 draft + γ v0.6 draft 均标 [RETRACTED]**, 顶部加 retraction banner
+- **原稿 preserved as cautionary record** (R0.1 规则: 不删除, 保留)
+- **prior scaffolding retained**: [umr_path_beta_derivation.md](../proofs/umr_path_beta_derivation.md) v0.3 + [umr_path_gamma_v0_4_derivation.md](../proofs/umr_path_gamma_v0_4_derivation.md) v0.4 R3 — honest scaffolding, no cross-space transfer
+- **NOT iterate to R2** — per skill rule "REJECTED = stop and report critical issues"
+
+### 7.3 方法论教训 (追加到 §4)
+
+1. **"Closing a gap via detailed proof sketch" 本身是可疑语言** — 任何 sub-lemma 声称 close a previously-identified structural gap 应被视为**可能的 silent upgrade**, 默认 fail 直到显式证明该 gap 已由 verified literature theorem 直接覆盖
+2. **Amortized / LOCC-monotone framework 不 自动 resolve reduction gaps** — 把 comb → fixed channel 或 cross-task transfer 塞进 amortized framework 仍是 cross-space transfer
+3. **AI draft 的 "operational link" / "connection via DPI" / "chain 可 apply" 语言 = red flag** — 这类 hand-wave 在 5 次撤回事件里都出现过, 必须从源头避免
+4. **§9 user-work Phase breakdown 如果把结构 gap 当 literature check, 误导用户** — structural reductions 不是 "verify citation" 能 close 的, 是 novel proof required
+5. **AI autonomous 在 R0.2 [CONJ-DRAFT] 框架下**, 对 structural gap 的正确动作是: 保持 OPEN, **不 draft proof sketch**. Draft 只限于 textbook items (已有 theorem direct application) + numerical scaffolding.
+
+### 7.4 对 path β / γ formal work 影响
+
+- **prior scaffolding 保持** [umr_path_beta_derivation.md](../proofs/umr_path_beta_derivation.md) v0.3 + [umr_path_gamma_v0_4_derivation.md](../proofs/umr_path_gamma_v0_4_derivation.md) v0.4 R3
+- 用户 formal work (R0.2 C1+C2+C3 pathway) 现 explicitly 是 **user research-level proof**, 不是 "AI draft + Codex verify" cycle
+- β.G2 / β.G4 / β.G5 / γ.B.G1 / γ.B.G3 / γ.G3 结构 gaps 全 open, 无 AI draft shortcut
+- **Q1 决策 (β main + γ safety)** 不受影响 — 决策基于 formal feasibility 分析, 非 draft 质量
+
+### 7.5 Lessons recorded — 第 5 次 cross-space trap
+
+此次撤回是 **v1 → γ.v0.2 → γ.v0.3 → γ.v0.4 → (γ.v0.6 + β.v0.4)** 系列 cross-space trap 的第 5 次. 模式:
+- 每次以新的技术包装 (set-inclusion / super-receiver / cross-task capacity / DPI chain / amortized framework)
+- 每次 Codex 独立评审 catch
+- 每次 AI autonomous 默认 overstep R0.2
+
+**固化规则 (等待用户同意后写入 CLAUDE.md)**:
+- AI autonomous **不得** draft proof sketch for structural gaps (cross-task, cross-space, reduction, operational link)
+- 这些 gaps 必须保持 explicit OPEN with **no partial proof sketch**, pending user-led research-level work
+- "[CONJ-DRAFT]" label 不是免死金牌 — content 内若 substantively 推进 gap "close", 仍是 silent upgrade
+- AI 角色限定在 (i) literature synthesis with verified citations (ii) numerical scaffolding (iii) gap identification, 不 draft gap resolution
+
+---
+
+*RETRACTION §7 结束。β v0.4 + γ v0.6 状态: 已撤回。path β/γ formal status: user research-level work 原计划 unchanged.*
