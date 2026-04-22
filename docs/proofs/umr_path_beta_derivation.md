@@ -97,9 +97,9 @@ $$R_\varepsilon^{\text{LOPC}}(\tilde{\mathcal{M}}) \leq E_R^\infty(\tilde{\mathc
 - 对 umr-topology, 需 SDP over Choi states of $\tilde{\mathcal{M}}$
 - 实际数值计算 non-trivial
 
-**Gap β.G3**: 即使 $E_R^\infty$ 可 bound，具体 $f(\eta_A, \eta_B)$ 的 closed form 未知。Log 07 §4.4 推测 $f(\eta_A, \eta_B) < -\log_2(1-\sqrt{\eta_A\eta_B})$（因为 Charlie measure-only 约束 loosens Eve's extractable）。但"紧 constant" 需 SDP solve。
+**Gap β.G3**: 即使 $E_R^\infty$ 可 bound，具体 $f(\eta_A, \eta_B)$ 的 closed form 未知。Log 07 §4.4 讨论 $f(\eta_A, \eta_B)$ 的数值未知；原文 agnostic：可能 smaller, comparable, or larger than Pirandola 2019 min-cut bound。v0.1 曾 overread "strictly smaller" — v0.2 修正。"紧 constant" 需 SDP solve 确定方向。
 
-**严谨性**：**[CONJ, G3]** — 数值上需 SDP; analytic bound 未知。
+**严谨性**：**[CONJ, G3]** — 数值上需 SDP; analytic bound 未知; 方向未定。
 
 ### 2.4 Step 4: Connection to original umr protocol
 
@@ -120,7 +120,7 @@ $$R_\varepsilon^{\text{LOPC}}(\tilde{\mathcal{M}}) \leq E_R^\infty(\tilde{\mathc
 
 Chain: $R^{\mathcal{A}_\text{umr}}(\Pi) \overset{\text{G4}}{\leq} R^\text{LOPC}(\tilde{\mathcal{M}}) \overset{\text{G2,PLOB}}{\leq} E_R^\infty(\tilde{\mathcal{M}}) \overset{\text{G3}}{=} f(\eta_A, \eta_B)$
 
-若 $f(\eta_A, \eta_B) < -\log_2(1-\sqrt{\eta_A\eta_B})$ (as Log 07 §4.4 推测), path β 给**更紧**上界 than Pirandola 2019 min-cut。
+$f(\eta_A, \eta_B)$ 的具体数值与 Pirandola 2019 min-cut bound $-\log_2(1-\sqrt{\eta_A\eta_B})$ 的**比较方向未定**：可能 smaller, comparable, or larger。需 SDP solve 或 analytic estimate 确定。path β 的 research 价值取决于该比较结果，**无法** a priori 声称 "更紧"。
 
 **严谨性**：**[CONJ conditional on G1-G4 resolved + G3 SDP computed]**
 
@@ -157,9 +157,10 @@ Chain: $R^{\mathcal{A}_\text{umr}}(\Pi) \overset{\text{G4}}{\leq} R^\text{LOPC}(
 ## 5. 严谨性
 
 - 本文件 **[CONJ]**
-- 4 gaps explicit
+- **5 gaps explicit** (v0.2: 4 original + β.G5 新增)
 - **不**升级 任何分级
-- 等 Codex review
+- Codex R2 FAIL 的 tightness residual 已 v0.2 §2.3 + §2.5 修正为 agnostic
+- 等 Codex R3 review
 
 ## Changelog
 

@@ -127,58 +127,36 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \overset{\text{G5,G6}}{\leq} R_\va
 
 ---
 
-## 3. Gap summary — **v0.2 restored scaffolding gap list + explicit secret-key/rate-alignment gap**
+## 3. Gap summary — **Authoritative scaffolding reference**
 
-**注**：本小节恢复 11-gap scaffolding list；**不再声称是 derivation**。
+**Authoritative 11-gap inventory**: 参阅 [docs/proofs/umr_path_alpha_scaffolding.md](umr_path_alpha_scaffolding.md) v0.1 §5 "综合 gap table"。该 scaffolding 为 **唯一** authoritative 11-gap list。
 
-| Gap | 描述 | Severity | 状态 |
-|---|---|---|---|
-| α.L1 | 协议 embedding $\iota$（Log 07 §4.3 Lemma 1） | MAJOR | open, needs explicit Portmann-Renner-style construction |
-| α.L2 | 安全归约（composable ε）| **CRITICAL** (**v1 / v0.2 类陷阱**) | open |
-| α.L3 | Rate 定义对接（LOPC/LOCC 在 umr vs trusted relay 下 operational equivalence） | MAJOR | open, **Codex R1 明示此 gap 在 v0.1 被遗漏** |
-| α.G2 (v0.1 gap) | Khatri-Wilde Prop 19.2 apply to channel stack | MAJOR | open |
-| α.G4 (v0.1 gap) | $E^A_\text{stack}$ vs min$_i E^A(\mathcal{E}_i)$ | MAJOR | open |
+**v0.1 ("attempted derivation") 的 gap renaming 已撤回**: v0.1 曾把 11 gaps merge 到 6 gaps (α.G1-G6) 声称这是 "derivation-level" summary — Codex R1 指出此 merge 损失 rate-alignment gap。v0.2 **撤回此 merge**；全部 11 gaps 以 scaffolding 为准。
 
-**Bottom line**：path α **没有** derivation at [CONJ] 级别 without user 先 establish L1/L2/L3 formally。本 v0.2 仅 **scaffolding + Round 1 Codex 教训** record。
+**Bottom line**: path α 是 **scaffolding only**; **没有** derivation at [CONJ] level。升级需用户先 establish L1/L2/L3 formally 按 Portmann-Renner framework。
 
-**Codex R1 原文警告**：
+**Codex R1 原文警告**（保留此文警示用）：
 
 > "Step 4 still depends on comparing trusted-relay and umr adversary powers across different protocol/security partitions without a formal Portmann-Renner-style embedding/security-transfer theorem. ... Restore the missing rate-definition/secret-key-alignment gap explicitly, and do not describe the identity-embedding move as distinct from v0.2 until the cross-space protocol embedding and security-transfer lemmas are actually written."
 
-**v0.2 完全接受此 verdict**，以 scaffolding 状态结束。
+**v0.2 完全接受**: identity-embedding 与 v0.2 set-inclusion 属**同类陷阱**；本文件 **不** 声称 "derivation"；仅作为 scaffolding + v0.1 撤回记录。
 
 ---
 
-## ~~3-old. Gap summary (from v0.1)~~  — 以下 retracted ↓
+## 4. Relation to path γ v0.2 (retracted 2026-04-21)
 
-| Gap (derivation) | From scaffolding | Severity | 状态 |
-|---|---|---|---|
-| α.G1 Embedding $\iota$ | L1.G1 + L1.G2 + L1.G3 + L1.G4 | MAJOR | open (reframed as "attribution-embedding" not set-inclusion) |
-| α.G2 Khatri-Wilde Prop 19.2 apply to channel stack | L1 gap-related | MAJOR | open |
-| α.G3 LOCC in umr vs trusted-relay | L1.G2 | MAJOR | open |
-| α.G4 $E^A_\text{stack} \leq \min_i E^A(\mathcal{E}_i)$ for umr | L3.G3 | MAJOR | open |
-| α.G5 Direction (umr ≤ tr rate) | L2.G1 | MINOR | standard direction check |
-| α.G6 Eve spaces across topology | L2.G3 | **CRITICAL** | same as v0.2 retraction pattern |
+path α v0.1 曾在 Step 1 用 identity-embedding $\iota$ 作为"与 v0.2 set-inclusion 不同"的框架 — **Codex R1 判定此 reframing 是同类陷阱**: 都把 trusted / umr Eve powers 在没有 formal embedding + security-transfer 的情况下进行 cross-space 比较。
 
-**Total: 6 gaps** (合并/重组 scaffolding 的 11 gaps)。4 MAJOR + 1 CRITICAL + 1 MINOR。
-
-**CRITICAL α.G6** specifically: avoid v0.2 "set-inclusion shortcut" temptation. **必须**用 explicit embedding $\iota$ (as attempted in Step 1) **plus** explicit Portmann-Renner ε-security transfer (as Step 4 gap).
-
----
-
-## 4. Diff vs path γ v0.2
-
-path α 在 Step 1 用 identity-embedding $\iota$ (rename Eve attribution) 而非 v0.2 的 set-inclusion。但最终 Step 4 (security reduction) 仍面临 **同类 Eve-across-spaces 问题**。 区别在于 α 有 explicit intermediate step (monotonicity + Khatri-Wilde)，γ v0.2 没有。
-
-**是否 α safer than γ v0.2**：部分。 α 的 Step 2 + Step 3 确实 more explicit。 但 α.G6 仍是 same class of issue — 需要 Portmann-Renner 严格 handle。
+**Lesson for future derivation attempts**: 任何声称在 umr 与 trusted-relay 之间做 "continuity" / "embedding" / "inclusion" 的 shortcut，**无论 措辞如何**，**都是**未 close 的 Portmann-Renner cross-space framework。此 gap 必须由用户 Nine-square 方式 formal 处理 才能 close。
 
 ---
 
 ## 5. 严谨性
 
-- 本文件 **[CONJ]**; 6 gaps explicit (4 MAJOR + 1 CRITICAL + 1 MINOR)
+- 本文件 **[CONJ, scaffolding-only]**
+- **Authoritative gap list**: 11-gap scaffolding (见 [umr_path_alpha_scaffolding.md](umr_path_alpha_scaffolding.md))
 - **不**升级 FINDINGS / Log 07
-- 等 Codex review 特别 focus on α.G6 retraction pattern risk
+- **不**声称 "derivation"
 
 ## Changelog
 

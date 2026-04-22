@@ -56,39 +56,40 @@ $$K_\text{A-C}^{\text{LOPC}}(\mathcal{E}_1) \leq E_R^\infty(\mathcal{E}_1) = -\l
 
 **NOT merged**: 与 v0.3 不同, Bob **不是** "super-receiver" 的一部分 in Step A; 我们只讨论 **Alice-Charlie** point-to-point capacity。
 
-### 2.2 Step B — DPI / LOCC-monotonicity lemma (separately stated, Log 07 §4.5 核心)
+### 2.2 Step B — DPI / LOCC-monotonicity **target lemma** (NOT cross-task capacity transfer)
 
-**Target claim**: Alice-Bob secret-key rate $R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi)$ 不超过 Alice-Charlie secret-key rate $K_\text{A-C}^\text{LOPC}(\mathcal{E}_1)$。
+**⚠️ v0.4 scope restriction (Codex R2 指示)**: v0.3/v0.4-initial 曾 propose $K_\text{A-B}(\Pi) \leq K_\text{A-C}^\text{LOPC}(\mathcal{E}_1)$ 作为 Step B claim — 这是**未 justified 的 cross-task capacity transfer** (different party sets + different security models)。
 
-**Intuition** (Log 07 §4.5): Alice 送出的信息**最多**被 Charlie 接收；Eve 对 Charlie mode 做任何 downstream operation (包括联合 Bob mode 做 BSM + broadcast classical $c$) 只是 Alice-Charlie 可见信息的 **classical downstream processing**。经典下游 operations **不增加** 可提取的 Alice-Bob secret key。
+**Codex R2 verdict (FAIL)**:
+> "Log 07 §4.5 only motivates a data-processing/correlation monotonicity step, but v0.4 upgrades that into the stronger cross-task claim $K_\text{A-B}(\Pi) \leq K_\text{A-C}^\text{LOPC}(E_1)$ between different party sets and security models. ... the proof still lacks a justified transfer from an Alice-Charlie capacity bound to the Alice-Bob umr key-rate setting."
 
-**Formal lemma (γ.DPI)** [target statement]:
-Let $K_\text{A-B}(\Pi)$ be the secret-key capacity of the full Alice-Bob-Charlie umr protocol $\Pi$ (with Charlie adversarial). Let $K_\text{A-C}^\text{LOPC}(\mathcal{E}_1)$ be the point-to-point Alice-Charlie LOPC secret-key capacity (Alice sender, Charlie receiver). Then:
+**Response**: v0.4 (current) **downgrades** Step B 为**target DPI lemma** (不直接声称 cross-task capacity 转移):
 
-$$K_\text{A-B}(\Pi) \leq K_\text{A-C}^\text{LOPC}(\mathcal{E}_1)$$
+**Step B Target (γ.DPI target)**:
+> 存在一个 DPI/LOCC-monotonicity lemma 证明：**Eve 对 Charlie 收到的 Alice mode 所做的任何 downstream operations（含 joint quantum BSM with Bob's mode + classical broadcast）不能增加** Alice-Bob 在 $\mathcal{A}_\text{umr}$ 下可提取的 secret key rate **beyond** 对 Alice's output mode (post-$\mathcal{E}_1$) 所 bound 的 PLOB 限制。
 
-**Justification intuition**: Alice-Bob 的 shared key must be computable from (Alice's register, Bob's classical announcements + Charlie's public broadcast). Charlie's broadcast is classical side-info derived from post-$\mathcal{E}_1$ Alice-mode + post-$\mathcal{E}_2$ Bob-mode. Assume Eve controls Charlie — then classical broadcast 是 Eve-accessible classical channel. Eve 对 Alice-mode (after $\mathcal{E}_1$) 拥有 full access (via Charlie)。所以 Alice-Bob secret key 最多是 **Alice-Charlie** (point-to-point) secret key 的 downstream — 因为 Bob 的 info 来自 Alice-Charlie 的 public classical channel + Bob's own local data。
+**即**：lemma 只声称 "downstream operations non-increasing Alice-Bob secret key correlation"; **不**声称 $K_\text{A-B} \leq K_\text{A-C}$ 跨 task capacity 转移。
 
-**Gap γ.DPI.G1** (**关键 gap**): 此 claim 的 **严格数学** formulation 需 explicit use 于:
-- Portmann-Renner composable security framework
-- LOCC monotonicity of secret-key capacity (Horodecki 2009 or similar)
-- 具体 operator-algebra argument 把 "Bob 的 info 是 Alice-Charlie public broadcast 的 downstream" 变成 $K_\text{A-B}(\Pi) \leq K_\text{A-C}^\text{LOPC}$
+**Gap γ.B.G1** (**关键 gap**): 此 lemma 的 **严格 formulation** 需包含:
+- 明确定义 "Alice-Bob secret key correlation" 的 operator-algebra formulation
+- LOCC-monotonicity of 该 correlation under Eve's downstream operations (包括 Charlie's joint BSM + classical broadcast)
+- 连接到 $E_R^\infty(\mathcal{E}_1) = -\log_2(1-\eta_A)$ 的 PLOB bound 的方式
+- **不** 直接声称 cross-task capacity inequality
 
-**Gap γ.DPI.G2**: Bob 对 Alice-Charlie LOPC 来说是 **"额外合法方"** — 他不是 receiver (Charlie 是), 也不是 Eve (按本 path γ v0.4 的 careful setup); 他是 **Alice-Bob key 的 co-holder**, 只能通过 Charlie 的 public broadcast 学到 Alice 的 info。严格说 Bob 在 Alice-Charlie-only point-to-point LOPC model 下**不存在**。需要 explicit framework 处理 "co-key-holder Bob" 不是简单的 side-info — 这是 subtle。
+**Gap γ.B.G2**: Charlie 对 Alice mode 和 Bob mode 的 **joint BSM** 是 **quantum operation** (not classical downstream) — v0.3/v0.4-initial 错误地 classify as "classical". **正确描述**: BSM 是 joint quantum 操作，输出既有 quantum post-measurement state 又有 classical outcome $c$。lemma 必须 handle 这个 joint quantum+classical structure。
 
-**严谨性**：**[CONJ, γ.DPI.G1 + γ.DPI.G2 open]**
+**Gap γ.B.G3** (subsume former DPI.G2): Bob 在 secret-key 任务中的角色在 Step A (Alice-Charlie point-to-point PLOB) 完全缺席 — 所以 Step A 的 PLOB bound $-\log_2(1-\eta_A)$ 是 Alice-Charlie bit capacity 的 bound，不是 Alice-Bob 的。**Step B lemma 必须建立两者之间的 operational 联系**，而不是简单 monotonicity。
 
-### 2.3 Step C — Symmetric Bob-Charlie argument
+**严谨性**：**[CONJ, γ.B.G1 + γ.B.G2 + γ.B.G3 all open]** — Step B 是 **target lemma 陈述**，不是 proof。
 
-By symmetry, 重复 Step A + Step B with Bob's channel $\mathcal{E}_2$:
+### 2.3 Step C — 预期 scaling conclusion (conditional on Step B target lemma)
 
-$$K_\text{A-B}(\Pi) \leq K_\text{B-C}^\text{LOPC}(\mathcal{E}_2) = -\log_2(1-\eta_B)$$
+**若** Step B target lemma 被 user formally established，**则**：
+- Alice's mode-level PLOB bound $-\log_2(1-\eta_A)$ (Step A) 可 transfer 到 Alice-Bob secret-key rate bound
+- Symmetric argument with $\mathcal{E}_2$ gives bound $-\log_2(1-\eta_B)$
+- Combine: $R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq -\log_2(1-\min(\eta_A, \eta_B))$
 
-**Combine**:
-
-$$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq \min\{-\log_2(1-\eta_A), -\log_2(1-\eta_B)\} = -\log_2(1-\min(\eta_A, \eta_B))$$
-
-**严谨性**：**[CONJ conditional on γ.DPI.G1 + γ.DPI.G2 resolved]**
+**严谨性**：**[CONJ conditional on Step B target lemma]** — 目前 Step B 只是 target statement，未 proof，所以 Step C 的 conclusion 也是 conditional。
 
 ### 2.4 Step D — ε-composable security ε transfer
 
@@ -108,12 +109,13 @@ High-loss: $\approx \eta_\text{arm}/\ln 2 = \sqrt{\eta_{AB}}/\ln 2$ (for symmetr
 
 | Gap | 描述 | Severity | 升级所需 |
 |---|---|---|---|
-| γ.DPI.G1 | LOCC-monotonicity argument: $K_\text{A-B}(\Pi) \leq K_\text{A-C}^\text{LOPC}$ strict proof | **MAJOR** | Portmann-Renner + Horodecki 框架; 用户纸笔 2-3 天 |
-| γ.DPI.G2 | Bob 在 Alice-Charlie point-to-point framework 下的 role | **MAJOR** | Operator-algebra framework; 用户纸笔 1-2 天 |
+| γ.B.G1 (v0.4 R3) | Step B DPI target lemma: "downstream operations non-increasing Alice-Bob secret key correlation" + 连接 PLOB bound — 正式 lemma 陈述 + proof | **MAJOR** | Portmann-Renner composable framework; 操作定义 "Alice-Bob secret key correlation"; 2-3 天 |
+| γ.B.G2 (v0.4 R3) | Charlie joint BSM 是 quantum+classical operation (non classical-only); lemma 必须 handle 这个 structure | **MAJOR** | quantum-channel framework; 1-2 天 |
+| γ.B.G3 (v0.4 R3) | Alice-Charlie PLOB bound 与 Alice-Bob secret key 之间的 operational 联系 (不是 capacity transfer) | **MAJOR** | LOCC monotonicity + reduction argument; 2-3 天 |
 | γ.G3 | ε-composable transfer (PLOB asymptotic → ε-bounded) | MAJOR | Devetak-Winter or Portmann-Renner; 1-2 天 |
 | γ.G4 | Classical announcement $c$ LOCC processing (standard but needs writeup) | MINOR | Standard LOCC argument |
 
-**Total: 4 gaps (3 MAJOR + 1 MINOR)**
+**Total: 5 gaps (4 MAJOR + 1 MINOR)**. v0.4 R3 改正: 前 γ.DPI.G1/G2 (涉及 cross-task capacity) 替换为 γ.B.G1-G3 (**仅 target DPI lemma**, 不声称 capacity transfer)
 
 **Key diff 对 v0.3**：
 - v0.3 Step 1 (super-receiver merge) **DELETED**
@@ -142,15 +144,16 @@ v0.4 **严格实施** Log 07 §4.5:
 ## 5. 严谨性
 
 - **[CONJ]** overall
-- 4 gaps explicit
+- **5 gaps explicit** (v0.4 R3 修正)
 - **不**升级任何分级
-- **v0.2 + v0.3 两种 cross-space 陷阱 都 avoid**
+- **v0.2 + v0.3 两种 cross-space 陷阱 都 avoid**; v0.4 R3 加上**未 claim cross-task capacity transfer**
 
 ---
 
 ## 6. Changelog
 
-- **v0.4** (2026-04-22 Round 2 FIX): 响应 Codex R1 FAIL — 删除 v0.3 super-receiver merge; 严格按 Log 07 §4.5 写 point-to-point PLOB + separately stated DPI lemma
+- **v0.4 R3 FIX** (2026-04-22 Round 3): 响应 Codex R2 FAIL — Step B 从 cross-task $K_\text{A-B} \leq K_\text{A-C}^\text{LOPC}$ capacity transfer **downgrade** 到 DPI target lemma; Charlie BSM 明确为 quantum+classical joint operation (不是 classical-only); gaps 由 2 → 3 (γ.B.G1-G3)
+- **v0.4 R2** (2026-04-22 Round 2 FIX): 响应 Codex R1 FAIL — 删除 v0.3 super-receiver merge; 严格按 Log 07 §4.5 写 point-to-point PLOB + separately stated DPI lemma
 - **v0.3** (2026-04-22): v0.3 super-receiver merge approach — **Codex R1 FAIL**: Bob merged with Eve fuses honest receiver with adversary; 删除
 - **v0.2** (2026-04-21): adversarial containment set-inclusion — **retracted** 2026-04-21 per Claude audit + Codex audit
 - **v0.1** (2026-04-21): initial three-lemma attempt, 保守 [DRAFT]
