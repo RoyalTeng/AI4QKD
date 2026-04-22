@@ -52,9 +52,9 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi) \leq ? \cdot E_R^\infty(\tilde{\ma
 
 Alice 与 Bob 独立 source $\rho_{AA'} \otimes \sigma_{BB'}$ 可视为 composite system $(AA') \otimes (BB')$ 上 product state. LOPC / secret-key-agreement framework 允许 product initial state.
 
-### 2.2 Verified literature support
+### 2.2 Literature support (paraphrased summary, not literal quote)
 
-- Khatri-Wilde 2020 §Ch 20 Secret Key Agreement, Sec 20.1: protocol definition 允许 any initial state including product [VERIFIED via KhatriWilde-2020.md §3.1]
+- Khatri-Wilde 2020 Ch 20 Secret Key Agreement framework [SUMMARY, not direct quote]: per `docs/literature/KhatriWilde-2020.md` §3.1 内部描述, 本地 memo 概括该章 LOPC-assisted secret-key agreement 允许 product initial state. **Caveat**: 此为 memo paraphrase; 用户须直接阅读 Khatri-Wilde PDF Sec 20.1 原文 verify product-state acceptance.
 
 ### 2.3 Status
 
@@ -73,11 +73,11 @@ Alice 与 Bob 独立 source $\rho_{AA'} \otimes \sigma_{BB'}$ 可视为 composit
 - **β.2.a [OPEN]**: $\tilde{\mathcal{M}}$ 是 2-input broadcast channel with quantum+classical outputs; PLOB / WTB 原 framework 是 point-to-point. 是否 tele-simulable? **No AI sketch.**
 - **β.2.b [OPEN]**: 若 $\tilde{\mathcal{M}}$ not tele-sim, 退到 Khatri-Wilde amortized framework (Prop 19.2) **仍需**把 adversarial umr reduced to "n uses of fixed $\tilde{\mathcal{M}}$" — 此 reduction 是 β.G5 structural blocker.
 
-### 3.3 Relevant verified citations (no paraphrase, literal content)
+### 3.3 Relevant citations (mix of memo-level quotes + paraphrased summaries)
 
-- WTB 2017 Thm 12 (literal): "For teleportation-simulable channel $\mathcal{N}$: $P_\leftrightarrow^\dagger(\mathcal{N}) \leq E_R(\mathcal{N})$" [VERIFIED via WTB-2017.md §5.2]
-- Khatri-Wilde 2020 Prop 19.2 (literal content per memo): "$E(M_A; M_B)_\omega \leq n \cdot E^\mathcal{A}(\mathcal{N})$ for n uses of a fixed channel $\mathcal{N}_{A\to B}$ in LOCC-assisted protocol" [VERIFIED via KhatriWilde-2020.md §2.1]
-- **重要**: Prop 19.2 的 scope 是 **fixed $\mathcal{N}$ used n times**, NOT "adversarial comb reduced to fixed channel"
+- **WTB 2017 Thm 12** (memo-level quote, reproduced from `docs/literature/WTB-2017.md` §5.2): "For teleportation-simulable channel $\mathcal{N}$: $P_\leftrightarrow^\dagger(\mathcal{N}) \leq E_R(\mathcal{N})$". **Caveat**: 此为本项目 memo 的 statement; 用户须对照 WTB 2017 PDF Thm 12 原文 verify.
+- **Khatri-Wilde 2020 Prop 19.2** (memo-level quote per `docs/literature/KhatriWilde-2020.md` §2.1): "$E(M_A; M_B)_\omega \leq n \cdot E^\mathcal{A}(\mathcal{N})$" for any (n, M, ε) LOCC-assisted quantum communication protocol over channel $\mathcal{N}_{A\to B}$ with LOCC-monotone + separable-zero E. **Caveat**: 本地 memo 的 statement; 用户须对照 Khatri-Wilde 2020 Ch 19 PDF Prop 19.2 原文 verify (尤其 "LOCC-monotone + separable-zero" 条件 exact wording).
+- **重要 scope note (my inference, not literal citation)**: Prop 19.2 的 n uses of channel 属于 **fixed $\mathcal{N}$** 的 repeated use; 对 "adversarial comb reduced to fixed channel" 的情形 Prop 19.2 **本身不直接 cover** — 这是 β.G5 structural gap. 此 scope 推断由 memo 对 statement 的 reading 得出, 用户须 PDF 确认.
 
 ### 3.4 Status
 
@@ -143,7 +143,7 @@ umr 每轮 Charlie 可 adapt strategy based on prior rounds' announcements → n
 
 - **Kamin 2025 GEAT**: entropy accumulation for comb structures; 但针对 i.i.d. Markov assumptions, 不直接 cover umr Charlie [RECALLED]
 - **Pirandola 2017 teleportation stretching**: reduces comb to fixed channel for cooperative parties; 但 umr Charlie 是 adversarial, assumption 不满足 [RECALLED]
-- **Khatri-Wilde 2020 Ch 20 amortized-Rains with adaptive LOCC**: adaptive 是 Alice-Bob 的 LOCC strategies, 不是 Eve/Charlie's adversarial adaptation [VERIFIED partial, 未核对 adaptive/adversarial 区分]
+- **Khatri-Wilde 2020 Ch 20 amortized framework** [INFERENCE, unverified]: 本 AI 推断该章中 "adaptive" 语境是 Alice-Bob LOCC strategies, 与 umr Charlie 的 adversarial adaptation **可能**不同. **Caveat**: 此区分未对 Khatri-Wilde Ch 20 PDF 精确核对; 用户须直读该章原文 verify 是否可延伸到 adversarial relay case.
 
 ### 6.4 User formal work required (novel proof)
 
