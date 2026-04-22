@@ -62,10 +62,10 @@ $$\text{β per-round bound}^\text{canonical} = \sum_c p_c \cdot \text{LN}(\rho_{
 
 其中 $c$ 遍历四个 Bell state。**这是本文件的 main comparison quantity**。
 
-**Other conventions 作 sensitivity**（非 main claim）:
-- Ψ⁻ only: 0.094 × Pir at low η (used in v0.3 initial prose — R2 移除作 main claim)
-- Linear-optic BSM (Ψ±  only): ~0.13× at low η (未重新 compute)
-- Physical MDI (Ψ± + post-selection on HOM dip): 需要 separate modeling
+**Other conventions 作 sensitivity**（非 main claim）—— **R3 FIX** 以实测数值替换早期 handwave:
+- **Ψ⁻ only**: 0.0949× Pir at η=0.1 (实测 commit c214fe3 log verify; used in v0.3 initial prose — R2 移除作 main claim)
+- **Linear-optic BSM (Ψ± 接受)**: 0.1899× Pir at η=0.1 — **与 all-Bell summed 同值**，因为 Φ± outcome 在本 toy model 下给 **separable** conditional state (LN=0)，不贡献。**非** "2/4 × all-Bell" naive 假设
+- Physical MDI (Ψ± + post-selection on HOM dip): 需要 separate modeling (本 toy 未含)
 
 **R2 决定**：整个文件以 all-Bell-summed convention (0.19× plateau) 为 main reference;只在 §3 sensitivity subsection 提及 其他 convention 数值。
 
@@ -89,11 +89,21 @@ Data from [docs/research/data/beta_G3_post_BSM_sweep.csv](../research/data/beta_
 
 ### 3.1 Sensitivity: other conventions (non-canonical)
 
-- **Ψ⁻ single outcome** (early v0.3 claim): $p_{\Psi-} \cdot \text{LN}_{\Psi-}$ ≈ 0.094 × Pir at η=0.1 — 因为只取 1/4 outcome，丢了 3/4 的概率质量
-- **Linear-optic BSM (Ψ± only)**: ≈ 2/4 × all-Bell = ~0.10× Pir — physical MDI 更接近此
-- **E_R (rather than LN)**: E_R ≤ LN 通常，所以 $\sum p_c \cdot E_R \leq $ 0.19× Pir — **但 AI 未 compute E_R 直接**(需 SDP)
+**R3 FIX: 用实测数值替换 R2 handwave**。at η=0.1:
 
-**这些 sensitivity numbers 互相 consistent，但都是 toy qubit artifact，不 应作 β path 的 definitive numerical verdict**。
+**Per-outcome breakdown** (直接 compute from script verify):
+- $p_{\Psi^-} = p_{\Psi^+} = 0.0475$, $\text{LN}(\rho|\Psi^\pm) = 0.3038$, contribution each = 0.0144
+- $p_{\Phi^-} = p_{\Phi^+} = 0.4525$, $\text{LN}(\rho|\Phi^\pm) = 0$ (conditional state separable in toy model)
+
+**Sensitivity conventions**:
+- **Ψ⁻ single outcome** (early v0.3 claim): $p_{\Psi^-} \cdot \text{LN}_{\Psi^-} = 0.0144$, ratio **0.0949× Pir** at η=0.1 — 只取 1/4 outcome 丢 Ψ+ 对称贡献
+- **Linear-optic BSM (Ψ± accepted)**: $\sum_{c \in \{\Psi^\pm\}} p_c \cdot \text{LN}_c = 0.0289$, ratio **0.1899× Pir** at η=0.1 — **与 all-Bell summed 实际同值**，因为 Φ± outcome 在本 toy model 下给 **separable** conditional state (LN=0)
+- **All 4 Bell ideal** (canonical): same 0.0289, ratio **0.1899×** — 与 Ψ± 相等 (Φ± 不贡献)
+- **E_R (rather than LN)**: E_R ≤ LN typically，所以 $\sum p_c \cdot E_R \leq $ 0.19× Pir — AI 未 compute E_R 直接 (需 SDP)
+
+**关键修正** (R3 vs R2): 早前 §2 写 "Ψ±=0.13×" 和 §3.1 写 "2/4 × all-Bell = 0.10×" 两个数**都错**。正确实测: **Ψ± = all-Bell = 0.19×**, **Ψ- only = 0.0949×** (因为 Ψ+ 与 Ψ- 对称贡献，不是 1/4)。
+
+**这些 sensitivity numbers 互相 consistent (after R3 re-computation)，但都是 toy qubit artifact，不应作 β path 的 definitive numerical verdict**。
 
 ---
 
