@@ -1,6 +1,6 @@
 # Sub-Q3 structural gaps — AI autonomous attempts summary (2026-04-23)
 
-**版本**: v0.1 [CONJ-DRAFT, research status aggregation]
+**版本**: v0.2 [CONJ-DRAFT, research status aggregation]
 **日期**: 2026-04-23 autonomous session
 **目的**: 把 β.G4 + β.G5 + γ.B.G1 + γ.G3 四个 AI autonomous structural derivation attempts 的**失败 pattern** 结构化, 给用户**研究方向决策参考**
 
@@ -109,13 +109,16 @@ Despite not closing structural gaps, AI attempts 产出:
 
 ---
 
-## 4. Numerical state snapshot (Day 3)
+## 4. Numerical state snapshot (Day 3 — final update)
 
 - `gap_shape_analysis.py`: refresh complete, CSV + figures updated
-- `beta_G3_E_R_effective_channel.py`: SDP running (1.5h+ on first grid point at 16×16 Choi)
+- `beta_G3_E_R_effective_channel.py`: **COMPLETED** — `e_r_channel_ppt` dim_A=4 intractable (>60s/pt); switched to log_negativity upper bound proxy. Data: `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
+
+  **Key result** [SYN directional signal]: log_neg(E_1⊗E_2) < Pirandola at η=0.9 (ratio=0.558), but log_neg > Pirandola at η<0.5. Interpretation: β route *may* give tighter bound at high transmission; at low η (practical umr), no tighter signal via this route (but E_R ≤ log_neg so direct E_R SDP could still be tighter).
+
 - `max_rains_wang_duan_channel_sdp`: stub raised NotImplementedError (2 variants validation fail)
-- Existing `log_negativity_channel_sdp` + `e_r_channel_ppt`: **functional** numerical upper bound tools
-- toy β.G3 post-BSM: **0.19× Pirandola** at η=0.1 qubit
+- Existing `log_negativity_channel_sdp`: **functional** numerical upper bound (fast, <1s even at 16×16 Choi)
+- `e_r_channel_ppt` dim_A=4: too slow (>60s per point); only feasible for dim_A≤2
 
 ---
 
@@ -125,7 +128,7 @@ Despite not closing structural gaps, AI attempts 产出:
 
 1. **先 PDF 上 Portmann-Renner 2022 + Kamin 2025** (已有 PDF) — 因为 β.G4 Path C 和 β.G5 Approach C 都 depends on 这些 framework 的 exact scope
 2. **决定 γ CONJ1 严肃对待**: 是否尝试 Approach E (AI 未想到的) 或 reformulate γ target
-3. **SDP 结果** (whenever β.G3 完成): analyze ratio vs Pirandola trusted-relay for numerical direction signal (非 proof)
+3. **SDP 结果** (β.G3 DONE): log_neg < Pirandola at η=0.9 → directional signal that β could be tighter at high transmission; 但 η<0.5 无 signal. 用户可考虑直接 E_R SDP (不经 log_neg proxy) 如有 MOSEK 大型求解许可
 4. **若 2-3 月 user time 仍不 close β/γ**: consider Option D — accept Sub-Q3 open-unresolved status
 
 ---

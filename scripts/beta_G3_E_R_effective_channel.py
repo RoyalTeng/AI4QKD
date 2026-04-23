@@ -83,23 +83,22 @@ def main():
             r_ln = log_negativity_channel_sdp(kraus, dim_A=4)
             log_neg = r_ln["log_negativity_bits"]
 
-            # E_R^PPT of channel (could be tighter than log-negativity)
-            r_er = e_r_channel_ppt(kraus, dim_A=4)
-            e_r = r_er["E_R_channel_bits"]
+            # e_r_channel_ppt with dim_A=4 (16x16 Choi) is intractable (>60s/pt)
+            # Use log_negativity as upper bound proxy for directional signal
+            e_r = log_neg  # log-neg >= E_R; conservative upper bound
 
             pir = pirandola_trusted_relay_bound(eta_arm, eta_arm)
             plob = plob_single_edge_bound(eta_arm)
             ratio = e_r / pir if pir > 0 else float("inf")
 
-            print(f"{eta_arm:>8.4f} {e_r:>12.4f} {log_neg:>15.4f} "
+            print(f"{eta_arm:>8.4f} {log_neg:>12.4f} {'(=log_neg)':>15} "
                   f"{pir:>12.4f} {plob:>12.4f} {ratio:>14.4f}")
             results.append({
                 "eta_arm": eta_arm,
-                "E_R_tensor": e_r,
                 "log_neg_tensor": log_neg,
                 "Pirandola_trusted": pir,
                 "PLOB_single": plob,
-                "ratio_ER_Pir": ratio,
+                "ratio_logNeg_Pir": ratio,
             })
         except Exception as e:
             print(f"{eta_arm:>8.4f}  ERROR: {type(e).__name__}: {e}")
