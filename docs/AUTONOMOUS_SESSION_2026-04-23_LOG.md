@@ -202,3 +202,60 @@ f1d8c75 fix(γ.B.G1 v0.3): R2 FAIL Approach D conclusion — downgrade to conjec
 ---
 
 ## Status at log creation (updates appended below as research progresses)
+
+---
+
+## Update 1 — progress after session log creation (commit 1fc12c2 + 4ae4826)
+
+### New outcomes
+
+**γ.B.G1 R3 PASS** (commit 1fc12c2): 
+- R2 MAJOR (Approach D overclaim outside CONJ1) fully closed in R3 fix
+- γ.B.G1 cycle **closed** at [CONJ-DRAFT, open-only]
+- Both β.G4 + γ.B.G1 structural derivation cycles now PASS
+
+**upper_bound_report v0.2**: Day 3 §10 integrated all autonomous session work into main Sub-Q3 seam report.
+
+**γ.G3 ε-composable transfer attempt v0.1** (commit 4ae4826):
+- WTB Thm 19 second-order for $\mathcal{E}_1$ Alice-Charlie pure-loss: [COROLLARY of verified]
+- Transfer to umr key rate depends on γ.B chain (all open)
+- Kamin 2025 GEAT as alternate template (user PDF read needed)
+- Conditional Theorem γ.G3: IF γ.B chain closed THEN ε-transfer works
+- **γ.G3 OPEN conditional on γ.B**, launched Codex R1 review (task byxap15gi)
+
+### β.G3 SDP ongoing status
+
+- PID 20203 ETIME 1h27min+, CPU 100%, state RN (running)
+- Still no data rows — stuck on first grid point (possibly η=0.99 with 16×16 Choi state quantum_rel_entr SDP)
+- Monitor set for 60 min (task bbw7qml98)
+- **Decision**: 继续等 per user "我可以等" authorization
+- If SDP hasn't produced any row by end of 60-min monitor, will kill and document timeout
+
+### Updated outstanding items
+
+1. **γ.G3 R1 verdict** (running via task byxap15gi)
+2. **β.G3 SDP** — monitoring 60 more min; may timeout
+3. **Next autonomous**: after γ.G3 R1, may attempt β.G5 (adversarial comb) or α.* family gaps (if not shown to be structural blockers)
+
+### Decision D6: γ.G3 as conditional theorem
+
+**Context**: γ.G3 is "downstream" from γ.B chain. γ.B all open per γ.B.G1 4-approach failure.
+
+**Decision**: Draft γ.G3 as conditional theorem predicated on γ.B closure. This:
+- Makes γ.G3 technical status clear (not inherently structurally blocked)
+- Distinguishes "depends on γ.B" from "γ.G3 has own barrier"
+- Provides ready-to-use finite-blocklength form should γ.B chain someday close
+
+**Outcome**: Codex R1 reviewing; expect PASS since conditional framing is properly scoped.
+
+### Commits Day 3 (updated)
+
+```
+c586610 draft: β.G4 + γ.B.G1 structural derivation attempts (both OPEN)
+037d20a fix(β.G4 v0.2 + γ.B.G1 v0.2): respond to Codex R1 FAIL on both drafts
+fb1c6dd docs(MQ snapshot v0.5 + β.G4 R2 PASS): Day 3 additions + β.G4 cycle close
+f1d8c75 fix(γ.B.G1 v0.3): R2 FAIL Approach D conclusion — downgrade to conjectural
+ede9c82 feat: max-Rains stub + Portmann-Renner stub + Day 3 session log
+1fc12c2 docs: γ.B.G1 R3 PASS + upper_bound_report v0.2 + gap_shape refresh
+4ae4826 draft: γ.G3 ε-composable transfer derivation attempt v0.1 [CONJ-DRAFT]
+```
