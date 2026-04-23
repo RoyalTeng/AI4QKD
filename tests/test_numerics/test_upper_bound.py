@@ -316,6 +316,117 @@ class TestLogNegAmplitudeDampingAnalytic:
                 )
 
 
+class TestAnalyticLogNegFormulas:
+    """Analytic log-neg for three qubit channel families (SymPy-verified 2026-04-23).
+
+    Each formula verified against numerical PT+eigenvalue computation.
+    Reference: docs/workflow/beta-G3-analytic-proof-review/sympy-c1c-verification.md
+    """
+
+    @staticmethod
+    def _numerical_log_neg(kraus_ops, dim_A=2):
+        """Compute log_neg numerically via Choi + PT + |eigenvalues|."""
+        from qkdx.numerics.upper_bound import choi_state_from_kraus
+        rho = choi_state_from_kraus(kraus_ops, dim_A=dim_A)
+        d = dim_A
+        n = d * d
+        rho_TB = np.zeros((n, n), dtype=complex)
+        for i in range(d):
+            for j in range(d):
+                for k in range(d):
+                    for ll in range(d):
+                        rho_TB[i * d + ll, k * d + j] = rho[i * d + j, k * d + ll]
+        trace_norm = float(np.sum(np.abs(np.linalg.eigvalsh(rho_TB))))
+        return math.log2(trace_norm) if trace_norm > 1.0 else 0.0
+
+    def test_amplitude_damping_analytic_matches_numerical(self):
+        """analytic_log_neg_amplitude_damping(γ) == log₂(2-γ) vs numerical."""
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_amplitude_damping, kraus_amplitude_damping_qubit,
+        )
+        for gamma in [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]:
+            analytic = analytic_log_neg_amplitude_damping(gamma)
+            numerical = self._numerical_log_neg(kraus_amplitude_damping_qubit(gamma))
+            expected = math.log2(2.0 - gamma)
+            print(f"  γ={gamma}: analytic={analytic:.8f}, numerical={numerical:.8f}, log₂(2-γ)={expected:.8f}")
+            assert analytic == pytest.approx(expected, abs=1e-12)
+            assert analytic == pytest.approx(numerical, abs=1e-9)
+
+    def test_dephasing_analytic_matches_numerical(self):
+        """analytic_log_neg_dephasing(p) == log₂(1+|1-2p|) vs numerical."""
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_dephasing, kraus_dephasing_qubit,
+        )
+        for p in [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0]:
+            analytic = analytic_log_neg_dephasing(p)
+            numerical = self._numerical_log_neg(kraus_dephasing_qubit(p))
+            expected = math.log2(1.0 + abs(1.0 - 2.0 * p))
+            print(f"  p={p}: analytic={analytic:.8f}, numerical={numerical:.8f}, expected={expected:.8f}")
+            assert analytic == pytest.approx(expected, abs=1e-12)
+            assert analytic == pytest.approx(numerical, abs=1e-9)
+
+    def test_depolarizing_analytic_matches_numerical(self):
+        """analytic_log_neg_depolarizing(p): 1+log₂(1-3p/4) for p<2/3, else 0."""
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_depolarizing, kraus_depolarizing_qubit,
+        )
+        # Include p < 2/3 (entangled), p = 2/3 (threshold), p > 2/3 (PPT/sep)
+        for p in [0.0, 0.1, 0.3, 0.5, 2.0/3.0, 0.7, 0.9, 1.0]:
+            analytic = analytic_log_neg_depolarizing(p)
+            numerical = self._numerical_log_neg(kraus_depolarizing_qubit(p))
+            F = 1.0 - 3.0 * p / 4.0
+            expected = math.log2(2.0 * F) if F > 0.5 else 0.0
+            print(f"  p={p:.5f}: F={F:.4f}, analytic={analytic:.8f}, numerical={numerical:.8f}")
+            assert analytic == pytest.approx(expected, abs=1e-12)
+            assert analytic == pytest.approx(numerical, abs=1e-9)
+
+    def test_boundary_values(self):
+        """Identity-channel boundary: all three channels give log_neg=1 at noise=0."""
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_amplitude_damping,
+            analytic_log_neg_dephasing,
+            analytic_log_neg_depolarizing,
+        )
+        assert analytic_log_neg_amplitude_damping(0.0) == pytest.approx(1.0, abs=1e-15)
+        assert analytic_log_neg_dephasing(0.0) == pytest.approx(1.0, abs=1e-15)
+        assert analytic_log_neg_depolarizing(0.0) == pytest.approx(1.0, abs=1e-15)
+
+    def test_full_noise_boundary(self):
+        """Full-noise boundary: AD(γ=1)=0, dephase(p=1/2)=0, depol(p≥2/3)=0."""
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_amplitude_damping,
+            analytic_log_neg_dephasing,
+            analytic_log_neg_depolarizing,
+        )
+        assert analytic_log_neg_amplitude_damping(1.0) == pytest.approx(0.0, abs=1e-15)
+        assert analytic_log_neg_dephasing(0.5) == pytest.approx(0.0, abs=1e-15)
+        assert analytic_log_neg_depolarizing(2.0/3.0) == pytest.approx(0.0, abs=1e-12)
+        assert analytic_log_neg_depolarizing(0.8) == 0.0  # fully in PPT regime
+        assert analytic_log_neg_depolarizing(1.0) == 0.0
+
+    def test_dephasing_symmetry(self):
+        """Dephasing log-neg is symmetric under p ↔ 1-p."""
+        from qkdx.numerics.upper_bound import analytic_log_neg_dephasing
+        for p in [0.1, 0.2, 0.3, 0.4]:
+            assert analytic_log_neg_dephasing(p) == pytest.approx(
+                analytic_log_neg_dephasing(1.0 - p), abs=1e-15
+            )
+
+    def test_invalid_parameter_raises(self):
+        """Out-of-range parameters raise ValueError."""
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_amplitude_damping,
+            analytic_log_neg_dephasing,
+            analytic_log_neg_depolarizing,
+        )
+        for fn in [analytic_log_neg_amplitude_damping, analytic_log_neg_dephasing,
+                   analytic_log_neg_depolarizing]:
+            with pytest.raises(ValueError):
+                fn(-0.1)
+            with pytest.raises(ValueError):
+                fn(1.1)
+
+
 @_MOSEK_SKIP
 class TestDVGapAnalysis:
     def test_dv_gap_ratio(self):

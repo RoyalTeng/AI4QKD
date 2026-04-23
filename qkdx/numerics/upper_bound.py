@@ -325,6 +325,69 @@ def e_r_depolarizing_analytic(p: float) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Analytic log-negativity for qubit channel Choi states
+# ---------------------------------------------------------------------------
+# SymPy-verified (2026-04-23): docs/workflow/beta-G3-analytic-proof-review/sympy-c1c-verification.md
+# Memo: docs/findings/beta_G3_golden_ratio_crossover_2026-04-23.md §2 (AD)
+# These are [SYN] — standard textbook-level calculations; R0.2 triple verification
+# applies for any label upgrade.
+
+def analytic_log_neg_amplitude_damping(gamma: float) -> float:
+    """log-negativity of Choi state of qubit amplitude damping channel (γ = damping prob).
+
+    Kraus: K₀=[[1,0],[0,√(1-γ)]], K₁=[[0,√γ],[0,0]].
+    Choi PT eigenvalue set: {1/2, (1-γ)/2, ±(√(1-γ))/... } — full derivation
+    in β.G3 memo §2 uses transmission parameter η=1-γ, giving:
+        ||ρ^T_B||₁ = 1 + η = 2 - γ
+        log_neg(γ) = log₂(2 - γ)
+
+    Boundary: γ=0 (identity) → log_neg=1 bit; γ=1 (fully damping) → log_neg=0.
+    """
+    if not (0.0 <= gamma <= 1.0):
+        raise ValueError(f"gamma must be in [0, 1], got {gamma}")
+    return math.log2(2.0 - gamma)
+
+
+def analytic_log_neg_dephasing(p: float) -> float:
+    """log-negativity of Choi state of qubit dephasing channel.
+
+    Channel: E(ρ) = (1-p)ρ + p·Z·ρ·Z.
+    Choi = (1-p)|Φ⁺⟩⟨Φ⁺| + p|Φ⁻⟩⟨Φ⁻|.
+    PT eigenvalues: {1/2, 1/2, 1/2 - p, p - 1/2}; trace norm = 1 + |1 - 2p|.
+
+        log_neg(p) = log₂(1 + |1 - 2p|)
+
+    Boundary: p=0 → log_neg=1 bit (identity); p=1/2 → log_neg=0 (full dephase);
+    p=1 → log_neg=1 bit (pure Z flip, still correlated).
+    Symmetric: log_neg(p) = log_neg(1-p).
+    """
+    if not (0.0 <= p <= 1.0):
+        raise ValueError(f"p must be in [0, 1], got {p}")
+    return math.log2(1.0 + abs(1.0 - 2.0 * p))
+
+
+def analytic_log_neg_depolarizing(p: float) -> float:
+    """log-negativity of Choi state of qubit depolarizing channel.
+
+    Channel: E(ρ) = (1-p)ρ + p·I/2. Choi is isotropic with Bell fidelity
+    F(p) = 1 − 3p/4. PT eigenvalues: (1/2 − p/4) with multiplicity 3, and
+    (3p/4 − 1/2) with multiplicity 1.
+
+    For p ∈ [0, 2/3] (entangled regime, F > 1/2):
+        trace norm = 2 − 3p/2 = 2F
+        log_neg = log₂(2 − 3p/2) = 1 + log₂(F)
+
+    For p ∈ [2/3, 1] (PPT/separable regime): log_neg = 0.
+    """
+    if not (0.0 <= p <= 1.0):
+        raise ValueError(f"p must be in [0, 1], got {p}")
+    F = 1.0 - 3.0 * p / 4.0
+    if F <= 0.5:
+        return 0.0
+    return math.log2(2.0 * F)
+
+
+# ---------------------------------------------------------------------------
 # DV-gap analysis: compare E_R^PPT vs Kamin achievable rate
 # ---------------------------------------------------------------------------
 
