@@ -14,7 +14,7 @@
   - log_neg(E_AD(η)) = log₂(1+η)：特征值计算，每步可查
   - 交叉点 η_c = 1/φ：二次方程根，精确
 - 数值结果基于 **qubit 幅度阻尼**（非 bosonic 纯损耗），bosonic 情形另需计算
-- **升级至 [COROLLARY]** 需 C1+C2+C3（用户纸笔复核 = C1(b) 候选 + C2 签字 + C3 dev-reviewer PASS）
+- **升级至 [COROLLARY]** 需 C1+C2+C3（用户纸笔复核 = C1(b) 候选 + C2 签字 + C3 dev-reviewer PASS）；且需指明从哪个 [THM] 机械推导（R0.3 语义要求）。当前推导是项目内独立计算，暂无外部 [THM] 锚点，故 [SYN] 是更准确的长期标签。
 
 ---
 
@@ -144,11 +144,15 @@ $$(1+\eta)^2(1-\eta) = 1$$
 
 展开：$(1+\eta)^2(1-\eta) = 1 + \eta - \eta^2 - \eta^3 = 1$
 
-$$\Rightarrow \eta(1 - \eta - \eta^2) = 0 \Rightarrow \eta^2 + \eta - 1 = 0$$
+$$\Rightarrow \eta(1 - \eta - \eta^2) = 0$$
+
+解：$\eta = 0$（**平凡边界解**，两界均为 0）或 $\eta^2 + \eta - 1 = 0$（**非平凡内点解**）。
+
+在 $(0,1)$ 内取正根：
 
 $$\eta_c = \frac{-1+\sqrt{5}}{2} = \frac{1}{\varphi} \approx 0.6180 \quad \blacksquare$$
 
-**物理意义**：黄金比例出现因为 $1/\varphi$ 满足 $1/\varphi^2 + 1/\varphi = 1$（即 $\eta^2+\eta=1$），这正是 $(1+\eta)^2=1/(1-\eta)$ 的正实数解。
+**物理意义**：黄金比例出现因为 $1/\varphi$ 满足 $1/\varphi^2 + 1/\varphi = 1$（即 $\eta^2+\eta=1$），这正是 $(1+\eta)^2=1/(1-\eta)$ 的非平凡正实数解。$\eta=0$ 是平凡解（两界均为零），不是物理上感兴趣的交叉点。
 
 ---
 

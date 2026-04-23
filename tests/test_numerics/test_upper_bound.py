@@ -17,11 +17,12 @@ try:
 except Exception:
     _MOSEK_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(
+_MOSEK_SKIP = pytest.mark.skipif(
     not _MOSEK_AVAILABLE, reason="MOSEK required for E_R PPT SDP"
 )
 
 
+@_MOSEK_SKIP
 class TestPartialTranspose:
     def test_partial_transpose_product_state(self):
         """For product state ρ_A ⊗ ρ_B, ρ^{T_B} = ρ_A ⊗ ρ_B^T (same since real)."""
@@ -46,6 +47,7 @@ class TestPartialTranspose:
         )
 
 
+@_MOSEK_SKIP
 class TestChoiStateConstruction:
     def test_identity_channel_gives_bell_state(self):
         from qkdx.numerics.upper_bound import (
@@ -82,6 +84,7 @@ class TestChoiStateConstruction:
         )
 
 
+@_MOSEK_SKIP
 class TestE_R_PPT_SDP:
     def test_identity_channel_gives_log_d(self):
         """E_R(identity channel) = log(dim_A) for qubit, = 1 bit."""
@@ -124,6 +127,7 @@ class TestE_R_PPT_SDP:
             assert 0.0 <= r["E_R_channel_bits"] <= 1.0
 
 
+@_MOSEK_SKIP
 class TestRmaxSDP:
     """Wang-Duan 2016b max-Rains SDP (Khatri-Wilde Thm 19.8)."""
 
@@ -232,7 +236,87 @@ class TestLogNegAmplitudeDampingAnalytic:
         print(f"  2·log_neg={two_log_neg:.8f}, Pirandola={pirandola:.8f}")
         assert two_log_neg == pytest.approx(pirandola, abs=1e-8)
 
+    def test_choi_matrix_entries(self):
+        """Verify Choi state entries match ρ_AD(η) = (1/2)[[1,0,0,√η],[0,0,0,0],[0,0,1-η,0],[√η,0,0,η]].
 
+        Basis: |00⟩,|01⟩,|10⟩,|11⟩. Tests §2 Step 1 of the derivation.
+        """
+        from qkdx.numerics.upper_bound import choi_state_from_kraus
+        for eta in [0.3, 0.618, 0.9]:
+            K0 = np.array([[1, 0], [0, eta**0.5]])
+            K1 = np.array([[0, (1 - eta)**0.5], [0, 0]])
+            rho = choi_state_from_kraus([K0, K1], dim_A=2)
+            print(f"  eta={eta}: rho diag={np.diag(rho).real}")
+            # Diagonal: [1/2, 0, (1-η)/2, η/2]
+            assert rho[0, 0].real == pytest.approx(0.5, abs=1e-12)
+            assert rho[1, 1].real == pytest.approx(0.0, abs=1e-12)
+            assert rho[2, 2].real == pytest.approx((1 - eta) / 2, abs=1e-12)
+            assert rho[3, 3].real == pytest.approx(eta / 2, abs=1e-12)
+            # Off-diagonal: rho[0,3] = rho[3,0] = √η/2
+            assert rho[0, 3].real == pytest.approx(eta**0.5 / 2, abs=1e-12)
+            assert rho[3, 0].real == pytest.approx(eta**0.5 / 2, abs=1e-12)
+            # All other entries zero
+            for i, j in [(0,1),(0,2),(1,2),(1,3),(2,3)]:
+                assert abs(rho[i, j]) < 1e-12, f"rho[{i},{j}] should be 0"
+
+    def test_partial_transpose_block_structure(self):
+        """ρ^{T_B} is block-diagonal with blocks {|00⟩,|11⟩} and {|01⟩,|10⟩}.
+
+        Block A (0,3): diag(1/2, η/2). Block B (1,2): [[0,√η/2],[√η/2,(1-η)/2]].
+        Tests §2 Step 2 of the derivation.
+        """
+        from qkdx.numerics.upper_bound import choi_state_from_kraus
+        for eta in [0.3, 0.618, 0.9]:
+            K0 = np.array([[1, 0], [0, eta**0.5]])
+            K1 = np.array([[0, (1 - eta)**0.5], [0, 0]])
+            rho = choi_state_from_kraus([K0, K1], dim_A=2)
+            d = 2
+            rho_TB = np.zeros((4, 4), dtype=complex)
+            for i in range(d):
+                for j in range(d):
+                    for k in range(d):
+                        for ll in range(d):
+                            rho_TB[i*d+ll, k*d+j] = rho[i*d+j, k*d+ll]
+            print(f"  eta={eta}: rho_TB[1,2]={rho_TB[1,2].real:.6f} (expect {eta**0.5/2:.6f})")
+            # Block A: (0,0)=1/2, (3,3)=η/2, (0,3)=(3,0)=0
+            assert rho_TB[0, 0].real == pytest.approx(0.5, abs=1e-12)
+            assert rho_TB[3, 3].real == pytest.approx(eta / 2, abs=1e-12)
+            assert abs(rho_TB[0, 3]) < 1e-12
+            # Block B: (1,1)=0, (2,2)=(1-η)/2, (1,2)=(2,1)=√η/2
+            assert rho_TB[1, 1].real == pytest.approx(0.0, abs=1e-12)
+            assert rho_TB[2, 2].real == pytest.approx((1 - eta) / 2, abs=1e-12)
+            assert rho_TB[1, 2].real == pytest.approx(eta**0.5 / 2, abs=1e-12)
+            # Cross-block entries zero
+            for i, j in [(0,1),(0,2),(1,3),(2,3)]:
+                assert abs(rho_TB[i, j]) < 1e-12
+
+    def test_eigenvalue_set(self):
+        """ρ^{T_B} has eigenvalues {1/2, η/2, 1/2, -η/2} (sorted).
+
+        Tests §2 Step 3: Block B quadratic → λ₋ = -η/2.
+        """
+        from qkdx.numerics.upper_bound import choi_state_from_kraus
+        for eta in [0.3, 0.618, 0.9]:
+            K0 = np.array([[1, 0], [0, eta**0.5]])
+            K1 = np.array([[0, (1 - eta)**0.5], [0, 0]])
+            rho = choi_state_from_kraus([K0, K1], dim_A=2)
+            d = 2
+            rho_TB = np.zeros((4, 4), dtype=complex)
+            for i in range(d):
+                for j in range(d):
+                    for k in range(d):
+                        for ll in range(d):
+                            rho_TB[i*d+ll, k*d+j] = rho[i*d+j, k*d+ll]
+            eigs = sorted(np.linalg.eigvalsh(rho_TB))
+            expected = sorted([-eta/2, eta/2, 0.5, 0.5])
+            print(f"  eta={eta}: eigs={[f'{e:.6f}' for e in eigs]}, expected={[f'{e:.6f}' for e in expected]}")
+            for got, exp in zip(eigs, expected):
+                assert got == pytest.approx(exp, abs=1e-10), (
+                    f"eta={eta}: eigenvalue {got} != expected {exp}"
+                )
+
+
+@_MOSEK_SKIP
 class TestDVGapAnalysis:
     def test_dv_gap_ratio(self):
         from qkdx.numerics.upper_bound import dv_gap_from_achievable
