@@ -427,6 +427,39 @@ class TestAnalyticLogNegFormulas:
             with pytest.raises(ValueError):
                 fn(1.1)
 
+    def test_plenio_inequality_log_neg_geq_K_D(self):
+        """Plenio 2005: log_neg(ρ) ≥ E_R(ρ) ≥ K_D(ρ).
+
+        Numerical sanity: for all 3 channels with known K_D / E_R closed forms,
+        verify log_neg ≥ K_D / E_R on a dense grid. Equality at boundaries OK.
+        """
+        from qkdx.numerics.upper_bound import (
+            analytic_log_neg_dephasing,
+            analytic_log_neg_depolarizing,
+            analytic_log_neg_erasure,
+            e_r_depolarizing_analytic,
+        )
+        from qkdx.numerics.e_r_upper import e_r_dephasing, e_r_erasure
+
+        violations = []
+        for p in np.linspace(0.001, 0.999, 200):
+            # Dephasing: PLOB Eq.39
+            ln, kd = analytic_log_neg_dephasing(p), e_r_dephasing(p)
+            if ln < kd - 1e-12:
+                violations.append(("dephasing", p, ln, kd))
+            # Depolarizing: Horodecki 99 (E_R, not K_D)
+            ln, er = analytic_log_neg_depolarizing(p), e_r_depolarizing_analytic(p)
+            if ln < er - 1e-12:
+                violations.append(("depolarizing", p, ln, er))
+            # Erasure: PLOB Eq.43
+            ln, kd = analytic_log_neg_erasure(p), e_r_erasure(p)
+            if ln < kd - 1e-12:
+                violations.append(("erasure", p, ln, kd))
+
+        print(f"  Plenio inequality verified on 200×3 = 600 grid points")
+        print(f"  Worst-case erasure log_neg − K_D = {analytic_log_neg_erasure(0.6) - e_r_erasure(0.6):.6f}")
+        assert not violations, f"Plenio inequality violated: {violations[:5]}"
+
     def test_erasure_log_neg_formula(self):
         """log_neg(erasure, p) = log₂(2-p). Verified by SymPy + direct PT computation.
 
