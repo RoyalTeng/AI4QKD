@@ -1,7 +1,7 @@
 # Sub-Q3 上界接缝报告（Upper Bound Report）
 
-**版本**：v0.4
-**日期**：2026-04-21 autonomous session
+**版本**：v0.5
+**日期**：2026-04-24（v0.5 增补）/ 2026-04-21 首稿
 **对应**：PROSPECTUS Sub-Q3 验收产出 + RESEARCH_PLAN §4.5 U3.8
 **预期篇幅**：30-50 页（本稿约 25 页等价，可扩展）
 **严谨性**：全文遵循 FINDINGS v2 §1.2 四级分级（[THM]/[COROLLARY]/[CONJ]/[UNKNOWN]），绝不越权
@@ -464,8 +464,103 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
 
 ---
 
+## 11. Day 4 (2026-04-24) 增补：4 信道 hierarchy + bug 修复 + AD K_D 解析
+
+### 11.1 Bug 修复（**项目级 bug 数据驱动地由 SDP 抓出**）
+
+`qkdx/numerics/upper_bound.py:e_r_depolarizing_analytic` 公式错（Vollbrecht-Werner 在 d⊗d 维度的 (d-1) 被误为 (d²-1)）：
+
+- 旧（错误）：`E_R = 1 - h(F) - (1-F)·log₂(d²-1)` (= subtracts log₂3 for d=2)
+- 新（正确）：`E_R = log₂(d) + F·log₂F + (1-F)·log₂((1-F)/(d-1))`，对 d=2 简化为 `1 - h(F)`
+- 来源：Plenio-Virmani 2007 §V.E (V.86)
+- 影响：旧公式 underestimate E_R 0.03-0.40 bits；早期错误零点 p ≈ 0.27 vs 真 p = 2/3
+- 验证：MOSEK SDP `e_r_channel_ppt(depolarizing)` 与新公式机器精度匹配（2⊗2 PPT=SEP per Horodecki 1996）
+
+记录：`docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md` §2.5；commit `b4efaae`。
+
+### 11.2 4 qubit 信道 log_neg 解析公式（[SYN]，SymPy 验证）
+
+| 信道 | log_neg | 真 K_D / E_R |
+|------|---------|-------------|
+| AD (γ ≤ 1/2) | `log₂(2−γ)` | `max_p[h₂((1-γ)p) − h₂(γp)]` (degradable Q) |
+| AD (γ > 1/2) | `log₂(2−γ)` | unknown (anti-degradable，K_D 真正 OPEN) |
+| Dephasing | `log₂(1+\|1−2p\|)` | `1−h(p)` (PLOB Eq.39) |
+| Depolarizing | `max(0, log₂(2−3p/2))` | `1−h(F)` (Vollbrecht-Werner 修复后) |
+| Erasure | `log₂(2−p)` | `1−p` (PLOB Eq.43) |
+
+实现：`analytic_log_neg_{amplitude_damping, dephasing, depolarizing, erasure}` + `K_D_amplitude_damping_degradable` in `qkdx/numerics/upper_bound.py`。
+
+测试：13 tests in `TestAnalyticLogNegFormulas`（含 SymPy SDP 双验证 + Plenio 不等式 4 信道 × 200 grid pts × 800 检查 + bug regression）。
+
+### 11.3 上界紧度层级（**Day 4 完成 hierarchy table**）
+
+| 信道 | log_neg | E_R^PPT (SDP) | 真 K_D | E_R^PPT/K_D ratio |
+|------|---------|---------------|--------|-------------------|
+| AD γ=0.05 | 0.964 | 0.855 | 0.831 | **1.03** ← 接近紧 |
+| AD γ=0.10 | 0.926 | 0.759 | 0.709 | 1.07 |
+| AD γ=0.20 | 0.848 | 0.612 | 0.506 | 1.21 |
+| AD γ=0.30 | 0.766 | 0.498 | 0.328 | 1.52 |
+| Dephase p=0.10 | 0.848 | 0.531 | 0.531 | **1.000** ← 完美匹配 |
+| Depolar p=0.10 | 0.888 | 0.616 | 0.616 | **1.000** ← 完美匹配 |
+
+**关键 Sub-Q3 工具评估**：
+- **Dephasing E_R^PPT ≡ K_D**（PLOB Eq.39 SDP 验证）→ PPT-SDP 紧化完整
+- **Depolarizing E_R^PPT ≡ E_R**（修复后 Vollbrecht-Werner SDP 验证）→ 紧化完整  
+- **AD degradable: E_R^PPT/K_D ∈ [1.03, 1.52]** → 接近紧 UB 工具
+- **AD anti-degradable: K_D 真正 OPEN**（Q=0 但 2-way K_D 可能 > 0；squashed entanglement 或 Mizutani 类型 bound 待研究）
+- **Erasure: log_neg − K_D ≤ 0.09 bits** → log_neg 是接近紧的 analytic UB
+
+### 11.4 BB84 / six-state 紧化分析
+
+BB84 等效 depolarizing 信道 p_depol = 4·QBER/3（per `qkdx/protocols/bb84.py:bb84_channel`）：
+
+| QBER | log_neg | **E_R = E_R^PPT** | SP_BB84 | SP_6state | E_R/SP_BB84 | E_R/SP_6state |
+|------|---------|--------------------|---------|-----------|-------------|---------------|
+| 1.00% | 0.986 | 0.919 | 0.838 | 0.903 | 1.10 | **1.02** |
+| 5.00% | 0.926 | 0.714 | 0.427 | 0.634 | 1.67 | **1.13** |
+| 8.00% | 0.880 | 0.598 | 0.196 | 0.471 | 3.06 | **1.27** |
+| 11.0% | 0.832 | **0.500** | ≈0 | 0.326 | ∞ | **1.54** |
+| 12.62% | 0.805 | 0.453 | 0 | 0.253 | ∞ | **1.79** |
+
+**强观察**：
+1. **六态 UB-LB 接近闭合**：E_R / SP_six-state ≤ **1.8×** 在 12.62% 阈值
+2. **BB84 SP 离 E_R 仍远**：BB84 SP 在 11% 阈值已 0，E_R 仍 0.50 — 真 K_D 在两者之间
+3. **log_neg → E_R 在 BB84 阈值处紧化 40%**（0.83 → 0.50）
+
+### 11.5 复合信道 PPT 视角观察（[SYN]）
+
+n-fold self-composition 给出 4 信道分两类参数递归：
+- AD/Depolar/Erasure: `p_n = 1 − (1−p)^n`
+- Dephasing: `p_n = (1 − (1−2p)^n)/2`
+
+**结构观察**: AD^n ≡ Erasure^n 在 log_neg 视角下完全相同（同参数递归 + 同单段公式）。这表示 PPT-relaxed 上界**失去区分**两类完全不同信道的能力。
+
+详见：`docs/findings/qubit_log_neg_composition_2026-04-23.md` + `qubit_log_neg_n_fold_and_mixed_2026-04-23.md`。
+
+### 11.6 仍 OPEN 的 Sub-Q3 项
+
+| Item | 原因 |
+|------|------|
+| α/β/γ 三路径 [CONJ] | 结构 gap β.G4/β.G5/γ.B.G1/γ.G3 需 user paper-level work |
+| AD γ > 1/2 K_D | anti-degradable, 无封闭式；squashed entanglement 等需 PDF 精读 |
+| Erasure E_R^PPT SDP | dim_B=3 → 16x16 SDP OOM 当前环境 |
+| MDI/TF E_R^PPT | 拓扑 type B + bosonic, 工具链需扩展 |
+| max-Rains SDP | Wang-Duan 2016b PDF 精读 + 2-cone form 实现 |
+
+### 11.7 Day 4 commits
+
+- `b4efaae`: e_r_depolarizing_analytic bug 修复 + 2 regression tests
+- `5579e0f`: docs(tightness) 修订 反映 bug 修复
+- `01935fa`: BB84 真 E_R 紧化 — 六态 UB-LB 接近闭合
+- `73bd18f`: AD K_D = Q 解析公式 (degradable γ < 1/2)
+- `c0531a7`: Plenio 不等式扩展 4 信道
+- `ea7868d`: session epilogue v0.2
+
+---
+
 ## Changelog
 
+- **v0.5** (2026-04-24 Day 4): §11 增补 — e_r_depolarizing_analytic bug 修复（Vollbrecht-Werner d-1 vs d²-1）+ AD K_D = Q degradable 公式 + 4 信道 hierarchy 完成 + 六态 UB-LB ≤ 1.8× 接近闭合 + Plenio 4-channel 扩展。13 tests pass.
 - **v0.4** (2026-04-23 Day 3 cont.): §10.3 expanded — added E_R^PPT single-arm grid (Layer 2); golden ratio crossover η_c=1/φ; E_R^PPT < PLOB for all η; [CONJ-DRAFT] additivity pending 16×16 SDP verification
 - **v0.3** (2026-04-23 Day 3 cont.): §10.3 β.G3 numerical results added — log_neg(E_1⊗E_2) vs Pirandola table; directional signal: tighter at η=0.9, not at η<0.5
 - **v0.2** (2026-04-23 Day 3 autonomous session): §10 新增 Day 3 增补 — β + γ drafts FINALIZED, β.G4 + γ.B.G1 attempts both OPEN, numerical updates, P-R stub
