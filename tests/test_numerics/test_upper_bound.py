@@ -162,6 +162,77 @@ class TestRmaxSDP:
             assert 0.0 <= e_r["E_R_channel_bits"] <= 1.0
 
 
+class TestLogNegAmplitudeDampingAnalytic:
+    """Analytic formula: log_neg(E_AD(η)) = log₂(1+η) for all η.
+
+    Proof: ||ρ_Choi^{T_B}||₁ = 1+η (eigenvalue calculation).
+    No MOSEK required — pure numpy trace norm.
+    Crossover with Pirandola: η² + η - 1 = 0 → η_c = 1/φ.
+    Memo: docs/findings/beta_G3_golden_ratio_crossover_2026-04-23.md §2.
+    """
+
+    @staticmethod
+    def _trace_norm_partial_transpose(eta: float) -> float:
+        """||ρ_AD(η)^{T_B}||₁ via eigenvalues of partial transpose."""
+        from qkdx.numerics.upper_bound import choi_state_from_kraus
+        K0 = np.array([[1, 0], [0, eta**0.5]])
+        K1 = np.array([[0, (1 - eta)**0.5], [0, 0]])
+        rho = choi_state_from_kraus([K0, K1], dim_A=2)
+        d = 2
+        n = d * d
+        rho_TB = np.zeros((n, n), dtype=complex)
+        for i in range(d):
+            for j in range(d):
+                for k in range(d):
+                    for ll in range(d):
+                        rho_TB[i * d + ll, k * d + j] = rho[i * d + j, k * d + ll]
+        return float(np.sum(np.abs(np.linalg.eigvalsh(rho_TB))))
+
+    def test_trace_norm_equals_1_plus_eta(self):
+        """||ρ^{T_B}||₁ = 1 + η for each test point (machine precision)."""
+        for eta in [0.1, 0.3, 0.5, 0.7, 0.9]:
+            tn = self._trace_norm_partial_transpose(eta)
+            print(f"  eta={eta:.1f}: ||ρ^T_B||₁={tn:.10f}, 1+η={1+eta:.10f}")
+            assert tn == pytest.approx(1 + eta, abs=1e-10), (
+                f"eta={eta}: expected trace norm={1+eta}, got {tn}"
+            )
+
+    def test_log_neg_equals_log2_1_plus_eta(self):
+        """log_neg(E_AD(η)) = log₂(1+η) for each test point."""
+        for eta in [0.1, 0.5, 0.9, 0.95]:
+            tn = self._trace_norm_partial_transpose(eta)
+            log_neg = math.log2(tn)
+            expected = math.log2(1 + eta)
+            print(f"  eta={eta}: log_neg={log_neg:.8f}, log₂(1+η)={expected:.8f}")
+            assert log_neg == pytest.approx(expected, abs=1e-9)
+
+    def test_golden_ratio_crossover_exact(self):
+        """At η_c = 1/φ: ||ρ^{T_B}||₁ = φ exactly (crossover with Pirandola)."""
+        phi = (1 + 5**0.5) / 2
+        eta_c = 1 / phi  # golden ratio property: 1/φ satisfies η²+η-1=0
+        tn = self._trace_norm_partial_transpose(eta_c)
+        print(f"  η_c=1/φ={eta_c:.10f}: ||ρ^T_B||₁={tn:.10f}, φ={phi:.10f}")
+        assert tn == pytest.approx(phi, abs=1e-9), (
+            f"Trace norm at η_c=1/φ should equal φ, got {tn}"
+        )
+
+    def test_crossover_satisfies_quadratic(self):
+        """η_c = 1/φ satisfies η²+η-1=0 (algebraic root of crossover equation)."""
+        phi = (1 + 5**0.5) / 2
+        eta_c = 1 / phi
+        assert eta_c**2 + eta_c - 1 == pytest.approx(0.0, abs=1e-14)
+
+    def test_2x_log_neg_equals_pirandola_at_crossover(self):
+        """2·log_neg(E₁) = Pirandola exactly at η = 1/φ."""
+        phi = (1 + 5**0.5) / 2
+        eta_c = 1 / phi
+        tn = self._trace_norm_partial_transpose(eta_c)
+        two_log_neg = 2 * math.log2(tn)
+        pirandola = -math.log2(1 - eta_c)
+        print(f"  2·log_neg={two_log_neg:.8f}, Pirandola={pirandola:.8f}")
+        assert two_log_neg == pytest.approx(pirandola, abs=1e-8)
+
+
 class TestDVGapAnalysis:
     def test_dv_gap_ratio(self):
         from qkdx.numerics.upper_bound import dv_gap_from_achievable
