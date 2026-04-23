@@ -163,6 +163,58 @@ log_neg ≥ K_D / E_R 在 600 grid points × 3 信道全部满足（$10^{-12}$ �
 
 ---
 
+## 8. 后续延伸（v0.2 追加）
+
+### 8.1 B + C 选项执行（commits `84b97e9`, `4af93e4`）
+
+- **B (n-fold + 异信道)**: 4 信道 self-composition 递归，AD^n ≡ Erasure^n 全 n 等价（PPT 视角）
+- **C (MS-EB 应用)**: BB84/six-state 等效 depolarizing(p=4·QBER/3); log_neg 在 11% 阈值处 5000× SP_BB84
+
+### 8.2 E_R^PPT SDP 全面对比（commit `ac3947f`）
+
+- 19 SDP 点 across 3 信道（erasure dim_B=3 OOM）
+- **强观察**: dephasing E_R^PPT ≡ K_D (PLOB Eq.39) 机器精度匹配
+
+### 8.3 重要 bug 发现 + 修复（commit `b4efaae`）
+
+数据驱动地发现 `e_r_depolarizing_analytic` 公式错（用了 `(1-F)·log₂(d²-1)` 应是 `(1-F)·log₂(d-1)`）：
+- 修复前误称"在 p ∈ [0.27, 2/3] 内 E_R = 0"
+- 修复后 E_R = 1 - h(F) for d=2，与 SDP 完全匹配
+- 添加 2 个 regression 测试; 11/11 pass
+- 同时修订 `qubit_log_neg_vs_K_D_tightness_2026-04-23.md` (commit `5579e0f`)
+
+### 8.4 BB84/six-state 真 E_R 紧化（commit `01935fa`）
+
+修复 bug 后用真 E_R = 1-h(F) 评估:
+- BB84 阈值 11% 处: log_neg 0.83 → E_R 0.50 (紧化 40%)
+- **六态接近 UB-LB 闭合**: E_R / SP_six-state ≤ 1.8× 在阈值附近
+
+### 8.5 AD K_D analytic（commit `73bd18f`）
+
+新函数 `K_D_amplitude_damping_degradable(γ)` for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014):
+- E_R^PPT / K_D ∈ [1.03, 1.52]（接近紧 UB!）
+- log_neg / K_D ∈ [1.16, 2.33]（中等松）
+- γ > 1/2 anti-degradable: Q = 0, K_D 真正 OPEN
+
+### 8.6 累计测试覆盖
+
+- TestAnalyticLogNegFormulas: **13/13 tests pass**（含 SDP cross-validation, AD K_D, Plenio）
+- TestLogNegAmplitudeDampingAnalytic: 7/7（β.G3 原有）
+- 总：20 个 analytic-related tests
+
+### 8.7 Sub-Q3 工具评估更新
+
+| 信道 | 最紧已知 UB | 与 K_D gap |
+|------|---|---|
+| AD (γ ≤ 1/2) | E_R^PPT (SDP) | 1.03-1.52× K_D |
+| AD (γ > 1/2) | E_R^PPT (SDP) | K_D unknown |
+| Dephasing | E_R^PPT (= PLOB Eq.39) | 紧 |
+| Depolarizing | E_R^PPT (= 1-h(F)) | 紧 |
+| Erasure | log_neg (analytic) | gap < 0.09 bits |
+
+---
+
 ## Changelog
 
+- **v0.2** (2026-04-23 evening): §8 追加 — B/C 选项 + E_R^PPT SDP + bug 修复 + AD K_D + BB84 紧化
 - **v0.1** (2026-04-23): 首稿，本回合自主 session 闭环 + log_neg 框架横向延伸总结。等待用户审阅。
