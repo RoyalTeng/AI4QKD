@@ -423,6 +423,52 @@ def log_negativity_channel_sdp(
 r_max_channel_sdp = log_negativity_channel_sdp
 
 
+def max_rains_wang_duan_channel_sdp(
+    kraus_ops: list[np.ndarray],
+    dim_A: int,
+    solver: str = "MOSEK",
+    verbose: bool = False,
+) -> dict:
+    """Max-Rains info R_max(N) via Wang-Duan 2016b 2-cone SDP — STUB.
+
+    **Status: NotImplementedError [UNVERIFIED Wang-Duan form]**
+
+    AI autonomous 2026-04-23 attempted 2 variants of Wang-Duan 2-cone SDP:
+        Variant 1: min ||Tr_B[V+W]||_∞  s.t. V,W ≥ 0, (V−W)^{T_B} = ρ^N
+        Variant 2: min ||V+W||_∞       s.t. V,W ≥ 0, (V−W)^{T_B} = ρ^N
+
+    Both variants **failed validation** on simple cases:
+        - Identity qubit: should give R_max ≥ 1 (Bell Choi), got 0 or −1
+        - Full depolarizing: should give R_max = 0, got 0 or −2
+        - Amp-damp 0.9: should satisfy R_max ≤ log-neg, gave structurally
+          inconsistent sign
+
+    **Root cause**: exact Wang-Duan 2016b Eq. (9) form cannot be reliably
+    reconstructed from local memo docstring alone. User must consult
+    Wang-Duan 2016b (PRA 94:050301) or Khatri-Wilde 2020 §19.2.1 Thm 19.8 PDF
+    to verify:
+        - Correct norm type (||·||_∞ operator infinity vs ||·||_1 trace norm)
+        - Whether Tr_B or no partial trace
+        - Constraint sign convention
+
+    Until user-verified, use `log_negativity_channel_sdp` which is a valid
+    (looser) upper bound on max-Rains for strong-converse purposes.
+
+    [TODO for user]: After Wang-Duan PDF verify, rewrite this function with
+    correct SDP form and validate against:
+        - Identity qubit → R_max = 1 bit
+        - Bell-preparing channel → R_max = log_2(dim)
+        - Fully depolarizing → R_max = 0
+        - Should satisfy R_max ≤ log-neg universally
+    """
+    raise NotImplementedError(
+        "Wang-Duan max-Rains SDP AI draft failed validation (2026-04-23). "
+        "User must verify Wang-Duan 2016b Eq. (9) exact form from PDF "
+        "before implementing. Use log_negativity_channel_sdp as valid "
+        "(looser) upper bound in the meantime."
+    )
+
+
 def dv_gap_from_achievable(
     upper_bound_bits: float, achievable_rate_bits: float,
 ) -> dict:
