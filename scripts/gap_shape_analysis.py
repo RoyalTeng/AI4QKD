@@ -6,14 +6,22 @@ lower bounds across loss range.
 Candidates for upper bound:
   A: PLOB on worst edge (symmetric: -log_2(1 - √η_end2end))
   B: Pirandola 2019 N=1 chain (same as A for symmetric)
-  C: E_R^PPT SDP for qubit amp-damping channel (effective quibit analog)
+  C: E_R^PPT SDP for qubit amp-damping channel (effective qubit analog)
+  D: AD K_D = Q analytic (degradable, γ ≤ 1/2 ↔ η_arm ≥ 1/2)
+     [NEW 2026-04-24]: the qubit AD channel's TRUE quantum capacity, valid as
+     UB on rate achievable by ANY 2-way LOCC protocol on this channel
+     (Caruso-Giovannetti-Holevo 2014, single-letter formula).
 
 Lower bound:
   TF/PM-QKD asymptotic from tf_family_loss1d.csv
 
-Caveat: All upper-bound CANDIDATES are [CONJ] for umr topology per
-docs/proofs/upper_bound_msen.md.  This notebook gives gap SHAPE under
-candidate assumption; does NOT give [THM]-level gap.
+Caveat: All non-D upper-bound candidates are [CONJ] for umr topology per
+docs/proofs/upper_bound_msen.md.  Candidate D is [THM]-level for the qubit AD
+channel, but its "umr-applicability" via cross-task lemma is still [CONJ]
+(the umr is two-arm + BSM, not single-arm channel).
+
+This notebook gives gap SHAPE under candidate assumption; does NOT give
+[THM]-level gap for umr topology.
 """
 from __future__ import annotations
 
@@ -72,13 +80,14 @@ def main():
 
     # Candidate C: E_R^PPT qubit amp damping with γ = 1 - η_arm
     # Run this only at a subset of loss values to save time
-    ub_ampdamp = []
     print("Computing E_R^PPT for qubit amp damping (subset) ...")
     from qkdx.numerics.upper_bound import (
+        K_D_amplitude_damping_degradable,
         e_r_channel_ppt, kraus_amplitude_damping_qubit,
     )
     sub_losses = loss_arr[::10]  # every 10 dB
     sub_ub = []
+    sub_kd = []  # Candidate D: AD K_D analytic (degradable γ < 1/2)
     for L in sub_losses:
         eta_arm = 10.0 ** (-L / 20.0)
         gamma = 1.0 - eta_arm
@@ -88,7 +97,11 @@ def main():
         except Exception as e:
             print(f"  loss={L}: SDP fail {e}")
             sub_ub.append(np.nan)
-        print(f"  loss={L:.0f} dB (γ={gamma:.4f}): E_R^PPT = {sub_ub[-1]:.4f}")
+        # Candidate D
+        kd = K_D_amplitude_damping_degradable(float(gamma)) if gamma < 0.5 else np.nan
+        sub_kd.append(kd)
+        kd_str = f"{kd:.4f}" if not np.isnan(kd) else "anti-deg(NaN)"
+        print(f"  loss={L:.0f} dB (γ={gamma:.4f}): E_R^PPT={sub_ub[-1]:.4f}, K_D={kd_str}")
 
     # Gap calculations
     gap_plob_end = ub_plob_end - rate_arr  # direct PLOB (end-to-end, single-edge original)
@@ -123,6 +136,13 @@ def main():
     if sub_ub:
         ax1.semilogy(sub_losses, sub_ub, "o", color="purple",
                      label="Candidate C: E_R^PPT amp-damp SDP")
+    if sub_kd:
+        sub_kd_arr = np.array(sub_kd)
+        valid = ~np.isnan(sub_kd_arr) & (sub_kd_arr > 1e-15)
+        if valid.any():
+            ax1.semilogy(np.array(sub_losses)[valid], sub_kd_arr[valid], "D",
+                         color="green", markersize=8,
+                         label=r"Candidate D: AD $K_D$ analytic (degradable γ<1/2)")
     ax1.set_xlabel("Loss [dB]")
     ax1.set_ylabel("Rate (bits/signal)")
     ax1.set_title("Upper vs Lower bounds")
