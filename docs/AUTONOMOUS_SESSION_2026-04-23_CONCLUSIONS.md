@@ -24,33 +24,37 @@
 
 **关键发现**：所有 4 个 gap 的核心障碍是同一 class — **cross-space/cross-task transfer barrier**（见 §2）
 
-### 1.2 β.G3 数值结果 [SYN 级，方向性信号]
+### 1.2 β.G3 数值结果 [SYN 级，方向性信号]（已扩充）
 
 数据文件：`docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
 
-| η_arm | log_neg(E₁⊗E₂) | Pirandola bound | ratio |
-|-------|----------------|-----------------|-------|
-| 0.90 | 1.852 bits | 3.322 bits | **0.558** |
-| 0.50 | 1.170 | 1.000 | 1.170 |
-| 0.10 | 0.275 | 0.152 | 1.809 |
-| 0.01 | 0.0287 | 0.0145 | 1.980 |
+**Layer 1 — log_neg proxy（双臂张量积）**：
+- η=0.618（黄金比例倒数）：log_neg = Pirandola = 1.3885 bits（精确交叉点！）
+- η > 0.618：log_neg < Pirandola（β bound proxy 更紧）
+- η < 0.618：log_neg > Pirandola（实用 QKD 范围，proxy 不更紧）
+- 详细 memo：`docs/findings/beta_G3_golden_ratio_crossover_2026-04-23.md` (v0.2)
 
-**[SYN] 方向性信号**：
-- η=0.9（高透射）：log_neg < Pirandola → β bound **可能**比 Pirandola 更紧
-- η<0.5（实用低损耗区）：log_neg > Pirandola → 该 route 无更紧信号
-- E_R(M̃) ≤ log_neg(E₁⊗E₂)，所以 log_neg < Pirandola 是 β bound tighter 的充分条件
+**Layer 2 — 单臂 E_R^PPT（dim_A=dim_B=2 SDP，MOSEK，共 9 个点，[SYN]）**：
 
-**注意**：`e_r_channel_ppt` dim_A=4 (16×16 Choi) 计算超时 (>60s/点)；结论基于 log-neg 上界，实际 E_R 可能更紧
+| η_arm | E_R^PPT(E₁) | PLOB | E_R/PLOB |
+|-------|-------------|------|----------|
+| 0.90 | 0.7590 | 3.3219 | **0.229** |
+| 0.618 | 0.4196 | 1.3885 | **0.302** |
+| 0.10 | 0.0616 | 0.1520 | **0.405** |
+| 0.01 | 0.0065 | 0.0145 | **0.451** |
+
+**[SYN+CONJ-DRAFT] 更强信号**：E_R^PPT(E₁) < PLOB for ALL η（无交叉点）。若 E_R^PPT 加性（16×16 SDP 超时，尚未验证），则 2×E_R^PPT < Pirandola 对**全部 η** 成立，包括实用 QKD 范围（比 Pirandola 紧 10-20%）。
 
 ### 1.3 文档更新（全部 commit）
 
 | 文件 | 更新 |
 |------|------|
-| `docs/findings/upper_bound_report.md` | v0.1 → v0.3（§10.3 β.G3 数值表）|
+| `docs/findings/upper_bound_report.md` | v0.1 → v0.4（§10.3 双层 β.G3 数值分析）|
+| `docs/findings/beta_G3_golden_ratio_crossover_2026-04-23.md` | **新增** v0.2（黄金比例交叉 + E_R^PPT 单臂网格）|
 | `docs/findings/sub_q3_structural_gaps_summary_2026-04-23.md` | v0.1 → v0.2（§4 数值状态更新）|
 | `docs/findings/gap_shape_g4_1.md` | v0.1 → v0.2（UB cand C 更新为 log-neg）|
 | `docs/AUTONOMOUS_SESSION_2026-04-23_LOG.md` | Phase 6/7 追加，outstanding items 更新 |
-| `docs/research/data/beta_G3_log_neg_vs_pirandola.csv` | 新增 |
+| `docs/research/data/beta_G3_log_neg_vs_pirandola.csv` | 新增（v0.2 添加 E_R^PPT 列）|
 
 ---
 
@@ -99,6 +103,12 @@ AI 的 framework-matching heuristic（"这个 amortization/DPI/teleportation str
    - 选项 A：尝试 Approach E（AI 未想到的 γ.B.G1 路径）
    - 选项 B：Accept CONJ1，reformulate γ target 为 joint multi-edge bound
    - 选项 C：放弃 γ path，专注 β path
+
+3b. **[新增，高价值] E_R^PPT 加性验证**（若有大内存 MOSEK 环境）
+   - 运行：`e_r_ppt(kron(rho1, rho1), dim_A=4, dim_B=4)` 在 η=0.9（最大信号点）
+   - 若 ≈ 2×0.759 = 1.518 bits：加性成立 [SYN→CONJ 可升级方向]
+   - 意义：若加性，则 E_R^PPT < Pirandola for ALL η（包括实用 QKD 范围）— 比 log_neg crossover 更强的数值信号
+   - 时间：>60s MOSEK（16×16 SDP）
 
 ### 优先级 B（各 1-3 天）
 

@@ -1,6 +1,6 @@
 # Sub-Q3 上界接缝报告（Upper Bound Report）
 
-**版本**：v0.3
+**版本**：v0.4
 **日期**：2026-04-21 autonomous session
 **对应**：PROSPECTUS Sub-Q3 验收产出 + RESEARCH_PLAN §4.5 U3.8
 **预期篇幅**：30-50 页（本稿约 25 页等价，可扩展）
@@ -409,19 +409,34 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
 
 ### 10.3 Numerical scaffolding updates
 
-- **β.G3 E_R SDP** [COMPLETED, commit pending]: `e_r_channel_ppt` with dim_A=4 (16×16 Choi) intractable; switched to `log_negativity_channel_sdp` as conservative upper bound proxy. Results:
+- **β.G3 E_R SDP** [COMPLETED]: Two-layer proxy analysis.
 
-  | η_arm | log_neg (bits) | Pirandola (bits) | ratio |
-  |-------|---------------|-----------------|-------|
+  **Layer 1 — log_neg proxy (tensor product channel, qubit AD)**:
+  
+  | η_arm | log_neg 2-arm (bits) | Pirandola (bits) | ratio |
+  |-------|---------------------|-----------------|-------|
   | 0.90 | 1.852 | 3.322 | **0.558** |
+  | **0.618** | **1.388** | **1.388** | **1.000** ← crossover at η_c=1/φ |
   | 0.50 | 1.170 | 1.000 | 1.170 |
-  | 0.316 | 0.792 | 0.548 | 1.446 |
   | 0.10 | 0.275 | 0.152 | 1.809 |
-  | 0.0316 | 0.0898 | 0.0463 | 1.938 |
   | 0.01 | 0.0287 | 0.0145 | 1.980 |
 
-  **[SYN] directional signal**: at η=0.9, log_neg(E_1⊗E_2) < Pirandola → β route *could* give tighter bound in high-transmission regime. At η<0.5, log_neg > Pirandola (no tighter signal). Note: log_neg ≥ E_R always, so log_neg < Pirandola is sufficient condition for E_R(M_tilde) < Pirandola (since E_R ≤ E_R(E_1⊗E_2) ≤ log_neg via LOCC monotonicity).
+  **Layer 2 — E_R^PPT single arm (qubit AD, dim_A=dim_B=2 SDP, MOSEK)**:
   
+  | η_arm | E_R^PPT(E₁) | log_neg(E₁) | PLOB | E_R/PLOB |
+  |-------|-------------|-------------|------|----------|
+  | 0.90 | 0.7590 | 0.9260 | 3.3219 | **0.229** |
+  | 0.618 | 0.4196 | 0.6942 | 1.3885 | **0.302** |
+  | 0.50 | 0.3217 | 0.5850 | 1.0000 | **0.322** |
+  | 0.10 | 0.0616 | 0.1375 | 0.1520 | **0.405** |
+  | 0.01 | 0.0065 | 0.0144 | 0.0145 | **0.451** |
+
+  **[SYN] key findings**:
+  1. log_neg crossover: η_c = 1/φ ≈ 0.618 (exact). Above: tighter; below: looser than Pirandola.
+  2. E_R^PPT(E₁) < PLOB = Pirandola for ALL η ∈ [0.01, 0.95]; ratio 0.20-0.45.
+  3. **[CONJ-DRAFT]** if E_R^PPT is additive: 2×E_R^PPT(E₁) < Pirandola for ALL η, including practical QKD range (η≈0.1). Tensor SDP (16×16) timed out — additivity unverified.
+
+  Detail memo: `docs/findings/beta_G3_golden_ratio_crossover_2026-04-23.md` (v0.2)  
   Data: `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
 
 - **max-Rains Wang-Duan SDP**: AI draft 2 variants both failed validation (Identity → 0 not 1; full depolar → -2); converted to `NotImplementedError` stub pointing user to PDF verify
@@ -451,6 +466,7 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
 
 ## Changelog
 
+- **v0.4** (2026-04-23 Day 3 cont.): §10.3 expanded — added E_R^PPT single-arm grid (Layer 2); golden ratio crossover η_c=1/φ; E_R^PPT < PLOB for all η; [CONJ-DRAFT] additivity pending 16×16 SDP verification
 - **v0.3** (2026-04-23 Day 3 cont.): §10.3 β.G3 numerical results added — log_neg(E_1⊗E_2) vs Pirandola table; directional signal: tighter at η=0.9, not at η<0.5
 - **v0.2** (2026-04-23 Day 3 autonomous session): §10 新增 Day 3 增补 — β + γ drafts FINALIZED, β.G4 + γ.B.G1 attempts both OPEN, numerical updates, P-R stub
 - **v0.1**（2026-04-21 autonomous session）：首稿 25 页等价，整合 U3.1-U3.7 + G4.1 工作。30-50 页完整版留待后续基于理论 lemma 升级（路径 γ 形式化完成后）扩展。
