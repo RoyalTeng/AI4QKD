@@ -366,6 +366,25 @@ def analytic_log_neg_dephasing(p: float) -> float:
     return math.log2(1.0 + abs(1.0 - 2.0 * p))
 
 
+def analytic_log_neg_erasure(p: float) -> float:
+    """log-negativity of Choi state of qubit erasure channel.
+
+    Channel: |i⟩ → √(1-p)|i⟩ + √p|e⟩ (|e⟩ ⊥ qubit space, dim_B = 3).
+    Choi = (1-p)·|Φ⁺⟩⟨Φ⁺| (in 2⊗2 sub-block, padded by zeros)
+         + p·(I_A/2) ⊗ |e⟩⟨e|
+    PT eigenvalues: {(1-p)/2 × 3, -(1-p)/2 × 1, p/2 × 2}
+    Trace norm = 2 - p.
+
+        log_neg(p) = log₂(2 - p)
+
+    Boundary: p=0 → log_neg=1 bit (identity); p=1 → log_neg=0 (full erasure).
+    Note: K_D(erasure, p) = 1 - p (PLOB Eq.43, exact).
+    """
+    if not (0.0 <= p <= 1.0):
+        raise ValueError(f"p must be in [0, 1], got {p}")
+    return math.log2(2.0 - p)
+
+
 def analytic_log_neg_depolarizing(p: float) -> float:
     """log-negativity of Choi state of qubit depolarizing channel.
 

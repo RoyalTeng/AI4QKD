@@ -31,6 +31,7 @@ from qkdx.numerics.upper_bound import (
     analytic_log_neg_amplitude_damping,
     analytic_log_neg_dephasing,
     analytic_log_neg_depolarizing,
+    analytic_log_neg_erasure,
 )
 
 
@@ -39,19 +40,22 @@ def main():
     ad = np.array([analytic_log_neg_amplitude_damping(g) for g in ts])
     dp = np.array([analytic_log_neg_dephasing(p) for p in ts])
     de = np.array([analytic_log_neg_depolarizing(p) for p in ts])
+    er = np.array([analytic_log_neg_erasure(p) for p in ts])
 
     out_data = REPO / "docs" / "research" / "data" / "qubit_log_neg_three_channels.csv"
     out_data.parent.mkdir(parents=True, exist_ok=True)
     with open(out_data, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["noise_param", "AD_log_neg_bits", "dephase_log_neg_bits", "depol_log_neg_bits"])
-        for t, a, d, de_v in zip(ts, ad, dp, de):
-            w.writerow([f"{t:.4f}", f"{a:.10f}", f"{d:.10f}", f"{de_v:.10f}"])
+        w.writerow(["noise_param", "AD_log_neg_bits", "dephase_log_neg_bits",
+                    "depol_log_neg_bits", "erasure_log_neg_bits"])
+        for t, a, d, de_v, er_v in zip(ts, ad, dp, de, er):
+            w.writerow([f"{t:.4f}", f"{a:.10f}", f"{d:.10f}", f"{de_v:.10f}", f"{er_v:.10f}"])
 
     fig, ax = plt.subplots(figsize=(7.0, 4.5))
     ax.plot(ts, ad, label=r"AD: $\log_2(2-\gamma)$", linewidth=2.0)
     ax.plot(ts, dp, label=r"Dephase: $\log_2(1+|1-2p|)$", linewidth=2.0, linestyle="--")
     ax.plot(ts, de, label=r"Depol: $\log_2(2-3p/2)$", linewidth=2.0, linestyle=":")
+    ax.plot(ts, er, label=r"Erasure: $\log_2(2-p)$", linewidth=2.0, linestyle="-.")
 
     # PPT thresholds
     ax.axvline(2.0/3.0, color="gray", linewidth=0.8, alpha=0.5)
@@ -83,7 +87,8 @@ def main():
     for t in [0.0, 0.1, 0.3, 0.5, 2/3, 0.9, 1.0]:
         print(f"  noise={t:.4f}: AD={analytic_log_neg_amplitude_damping(t):.4f}, "
               f"dephase={analytic_log_neg_dephasing(t):.4f}, "
-              f"depol={analytic_log_neg_depolarizing(t):.4f}")
+              f"depol={analytic_log_neg_depolarizing(t):.4f}, "
+              f"erasure={analytic_log_neg_erasure(t):.4f}")
 
 
 if __name__ == "__main__":

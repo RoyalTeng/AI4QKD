@@ -21,8 +21,11 @@
 | **Amplitude damping** (γ=damping prob) | γ ∈ [0, 1] | 2 − γ | `log₂(2 − γ)` | 永远非零 (γ < 1) | γ=1 |
 | **Dephasing** (p=Z-flip prob) | p ∈ [0, 1] | 1 + \|1 − 2p\| | `log₂(1 + \|1 − 2p\|)` | 对称 p ↔ 1−p | p = 1/2 |
 | **Depolarizing** (p=noise param) | p ∈ [0, 1] | max(2 − 3p/2, 1) | `max(0, log₂(2 − 3p/2))` | PPT for p ≥ 2/3 | p = 2/3 |
+| **Erasure** (p=erase prob, dim_B=3) | p ∈ [0, 1] | 2 − p | `log₂(2 − p)` | 永远 > 0 (p < 1) | p=1 |
 
-三个公式均在 `qkdx/numerics/upper_bound.py` 作为 `analytic_log_neg_*` 提供。
+四个公式均在 `qkdx/numerics/upper_bound.py` 作为 `analytic_log_neg_*` 提供。
+
+**注意**: erasure 信道 dim_B = 3（qubit + erasure flag），所以 PT 在 2⊗3 空间，不是 2⊗2。其余三个均 2⊗2。
 
 ---
 

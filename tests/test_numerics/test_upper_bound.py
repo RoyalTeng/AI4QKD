@@ -418,13 +418,57 @@ class TestAnalyticLogNegFormulas:
             analytic_log_neg_amplitude_damping,
             analytic_log_neg_dephasing,
             analytic_log_neg_depolarizing,
+            analytic_log_neg_erasure,
         )
         for fn in [analytic_log_neg_amplitude_damping, analytic_log_neg_dephasing,
-                   analytic_log_neg_depolarizing]:
+                   analytic_log_neg_depolarizing, analytic_log_neg_erasure]:
             with pytest.raises(ValueError):
                 fn(-0.1)
             with pytest.raises(ValueError):
                 fn(1.1)
+
+    def test_erasure_log_neg_formula(self):
+        """log_neg(erasure, p) = log₂(2-p). Verified by SymPy + direct PT computation.
+
+        Erasure channel has dim_B=3, so we directly compute Choi+PT here in 2⊗3 space.
+        """
+        from qkdx.numerics.upper_bound import analytic_log_neg_erasure
+
+        def erasure_choi_pt_eigvals(p):
+            """6x6 PT eigenvalues for qubit erasure channel."""
+            # |Φ⁺⟩ = (|00⟩+|11⟩)/√2 in C^2 ⊗ C^2 (input space)
+            phi_plus = np.zeros(4, dtype=complex)
+            phi_plus[0] = phi_plus[3] = 1.0 / math.sqrt(2)
+            # Kraus: K0 = √(1-p)·[[1,0],[0,1],[0,0]] (3x2, identity on qubit→qubit)
+            # Ke0 = √p·[[0,0],[0,0],[1,0]] (3x2, |0⟩→|e⟩)
+            # Ke1 = √p·[[0,0],[0,0],[0,1]] (3x2, |1⟩→|e⟩)
+            K0 = math.sqrt(1.0 - p) * np.array([[1, 0], [0, 1], [0, 0]], dtype=complex)
+            Ke0 = math.sqrt(p) * np.array([[0, 0], [0, 0], [1, 0]], dtype=complex)
+            Ke1 = math.sqrt(p) * np.array([[0, 0], [0, 0], [0, 1]], dtype=complex)
+            I_A = np.eye(2, dtype=complex)
+            rho = np.zeros((6, 6), dtype=complex)
+            for K in [K0, Ke0, Ke1]:
+                M = np.kron(I_A, K)  # (2*3) x (2*2) = 6x4
+                v = M @ phi_plus
+                rho += np.outer(v, v.conj())
+            # PT on B (dim 3): index = 3*a + b
+            rho_TB = np.zeros((6, 6), dtype=complex)
+            for a in range(2):
+                for b in range(3):
+                    for c in range(2):
+                        for d in range(3):
+                            rho_TB[3*a+d, 3*c+b] = rho[3*a+b, 3*c+d]
+            return np.linalg.eigvalsh(rho_TB)
+
+        for p in [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]:
+            eigs = erasure_choi_pt_eigvals(p)
+            tn = float(np.sum(np.abs(eigs)))
+            log_neg_num = math.log2(tn) if tn > 1.0 else 0.0
+            analytic = analytic_log_neg_erasure(p)
+            expected = math.log2(2.0 - p)
+            print(f"  p={p}: trace_norm={tn:.6f}, analytic={analytic:.6f}, expected log₂(2-p)={expected:.6f}")
+            assert analytic == pytest.approx(expected, abs=1e-12)
+            assert analytic == pytest.approx(log_neg_num, abs=1e-9)
 
 
 @_MOSEK_SKIP
