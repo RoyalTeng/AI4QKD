@@ -122,7 +122,26 @@
 - 代码: `qkdx/numerics/upper_bound.py:analytic_log_neg_{amplitude_damping,dephasing,depolarizing}`
 - 测试: `tests/test_numerics/test_upper_bound.py::TestAnalyticLogNegFormulas`（7 tests，pass）
 - SymPy 脚本: `scripts/sympy_log_neg_qubit_channels.py`
+- 对比图脚本: `scripts/qubit_log_neg_three_channels_compare.py`
+- 对比图: `docs/research/figures/qubit_log_neg_three_channels.{png,pdf}`
+- 1001 点 CSV: `docs/research/data/qubit_log_neg_three_channels.csv`
 - 前置 memo: `docs/findings/beta_G3_golden_ratio_crossover_2026-04-23.md`
+
+### 6.1 关键观测值（来自 1001 点 CSV）
+
+| noise | AD | Dephase | Depolar |
+|-------|-----|---------|---------|
+| 0.000 | 1.0000 | 1.0000 | 1.0000 |
+| 0.100 | 0.9260 | 0.8480 | 0.8875 |
+| 0.300 | 0.7655 | 0.4854 | 0.6323 |
+| 0.500 | 0.5850 | **0.0000** | 0.3219 |
+| 0.667 | 0.4150 | 0.4150 | **0.0000** |
+| 0.900 | 0.1375 | 0.8480 | 0.0000 |
+| 1.000 | **0.0000** | 1.0000 (Z is unitary!) | 0.0000 |
+
+**有趣巧合**：noise = 2/3 时 AD 与 dephase 给出相同 log_neg ≈ 0.4150 ≈ log₂(4/3)。
+代数验证：log₂(2 − 2/3) = log₂(4/3) = log₂(1 + |1 − 4/3|) = log₂(4/3) ✓
+（同 noise 参数下两个不同信道家族给出相同 log_neg，是参数化巧合而非物理同构）。
 
 ---
 
