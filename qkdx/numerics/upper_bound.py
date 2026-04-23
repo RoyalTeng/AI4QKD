@@ -338,6 +338,55 @@ def e_r_depolarizing_analytic(p: float) -> float:
 # These are [SYN] — standard textbook-level calculations; R0.2 triple verification
 # applies for any label upgrade.
 
+def K_D_amplitude_damping_degradable(gamma: float) -> float:
+    """K_D = Q (quantum capacity) of qubit amplitude damping for γ ≤ 1/2.
+
+    AD channel is **degradable** for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014;
+    standard textbook result, e.g., Khatri-Wilde 2020 §17.4). For degradable
+    channels: K_D = P = Q = single-letter regularized coherent information.
+
+        Q(N_AD, γ) = max_{p ∈ [0,1]} [h₂((1-γ)·p) − h₂(γ·p)]   for γ ≤ 1/2
+                   = 0                                            for γ > 1/2
+
+    For γ > 1/2: AD is anti-degradable, Q = 0. K_D could still be > 0 via
+    two-way LOCC, but no closed form is known.
+
+    Returns:
+        Quantum capacity in bits/use. Only equals K_D in degradable regime.
+
+    Reference values:
+        γ = 0:    Q = 1 bit (identity)
+        γ = 0.5:  Q = 0 (degradability boundary)
+        γ → 1:    Q = 0 (no information transmission)
+    """
+    if not (0.0 <= gamma <= 1.0):
+        raise ValueError(f"gamma must be in [0, 1], got {gamma}")
+    if gamma >= 0.5:
+        return 0.0
+
+    def h2(x: float) -> float:
+        if x <= 1e-15 or x >= 1.0 - 1e-15:
+            return 0.0
+        return -x * math.log2(x) - (1.0 - x) * math.log2(1.0 - x)
+
+    # Maximize over p ∈ [0, 1] via golden-section search (no scipy dep here).
+    # Coherent info I_c(p) = h₂((1-γ)·p) − h₂(γ·p) is concave in p for γ < 1/2.
+    phi = (1 + math.sqrt(5)) / 2
+    a, b = 0.0, 1.0
+    for _ in range(80):
+        d = (b - a) / phi
+        x1 = b - d
+        x2 = a + d
+        f1 = h2((1 - gamma) * x1) - h2(gamma * x1)
+        f2 = h2((1 - gamma) * x2) - h2(gamma * x2)
+        if f1 > f2:
+            b = x2
+        else:
+            a = x1
+    p_opt = (a + b) / 2
+    return max(0.0, h2((1 - gamma) * p_opt) - h2(gamma * p_opt))
+
+
 def analytic_log_neg_amplitude_damping(gamma: float) -> float:
     """log-negativity of Choi state of qubit amplitude damping channel (γ = damping prob).
 

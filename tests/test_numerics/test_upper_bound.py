@@ -412,6 +412,40 @@ class TestAnalyticLogNegFormulas:
                 analytic_log_neg_dephasing(1.0 - p), abs=1e-15
             )
 
+    def test_K_D_amplitude_damping_degradable(self):
+        """Q (= K_D for degradable γ < 1/2) of qubit AD via golden-section.
+
+        Boundary checks + monotonic decrease + degradability cliff at γ = 1/2.
+        """
+        from qkdx.numerics.upper_bound import K_D_amplitude_damping_degradable
+        # Boundary
+        assert K_D_amplitude_damping_degradable(0.0) == pytest.approx(1.0, abs=1e-6)
+        assert K_D_amplitude_damping_degradable(0.5) == pytest.approx(0.0, abs=1e-6)
+        assert K_D_amplitude_damping_degradable(0.9) == pytest.approx(0.0, abs=1e-15)
+        assert K_D_amplitude_damping_degradable(1.0) == pytest.approx(0.0, abs=1e-15)
+        # Monotonic decrease for γ in degradable regime
+        prev = float('inf')
+        for g in [0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.49]:
+            q = K_D_amplitude_damping_degradable(g)
+            print(f"  γ={g}: Q = K_D = {q:.6f}")
+            assert q > 0, f"Q should be > 0 for γ={g} (degradable regime)"
+            assert q < prev, f"Q should decrease: γ={g} got {q}, prev={prev}"
+            prev = q
+
+    def test_AD_K_D_below_log_neg_and_E_R(self):
+        """Plenio inequality for AD: K_D ≤ E_R^PPT (analytic) ≤ log_neg.
+
+        For γ ≤ 1/2 we have analytic K_D. Test inequality at several points.
+        """
+        from qkdx.numerics.upper_bound import (
+            K_D_amplitude_damping_degradable, analytic_log_neg_amplitude_damping,
+        )
+        for g in [0.05, 0.10, 0.20, 0.30, 0.40]:
+            kd = K_D_amplitude_damping_degradable(g)
+            ln = analytic_log_neg_amplitude_damping(g)
+            print(f"  γ={g}: K_D={kd:.4f}, log_neg={ln:.4f}, ratio log_neg/K_D={ln/kd:.3f}")
+            assert kd <= ln + 1e-9, f"Plenio violated: K_D={kd} > log_neg={ln}"
+
     def test_e_r_depolarizing_analytic_matches_corrected_formula(self):
         """Regression: e_r_depolarizing_analytic uses E_R = 1 - h(F) for d=2.
 

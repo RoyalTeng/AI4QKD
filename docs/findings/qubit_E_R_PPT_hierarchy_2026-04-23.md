@@ -93,14 +93,28 @@ E_R^PPT 在 qubit dephasing 上**达到真 E_R = K_D**（与 PLOB 精确一致�
 E_R^PPT vs log_neg 比率 0.44-0.89（gamma 增大反降）。无已知 AD K_D 解析可比。  
 → **AD 上 E_R^PPT 是最紧已知候选**（直到有更好工具如 squashed ent.）。
 
-### 2.4 四信道上界层级摘要（修订）
+### 2.4 四信道上界层级摘要（再次修订 — AD K_D 找到）
 
-| 信道 | log_neg | E_R^PPT | 真 K_D / E_R | 结论 |
+| 信道 | log_neg | E_R^PPT | 真 K_D 来源 | 结论 |
 |------|---------|---------|--------|------|
-| AD | 0.14-0.96 | 0.06-0.86 | unknown closed form | E_R^PPT 为最紧已知 |
-| Dephasing | 0.26-0.93 | 0.03-0.71 | **= E_R^PPT** (PLOB Eq.39) | PPT 紧化完整 |
-| Depolarizing | 0.32-0.98 | 0.05-0.89 | **= E_R^PPT** (Vollbrecht-Werner) | PPT 紧化完整 |
+| AD (γ≤1/2) | 0.14-0.96 | 0.06-0.86 | **Q = max_p[h((1-γ)p) - h(γp)]** (degradable) | E_R^PPT/K_D ∈ [1.03, 1.52] |
+| AD (γ>1/2) | 0.14-0.59 | 0.06-0.32 | unknown (anti-degradable, K_D may > 0 via 2-way) | E_R^PPT 是最紧已知 |
+| Dephasing | 0.26-0.93 | 0.03-0.71 | = E_R^PPT (PLOB Eq.39) | PPT 紧化完整 |
+| Depolarizing | 0.32-0.98 | 0.05-0.89 | = E_R^PPT (Vollbrecht-Werner) | PPT 紧化完整 |
 | Erasure | 0.14-0.96 | OOM (本环境) | 0.1-0.95 (PLOB Eq.43) | 待高内存复跑 |
+
+**[新增 2026-04-23]**: AD 在 degradable 区 (γ≤1/2) 的真 K_D = Q 通过 Caruso-Giovannetti-Holevo 2014 的 single-letter 公式数值求解（黄金分割搜索）：
+
+| γ | K_D = Q (analytic) | E_R^PPT (SDP) | log_neg | E_R/K_D | log_neg/K_D |
+|---|---|---|---|---|---|
+| 0.05 | 0.8311 | 0.8552 | 0.9635 | 1.03 | 1.16 |
+| 0.10 | 0.7094 | 0.7590 | 0.9260 | 1.07 | 1.30 |
+| 0.20 | 0.5062 | 0.6125 | 0.8480 | 1.21 | 1.68 |
+| 0.30 | 0.3280 | 0.4984 | 0.7655 | 1.52 | 2.33 |
+
+E_R^PPT 在 AD degradable 区是 **接近紧** UB（gap 3-52%），明显紧于 log_neg。
+
+**对 γ > 1/2 anti-degradable 区**: Q = 0，但 K_D 可能 > 0 via 两向 LOCC（squashed entanglement 可能给出非零下界）。这是 Sub-Q3 的真正 OPEN gap。
 
 **[VERIFIED]** 在 qubit→qubit 设置（dim ≤ 2 each side）下，E_R^PPT SDP **是真 E_R 的等价计算**（基于 Horodecki 1996: PPT = SEP for 2⊗2）。Erasure 是 dim_B=3，未直接测试；但理论上 dim_B=3 仍 PPT≠SEP 一般，所以 E_R^PPT ≤ E_R = K_D 可能 strict。
 
