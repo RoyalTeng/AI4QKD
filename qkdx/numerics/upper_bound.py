@@ -292,36 +292,42 @@ def kraus_amplitude_damping_qubit(gamma: float) -> list[np.ndarray]:
 def e_r_depolarizing_analytic(p: float) -> float:
     """E_R(ρ_choi) for qubit depolarizing isotropic Choi state.
 
-    Reference: Vollbrecht-Werner 2001 / Vidal-Werner 2002; Horodecki et al.
-    1999 for isotropic state E_R.
+    Reference: Vollbrecht-Werner 2001; Plenio-Virmani 2007 §V.E Eq. (V.86).
+    For d⊗d isotropic with fidelity F > 1/d:
+        E_R = log₂ d + F·log₂ F + (1 − F)·log₂((1 − F)/(d − 1))
 
-    Qubit depolarizing channel N_p: ρ → (1-p)·ρ + p·I/2.
-    Choi state ρ_choi = (I ⊗ N_p)(|Φ⁺⟩⟨Φ⁺|) is isotropic with Bell-state
-    fidelity:
-        F(p) = ⟨Φ⁺|ρ_choi|Φ⁺⟩ = (1-p) + p/4 = 1 − 3p/4
+    For qubit (d = 2): (d − 1) = 1, so log₂(d − 1) = 0, giving:
+        E_R(ρ_iso(F)) = 1 − h₂(F)    for F > 1/2
+        E_R(ρ_iso(F)) = 0             for F ≤ 1/2 (separable / Werner threshold)
 
-    Isotropic E_R (Horodecki et al. 1999) for F > 1/2 (entangled regime):
-        E_R(ρ_iso(F)) = 1 − H₂(F) − (1-F)·log₂(3)
+    Qubit depolarizing channel N_p: ρ → (1 − p)·ρ + p·I/2.
+    Choi state ρ_choi = (I ⊗ N_p)(|Φ⁺⟩⟨Φ⁺|) is isotropic with
+        F(p) = ⟨Φ⁺|ρ_choi|Φ⁺⟩ = (1 − p) + p/4 = 1 − 3p/4
+
+    For 2 ⊗ 2: PPT = SEP (Horodecki et al. 1996), so this also equals E_R^PPT.
 
     Reference values:
-        p=0 → F=1:    E_R = 1 bit  (maximally entangled)
-        p=4/5 → F=0.4: below SEP boundary → E_R = 0
-        p=1 → F=1/4:  E_R = 0
+        p = 0 → F = 1: E_R = 1 bit (maximally entangled identity channel)
+        p = 2/3 → F = 1/2: E_R = 0 (Werner separability boundary)
+        p = 1 → F = 1/4: E_R = 0
 
-    NOTE: this function is ANALYTIC reference only; not tested by
-    `test_upper_bound.py`.  For validation against e_r_channel_ppt, prefer
-    direct numerical comparison.
+    HISTORY (2026-04-23 bug-catch): previous version of this function
+    incorrectly subtracted an extra (1 − F)·log₂(3) term (mistakenly using
+    d² − 1 = 3 instead of d − 1 = 1 in the Vollbrecht-Werner formula).
+    The bug caused early zero-crossing at p ≈ 0.27 instead of correct p = 2/3,
+    underestimating E_R by 0.03 to 0.40 bits across the entangled regime.
+    Detected by MOSEK E_R^PPT SDP cross-validation; fixed in this commit.
+    See `docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md`.
     """
     if not (0.0 <= p <= 1.0):
         raise ValueError(f"p must be in [0, 1], got {p}")
-    # Corrected Werner fidelity: F = ⟨Φ⁺|(I⊗N_p)(|Φ⁺⟩⟨Φ⁺|)|Φ⁺⟩ = 1 − 3p/4.
     F = 1.0 - 3.0 * p / 4.0
     if F <= 0.5:
-        return 0.0  # isotropic state is separable
+        return 0.0  # isotropic state is separable for F ≤ 1/2 (qubit case)
     if F >= 1.0:
         return 1.0  # identity channel
-    H2 = -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
-    return max(0.0, 1.0 - H2 - (1.0 - F) * math.log2(3.0))
+    h2_F = -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
+    return max(0.0, 1.0 - h2_F)
 
 
 # ---------------------------------------------------------------------------

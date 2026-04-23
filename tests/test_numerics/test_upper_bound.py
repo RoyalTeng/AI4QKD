@@ -412,6 +412,44 @@ class TestAnalyticLogNegFormulas:
                 analytic_log_neg_dephasing(1.0 - p), abs=1e-15
             )
 
+    def test_e_r_depolarizing_analytic_matches_corrected_formula(self):
+        """Regression: e_r_depolarizing_analytic uses E_R = 1 - h(F) for d=2.
+
+        Bug-catch 2026-04-23: previous version subtracted spurious
+        (1-F)·log₂(3), causing 0.03-0.40 bit underestimate. Fixed by Plenio-
+        Virmani 2007 §V.E (V.86) formula with correct d-1 = 1 for 2⊗2.
+        """
+        from qkdx.numerics.upper_bound import e_r_depolarizing_analytic
+        for p, expected in [
+            (0.00, 1.0),
+            (0.05, 1.0 - (-0.9625*math.log2(0.9625) - 0.0375*math.log2(0.0375))),  # F=0.9625
+            (0.10, 1.0 - (-0.925*math.log2(0.925) - 0.075*math.log2(0.075))),  # F=0.925
+            (0.20, 1.0 - (-0.85*math.log2(0.85) - 0.15*math.log2(0.15))),  # F=0.85
+            (2.0/3.0, 0.0),  # threshold
+            (1.0, 0.0),
+        ]:
+            got = e_r_depolarizing_analytic(p)
+            print(f"  p={p:.4f}: E_R analytic={got:.6f}, expected={expected:.6f}")
+            assert got == pytest.approx(expected, abs=1e-9), (
+                f"E_R(depolarizing, p={p}) bug regression: got {got}, expected {expected}"
+            )
+
+    @_MOSEK_SKIP
+    def test_e_r_depolarizing_analytic_matches_SDP(self):
+        """E_R analytic must match e_r_channel_ppt SDP (PPT=SEP for 2⊗2)."""
+        from qkdx.numerics.upper_bound import (
+            e_r_channel_ppt, e_r_depolarizing_analytic, kraus_depolarizing_qubit,
+        )
+        for p in [0.05, 0.10, 0.20, 0.30, 0.50]:
+            sdp_result = e_r_channel_ppt(kraus_depolarizing_qubit(p), dim_A=2)
+            sdp = float(sdp_result["E_R_channel_bits"])
+            analytic = e_r_depolarizing_analytic(p)
+            print(f"  p={p}: analytic={analytic:.6f}, SDP={sdp:.6f}, diff={analytic-sdp:.2e}")
+            assert analytic == pytest.approx(sdp, abs=5e-5), (
+                f"Analytic E_R differs from SDP at p={p}: "
+                f"analytic={analytic}, SDP={sdp}"
+            )
+
     def test_invalid_parameter_raises(self):
         """Out-of-range parameters raise ValueError."""
         from qkdx.numerics.upper_bound import (
