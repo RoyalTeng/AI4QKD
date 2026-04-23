@@ -166,15 +166,44 @@
 
 ---
 
-## Outstanding items for user audit
+### Phase 6 — γ.G3 + β.G5 derivation attempts + β.G3 SDP completion (Day 3 cont.)
 
-1. **γ.B.G1 R3 verdict** (running) — likely PASS based on R2 edit scope; if FAIL per Codex, fix per suggestions up to R4/R5
-2. **β.G3 E_R SDP numerical result** — pending hours-level runtime; expected to confirm/refute β.G3 toy finding (0.19× Pirandola at η=0.1 qubit)
-3. **γ safety net status** — CONJ1 speculation raises concern; user may want to reconsider Q1 decision (β main + γ safety) with this caveat
-4. **β.G4 Path C (Portmann-Renner)** — requires PDF which is not locally available; user action: obtain PDF 或 direct URL
-5. **max-Rains SDP** — pending; will be [CONJ-DRAFT] helper function with Codex review
+**γ.G3 (ε-composable transfer) v0.1** [commit 4ae4826]:
+- Attempted WTB Thm 19 2nd-order transfer from Alice-Charlie → Alice-Bob umr
+- Key finding: γ.G3 **not structurally blocked itself** — it depends on γ.B chain closure (all open)
+- Alternative: Kamin 2025 GEAT template for umr adaptation (non-trivial)
+- Codex R1 **PASS** [review-gammaG3-r1.json] — conditional nature + [CONJ-DRAFT] discipline preserved
 
-## Files created/modified Day 3
+**β.G5 (adversarial comb reduction) v0.1** [commit 7b32fe6]:
+- Attempted 4 approaches: A Prop 19.2 scope error / B Teleportation stretching circularity / C GEAT uncertainty / D Purify Eve worst-case mismatch
+- Key finding: β.G5 structurally blocked at same cross-task transfer barrier; GEAT Approach C most promising (user PDF check Kamin 2025 §4)
+- Codex R1: **pending** (launched, ~2-3 min runtime)
+
+**β.G3 SDP (numerical, [SYN] directional)** [commit 4206649]:
+- `e_r_channel_ppt` dim_A=4 intractable (>60s/pt) → switched to `log_negativity_channel_sdp` (fast, <1s)
+- Results (qubit amp-damping, symmetric η_A=η_B=η):
+  - η=0.9: log_neg=1.852 < Pirandola=3.322 (**ratio=0.558, β could be tighter**)
+  - η<0.5: log_neg > Pirandola (no tighter signal)
+- [SYN] directional: E_R ≤ log_neg, so log_neg < Pirandola → β tighter at high η
+- Data: `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
+
+### Phase 7 — structural gaps summary + documents updated
+
+- `sub_q3_structural_gaps_summary_2026-04-23.md` → v0.2 (§4 numerical state updated)
+- `upper_bound_report.md` → v0.3 (§10.3 β.G3 table added)
+- γ.G3 R1 PASS committed (4206649)
+
+---
+
+## Outstanding items for user audit (UPDATED)
+
+1. **β.G5 R1 verdict** — pending Codex (~pending); if FAIL iterate up to Round 5
+2. **β.G3 numerical result** (COMPLETED): ratio=0.558 at η=0.9 → directional signal β tighter at high transmission
+3. **γ safety net status** — CONJ1 speculation still open; γ.B.G1 + γ.B.G3 both structurally blocked
+4. **β.G4 Path C (Portmann-Renner)** — requires PDF not locally available; user action: obtain PDF
+5. **RESEARCH_PLAN.md** — Sub-Q2 family sheets done; Sub-Q3 all structural gaps open
+
+## Files created/modified Day 3 (complete list)
 
 | File | Action |
 |---|---|
@@ -187,6 +216,15 @@
 | `docs/workflow/path-beta-gamma-detailed-draft/review-gamma-BG1-r2.json` | Codex R2 verdict |
 | `/tmp/beta_g3_E_R_sdp_nohup.log` | SDP stdout (not in repo) |
 | This file | NEW session log |
+| `docs/proofs/umr_path_gamma_B_G1_derivation_attempt.md` | v0.3 R3 PASS (Codex review-gamma-BG1-r3.json) |
+| `docs/proofs/umr_path_gamma_G3_derivation_attempt.md` | NEW v0.1 (R1 PASS) |
+| `docs/proofs/umr_path_beta_G5_derivation_attempt.md` | NEW v0.1 (R1 pending) |
+| `docs/findings/sub_q3_structural_gaps_summary_2026-04-23.md` | NEW v0.2 |
+| `docs/findings/upper_bound_report.md` | v0.3 (§10.3 β.G3 table) |
+| `docs/research/data/beta_G3_log_neg_vs_pirandola.csv` | NEW numerical data |
+| `scripts/beta_G3_E_R_effective_channel.py` | Fixed (log_neg proxy, fast) |
+| `qkdx/numerics/upper_bound.py` | max-Rains stub + P-R stub |
+| `docs/literature/PortmannRenner-2022.md` | NEW [PDF-NEEDED] stub |
 
 ## Commits Day 3
 
@@ -195,6 +233,13 @@ c586610 draft: β.G4 + γ.B.G1 structural derivation attempts (both OPEN)
 037d20a fix(β.G4 v0.2 + γ.B.G1 v0.2): respond to Codex R1 FAIL on both drafts
 fb1c6dd docs(MQ snapshot v0.5 + β.G4 R2 PASS): Day 3 additions + β.G4 cycle close
 f1d8c75 fix(γ.B.G1 v0.3): R2 FAIL Approach D conclusion — downgrade to conjectural
+ede9c82 feat: max-Rains stub + P-R stub + Day 3 session log
+1fc12c2 docs: γ.B.G1 R3 PASS + upper_bound_report v0.2 + gap_shape refresh
+4ae4826 draft: γ.G3 ε-composable transfer v0.1
+79d4f1e docs(session log): Update 1
+7b32fe6 draft: β.G5 adversarial comb reduction v0.1
+605251a docs: Sub-Q3 structural gaps summary v0.1
+4206649 feat(β.G3 + γ.G3): numerical results + γ.G3 R1 PASS
 ```
 
 ## Log updates will continue as session progresses — check end of file for latest state

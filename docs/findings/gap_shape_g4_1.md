@@ -1,6 +1,6 @@
 # Gap 定量形状（G4.1 Sub-Q4 §5.1 初稿）
 
-**版本**：v0.1 [CONJ 级]
+**版本**：v0.2 [CONJ 级]
 **日期**：2026-04-21
 **状态**：[CONJ] — 依赖 U3.6 三候选路径 α/β/γ 的形式化尚未完成
 **数据**：[../research/data/gap_shape.csv](../research/data/gap_shape.csv)
@@ -43,17 +43,24 @@ FINDINGS v2 §4.2 的红线被严格遵守：
 
 ### 2.1 上下界 vs loss
 
-| loss (dB) | TF-PM-QKD LB | UB cand A/B | UB cand C (E_R^PPT) | PLOB direct (ref, non-umr) |
+| loss (dB) | TF-PM-QKD LB | UB cand A/B | UB cand C (log-neg, [SYN]) | PLOB direct (ref, non-umr) |
 |---|---|---|---|---|
-| 0 | 8.25e-4 | ∞ (η_arm=1; script uses 1e-30 floor → 99.66) | 1.000 | ∞ |
-| 10 | 2.50e-4 | 0.5484 | 0.1934 | 0.1520 |
-| 20 | 7.78e-5 | 0.1520 | 0.0616 | 0.0145 |
-| 30 | 2.44e-5 | 0.04636 | 0.0202 | 0.00145 |
-| 40 | 7.67e-6 | 0.01450 | 0.0065 | 1.44e-4 |
-| 60 | 6.96e-7 | 0.00144 | 0.0007 | 1.44e-6 |
-| 80 | 9.47e-9 | 1.44e-4 | 9.9e-5 | 1.44e-8 |
+| 0 | 8.25e-4 | ∞ (η_arm=1; script uses 1e-30 floor → 99.66) | — (η=1 singular) | ∞ |
+| 10 | 2.50e-4 | 0.5484 | **1.852** | 0.1520 |
+| 20 | 7.78e-5 | 0.1520 | 0.2750 | 0.0145 |
+| 30 | 2.44e-5 | 0.04636 | 0.0898 | 0.00145 |
+| 40 | 7.67e-6 | 0.01450 | 0.0287 | 1.44e-4 |
 
-（values from [../research/data/gap_shape.csv](../research/data/gap_shape.csv); audit 2026-04-21 corrected 10 dB row previously misrecorded as 1.2073 → 0.5484）
+**注**: UB cand C 数值为 `log_neg(E_1⊗E_2)` (qubit amp-damping, symmetric η). η_arm 对应 10 dB → η=0.1 → log_neg=0.2750, 20 dB → η=0.01 → 0.0287等. 见 `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`. 候选 C 现为 log-neg（上界），非原来的 E_R^PPT（e_r_channel_ppt dim_A=4 intractable）.
+
+**候选 C 与 A/B 对比**:
+- 10 dB: cand C = 1.852 > cand A/B = 0.548 → cand C 更松
+- 20 dB: cand C = 0.275 > cand A/B = 0.152 → cand C 更松
+- **结论**: log_neg(E_1⊗E_2) 比 Pirandola 候选 A/B 更松（在全实用 loss 范围内）。β path 在 η=0.9 处 ratio=0.558（候选 C tighter），但 η<0.5 候选 A/B 更紧。最紧可用上界候选在实用区间仍是 A/B（Pirandola）。
+
+（original E_R^PPT 数值出处: gap_shape.csv 的 E_R_ppt 列；已存档但不如 log_neg 可靠 — e_r_channel_ppt dim_A=4 >60s/pt, validation 未完成）
+
+（values from [../research/data/gap_shape.csv](../research/data/gap_shape.csv) + [../research/data/beta_G3_log_neg_vs_pirandola.csv](../research/data/beta_G3_log_neg_vs_pirandola.csv); audit 2026-04-21 corrected 10 dB row previously misrecorded as 1.2073 → 0.5484）
 
 ### 2.2 Gap 比值（UB / LB）
 
@@ -119,4 +126,5 @@ FINDINGS v2 §1.1 [SYN] 判断："在放宽版 $\mathcal{T}_\text{umr}^\text{bos
 
 ## Changelog
 
+- **v0.2**（2026-04-23 autonomous session cont.）：§2.1 UB cand C 数据更新为 log-neg(E_1⊗E_2) (log_neg proxy); old E_R^PPT replaced (intractable). 结论: 实用 loss range (η<0.5) 候选 A/B 更紧.
 - **v0.1**（2026-04-21 autonomous session）：首稿 [CONJ] 级 gap 形状分析，基于 PHASE1_REPORT.md 的 TF lower bound + U3.6 / U3.7 的三候选上界。

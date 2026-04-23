@@ -1,6 +1,6 @@
 # umr path β.G5 — adversarial comb → fixed channel reduction attempt
 
-**版本**: v0.1 **[CONJ-DRAFT]** — AI autonomous (2026-04-23, user 授权 draft+Codex iterate)
+**版本**: v0.2 **[CONJ-DRAFT]** — AI autonomous (2026-04-23, user 授权 draft+Codex iterate)
 **对应 gap**: β.G5 (见 [umr_path_beta_derivation.md](umr_path_beta_derivation.md) §2.5 + [umr_path_beta_v0_4_detailed_draft.md](umr_path_beta_v0_4_detailed_draft.md) §6)
 **目标**: Establish reduction from n-shot adversarial umr comb → repeated use of fixed effective channel $\tilde{\mathcal{M}}$
 
@@ -54,9 +54,9 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi, n) \leq R_\varepsilon^{\mathcal{A}
 
 **Conclusion**: Approach A **fails** — 直接 apply Prop 19.2 对 adversarial umr comb 是 scope 越界.
 
-### 2.2 Approach B — Teleportation stretching [Pirandola 2017]
+### 2.2 Approach B — Teleportation stretching [Pirandola 2017, RECALLED]
 
-**Idea**: Pirandola 2017 (PLOB) 的 teleportation stretching 技术把 adaptive LOCC protocol 通过 resource state + teleportation simulation 转换为 non-adaptive form.
+**Idea**: Pirandola 2017 (PLOB) [RECALLED] 的 teleportation stretching 技术把 adaptive LOCC protocol 通过 resource state + teleportation simulation 转换为 non-adaptive form.
 
 **Why this may not directly apply**:
 - Teleportation stretching 假设 **cooperative 3-party**: sender + receiver + channel environment (Eve purification)
@@ -67,9 +67,9 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi, n) \leq R_\varepsilon^{\mathcal{A}
 
 **Conclusion**: Approach B 面 circularity — teleportation stretching assumes the reduction already done.
 
-### 2.3 Approach C — Kamin 2025 GEAT entropy accumulation
+### 2.3 Approach C — Kamin 2025 / Metger 2024 GEAT entropy accumulation [RECALLED]
 
-**Idea**: GEAT (Dupuis-Fawzi-Renner + Metger) bounds smooth min-entropy for n-shot adaptive quantum protocol via per-round conditional entropy.
+**Idea**: GEAT (Dupuis-Fawzi-Renner + Metger 2024 [RECALLED]) bounds smooth min-entropy for n-shot adaptive quantum protocol via per-round conditional entropy. Kamin 2025 [RECALLED] applies GEAT to MDI-QKD finite-key analysis.
 
 **What GEAT handles [RECALLED]**:
 - i.i.d. channel with adaptive LOCC — handled well (original EAT / GEAT design)
@@ -94,9 +94,9 @@ $$R_\varepsilon^{\mathcal{A}_\text{umr}}(\Pi, n) \leq R_\varepsilon^{\mathcal{A}
 
 **Issue**: 即便 purify Eve 可 collapse adaptivity 到 initial state, **Eve 仍可 choose strategy to minimize Alice-Bob rate**. "Worst-case" 不是 "fixed channel" in the amortized sense; amortized framework 要求 channel **每轮相同**.
 
-**Partial progress**: 可能 reduce to "worst-case single-round $\tilde{\mathcal{M}}$ over Eve strategies" — $\sup_\Pi R \leq \sup_M E_R(\tilde{\mathcal{M}}_M)$ where $\tilde{\mathcal{M}}_M$ is Charlie BSM choice $M$. But this 不是 "fixed channel amortization".
+**Why "partial progress" claim fails**: 试图写 $\sup_\Pi R \leq \sup_M E_R(\tilde{\mathcal{M}}_M)$ (worst-case over BSM choice). 但这步跳跃需要一个定理把 **adaptive strategy family** reduce to **fixed single-round channel** — 正是 β.G5 所缺的. 纯化 Eve 的 initial state 只给出 adversarial combs 被 Eve initial memory 参数化，**不**说明每轮 channel functionally identical，也**不**给出 amortized bound 的合法推导. 所以该"简化"本质是 β.G5 gap 的另一形式，不是部分解决。
 
-**Conclusion**: Approach D 提供 **conservative bound** (worst-case single-round) without proper amortization. 不 give standard $n \cdot E_R$ form.
+**Conclusion**: Approach D **fails** — worst-case purification does not yield a fixed-channel amortization theorem. 不 give standard $n \cdot E_R$ form. 没有"partial progress"可言。
 
 ---
 
@@ -106,7 +106,7 @@ All 4 approaches 遇到 unique obstacle:
 - A: Prop 19.2 scope 不 cover adversarial comb
 - B: Teleportation stretching circular / assume result
 - C: GEAT may not cover adversarial Charlie (user PDF check needed)
-- D: Worst-case collapse doesn't give standard amortization
+- D: Worst-case purification does not yield fixed-channel amortization (adaptive strategy family 参数化 ≠ fixed channel)
 
 **β.G5 remains OPEN**. 最有希望的 path: **Approach C (GEAT adaptation)** — 用户直读 Kamin 2025 / Metger 2024 PDF 看 framework 是否可扩展 umr adversary class.
 
@@ -130,4 +130,5 @@ All 4 approaches 遇到 unique obstacle:
 
 ## 4. Changelog
 
+- **v0.2** (2026-04-23, R1 FAIL fix): Approach B + C header [RECALLED] tags added at first mention; Approach D "partial progress" claim removed — purification does not yield fixed-channel amortization theorem (same gap in different form).
 - **v0.1** (2026-04-23, user 授权 draft+Codex iterate): 4 approaches (Prop 19.2, Teleportation stretching, GEAT adaptation, Purify Eve worst-case) all fail with different obstacles. β.G5 remains OPEN. Kamin 2025 GEAT most promising path per Approach C.
