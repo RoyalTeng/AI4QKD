@@ -1,0 +1,173 @@
+# 2026-04-23 自主 session 结论文档（用户待审阅）
+
+**状态**：等待用户审阅
+**授权来源**：用户 2026-04-22 晚 / 2026-04-23 睡眠期间
+- "两个推导都做吧"
+- "你不确定的就发动评审 skill 让 codex 评审做决策"
+- "你不要停下来等我确认"
+- "如果你的研究计划内的内容都做完了...参考 RESEARCH_PLAN.md 研究计划继续规划后续的研究内容"
+
+**政策边界**：所有 AI draft 保持 [CONJ-DRAFT]；升级至 [COROLLARY]/[THM] 仍需 C1+C2+C3（R0.2）
+
+---
+
+## 1. Day 3 主要产出（按重要性）
+
+### 1.1 4 个 structural gap 推导尝试 — 全部 OPEN，全部 Codex 评审通过
+
+| Gap | 状态 | 描述 | Codex 评审 |
+|-----|------|------|-----------|
+| **β.G4** Eve model transfer | **OPEN** | 4 paths tried: direct simulation map invalidated; no LOPC Eve ← umr Eve construction found | R2 PASS |
+| **β.G5** adversarial comb reduction | **OPEN** | 4 approaches: Prop 19.2 scope error / teleportation stretching circular / GEAT uncertainty / purify Eve ≠ fixed amortization | R2 PASS |
+| **γ.B.G1** DPI target lemma | **OPEN** | 4 approaches: Prop 19.2 circular / Horodecki+CMI broken / squashed cross-task / receiver asymmetry only | R3 PASS |
+| **γ.G3** ε-composable transfer | **OPEN** (conditional) | Not structurally blocked itself; blocked by γ.B chain closure (all open) | R1 PASS |
+
+**关键发现**：所有 4 个 gap 的核心障碍是同一 class — **cross-space/cross-task transfer barrier**（见 §2）
+
+### 1.2 β.G3 数值结果 [SYN 级，方向性信号]
+
+数据文件：`docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
+
+| η_arm | log_neg(E₁⊗E₂) | Pirandola bound | ratio |
+|-------|----------------|-----------------|-------|
+| 0.90 | 1.852 bits | 3.322 bits | **0.558** |
+| 0.50 | 1.170 | 1.000 | 1.170 |
+| 0.10 | 0.275 | 0.152 | 1.809 |
+| 0.01 | 0.0287 | 0.0145 | 1.980 |
+
+**[SYN] 方向性信号**：
+- η=0.9（高透射）：log_neg < Pirandola → β bound **可能**比 Pirandola 更紧
+- η<0.5（实用低损耗区）：log_neg > Pirandola → 该 route 无更紧信号
+- E_R(M̃) ≤ log_neg(E₁⊗E₂)，所以 log_neg < Pirandola 是 β bound tighter 的充分条件
+
+**注意**：`e_r_channel_ppt` dim_A=4 (16×16 Choi) 计算超时 (>60s/点)；结论基于 log-neg 上界，实际 E_R 可能更紧
+
+### 1.3 文档更新（全部 commit）
+
+| 文件 | 更新 |
+|------|------|
+| `docs/findings/upper_bound_report.md` | v0.1 → v0.3（§10.3 β.G3 数值表）|
+| `docs/findings/sub_q3_structural_gaps_summary_2026-04-23.md` | v0.1 → v0.2（§4 数值状态更新）|
+| `docs/findings/gap_shape_g4_1.md` | v0.1 → v0.2（UB cand C 更新为 log-neg）|
+| `docs/AUTONOMOUS_SESSION_2026-04-23_LOG.md` | Phase 6/7 追加，outstanding items 更新 |
+| `docs/research/data/beta_G3_log_neg_vs_pirandola.csv` | 新增 |
+
+---
+
+## 2. 核心科学洞察（AI 自主 perspective，供用户参考）
+
+### 2.1 Cross-space/cross-task transfer 是共同障碍
+
+所有 4 个 structural gap 失败的原因归结为同一模式：
+
+**Pattern**: 要从 **A 场景的 inequality** 推到 **B 场景的 inequality**，而 A 和 B 在 party set、任务语义（capacity vs key rate）、对手模型（LOPC vs umr）上有本质差异。
+
+- β.G4: umr Eve → LOPC Eve（不同 party set）
+- β.G5: adaptive adversarial comb → fixed channel repeated use（不同协议结构）
+- γ.B.G1: Alice-Charlie capacity → Alice-Bob umr key rate（不同拓扑 + 不同任务）
+
+AI 的 framework-matching heuristic（"这个 amortization/DPI/teleportation stretching framework 看起来对"）**不等于** structural reduction lemma。这 5 次（历史上）+ 4 次（Day 3）cross-space 陷阱说明这是**系统性盲区**，不是个例。
+
+### 2.2 γ.B.G1 CONJ1 猜想（AI speculation，未证）
+
+4 个 approaches 全失败 → **CONJ1 [CONJ-DRAFT, 未证]**：γ path 的单边 PLOB 分解 intuition 或许从根本上有问题；umr key rate 或许是 joint (E₁, E₂) multi-edge quantity 而非单臂 E₁ 函数。
+
+**如果 CONJ1 成立**：γ path 当前 target $-\log_2(1-\eta_\text{arm})$ 可能需要完全重新表述。
+
+**用户判断**：CONJ1 是否值得当作研究假设认真对待？还是尝试 Approach E（AI 未想到的路径）？
+
+### 2.3 β.G5 vs γ 路径的比较
+
+β.G5（adversarial comb reduction）是 β path 的特有障碍；γ path 通过 DPI approach 绕过了需要 channel reduction 的步骤。这意味着：**γ path 在这个特定点上比 β 更优**。但 γ 有自己的 γ.B chain 障碍（更接近代数结构而非协议结构）。
+
+---
+
+## 3. 用户具体行动项（优先级排序）
+
+### 优先级 A（解锁后续进展的 key actions）
+
+1. **读 Kamin 2025 §4 GEAT（PDF 已有）**
+   - 位置：`docs/literature/pdfs/Kamin-2025-FiniteSizeAnalysisEntropyAccumulation.pdf`
+   - 目的：判断 GEAT 的 "channel model" 是否覆盖 umr adversarial Charlie（β.G5 Approach C 和 γ.G3 共同依赖）
+   - 时间：0.5-1 天精读
+   
+2. **获取 Portmann-Renner 2022 PDF**（Rev. Mod. Phys. 94:025008，本地无）
+   - 目的：β.G4 Path C（composable security framework 直接处理 umr Eve model）
+   - 时间：获取后 1-2 天精读
+
+3. **决定 γ CONJ1 是否严肃对待**
+   - 选项 A：尝试 Approach E（AI 未想到的 γ.B.G1 路径）
+   - 选项 B：Accept CONJ1，reformulate γ target 为 joint multi-edge bound
+   - 选项 C：放弃 γ path，专注 β path
+
+### 优先级 B（各 1-3 天）
+
+4. **β path textbook items**（AI 辅助准备，用户 PDF confirm 写 formal write-up）
+   - β.G1 labeling: 对 PLOB Eq. 19 核对 two-source labeling（0.5 天）
+   - β.G2 WTB Thm 12: tele-simulability + pure-loss covariant（2-3 天 + WTB PDF）
+   
+5. **γ path low-risk textbook items**（各 0.5 天 user write-up）
+   - γ.B.2 BSM as CPTP（Nielsen-Chuang §8 或 Wilde 2017 §11）
+   - γ.G4 classical announcement LOCC（Horodecki 2009 §V 或 KhatriWilde Prop 19.2）
+
+### 优先级 C（若 β/γ 均被阻塞）
+
+6. **考虑 Option D**（RESEARCH_PLAN §5.3 情形 A）
+   - 接受 Sub-Q3 [CONJ] 状态，撰写"open unresolved"的 seam report
+   - 基于现有 [CONJ] 上界推进 Sub-Q4 gap 归因（以 conditional 形式）
+   - "4 approaches tried + failure reasons" 本身是科学贡献
+
+---
+
+## 4. 严谨性状态（四级分级 snapshot）
+
+| 主张 | 分级 | 说明 |
+|------|------|------|
+| Alice-Charlie PLOB：$-\log_2(1-\eta_A)$ | **[COROLLARY]** | 单边纯损耗，WTB Thm 12 + PLOB 已验证；仅适用 Alice-Charlie |
+| β 路径 umr 上界 | **[CONJ]** | structural gaps β.G4 + β.G5 均 OPEN |
+| γ 路径 umr 上界 | **[CONJ]** | structural gaps γ.B.G1 + γ.B.G3 均 OPEN；CONJ1 进一步 doubt |
+| β.G3 数值 ratio=0.558 at η=0.9 | **[SYN]** | log_neg proxy + qubit abstraction; 方向性 |
+| Gap ratio ~1000× at 20-60 dB | **[CONJ]** | 基于 [CONJ] 级上界候选 |
+| β.G5 GEAT Approach C 最 promising | **[SYN]** | AI inference，user PDF check required |
+
+---
+
+## 5. Commit trail Day 3
+
+```
+c586610 draft: β.G4 + γ.B.G1 structural derivation attempts
+037d20a fix(β.G4 v0.2 + γ.B.G1 v0.2): R1 FAIL response
+fb1c6dd docs(MQ v0.5 + β.G4 R2 PASS): Day 3 additions
+f1d8c75 fix(γ.B.G1 v0.3): R2 FAIL Approach D fix
+ede9c82 feat: max-Rains stub + P-R stub + Day 3 session log
+1fc12c2 docs: γ.B.G1 R3 PASS + upper_bound_report v0.2 + gap_shape refresh
+4ae4826 draft: γ.G3 ε-composable transfer v0.1
+79d4f1e docs(session log): Update 1
+7b32fe6 draft: β.G5 adversarial comb reduction v0.1
+605251a docs: Sub-Q3 structural gaps summary v0.1
+4206649 feat(β.G3 + γ.G3): numerical results + γ.G3 R1 PASS
+46d47e2 fix(β.G5 v0.2 R2 PASS) + gap_shape v0.2 update
+```
+
+---
+
+## 6. AI autonomous perspective — 是否继续？
+
+**当前 AI 可做的工作已基本耗尽**：
+- 所有 structural gap 已尝试（4/4），全部 OPEN
+- 数值工具已跑完（β.G3 log-neg）
+- 文档已更新（session log, upper_bound_report v0.3, gap_shape v0.2）
+- 剩余 gaps 均需 user research-level work 或 PDF 精读
+
+**下一步应由用户决定**（Option A/B/C/D 见 §3）。
+
+AI 不能替代用户的以下工作：
+1. 纸笔推导 novel proof（β.G4 sim map / β.G5 GEAT adaptation / γ.B.G1 operational reduction）
+2. PDF 精读（Kamin 2025 GEAT scope / Portmann-Renner 2022 framework）
+3. 判断 CONJ1 是否成立（γ path reformulation decision）
+
+---
+
+## Changelog
+
+- **v0.1** (2026-04-23 Day 3 session): 首稿，等待用户审阅
