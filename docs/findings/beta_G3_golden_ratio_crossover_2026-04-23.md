@@ -1,6 +1,6 @@
 # β.G3 数值发现：log-negativity vs Pirandola 交叉点 = 黄金比例
 
-**版本**: v0.2 [SYN 级，数值观测，解析证明待用户验证]
+**版本**: v0.3 [SYN 级，含完整解析推导候选；用户纸笔复核可升至 [COROLLARY]]
 **日期**: 2026-04-23 autonomous session
 **数据**: `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
 **严谨性**: 全文 [SYN] 级（数值结果 + 解析观测，非定理证明）
@@ -9,10 +9,12 @@
 
 ## 0. 严谨性声明
 
-- 本 memo 为数值观测 + 解析猜想，**非形式化定理证明**
-- 数值结果基于 qubit 幅度阻尼（非 bosonic 纯损耗），可能在连续变量情形有所不同
-- **[CONJ-DRAFT]** 对解析部分；数值观测本身 [SYN]
-- 升级至 [COROLLARY] 需 C1+C2+C3 独立验证
+- 数值观测（§1）：[SYN]（qubit 幅度阻尼，MOSEK SDP，多点精确验证）
+- 解析推导（§2）：[SYN，待用户纸笔复核]（步骤简单，5-15 分钟可验证）
+  - log_neg(E_AD(η)) = log₂(1+η)：特征值计算，每步可查
+  - 交叉点 η_c = 1/φ：二次方程根，精确
+- 数值结果基于 **qubit 幅度阻尼**（非 bosonic 纯损耗），bosonic 情形另需计算
+- **升级至 [COROLLARY]** 需 C1+C2+C3（用户纸笔复核 = C1(b) 候选 + C2 签字 + C3 dev-reviewer PASS）
 
 ---
 
@@ -90,33 +92,63 @@ $$\text{log\_neg}(\mathcal{E}_1 \otimes \mathcal{E}_2)|_{\eta=1/\varphi} = \text
 
 ---
 
-## 2. 解析结构 [CONJ-DRAFT]
+## 2. 解析推导 [SYN，用户纸笔复核可升至 COROLLARY]
 
-### 2.1 黄金比例与幅度阻尼
+### 2.1 精确公式：log_neg(E_AD(η)) = log₂(1+η)（所有 η）
 
-**[CONJ-DRAFT]** 幅度阻尼信道 E_AD 在 η = 1/φ 时的 Choi 态偏转置的迹范数恰为 φ：
+**数值验证**（7 个点，最大误差 6.66e-16 = 机器精度）：
 
-$$\|\rho_\text{Choi}^{T_2}\|_1 = \varphi \quad \text{at } \eta = 1/\varphi \quad \text{[CONJ-DRAFT]}$$
+| η | ||ρ^{T_B}||₁ | 1+η | 误差 |
+|---|-------------|-----|------|
+| 0.10 | 1.1000000000 | 1.1 | 4.44e-16 |
+| 0.50 | 1.5000000000 | 1.5 | 2.22e-16 |
+| **1/φ** | **1.6180339887** | **φ** | 4.44e-16 |
+| 0.90 | 1.9000000000 | 1.9 | 4.44e-16 |
 
-这直接给出 log_neg(E₁) = log₂(φ)，从而 log_neg(E₁⊗E₂) = 2log₂(φ) = Pirandola(1/φ)。
+**解析推导候选** [SYN，待用户纸笔复核]：
 
-**推导方向**（用户验证）：
+1. **Choi 态**（归一化，基 {|00⟩,|01⟩,|10⟩,|11⟩}）：
 
-Choi 态偏转置的负特征值为（对 2×2 块）：
-$$\lambda_- = \frac{1-\eta}{4} - \sqrt{\frac{(1-\eta)^2}{16} + \frac{\eta}{4}}$$
+$$\rho_{AD}(\eta) = \frac{1}{2}\begin{pmatrix}1&0&0&\sqrt\eta\\0&0&0&0\\0&0&1-\eta&0\\\sqrt\eta&0&0&\eta\end{pmatrix}$$
 
-迹范数：$\|\rho^{T_2}\|_1 = 1 + 2|\lambda_-|$
+2. **偏转置** T_B（对 B 子系统）：$\rho^{T_B}_{(i,j),(k,l)} = \rho_{(i,l),(k,j)}$
 
-在 η = 1/φ（即 1-η = 1/φ²）时，若可验证 $\|\rho^{T_2}\|_1 = \varphi$，则以上关系成立。
+$$\rho^{T_B} = \frac{1}{2}\begin{pmatrix}1&0&0&0\\0&0&\sqrt\eta&0\\0&\sqrt\eta&1-\eta&0\\0&0&0&\eta\end{pmatrix}$$
 
-**黄金比例性质** (验证辅助)：
-- φ² = φ + 1
-- 1/φ = φ - 1
-- 1/φ² = 1 - 1/φ = 2 - φ
+块对角结构：
+- 块 A（{|00⟩,|11⟩}）：$\text{diag}(1/2, \eta/2)$，特征值均正
+- 块 B（{|01⟩,|10⟩}）：$\begin{pmatrix}0&\sqrt\eta/2\\\sqrt\eta/2&(1-\eta)/2\end{pmatrix}$
 
-### 2.2 为什么黄金比例出现？
+3. **块 B 特征值**（解 λ² - λ(1-η)/2 - η/4 = 0）：
 
-**数值猜想 [CONJ-DRAFT]**：幅度阻尼信道的对数负性是 η 的函数，在 η = 1/φ 时它与 -log₂(1-η) 相等。这一交叉点由方程 f(η) = g(η) 确定，其中两条曲线的斜率关系可能引入黄金比例的不动点特性（φ² = φ + 1）。
+$$\Delta = \frac{(1-\eta)^2}{4} + \eta = \frac{(1+\eta)^2}{4}$$
+$$\lambda_{\pm} = \frac{(1-\eta) \pm (1+\eta)}{4} \implies \lambda_+ = \frac{1}{2},\quad \lambda_- = -\frac{\eta}{2}$$
+
+4. **迹范数**（4 个特征值 {1/2, η/2, 1/2, -η/2}）：
+
+$$\|\rho^{T_B}\|_1 = \frac{1}{2} + \frac{\eta}{2} + \frac{1}{2} + \frac{\eta}{2} = 1 + \eta$$
+
+5. **对数负性**：
+
+$$\boxed{\log\text{-neg}(\mathcal{E}_{AD}(\eta)) = \log_2(1+\eta) \text{ for all } \eta \in [0,1]}$$
+
+**用户验证**：可用 5 分钟纸笔验证步骤 1-5。升级为 [COROLLARY] 需 C1+C2+C3（R0.2）。
+
+---
+
+### 2.2 黄金比例出现的精确原因
+
+交叉点方程：$2\log_2(1+\eta) = -\log_2(1-\eta)$，即：
+
+$$(1+\eta)^2(1-\eta) = 1$$
+
+展开：$(1+\eta)^2(1-\eta) = 1 + \eta - \eta^2 - \eta^3 = 1$
+
+$$\Rightarrow \eta(1 - \eta - \eta^2) = 0 \Rightarrow \eta^2 + \eta - 1 = 0$$
+
+$$\eta_c = \frac{-1+\sqrt{5}}{2} = \frac{1}{\varphi} \approx 0.6180 \quad \blacksquare$$
+
+**物理意义**：黄金比例出现因为 $1/\varphi$ 满足 $1/\varphi^2 + 1/\varphi = 1$（即 $\eta^2+\eta=1$），这正是 $(1+\eta)^2=1/(1-\eta)$ 的正实数解。
 
 ---
 
@@ -170,15 +202,32 @@ $$\lambda_- = \frac{1-\eta}{4} - \sqrt{\frac{(1-\eta)^2}{16} + \frac{\eta}{4}}$$
 
 ## 5. 下一步建议
 
-1. **解析证明 [CONJ-DRAFT 升级候选]**：用户验证 $\|\rho_\text{Choi}^{T_2}\|_1 = \varphi$ 在 η = 1/φ 处成立（纸笔计算，半天以内）
-2. **E_R^PPT 加性验证**：若有大内存 MOSEK 环境，运行 16×16 Choi 的 e_r_ppt(dim_A=4, dim_B=4) 在 η=0.9 处（>60s），核实 E_R^PPT(E₁⊗E₂) ≈ 2×E_R^PPT(E₁) = 1.518 bits
-3. **E_R 单臂完整 η 网格**：已完成（见 §1.4 表格）；E_R/PLOB ∈ [0.20, 0.45] 全范围
-4. **连续变量类比**：bosonic 纯损耗信道的黄金比例交叉是否也成立？需要 bosonic 对数负性计算
-5. **E_R^PPT 单调性验证**：从表格观测，E_R/PLOB 随 η 增大而单调递减（η=0.95 时 0.198，η=0.01 时 0.451）。若严格单调且总 < 1，则 E_R^PPT < PLOB 对所有 η 可能有解析证明
+1. **[最高优先级] 用户纸笔复核 log-neg 公式**（§2 推导，5-15 分钟）
+   - 验证 Choi 态矩阵形式（步骤 1）
+   - 验证偏转置块结构（步骤 2）
+   - 验证块 B 特征值 λ₋ = -η/2（步骤 3）
+   - 验证迹范数 = 1+η（步骤 4）
+   - 若通过 → C1(b)+C2+C3 候选，可升 [COROLLARY]
+
+2. **E_R^PPT 加性验证**（若有大内存 MOSEK 环境）
+   - 运行：`e_r_ppt(kron(rho1, rho1), dim_A=4, dim_B=4)` at η=0.9
+   - 期望：≈ 2×0.759 = 1.518 bits（若加性）
+   - 意义：若加性，则 E_R^PPT < Pirandola for ALL η（实用 QKD 范围也成立）
+
+3. **E_R 单臂完整 η 网格**：已完成（§1.4 表格）；E_R/PLOB ∈ [0.20, 0.45]
+
+4. **连续变量类比**：bosonic 纯损耗信道 E_bos(η) 的 log_neg 是否也 = log₂(1+η)？
+   - 若不同（bosonic dim=∞），则 qubit 结果无法直接移植
+   - 若相同，η_c = 1/φ 可能在 bosonic 情形同样成立
+
+5. **E_R^PPT < PLOB 的解析上界**：由于 log_neg = log₂(1+η) 现已精确，
+   E_R^PPT < log_neg = log₂(1+η) < PLOB = -log₂(1-η) 对 η∈(0,1) 显然成立（因 (1+η) < 1/(1-η) iff η>0）
+   → 单臂 E_R^PPT < PLOB 已有解析保证（via log_neg 中间量）
 
 ---
 
 ## Changelog
 
+- **v0.3** (2026-04-23): §2 改写为完整解析推导候选：||ρ^{T_B}||₁ = 1+η 对所有 η 精确成立（机器精度验证 + 特征值推导步骤）；交叉点方程精确证明 η_c = 1/φ（二次方程根）；版本从 [CONJ-DRAFT] 升至 [SYN，待用户纸笔复核可升 COROLLARY]
 - **v0.2** (2026-04-23): 新增 §1.4 单臂 E_R^PPT 全 η 网格（MOSEK SDP，4×4 Choi）；新增 §1.5 加性假设下的估计；更新 §3.2 实用 QKD 范围结论（E_R^PPT 在所有 η 均低于 Pirandola，若加性）；更新下一步建议
 - **v0.1** (2026-04-23): 首稿，数值观测 + 解析猜想；η_c = 1/φ 精确（数值验证 ratio = 1.000000）
