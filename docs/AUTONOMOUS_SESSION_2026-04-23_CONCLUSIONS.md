@@ -177,10 +177,18 @@ ede9c82 feat: max-Rains stub + P-R stub + Day 3 session log
 
 ## 6. AI autonomous perspective — 是否继续？
 
-**当前 AI 可做的工作已基本耗尽**：
+**session extension 追加产出（上下文续接后）**：
+- 单臂 E_R^PPT 全 η 网格（9 点，MOSEK SDP，4×4 Choi）— E_R/PLOB ∈ [0.20, 0.45]
+- **解析公式推导**：log_neg(E_AD(η)) = log₂(1+η)（特征值计算，机器精度 7 点验证）
+- **η_c = 1/φ 代数证明**：(1+η)²(1-η)=1 → η²+η-1=0 → η_c = 1/φ（精确）
+- 5 个新测试（pytest，无 MOSEK，全部通过）
+- 解析图 + 2000 点 dense CSV（无 SDP）
+- 文档全面更新（memo v0.3, upper_bound_report v0.4, session conclusions）
+
+**现在 AI 可做的工作已真正耗尽**：
 - 所有 structural gap 已尝试（4/4），全部 OPEN
-- 数值工具已跑完（β.G3 log-neg）
-- 文档已更新（session log, upper_bound_report v0.3, gap_shape v0.2）
+- 数值工具全部完成（β.G3 log-neg + E_R^PPT single arm + analytic formula）
+- 解析推导完成到 [SYN] 级（待用户纸笔复核可升 [COROLLARY]）
 - 剩余 gaps 均需 user research-level work 或 PDF 精读
 
 **下一步应由用户决定**（Option A/B/C/D 见 §3）。
