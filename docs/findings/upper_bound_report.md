@@ -380,6 +380,62 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
 
 ---
 
+## 10. Day 3 (2026-04-23) 增补 — structural derivation attempts
+
+### 10.1 β + γ detailed drafts FINALIZED
+
+两份 detailed drafts (commit 7813810) 经 Codex 多轮 review 后 FINALIZED at **[CONJ-DRAFT, open-only]**:
+
+- [umr_path_beta_v0_4_detailed_draft.md](../proofs/umr_path_beta_v0_4_detailed_draft.md) — R4 PASS
+- [umr_path_gamma_v0_6_detailed_draft.md](../proofs/umr_path_gamma_v0_6_detailed_draft.md) — R2 PASS
+
+两份均:
+- 所有 structural gaps (β.G2/G4/G5, γ.B.G1/G3, γ.G3) **保持 OPEN**
+- 使用 5 级 citation taxonomy (VERIFIED / MEMO-LEVEL QUOTE / SUMMARY / INFERENCE / RECALLED)
+- §9 user work plan 明确分 **PDF verification** (textbook-stable) vs **novel proof required** (structural)
+
+### 10.2 β.G4 + γ.B.G1 derivation attempts
+
+**β.G4 (Eve model transfer)** [commits c586610 → 037d20a → fb1c6dd, R2 PASS]:
+- §2.3 direct simulation map (LOPC Eve ← umr Eve from channel environments) **invalidated**
+- §2.5 LOPC+gift heuristic bridge **不 establish rate inequality**
+- Paths A/B/C enumerated (effective channel extension / amortized β.G5 / Portmann-Renner C1 pathway)
+- **β.G4 remains OPEN**, no AI simulation reduction found
+
+**γ.B.G1 (DPI target lemma)** [commits c586610 → 037d20a → f1d8c75, R3 pending]:
+- 4 approaches fail: Prop 19.2 circular / Horodecki+CMI broken / squashed cross-task / broadcast receiver asymmetry
+- **Speculative conjecture CONJ1 [CONJ-DRAFT, NOT established]**: γ path 单边 PLOB 分解 intuition 可能 structurally 错; key rate 或许 joint $(\mathcal{E}_1, \mathcal{E}_2)$ multi-edge quantity — **未 proven**
+- **γ.B.G1 remains OPEN**; agnostic on Q1 impact
+
+### 10.3 Numerical scaffolding updates
+
+- **β.G3 E_R SDP**: qubit amp-damping effective channel 16×16 Choi state SDP via MOSEK running (task nohup PID 20203, 1h+); output 待
+- **max-Rains Wang-Duan SDP**: AI draft 2 variants both failed validation (Identity → 0 not 1; full depolar → -2); converted to `NotImplementedError` stub pointing user to PDF verify
+- **Gap shape G4.1** (`scripts/gap_shape_analysis.py`) 已重跑, `gap_shape.csv` + figures refreshed
+
+### 10.4 Portmann-Renner 2022 stub
+
+[PortmannRenner-2022.md stub] — PDF **not** in local `docs/literature/pdfs/`. β.G4 Path C 依赖 P-R 2022 framework; user action: obtain PDF (APS or arXiv), put at standard filename. AI 不基于 [RECALLED] 推 P-R.
+
+### 10.5 Net status update on Sub-Q3
+
+**Sub-Q3 上界 status** (Day 3 agnostic snapshot):
+- α/β/γ 三路径仍 [CONJ] 全部 open
+- β + γ detailed drafts 明确 structural gaps 需 **user research-level proof**
+- β.G4 + γ.B.G1 attempts 提供 concrete rationale for structural difficulty (not just "unknown")
+- Numerical scaffolding (gap_shape + β.G3 SDP + max-Rains stub) 继续 build, 非 proof replacement
+
+**未 shifted**:
+- Sub-Q3 [THM] 级 answer 仍 pending C1+C2+C3 升级路径
+- PROSPECTUS Sub-Q3 的实质结果**不** closed
+
+### 10.6 Day 3 session log
+
+[docs/AUTONOMOUS_SESSION_2026-04-23_LOG.md](../AUTONOMOUS_SESSION_2026-04-23_LOG.md) — 完整决策 + 迭代 + Codex verdict trail for user audit.
+
+---
+
 ## Changelog
 
+- **v0.2** (2026-04-23 Day 3 autonomous session): §10 新增 Day 3 增补 — β + γ drafts FINALIZED, β.G4 + γ.B.G1 attempts both OPEN, numerical updates, P-R stub
 - **v0.1**（2026-04-21 autonomous session）：首稿 25 页等价，整合 U3.1-U3.7 + G4.1 工作。30-50 页完整版留待后续基于理论 lemma 升级（路径 γ 形式化完成后）扩展。
