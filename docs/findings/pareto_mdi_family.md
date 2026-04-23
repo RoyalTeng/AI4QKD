@@ -81,6 +81,46 @@ Pareto 观察：
 
 ---
 
+## 3b. 上界对比 (2026-04-24 增补 [SYN/CONJ])
+
+把 MDI Pareto R_LB 与 Type B (untrusted relay) 上界候选对比。
+
+### 3b.1 上界候选（Type B 拓扑）
+
+| 候选 | 公式 | 严谨性 | 备注 |
+|------|------|--------|------|
+| Pirandola N=1 | `-log₂(1 - √η_total)` | [CONJ for umr] | trusted-relay chain (Pirandola 2019 Eq. 9 N=1) |
+| log_neg AD per-arm | `2·log₂(1+η_arm)` (additive) | [SYN] | qubit AD abstraction; needs cross-task lemma for umr |
+| E_R^PPT AD per-arm SDP | numerical | [SYN/CONJ] | AD γ=1-η_arm |
+
+对称 MDI 设 η_arm² = η_total，η_arm = 10^(-loss_dB/20)。
+
+### 3b.2 数值对比 (Ma-Razavi 默认参数下)
+
+| loss (dB) | MDI rate (LB) | Pirandola (UB cand) | log_neg (UB cand) | UB/LB ratio (Pir) |
+|-----------|---------------|---------------------|-------------------|-------------------|
+| 0 | 1.90e-3 | ∞ (η=1 singular) | 2.0 (= 2 bits/use) | — |
+| 10 | 1.12e-3 | 0.5484 (η_arm=0.316) | 1.776 | ~490 |
+| 20 | 3.85e-4 | 0.1520 (η_arm=0.1) | 1.671 | ~395 |
+| 30 | 8.02e-5 | 0.04636 | 1.598 | ~580 |
+| 40 | 9.21e-6 | 0.01450 | 1.546 | ~1570 |
+| 50 | 5.80e-7 | 4.55e-3 | 1.506 | ~7800 |
+| 56 | ~1e-10 | 1.43e-3 | 1.479 | ~1e7 |
+
+**关键观察**:
+- **MDI Pareto LB 远低于 Pirandola UB 候选** (~400-1500× gap 在工作区)
+- log_neg cand UB 量级为 1.5 bits, 与 MDI 真实 rate (1e-3) 差 ~1500×, 比 Pirandola 更松
+- MDI rate 在 loss > 50 dB 急剧下降, 真 K_D 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
+
+### 3b.3 与 Sub-Q3 的连接
+
+MDI 是 PROSPECTUS §3.1 H1-H3 的核心 Type B 协议。Pirandola UB 候选是 Sub-Q3 当前已知 [CONJ] 上界（路径 β/γ 都 OPEN）；要严格升 [THM] 需:
+- C1: 跨家族独立验证 (β.G4 Eve model transfer + β.G5 amortization, 用户 PDF 精读)
+- C2: 用户签字
+- C3: dev-reviewer PASS
+
+详见 `docs/findings/upper_bound_report.md` v0.5 §3 + `docs/findings/gap_shape_g4_1.md` v0.3。
+
 ## 4. 验收对照表
 
 | RESEARCH_PLAN §3.2 验收 | 状态 |
@@ -102,4 +142,5 @@ Pareto 观察：
 
 ## 6. Changelog
 
+- **v0.2** (2026-04-24)：§3b 上界对比追加 — Pirandola N=1 (Type B) + log_neg AD per-arm; UB/LB ratio 在工作区 400-1500× (gap 主导自 MDI 噪声参数, 非 channel 极限)
 - **v0.1** (2026-04-21)：首版，A.1 MDI family sweep + 2581 点 Pareto + 3 图

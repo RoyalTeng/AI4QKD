@@ -94,6 +94,41 @@
 
 ---
 
+## 3b. 上界对比 (2026-04-24 增补 [SYN/CONJ])
+
+TF/PM-QKD 是 Type B (untrusted relay) bosonic-asymptotic 协议族。Sub-Q3 [CONJ] 上界候选:
+
+| 候选 | 公式 | 严谨性 | 来源 |
+|------|------|--------|------|
+| Pirandola N=1 | `-log₂(1 - √η_total)` | [CONJ for umr] | Pirandola 2019 Eq. 9 |
+| PLOB direct (ref) | `-log₂(1 - η_total)` | [THM for direct, NOT umr] | PLOB 2017 |
+
+PM-QKD/TF-QKD 设计 R ~ √η_total，与 Pirandola 候选 -log₂(1-√η_total) 在大 loss 下的 √η scaling 一致。
+
+### 3b.1 数值对比 (默认参数 η_det=0.145, M=16, e_δ=0.015)
+
+| loss (dB) | TF rate (LB) | Pirandola UB cand | UB/LB ratio |
+|-----------|-------------|--------------------|-------------|
+| 10 | 2.50e-4 | 0.5484 | ~2200 |
+| 20 | 7.78e-5 | 0.1520 | ~1950 |
+| 40 | 7.67e-6 | 0.0145 | ~1890 |
+| 60 | 6.96e-7 | 1.45e-3 | ~2080 |
+| 80 | 7.20e-8 | 1.45e-4 | ~960 |
+
+**Log-log slope 分析**：
+- TF LB slope: -0.5 (√η scaling, [THM])
+- Pirandola UB cand slope: -0.5 in large-loss regime (also √η)
+
+→ **TF Pareto 与 Pirandola 候选 UB 同 √η scaling**，差距 ~2000× 来自 prefactor 而非 scaling exponent。详见 `docs/findings/gap_shape_g4_1.md` v0.3。
+
+### 3b.2 Bosonic 范围下的紧度评估
+
+PROSPECTUS interim verdict v2 (FINDINGS) 指出 √η 是放宽 bosonic-asymptotic 设定下最可能的紧 scaling。本族 Pareto 与 Pirandola 候选**同斜率**，是该 [SYN] 结论的实证支持。
+
+升 [THM] 仍需 Sub-Q3 路径 β/γ 完成 (R0.2 三方验证)，详见 `docs/findings/upper_bound_report.md` v0.5 §3。
+
+---
+
 ## 4. 验收对照
 
 | RESEARCH_PLAN §3.2 验收 | 状态 |
@@ -114,4 +149,5 @@
 
 ## 6. Changelog
 
+- **v0.2** (2026-04-24)：§3b 上界对比追加 — Pirandola N=1 Type B; TF Pareto 与 Pirandola 候选同 √η scaling, prefactor gap ~2000×
 - **v0.1** (2026-04-21)：首版，A.1 TF family sweep 2831 pts + 4 图
