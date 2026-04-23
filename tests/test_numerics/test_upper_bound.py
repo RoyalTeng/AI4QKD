@@ -502,10 +502,13 @@ class TestAnalyticLogNegFormulas:
     def test_plenio_inequality_log_neg_geq_K_D(self):
         """Plenio 2005: log_neg(ρ) ≥ E_R(ρ) ≥ K_D(ρ).
 
-        Numerical sanity: for all 3 channels with known K_D / E_R closed forms,
-        verify log_neg ≥ K_D / E_R on a dense grid. Equality at boundaries OK.
+        Numerical sanity: for all 4 channel families with known K_D / E_R
+        closed forms (or single-letter formula for AD degradable), verify
+        log_neg ≥ K_D / E_R on a dense grid.
         """
         from qkdx.numerics.upper_bound import (
+            K_D_amplitude_damping_degradable,
+            analytic_log_neg_amplitude_damping,
             analytic_log_neg_dephasing,
             analytic_log_neg_depolarizing,
             analytic_log_neg_erasure,
@@ -515,11 +518,16 @@ class TestAnalyticLogNegFormulas:
 
         violations = []
         for p in np.linspace(0.001, 0.999, 200):
+            # AD: K_D = Q only valid for γ ≤ 1/2 (degradable)
+            if p <= 0.499:
+                ln, kd = analytic_log_neg_amplitude_damping(p), K_D_amplitude_damping_degradable(p)
+                if ln < kd - 1e-9:
+                    violations.append(("AD", p, ln, kd))
             # Dephasing: PLOB Eq.39
             ln, kd = analytic_log_neg_dephasing(p), e_r_dephasing(p)
             if ln < kd - 1e-12:
                 violations.append(("dephasing", p, ln, kd))
-            # Depolarizing: Horodecki 99 (E_R, not K_D)
+            # Depolarizing: Vollbrecht-Werner (corrected)
             ln, er = analytic_log_neg_depolarizing(p), e_r_depolarizing_analytic(p)
             if ln < er - 1e-12:
                 violations.append(("depolarizing", p, ln, er))
@@ -528,8 +536,14 @@ class TestAnalyticLogNegFormulas:
             if ln < kd - 1e-12:
                 violations.append(("erasure", p, ln, kd))
 
-        print(f"  Plenio inequality verified on 200×3 = 600 grid points")
-        print(f"  Worst-case erasure log_neg − K_D = {analytic_log_neg_erasure(0.6) - e_r_erasure(0.6):.6f}")
+        print(f"  Plenio inequality verified on 4 channels × 200 grid points")
+        # Check tightness ratios at moderate noise
+        kd_AD = K_D_amplitude_damping_degradable(0.2)
+        ln_AD = analytic_log_neg_amplitude_damping(0.2)
+        print(f"  AD γ=0.2: log_neg/K_D = {ln_AD/kd_AD:.3f}")
+        kd_DP = e_r_dephasing(0.2)
+        ln_DP = analytic_log_neg_dephasing(0.2)
+        print(f"  Dephase p=0.2: log_neg/K_D = {ln_DP/kd_DP:.3f}")
         assert not violations, f"Plenio inequality violated: {violations[:5]}"
 
     def test_erasure_log_neg_formula(self):
