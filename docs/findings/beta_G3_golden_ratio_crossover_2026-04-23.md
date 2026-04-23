@@ -1,6 +1,6 @@
 # β.G3 数值发现：log-negativity vs Pirandola 交叉点 = 黄金比例
 
-**版本**: v0.3 [SYN 级，含完整解析推导候选；用户纸笔复核可升至 [COROLLARY]]
+**版本**: v0.4 [SYN 级，含完整解析推导；C1(c) SymPy ✅ + C3 ✅；待 C2 用户签字]
 **日期**: 2026-04-23 autonomous session
 **数据**: `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
 **严谨性**: 全文 [SYN] 级（数值结果 + 解析观测，非定理证明）
@@ -10,11 +10,15 @@
 ## 0. 严谨性声明
 
 - 数值观测（§1）：[SYN]（qubit 幅度阻尼，MOSEK SDP，多点精确验证）
-- 解析推导（§2）：[SYN，待用户纸笔复核]（步骤简单，5-15 分钟可验证）
-  - log_neg(E_AD(η)) = log₂(1+η)：特征值计算，每步可查
-  - 交叉点 η_c = 1/φ：二次方程根，精确
+- 解析推导（§2）：[SYN]（已通过 C1(c) + C3；待 C2 用户签字）
+  - log_neg(E_AD(η)) = log₂(1+η)：特征值计算，SymPy 逐步验证 ✅
+  - 交叉点 η_c = 1/φ：SymPy 符号求根确认 ✅
 - 数值结果基于 **qubit 幅度阻尼**（非 bosonic 纯损耗），bosonic 情形另需计算
-- **升级至 [COROLLARY]** 需 C1+C2+C3（用户纸笔复核 = C1(b) 候选 + C2 签字 + C3 dev-reviewer PASS）；且需指明从哪个 [THM] 机械推导（R0.3 语义要求）。当前推导是项目内独立计算，暂无外部 [THM] 锚点，故 [SYN] 是更准确的长期标签。
+- **R0.2 验证状态**：
+  - C1(c) ✅：SymPy 符号计算独立复现全部 5 步（`docs/workflow/beta-G3-analytic-proof-review/sympy-c1c-verification.md`）
+  - C3 ✅：dev-reviewer Round 2 PASS（workflow-log.md）
+  - C2 ⏳：待用户显式签字
+- **升级注意**：当前推导是项目内独立计算，无外部 [THM] 锚点；[COROLLARY] 语义要求"从已有 [THM] 机械推导"，故即使 C2 签字后，长期标签可能仍保持 [SYN]（见 review-holistic-1.md §RIGOR_COMPLIANCE）
 
 ---
 

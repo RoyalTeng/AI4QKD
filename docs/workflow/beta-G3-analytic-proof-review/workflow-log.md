@@ -25,3 +25,20 @@
 3. §2.2 now correctly states η=0 is trivial boundary solution; η_c=1/φ is nontrivial interior crossover
 
 **Final status**: C3 SATISFIED. Math is SOUND (both agents agree).
+
+## Round 3 — SymPy C1(c) 独立验证
+
+**动作**: SymPy 符号计算（非 AI 工具）独立复现全部 5 推导步骤  
+**结果**: ALL PASS — 所有断言 True  
+**记录**: sympy-c1c-verification.md（本目录）  
+**C1(c) 状态**: ✅ VERIFIED  
+
+验证条目：
+1. Choi 态矩阵元素（4 项断言）✓
+2. 偏转置块结构（(0,3)=0, (1,2)=√η/2）✓
+3. 块 B 特征值 [1/2, -η/2]（符号求解）✓
+4. 迹范数 = η+1（符号求和）✓
+5. 因式化 -η(η²+η-1)=0 ✓
+6. 非平凡根 = (√5-1)/2 = 1/φ ✓
+
+**当前升级状态**: C1(c) ✅ + C3 ✅ + C2 ⏳（待用户签字）
