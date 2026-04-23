@@ -1,6 +1,6 @@
 # β.G3 数值发现：log-negativity vs Pirandola 交叉点 = 黄金比例
 
-**版本**: v0.4 [SYN 级，含完整解析推导；C1(c) SymPy ✅ + C3 ✅；待 C2 用户签字]
+**版本**: v0.5 [SYN 级，数学正确性三方已确认：C1(c) ✅ + C2 ✅ + C3 ✅；标签保持 [SYN]（无外部 THM 锚点）]
 **日期**: 2026-04-23 autonomous session
 **数据**: `docs/research/data/beta_G3_log_neg_vs_pirandola.csv`
 **严谨性**: 全文 [SYN] 级（数值结果 + 解析观测，非定理证明）
@@ -14,11 +14,12 @@
   - log_neg(E_AD(η)) = log₂(1+η)：特征值计算，SymPy 逐步验证 ✅
   - 交叉点 η_c = 1/φ：SymPy 符号求根确认 ✅
 - 数值结果基于 **qubit 幅度阻尼**（非 bosonic 纯损耗），bosonic 情形另需计算
-- **R0.2 验证状态**：
+- **R0.2 验证状态**（2026-04-23 确认）：
   - C1(c) ✅：SymPy 符号计算独立复现全部 5 步（`docs/workflow/beta-G3-analytic-proof-review/sympy-c1c-verification.md`）
   - C3 ✅：dev-reviewer Round 2 PASS（workflow-log.md）
-  - C2 ⏳：待用户显式签字
-- **升级注意**：当前推导是项目内独立计算，无外部 [THM] 锚点；[COROLLARY] 语义要求"从已有 [THM] 机械推导"，故即使 C2 签字后，长期标签可能仍保持 [SYN]（见 review-holistic-1.md §RIGOR_COMPLIANCE）
+  - C2 ✅：用户 2026-04-23 显式签字确认数学正确性（仅数学断言，不升级分级标签）
+- **分级决定**：三条件全部通过，但**标签保持 [SYN]**。原因：当前推导是项目内独立计算，无外部 [THM] 锚点；R0.3 中 [COROLLARY] 语义要求"从已有 [THM] 机械推导"，故本结论不满足 [COROLLARY] 的语义条件（见 review-holistic-1.md §RIGOR_COMPLIANCE）。若日后识别出合适的外部 THM 锚点（例如 Vidal-Werner 2002 对数负性定义），可再启动升级讨论。
+- **当前对外引用资格**（依 R0.3 表）：[SYN] 级仅内部讨论可用；论文/展示禁止单独引用。
 
 ---
 
