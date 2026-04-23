@@ -200,6 +200,39 @@ AI 不能替代用户的以下工作：
 
 ---
 
+## 7. β.G3 解析结果闭环（2026-04-23 晚间追加）
+
+**完成动作**：
+1. dev-reviewer skill 双 Codex 评审：R1 FAIL → 修复 → R2 PASS
+   - 修复 1: `TestLogNegAmplitudeDampingAnalytic` 移出模块级 MOSEK skip（独立 class-level `@_MOSEK_SKIP`）
+   - 修复 2: 新增 3 个中间步骤测试（Choi 矩阵、PT 块、特征值集）
+   - 修复 3: §2.2 明确 η=0 平凡边界解 vs η_c=1/φ 非平凡内点解
+2. SymPy C1(c) 符号独立验证：全部 6 项断言 `True`
+   - 特征值 [1/2, -η/2]、迹范数 η+1、因式 -η(η²+η-1)、根 (√5-1)/2
+3. 用户 2026-04-23 显式 C2 签字确认数学正确性
+
+**R0.2 三方验证状态**：
+- C1(c) ✅ SymPy（`docs/workflow/beta-G3-analytic-proof-review/sympy-c1c-verification.md`）
+- C2 ✅ 用户 2026-04-23 签字（commit `300945d`）
+- C3 ✅ dev-reviewer R2 PASS
+
+**分级决定**：标签保持 **[SYN]**（非 [COROLLARY]）
+- 理由：当前推导是项目内独立计算，无外部 [THM] 锚点
+- R0.3 中 [COROLLARY] 语义要求"从已有 [THM] 机械推导"
+- 三方验证确认数学正确，但分级语义不允许自升 [COROLLARY]
+
+**影响范围**：
+- §1.2 β.G3 Layer 3 条目由 "[SYN，待用户复核]" 更新为 "[SYN，C1(c)+C2+C3 三方已确认]"
+- 内部引用资格：数学正确性确认，符合 R0.3 [SYN] 级规则
+- 对外引用资格：仍需外部 THM 锚点（未来文献工作）
+
+**相关 commits**：
+- `33af74d`: SymPy C1(c) 验证记录
+- `300945d`: C2 用户签字
+
+---
+
 ## Changelog
 
+- **v0.2** (2026-04-23 evening): §7 追加 — β.G3 三方验证闭环；[SYN] 保持
 - **v0.1** (2026-04-23 Day 3 session): 首稿，等待用户审阅
