@@ -82,10 +82,10 @@ dev-reviewer 共运行 5 轮，产出如下:
 
 ### 3.2 [SYN] 级（内部可用，原 [COROLLARY] 候选因 R5 修正而下调）
 
-- **4 信道 tightness hierarchy** (upper_bound_report §11.3):
-  - Dephase E_R^PPT ≡ K^{↔} (PLOB Eq.39 SDP 验证)
-  - Depolar E_R^PPT = E_R (修复后 Vollbrecht-Werner SDP 验证); K^{↔} ≤ E_R，真值 UNKNOWN
-  - AD degradable E_R^PPT / Q ∈ [1.03, 1.52]; K^{↔}(AD) ∈ [Q, E_R^PPT] OPEN
+- **4 信道 tightness hierarchy** (upper_bound_report §11.3, v0.7 post-2026-04-24-evening):
+  - Dephase (tele-cov): E_R^PPT ≡ K^{↔} channel (PLOB Eq.39 SDP 验证)
+  - Depolar (tele-cov): E_R^PPT = E_R channel (修复后 Vollbrecht-Werner SDP 验证); channel K^{↔} ≤ E_R，真值 UNKNOWN
+  - AD **non-tele-cov**: Q (channel, LB on K^{↔}) for γ ≤ 1/2 analytic; Choi-state E_R^PPT **not** channel UB per WTB 2017 → channel K^{↔}(AD) OPEN (see RETRACTION §8)
 - **六态 E_R/SP_6st 比率 ~3-6× (per-signal)**: per-sifted 单位错误已修正，先前 ≤1.8× 结论撤回
 
 ### 3.3 [SYN] 级（内部可用, 不对外）

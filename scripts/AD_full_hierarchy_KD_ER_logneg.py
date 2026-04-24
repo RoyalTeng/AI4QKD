@@ -1,9 +1,20 @@
-"""AD hierarchy: Q (degradable analytic, LB on K^{↔}) vs E_R^PPT (SDP, UB on K^{↔}) vs log_neg.
+"""AD Choi-state quantities: Q (channel, LB on K^{↔}) vs E_R^PPT (Choi-state SDP) vs log_neg (Choi-state).
 
-Correct hierarchy: Q ≤ K^{↔} ≤ E_R^PPT ≤ log_neg.
-For γ ≤ 1/2: Q = max_p[h((1-γ)p) - h(γp)] (Caruso-Giovannetti-Holevo 2014, degradable single-letter).
-  Q is a LOWER BOUND on K^{↔}, not equal to K^{↔} in general.
-For γ > 1/2: anti-degradable, Q = 0; K^{↔} might still be > 0 via two-way LOCC (OPEN).
+NOTE (2026-04-24 post-Codex-REJECTED): AD is NOT teleportation-covariant
+(WTB 2017), so Choi-state E_R^PPT does NOT automatically upper-bound
+the channel two-way key capacity K^{↔}(N_AD). Earlier version of this
+docstring claimed 'Q ≤ K^{↔} ≤ E_R^PPT ≤ log_neg' at channel level —
+that claim is withdrawn. See:
+  docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md §-1
+  docs/research/RETRACTION.md §8
+
+Objects plotted/recorded:
+- Q(N_AD) (channel, analytic, LB on K^{↔} for γ ≤ 1/2): max_p[h((1-γ)p) - h(γp)]
+- E_R^PPT(J_{N_AD}) (Choi-state, SDP)
+- log_neg(J_{N_AD}) (Choi-state, analytic)
+
+For γ > 1/2 (anti-degradable): Q=0; channel K^{↔} OPEN; Choi-state
+E_R^PPT and log_neg remain numerically meaningful but are not channel UBs.
 
 Output:
   docs/research/figures/AD_complete_hierarchy.{png,pdf}
@@ -75,7 +86,8 @@ def main():
     ax.axvline(0.5, color="gray", linewidth=0.8, alpha=0.5, linestyle=":")
     ax.set_xlabel("γ (damping prob)")
     ax.set_ylabel("bits")
-    ax.set_title(r"AD hierarchy: $Q \leq K^{\leftrightarrow} \leq E_R^{PPT} \leq$ log_neg")
+    ax.set_title("AD: channel $Q$ (LB on $K^{\\leftrightarrow}$) + Choi-state $E_R^{PPT}$ / log_neg\n"
+                 + r"(AD not tele-covariant; Choi-state values NOT automatic channel UB)")
     ax.set_xlim(0, 1)
     ax.set_ylim(-0.02, 1.05)
     ax.legend(loc="upper right", fontsize=8)
@@ -88,12 +100,14 @@ def main():
     # Sparse E_R^PPT / Q
     Q_at_er = np.array([quantum_capacity_amplitude_damping_degradable(g) for g in er_g])
     ratios_er_q = np.where(Q_at_er > 1e-6, er_v / Q_at_er, np.nan)
-    ax.scatter(er_g, ratios_er_q, color="C1", marker="s", s=60, label=r"$E_R^{PPT}$ / Q", zorder=5)
+    ax.scatter(er_g, ratios_er_q, color="C1", marker="s", s=60,
+               label=r"$E_R^{PPT}(J_N)$ / $Q(N)$ (Choi-vs-channel, not a UB/LB ratio)", zorder=5)
     ax.axvline(0.5, color="gray", linewidth=0.8, alpha=0.5, linestyle=":")
     ax.axhline(1.0, color="gray", linewidth=0.5, alpha=0.5)
     ax.set_xlabel("γ")
-    ax.set_ylabel(r"UB / Q ratio (Q = LB on $K^{\leftrightarrow}$)")
-    ax.set_title(r"AD: tightness of UB candidates vs $Q$ lower bound")
+    ax.set_ylabel(r"ratio (Choi-state values / channel $Q$)")
+    ax.set_title("AD: Choi-state log_neg and $E_R^{PPT}$ compared to channel $Q$\n"
+                 + "(ratio informational only; not channel UB vs LB)")
     ax.set_xlim(0, 0.5)
     ax.set_ylim(0.5, 5.0)
     ax.legend(loc="upper left", fontsize=9)

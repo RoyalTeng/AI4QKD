@@ -1,8 +1,13 @@
-# 上界层级: Q ≤ K^{↔} ≤ E_R^PPT = E_R ≤ log_neg 数值对比（3 qubit 信道, 2⊗2 PPT=SEP）
+# 上界层级数值对比（3 qubit 信道, 2⊗2 PPT=SEP）— Choi-state SDP vs analytic
 
-**日期**: 2026-04-23（log_neg 框架延伸 — SDP 紧化）  
+**日期**: 2026-04-23（log_neg 框架延伸 — SDP 紧化）；**2026-04-24 evening corrected** after Codex REJECTED AD memo (see RETRACTION §8)
+
 **严谨性**: [SYN]（MOSEK SDP 数值 + 解析公式，无 R0.2 三方）  
 **Scope**: AD + Dephasing + Depolarizing（erasure 因 dim_B=3 OOM 在当前环境）
+
+**重要区分** (2026-04-24 added):
+- **Tele-covariant 信道** (dephasing, depolarizing, erasure; PLOB 2017 Ex.3): Choi-state E_R^PPT ≡ channel E_R → channel K^{↔} UB
+- **Non-tele-covariant 信道** (AD; WTB 2017): Choi-state E_R^PPT **不**自动上界 channel K^{↔}；先前标题 "Q ≤ K^{↔} ≤ E_R^PPT" 对 AD 无效, 已撤回
 
 ---
 
@@ -90,35 +95,40 @@ E_R^PPT 在 qubit dephasing 上**达到真 E_R = K^{↔}**（与 PLOB Eq.39 精�
 
 **Sub-Q3 启示**: 对 qubit channels（dim_A = dim_B = 2），E_R^PPT (SDP) 是真 E_R 的 [VERIFIED] 计算工具；但 K^{↔}(depolarizing) 尚无已知公式，需 squashed entanglement 或文献专攻。
 
-### 2.3 AD: PPT 紧化中等（相对 Q 下界）
+### 2.3 AD: Choi-state E_R^PPT ≠ channel UB (2026-04-24 重大修正)
 
-E_R^PPT vs log_neg 比率 0.44-0.89（gamma 增大而降）。Q（量子容量，= degradable AD 的单字母容量）是 K^{↔} 的下界（K^{↔} ≥ Q = P for degradable），而非 K^{↔} 真值。  
-→ **AD 上 E_R^PPT 是最紧已知 UB**，相对 Q 下界 gap 3-52%。
+E_R^PPT vs log_neg 比率 0.44-0.89（gamma 增大而降）—— 但这是 **Choi-state 层级** 比较。
+
+**关键区分** (correction per RETRACTION §8): AD channel 是 **non-teleportation-covariant** (WTB 2017)，故 Choi-state E_R^PPT(J_{N_AD}) 并**非** channel K^{↔}(N_AD) 的 UB。先前 memo 声称 "AD 上 E_R^PPT 是最紧已知 channel UB" **撤回**。
+
+对 AD channel 目前状态:
+- **Q (channel, LB on K^{↔})** for γ ≤ 1/2：degradable single-letter formula [THM for qubit per Caruso-Giovannetti-Holevo 2014]
+- **channel K^{↔}(AD)** 真值：**OPEN** — 候选 channel-level 工具 amortized REE / max-Rains / squashed entanglement 待精读（R0.2 C1 paper-level 依赖）
 
 ### 2.4 四信道上界层级摘要（修订 — 澄清 K^{↔} vs Q 区分）
 
-| 信道 | log_neg | E_R^PPT | 最紧已知 K^{↔} 下界 | 结论 |
-|------|---------|---------|----------------------|------|
-| AD (γ≤1/2) | 0.14-0.96 | 0.06-0.86 | Q (= quantum capacity, K^{↔} ≥ Q) | E_R^PPT/Q ∈ [1.03, 1.52]；K^{↔} 未知 |
-| AD (γ>1/2) | 0.14-0.59 | 0.06-0.32 | unknown (anti-degradable, K^{↔} may > 0 via 2-way) | E_R^PPT 是最紧已知 |
-| Dephasing | 0.26-0.93 | 0.03-0.71 | K^{↔} = E_R^PPT (PLOB Eq.39 [SYN]) | PPT 紧化到 K^{↔} 层 |
-| Depolarizing | 0.32-0.98 | 0.05-0.89 | K^{↔} UNKNOWN; K^{↔} ≤ E_R = E_R^PPT (Rains/Vollbrecht-Werner) | E_R 是 K^{↔} 的紧 UB |
-| Erasure | 0.14-0.96 | OOM (本环境) | K^{↔} ≈ 0.1-0.95 (PLOB Eq.43) | 待高内存复跑 |
+| 信道 | log_neg (Choi) | E_R^PPT (Choi) | 最紧已知 channel K^{↔} 下界 | channel UB? | 结论 |
+|------|---------------|----------------|----------------------------|-------------|------|
+| AD (γ≤1/2) | 0.14-0.96 | 0.06-0.86 (Choi) | Q (channel, LB on K^{↔}) | **No** (AD 非 tele-cov, per RETRACTION §8) | Choi-state E_R^PPT 不转 channel UB；channel K^{↔}(AD) OPEN |
+| AD (γ>1/2) | 0.14-0.59 | 0.06-0.32 (Choi) | unknown (anti-degradable, Q=0) | **No** | Choi-state SDP 是数据 record；channel K^{↔} OPEN |
+| Dephasing | 0.26-0.93 | 0.03-0.71 (channel UB) | K^{↔} = E_R^PPT (PLOB Eq.39 [SYN]) | **Yes** (tele-cov, PLOB Ex.3) | PPT 紧化到 channel K^{↔} 层 |
+| Depolarizing | 0.32-0.98 | 0.05-0.89 (channel UB) | K^{↔} UNKNOWN; K^{↔} ≤ E_R = E_R^PPT | **Yes** (tele-cov, PLOB Ex.3) | E_R 是 channel K^{↔} 的紧 UB |
+| Erasure | 0.14-0.96 | OOM (本环境) | K^{↔} ≈ 0.1-0.95 (PLOB Eq.43) | **Yes** (tele-cov, PLOB Ex.3) | 待高内存复跑 |
 
-**[新增 2026-04-23，修订 2026-04-24]**: AD 在 degradable 区 (γ≤1/2) 的量子容量 Q（= unassisted private capacity P）通过 Caruso-Giovannetti-Holevo 2014 的 single-letter 公式数值求解。**注意 Q 是 K^{↔} 下界**（K^{↔} ≥ Q），非真 K^{↔}：
+**[新增 2026-04-23，修订 2026-04-24 post-Codex REJECTED]**: AD 在 degradable 区 (γ≤1/2) 的量子容量 Q（= unassisted private capacity P）通过 Caruso-Giovannetti-Holevo 2014 的 single-letter 公式数值求解。**Q 是 channel K^{↔} 下界**（K^{↔} ≥ Q）；E_R^PPT 是 **Choi-state 数据 benchmark**（AD 非 tele-covariant，非 channel UB）：
 
-| γ | Q (analytic, K^{↔} ≥ Q) | E_R^PPT (SDP) | log_neg | E_R^PPT/Q | log_neg/Q |
-|---|--------------------------|---------------|---------|------------|-----------|
-| 0.05 | 0.8311 | 0.8552 | 0.9635 | 1.03 | 1.16 |
-| 0.10 | 0.7094 | 0.7590 | 0.9260 | 1.07 | 1.30 |
-| 0.20 | 0.5062 | 0.6125 | 0.8480 | 1.21 | 1.68 |
-| 0.30 | 0.3280 | 0.4984 | 0.7655 | 1.52 | 2.33 |
+| γ | Q (channel, LB on K^{↔}) | E_R^PPT (Choi-state SDP) | log_neg (Choi-state) | Note |
+|---|---|---|---|---|
+| 0.05 | 0.8311 | 0.8552 | 0.9635 | 数值比率非 channel UB/LB 意义 |
+| 0.10 | 0.7094 | 0.7590 | 0.9260 | 数值比率非 channel UB/LB 意义 |
+| 0.20 | 0.5062 | 0.6125 | 0.8480 | 数值比率非 channel UB/LB 意义 |
+| 0.30 | 0.3280 | 0.4984 | 0.7655 | 数值比率非 channel UB/LB 意义 |
 
-E_R^PPT 在 AD degradable 区是 **接近紧** UB（gap 3-52%），明显紧于 log_neg。这里"紧"是指相对 Q 下界，不是相对 K^{↔} 真值（K^{↔} ≥ Q 使真实 gap 可能更小）。
+Choi-state E_R^PPT 在 AD degradable 区数值比 log_neg 紧，但**对 AD channel 这不是 channel-level UB 紧化陈述**（见 RETRACTION §8 教训 6）。先前"接近紧 UB" 语义**只适用 tele-covariant 信道** (dephase, depolar, erasure)。
 
-**对 γ > 1/2 anti-degradable 区**: Q = 0，但 K^{↔} 可能 > 0 via 两向 LOCC（squashed entanglement 可能给出非零下界）。这是 Sub-Q3 的真正 OPEN gap。
+**对 γ > 1/2 anti-degradable 区**: Q = 0 (channel)；channel K^{↔}(AD) **真值 OPEN**。Choi-state E_R^PPT 在该区非零但**不能**直接解读为 channel UB；需 amortized / max-Rains / squashed E 等 channel-level 工具，pending R0.2 C1 paper-level 工作。
 
-**[VERIFIED]** 在 qubit→qubit 设置（dim ≤ 2 each side）下，E_R^PPT SDP **是真 E_R 的等价计算**（基于 Horodecki 1996: PPT = SEP for 2⊗2）。Erasure 是 dim_B=3，未直接测试；但理论上 dim_B=3 仍 PPT≠SEP 一般，所以 E_R^PPT ≤ E_R 可能 strict。
+**[VERIFIED]** 在 qubit→qubit 设置（dim ≤ 2 each side）下，E_R^PPT SDP **是真 E_R 的等价计算**（基于 Horodecki 1996: PPT = SEP for 2⊗2），**但只在 Choi-state 层面**。对 tele-covariant 信道（dephasing, depolarizing, erasure per PLOB Ex.3），这直接转为 channel E_R = channel UB on K^{↔}；对非 tele-covariant 信道（AD），只提供 Choi-state 数值 record。Erasure 是 dim_B=3，未直接测试；但理论上 dim_B=3 仍 PPT≠SEP 一般，所以 E_R^PPT ≤ E_R 可能 strict。
 
 ### 2.5 Bug-catch 价值
 

@@ -94,15 +94,15 @@ Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1
 
 ---
 
-## 4. 数据产物（无变更，仅作数值 artifact）
+## 4. 数据产物
 
-### 新增
-- `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` — 7 个新 Choi-state SDP 点 (γ=0.55...0.95)
-- `scripts/AD_antidegradable_E_R_PPT_fill.py` — SDP 扫描脚本
-- `scripts/AD_anti_degradable_plot.py` — 可视化脚本（标题需修订：见下）
-- `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}` — 标题 "Q ≤ K^{↔} ≤ E_R^PPT" 需撤回（Plot 标题需改为 "AD Choi-state: log_neg vs E_R^PPT vs Q"）
+### 本轮新增
+- `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` — 7 个新 Choi-state SDP 点 (γ=0.55…0.95)
+- `scripts/AD_antidegradable_E_R_PPT_fill.py` — SDP 扫描脚本（docstring + print 均已 Choi-state-only, commit 254b471）
+- `scripts/AD_anti_degradable_plot.py` — 可视化脚本（标题已改为 "Choi-state only, not channel-level UB for AD (non-tele-covariant)", commit 0b8cf40）
+- `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}` — 已基于修订后脚本 regenerate（commit 0b8cf40）
 
-**Action**: plot 会在下一轮修订脚本重新生成；本次 memo 降级后数据 CSV 保留（纯数值无错）。
+**CSV 数据本身未变（纯 Choi-state SDP 数值），语义解释降级至 Choi-state only 完成。**
 
 ---
 

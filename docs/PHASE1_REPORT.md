@@ -212,10 +212,10 @@ CSV 文件（`docs/research/data/`）：
 
 - **E_R analytic bug 修复** [commit b4efaae]: `e_r_depolarizing_analytic` 旧公式含非法项 `(1-F)·log₂(d²-1)`，修复为 d=2 正确形式 `1-h(F)` (Plenio-Virmani 2007 §V.E V.86)
 - **AD Q analytic** [commit 73bd18f]: `quantum_capacity_amplitude_damping_degradable(γ)` = max_p[h₂((1-γ)p) - h₂(γp)] for γ ≤ 1/2 (Caruso-Giovannetti-Holevo); Q is LB on K^{↔}, NOT equal to K^{↔} in general
-- **4 信道 tightness hierarchy** (upper_bound_report v0.6 §11) [已修正单位错误]:
-  - Dephase: E_R^PPT = K^{↔}（PLOB Eq.39）— 完美匹配
-  - Depolar: E_R^PPT = E_R (Vollbrecht-Werner); K^{↔} ≤ E_R；K^{↔} 真值 UNKNOWN
-  - AD degradable: Q ≤ K^{↔} ≤ E_R^PPT；E_R^PPT/Q ∈ [1.03, 1.52]（Q 是 LB on K^{↔}）
+- **4 信道 tightness hierarchy** (upper_bound_report v0.7 §11) [已修正单位 + Choi/channel 区分]:
+  - Dephase: E_R^PPT = K^{↔}（PLOB Eq.39，tele-covariant → channel UB）— 完美匹配
+  - Depolar: E_R^PPT = E_R (Vollbrecht-Werner, tele-covariant → channel UB); K^{↔} ≤ E_R；K^{↔} 真值 UNKNOWN
+  - AD degradable: Q (channel, LB on K^{↔}) ∈ [0.328, 0.831]; Choi-state E_R^PPT 数据可用但**不是 channel UB**（AD 非 tele-covariant, WTB 2017 per RETRACTION §8）；channel K^{↔}(AD) 真值 OPEN
   - 六态 E_R/SP_6st ~3-6× per-signal（先前 ≤1.8× per-sifted 单位错误已修正）
 
 ### 9.3 Sub-Q4 Gap shape + 归因

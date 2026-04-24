@@ -35,14 +35,14 @@
 
 ### 2.1 四信道 UB-LB 紧度矩阵
 
-| 信道 | 最紧 UB (已建) | 最紧 LB (已建) | UB/LB ratio at 典型噪声 |
-|------|---------------|---------------|-------------------------|
-| AD γ=0.2 (Q ~ 0.5) | E_R^PPT = 0.61 | Q = 0.51 (degradable, Q ≤ K^{↔}) | **≤1.21×** (对 Q 意义下接近紧；K^{↔} ≥ Q 可能更大) |
-| Dephase p=0.1 | E_R^PPT = 0.53 | K^{↔} = 0.53 (PLOB Eq.39) | **1.00×** (K^{↔} 层完美) |
-| Depolar p=0.1 | E_R^PPT = E_R = 0.62 (Vollbrecht-Werner, UB on K^{↔}) | K^{↔} UNKNOWN (K^{↔} ≤ E_R) | K^{↔} ≤ E_R；gap UNKNOWN |
-| Erasure p=0.1 | log_neg = 0.93 | K^{↔} = 0.90 (PLOB Eq.43) | **1.03×** (接近紧) |
+| 信道 | 最紧 channel UB | 最紧 channel LB | channel UB/LB ratio | Tele-covariant? |
+|------|----------------|-----------------|---------------------|----------------|
+| AD γ=0.2 | **channel UB 未知** (Choi-state E_R^PPT=0.61 不是 channel UB per WTB 2017, RETRACTION §8) | Q = 0.51 (channel, degradable, Q ≤ K^{↔}) | **UNKNOWN** | **No** |
+| Dephase p=0.1 | E_R^PPT = 0.53 (channel UB via tele-cov) | K^{↔} = 0.53 (PLOB Eq.39) | **1.00×** (K^{↔} 层完美) | Yes |
+| Depolar p=0.1 | E_R^PPT = E_R = 0.62 (channel UB via tele-cov) | K^{↔} UNKNOWN (K^{↔} ≤ E_R) | K^{↔} ≤ E_R；gap UNKNOWN | Yes |
+| Erasure p=0.1 | log_neg = 0.93 (channel UB via tele-cov) | K^{↔} = 0.90 (PLOB Eq.43) | **1.03×** (接近紧) | Yes |
 
-**结论（信道层面）**: 对 dephasing 和 erasure，E_R^PPT/log_neg 工具给出**接近紧**上界（相对已知 K^{↔} 下界）。对 depolarizing，E_R^PPT = E_R 是 K^{↔} 的严格 UB（K^{↔} ≤ E_R），但 K^{↔} 真值 UNKNOWN。
+**结论（信道层面）**: 对 dephasing 和 erasure（tele-covariant per PLOB Ex.3），E_R^PPT/log_neg 工具给出**接近紧** channel UB（相对已知 K^{↔} 下界）。对 depolarizing（tele-covariant），E_R^PPT = E_R 是 channel K^{↔} 的严格 UB，但 K^{↔} 真值 UNKNOWN。**对 AD**（WTB 2017 确认非 tele-covariant），Choi-state E_R^PPT **不**自动转为 channel UB —— channel K^{↔}(AD) 真值 OPEN。
 
 ### 2.2 协议层面紧度（BB84/六态等效 depolarizing）
 
@@ -103,7 +103,7 @@
 |------|----------|----------|---------|------|
 | BB84 (QBER > 8%) | UNKNOWN | **显著** | 倾向 B 或 C | §3.2 SP→0 at 11%, E_R=0.5 |
 | 六态 | UNKNOWN | 中等 (3-6× per-signal) | UNKNOWN | §2.2 修正后 per-signal UB/LB ~3-6× |
-| AD 信道自身 (degradable) | 小 (E_R^PPT/Q ≤ 1.52) | ~0 | A 较小但 K^{↔} UNKNOWN | §2.1 Q ≤ K^{↔} ≤ E_R^PPT；Q 是 LB 非 K^{↔} 真值 |
+| AD 信道自身 (degradable) | **UNKNOWN** (AD 非 tele-cov; Choi-state E_R^PPT 不是 channel UB per RETRACTION §8) | ~0 (Q 是 channel LB) | channel K^{↔}(AD) OPEN; channel-level UB 工具待精读 | §2.1 per-row disclaimer |
 | TF/PM-QKD umr | UNKNOWN | 斜率紧 / prefactor 可能小 | UNKNOWN | §2.3 同 √η slope, 2000× prefactor |
 | MDI umr | UNKNOWN | 噪声主导 | 类似 TF | §2.3 |
 
@@ -136,11 +136,11 @@
 
 ### 4.3 qubit 信道族（Sub-Q3 工具链部分完备）
 
-- **Dephasing**: E_R^PPT = K^{↔}（PLOB Eq.39 验证）→ **信道层无 A 原因** [SYN]
-- **Erasure**: log_neg ≈ K^{↔} (gap ≤ 0.09 bits) → **信道层 A 原因小** [SYN]
-- **AD degradable (γ ≤ 1/2)**: Q ≤ K^{↔} ≤ E_R^PPT，ratio E_R^PPT/Q ∈ [1.03, 1.52] → **A 原因存在但较小** [SYN]
-- **Depolarizing**: E_R^PPT = E_R（UB on K^{↔}），K^{↔} UNKNOWN → **A 原因 UNKNOWN**（K^{↔} ≤ E_R but K^{↔} true value not known）
-- **AD anti-degradable (γ > 1/2)**: K^{↔} 真值 OPEN，**A 原因 UNKNOWN**（squashed entanglement 等工具待精读）
+- **Dephasing** (tele-covariant per PLOB Ex.3): E_R^PPT = K^{↔}（PLOB Eq.39 验证）→ **信道层无 A 原因** [SYN]
+- **Erasure** (tele-covariant): log_neg ≈ K^{↔} (gap ≤ 0.09 bits) → **信道层 A 原因小** [SYN]
+- **Depolarizing** (tele-covariant): E_R^PPT = E_R（channel UB on K^{↔}），K^{↔} UNKNOWN → **A 原因 UNKNOWN**（K^{↔} ≤ E_R but K^{↔} true value not known）
+- **AD degradable (γ ≤ 1/2)** (NOT tele-covariant per WTB 2017): Q (channel, LB on K^{↔}) ∈ [0.33, 0.83]；Choi-state E_R^PPT ∈ [0.50, 0.86] 是数据 benchmark **不是 channel UB**。channel K^{↔}(AD) 真值 OPEN → **A 原因 UNKNOWN** (see RETRACTION §8)
+- **AD anti-degradable (γ > 1/2)** (NOT tele-covariant): Q=0；channel K^{↔} 真值 OPEN，**A 原因 UNKNOWN**（amortized / max-Rains / squashed entanglement 等工具待精读）
 
 ---
 
