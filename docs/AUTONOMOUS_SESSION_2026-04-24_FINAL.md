@@ -1,8 +1,8 @@
 # 2026-04-24 Autonomous Session — Final Summary
 
-**版本**: v1.0  
+**版本**: v1.1  
 **日期**: 2026-04-24（Day 4 末）  
-**状态**: 等待用户审阅 + dev-reviewer Codex R1 结果（后台运行中）  
+**状态**: dev-reviewer R5 **PASS** — Day 4 所有提交 C3 通过；等待用户审阅  
 **前置**: [AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md v0.2](AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md)
 
 ---
@@ -50,12 +50,25 @@
 10. **PHASE1_REPORT v1.1**: §9 Phase 2/3 延伸记录
 11. **PHASE_STATUS.md v1.0** (本 session 新文档): Phase 0-3 snapshot + 用户决策队列
 
-### 2.3 Workflow 评审（后台）
+### 2.3 Workflow 评审闭环（5 轮 Codex 评审）
 
-- **dev-reviewer launch**: 2 Codex agents (PIDs 26899, 26900) 对 Day 4 commits 做数学 / 代码 / 科学完整性评审
-- **changes-v1.patch** 已落盘 (35 KB, 9 commits 涵盖)
-- **进度**: 评审截至 session 末仍在运行（预期 review-diff-1.json + review-holistic-1.md 稍后产出）
-- **用户后续处理**: 读 review 输出，ACT on verdict（PASS → 保留, FAIL → 修正, REJECTED → 立即撤回 per R0.2 C3）
+dev-reviewer 共运行 5 轮，产出如下:
+
+| 轮次 | Verdict | 主要问题 |
+|------|---------|---------|
+| R1 | FAIL (UNSOUND) | (1) AD K_D/Q 概念错误; (2) per-sifted SP units; (3) depolarizing hierarchy 反向 |
+| R2 | FAIL | K^{↔} ≥ E_R 方向仍错（修复引入新反向写法） |
+| R3 | FAIL | §heading + PHASE_STATUS/PHASE1_REPORT 术语仍 stale |
+| R4 | FAIL | dephasing 表 K_D 残留 + PHASE 文档仍有 K_D |
+| **R5** | **PASS** | 无剩余 major 问题；残 `K_D` 3 处 + `近紧` grep 为 minor suggestion |
+
+**最终 commit e054a1e**: 28 文件更改，修正 3 个 UNSOUND major issues:
+
+1. **AD Q vs K_D**: `K_D_amplitude_damping_degradable` → `quantum_capacity_amplitude_damping_degradable`；全局文档/脚本/测试从 K_D → Q (LB on K^{↔})
+2. **Per-signal SP units**: BB84/six-state SP rate 修正为 per-signal（p_sift=0.5/1/3 已含）；真实比率 ~2-6×（非 1.8×）
+3. **Hierarchy 方向**: K^{↔} ≤ E_R^PPT = E_R（Rains bound UB）；depolarizing K^{↔} 真值 UNKNOWN
+
+**产物**: `docs/workflow/day4-bug-fix-AD-KD-hierarchy-review/review-diff-{1-5}.json` + `review-holistic-{1-3}.md`
 
 ---
 
@@ -67,13 +80,13 @@
 - **AD K_D for γ ≤ 1/2**: K_D = max_p[h₂((1-γ)p) - h₂(γp)], Caruso-Giovannetti-Holevo 2014 degradable 结论
 - **2⊗2 PPT = SEP → E_R^PPT = E_R**: Horodecki 1996 — qubit abstractions (dephase/depolar/AD) 的 E_R^PPT SDP 严格等于真 E_R
 
-### 3.2 [COROLLARY] 级（需用户签字）
+### 3.2 [SYN] 级（内部可用，原 [COROLLARY] 候选因 R5 修正而下调）
 
 - **4 信道 tightness hierarchy** (upper_bound_report §11.3):
-  - Dephase E_R^PPT ≡ K_D (PLOB Eq.39 SDP 验证)
-  - Depolar E_R^PPT ≡ E_R (修复后 Vollbrecht-Werner SDP 验证)
-  - AD degradable E_R^PPT / K_D ∈ [1.03, 1.52]
-- **六态 E_R/SP ≤ 1.8× 在 12.62% 阈值附近**: six-state SP 公式接近 UB-LB 闭合
+  - Dephase E_R^PPT ≡ K^{↔} (PLOB Eq.39 SDP 验证)
+  - Depolar E_R^PPT = E_R (修复后 Vollbrecht-Werner SDP 验证); K^{↔} ≤ E_R，真值 UNKNOWN
+  - AD degradable E_R^PPT / Q ∈ [1.03, 1.52]; K^{↔}(AD) ∈ [Q, E_R^PPT] OPEN
+- **六态 E_R/SP_6st 比率 ~3-6× (per-signal)**: per-sifted 单位错误已修正，先前 ≤1.8× 结论撤回
 
 ### 3.3 [SYN] 级（内部可用, 不对外）
 
@@ -93,11 +106,11 @@
 | 结论 | C1 | C2 | C3 | 升级 eligibility |
 |------|-----|-----|-----|------------------|
 | β.G3 log_neg(E_AD) = log₂(1+η) | ✅ SymPy (c) | ✅ 用户 2026-04-23 | ✅ dev-reviewer R2 | [SYN] (无 THM anchor) |
-| `e_r_depolarizing_analytic` bug 修复 | ✅ MOSEK SDP (c) | ⏳ | 🟡 运行中 | bug 修复本身不需升级 |
-| AD K_D for γ ≤ 1/2 | ⏳ 等用户 paper-level | ⏳ | 🟡 运行中 | [THM for qubit] 需 C1+C2+C3 |
-| 4 信道 hierarchy | ✅ 数值 SDP (c) | ⏳ | 🟡 运行中 | [COROLLARY] 需 C1 (b) 人类纸笔 |
-| 六态近紧 (E_R/SP ≤ 1.8×) | ✅ 数值 (c) | ⏳ | 🟡 运行中 | [SYN] → [THM] 需 Sub-Q3 升级 |
-| Day 4 Codex 评审待验证 | - | - | 🟡 运行中 | 本 session 末 TBD |
+| `e_r_depolarizing_analytic` bug 修复 | ✅ MOSEK SDP (c) | ⏳ | ✅ R5 PASS | bug 修复本身不需升级；E_R = 1-h(F) 正确 |
+| AD Q for γ ≤ 1/2 (原 K_D) | ⏳ 等用户 paper-level | ⏳ | ✅ R5 PASS | [THM for qubit] 需 C1+C2+C3；Q = LB on K^{↔} |
+| 4 信道 hierarchy | ✅ 数值 SDP (c) | ⏳ | ✅ R5 PASS | [SYN]；K^{↔}(depol) UNKNOWN；C2 用户签字待 |
+| 六态 E_R/SP 比率 ~3-6× (per-signal) | ✅ 数值 (c) | ⏳ | ✅ R5 PASS | [SYN]（先前 ≤1.8× 因 units 错误已撤回） |
+| Day 4 Codex 评审 | - | - | ✅ R5 PASS | C3 已通过 |
 
 **C1 (c)** 通过 SDP / SymPy / 数值验证满足（非 AI 工具独立复现）。但**从 [SYN] 升到 [COROLLARY] 需同时 C2 用户签字**（R0.2 硬红线）。
 
@@ -142,20 +155,23 @@
 
 ---
 
-## 7. dev-reviewer 后续处理（用户回归后）
+## 7. dev-reviewer 最终结果（已完成）
 
-**当前状态**: Codex R1 仍在运行（截至文档写作 2026-04-24 session 末）
+**最终状态**: **Round 5 PASS** — C3 闸门通过
 
-**预期产出**:
-- `docs/workflow/day4-bug-fix-AD-KD-hierarchy-review/review-diff-1.json` (结构化)
-- `docs/workflow/day4-bug-fix-AD-KD-hierarchy-review/review-holistic-1.md` (叙述)
+**5 轮历程**:
+- R1 → FAIL (UNSOUND): 3 major issues 发现（AD K_D/Q 混淆、unit 错误、hierarchy 方向错）
+- R2 → FAIL: hierarchy 方向修复引入新反向写法
+- R3 → FAIL: summary 文档术语 stale
+- R4 → FAIL: dephasing 表 + PHASE 文档 K_D 残留
+- R5 → **PASS**: 所有 major issues 已清除；残留 minor（3 个 K_D 散落 prose + `近紧` grep）
 
-**Verdict 处理规则** (R0.2 C3):
-- **PASS**: C3 通过，Day 4 commits 无结构缺陷
-- **FAIL (major issues)**: 修正 → R2 重评
-- **REJECTED (critical)**: 立即撤回并在 `docs/research/RETRACTION.md` 留时序记录
+**产出清单**:
+- `docs/workflow/day4-bug-fix-AD-KD-hierarchy-review/changes-v{1-5}.patch`
+- `docs/workflow/day4-bug-fix-AD-KD-hierarchy-review/review-diff-{1-5}.json`
+- `docs/workflow/day4-bug-fix-AD-KD-hierarchy-review/review-holistic-{1-3}.md`
 
-**注意**: dev-reviewer 本身 **不构成 C1**（Claude + Codex 是跨家族 AI 审计链不满足 C1 (a) 双方 PDF 直读要求）。是 C3 强制 QA 闸门。
+**边界确认**: dev-reviewer (Claude + Codex 跨家族) = C3；不是 C1（C1 需双方 PDF 直读或人类纸笔或非 AI 工具）。R0.2 三条件仍需 C1 (C3 之外) + C2 用户签字同时满足才可升级 [COROLLARY]/[THM]。
 
 ---
 
@@ -173,4 +189,5 @@
 
 ## Changelog
 
+- **v1.1** (2026-04-24 session 末续): 更新 dev-reviewer 结果（5 轮 → R5 PASS）；修正科学结论分级（六态 ≤1.8× 撤回 → per-signal ~3-6×；K_D → Q LB on K^{↔}）；R0.2 状态表同步。
 - **v1.0** (2026-04-24 session 末): 首版。Day 4 完整 summary + R0.2 三方验证状态表 + 用户决策队列指向 PHASE_STATUS.md。
