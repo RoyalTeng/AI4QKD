@@ -20,7 +20,7 @@
 
 ## 2. Day 4 完成项（时序）
 
-### 2.1 Morning — bug 修复 + AD K_D + hierarchy (commits b4efaae → 008710e)
+### 2.1 Morning — bug 修复 + AD Q (原标 K_D, 已 rename 2026-04-24 per retraction §8) + hierarchy (commits b4efaae → 008710e)
 
 已在 [AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md §8](AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md) 详载:
 
@@ -30,16 +30,17 @@
    - Root cause: MOSEK SDP `e_r_channel_ppt(depolarizing)` 与公式不一致 → 发现
    - 加 2 regression tests (11/11 pass)
 
-2. **AD K_D analytic for γ ≤ 1/2** (73bd18f)
-   - `K_D_amplitude_damping_degradable(γ)` = max_p[h₂((1-γ)p) - h₂(γp)]
+2. **AD Q analytic for γ ≤ 1/2** (73bd18f; 2026-04-24 evening: 原 K_D 重命名为 Q per retraction §8)
+   - `quantum_capacity_amplitude_damping_degradable(γ)` = max_p[h₂((1-γ)p) - h₂(γp)]
    - Golden-section 搜索（无 scipy 依赖）
-   - γ > 1/2 anti-degradable → 返回 0 (K_D 真值 OPEN)
+   - 返回 **Q = channel quantum capacity (LB on K^{↔}, 非 K_D 真值)**
+   - γ > 1/2 anti-degradable → 返回 0 (Q=0; channel K^{↔}(AD) 真值 OPEN)
 
 3. **upper_bound_report v0.5** (a049de0): §11 整合 Day 4 findings + 4 信道 tightness hierarchy
 
-4. **gap_shape v0.3** (2c565cc): Candidate D (AD K_D = Q analytic [THM for qubit AD, CONJ for umr])
+4. **gap_shape v0.3** (2c565cc): Candidate D (AD Q analytic, channel LB on K^{↔} [THM for qubit]; 后 v0.4 改为"参考量非 UB 候选" per RETRACTION §8)
 
-5. **pareto_bb84_family v0.2** (008710e): §5b 上界对比, 六态 E_R/SP ≤ 1.8×
+5. **pareto_bb84_family v0.2** (008710e): §5b 上界对比, 六态 E_R/SP ≤ 1.8× **[已撤回 2026-04-24: per-sifted unit 错, per-signal ~3-6×]**
 
 ### 2.2 Afternoon — Sub-Q3/4 整合 + Pareto 主图 v2
 
@@ -77,7 +78,7 @@ dev-reviewer 共运行 5 轮，产出如下:
 ### 3.1 [THM] 级（可对外引用）
 
 - **`e_r_depolarizing_analytic` 正确形式** for qubit depolarizing: E_R = 1 - h(F), Plenio-Virmani 2007 §V.E V.86 — bug 修复后严格对齐文献
-- **AD K_D for γ ≤ 1/2**: K_D = max_p[h₂((1-γ)p) - h₂(γp)], Caruso-Giovannetti-Holevo 2014 degradable 结论
+- **AD Q (channel, LB on K^{↔}) for γ ≤ 1/2**: Q = max_p[h₂((1-γ)p) - h₂(γp)], Caruso-Giovannetti-Holevo 2014 degradable single-letter — Q is LB on channel K^{↔}, **not** K_D/K^{↔} itself
 - **2⊗2 PPT = SEP → E_R^PPT = E_R**: Horodecki 1996 — qubit abstractions (dephase/depolar/AD) 的 E_R^PPT SDP 严格等于真 E_R
 
 ### 3.2 [SYN] 级（内部可用，原 [COROLLARY] 候选因 R5 修正而下调）
@@ -91,12 +92,12 @@ dev-reviewer 共运行 5 轮，产出如下:
 ### 3.3 [SYN] 级（内部可用, 不对外）
 
 - **TF Pareto 与 Pirandola UB cand 同 √η slope** (同斜率 confirmed in all 40-80 dB range): √η 是 bosonic-asymptotic 放宽下最可能紧 scaling 的实证证据
-- **BB84 Shor-Preskill 公式 EC cost 非紧**: 在 11% 阈值 SP → 0 而 E_R = 0.5，真 K_D 离 SP 远
+- **BB84 Shor-Preskill 公式 EC cost 非紧**: 在 11% 阈值 SP → 0 而 E_R = 0.5，真 K^{↔} 离 SP 远（depolarizing tele-covariant → E_R = channel UB 合法）
 
 ### 3.4 [CONJ] / [UNKNOWN] （OPEN）
 
 - **A/B/C 精确归因**: 需 Sub-Q3 升 [THM] 才可分解 prefactor 2000× gap
-- **AD γ > 1/2 K_D**: 真值 OPEN, squashed entanglement 工具待实施
+- **AD γ > 1/2 K^{↔}** (channel): 真值 OPEN；squashed entanglement / max-Rains / amortized REE 等 channel-level 工具待 R0.2 C1 paper-level work
 - **umr 拓扑严格 H1-H6 主问题**: Sub-Q3 四路径 β.G4/β.G5/γ.B.G1/γ.G3 全部 OPEN
 
 ---
@@ -129,7 +130,7 @@ dev-reviewer 共运行 5 轮，产出如下:
 
 ### 5.2 次优先级（数值扩展, AI 可继续）
 
-5. AD γ > 1/2 K_D via squashed entanglement
+5. AD γ > 1/2 channel K^{↔} via squashed entanglement (或 max-Rains / amortized REE)
 6. Erasure E_R^PPT SDP（高内存环境需求）
 7. SARG04 Koashi 2005 announcement register
 

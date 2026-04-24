@@ -187,34 +187,35 @@ log_neg ≥ K_D / E_R 在 600 grid points × 3 信道全部满足（$10^{-12}$ �
 
 修复 bug 后用真 E_R = 1-h(F) 评估:
 - BB84 阈值 11% 处: log_neg 0.83 → E_R 0.50 (紧化 40%)
-- **六态接近 UB-LB 闭合**: E_R / SP_six-state ≤ 1.8× 在阈值附近
+- **六态接近 UB-LB 闭合**: E_R / SP_six-state ≤ 1.8× 在阈值附近 **[已撤回 2026-04-24: per-sifted 单位错误；per-signal 比率 ~3-6×，非"接近闭合" — see commit e054a1e]**
 
-### 8.5 AD K_D analytic（commit `73bd18f`）
+### 8.5 AD Q analytic（commit `73bd18f`）**[2026-04-24 corrected — 原 K_D 撤回为 Q]**
 
-新函数 `K_D_amplitude_damping_degradable(γ)` for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014):
-- E_R^PPT / K_D ∈ [1.03, 1.52]（接近紧 UB!）
-- log_neg / K_D ∈ [1.16, 2.33]（中等松）
-- γ > 1/2 anti-degradable: Q = 0, K_D 真正 OPEN
+新函数 `quantum_capacity_amplitude_damping_degradable(γ)` (原名 `K_D_amplitude_damping_degradable`, 已 rename) for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014):
+- 返回 **Q = channel quantum capacity (LB on K^{↔}, not K^{↔} itself)**
+- 原 "E_R^PPT / K_D ∈ [1.03, 1.52]（接近紧 UB!）" **撤回**：(a) K_D → Q (LB on K^{↔})；(b) E_R^PPT 对 AD 是 Choi-state 量，AD 非 tele-covariant per WTB 2017 故 **不是 channel UB**（见 RETRACTION §8）
+- γ > 1/2 anti-degradable: Q = 0, channel K^{↔}(AD) 真正 OPEN
 
 ### 8.6 累计测试覆盖
 
-- TestAnalyticLogNegFormulas: **13/13 tests pass**（含 SDP cross-validation, AD K_D, Plenio）
+- TestAnalyticLogNegFormulas: **13/13 tests pass**（含 SDP cross-validation, AD Q (原 K_D), Plenio）
 - TestLogNegAmplitudeDampingAnalytic: 7/7（β.G3 原有）
 - 总：20 个 analytic-related tests
 
-### 8.7 Sub-Q3 工具评估更新
+### 8.7 Sub-Q3 工具评估更新 **[2026-04-24 corrected]**
 
-| 信道 | 最紧已知 UB | 与 K_D gap |
-|------|---|---|
-| AD (γ ≤ 1/2) | E_R^PPT (SDP) | 1.03-1.52× K_D |
-| AD (γ > 1/2) | E_R^PPT (SDP) | K_D unknown |
-| Dephasing | E_R^PPT (= PLOB Eq.39) | 紧 |
-| Depolarizing | E_R^PPT (= 1-h(F)) | 紧 |
-| Erasure | log_neg (analytic) | gap < 0.09 bits |
+| 信道 | 最紧已知 channel UB | 与 channel LB gap | Tele-covariant? |
+|------|---|---|---|
+| AD (γ ≤ 1/2) | **channel UB 未知** (Choi-state E_R^PPT 非 channel UB per RETRACTION §8) | Q (channel LB) ∈ [0.33, 0.83] | **No** (WTB 2017) |
+| AD (γ > 1/2) | **channel UB 未知** | Q = 0 (channel LB, trivial) | **No** |
+| Dephasing | E_R^PPT (channel via tele-cov, = PLOB Eq.39) | K^{↔} match, 紧 | Yes |
+| Depolarizing | E_R^PPT (channel via tele-cov, = 1-h(F)) | K^{↔} 真值 UNKNOWN; K^{↔} ≤ E_R | Yes |
+| Erasure | log_neg (channel via tele-cov, analytic) | gap < 0.09 bits vs K^{↔} | Yes |
 
 ---
 
 ## Changelog
 
-- **v0.2** (2026-04-23 evening): §8 追加 — B/C 选项 + E_R^PPT SDP + bug 修复 + AD K_D + BB84 紧化
+- **v0.3** (2026-04-24 evening corrections): §8.4 per-sifted unit 错误撤回；§8.5 AD K_D → Q (LB on K^{↔}, 非 K_D)；§8.7 AD 行 tele-covariance disclaimer（AD 非 tele-cov → Choi-state E_R^PPT 非 channel UB）per RETRACTION §8
+- **v0.2** (2026-04-23 evening): §8 追加 — B/C 选项 + E_R^PPT SDP + bug 修复 + AD K_D + BB84 紧化（后撤回）
 - **v0.1** (2026-04-23): 首稿，本回合自主 session 闭环 + log_neg 框架横向延伸总结。等待用户审阅。
