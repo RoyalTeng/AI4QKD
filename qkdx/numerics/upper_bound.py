@@ -223,7 +223,38 @@ def e_r_channel_ppt(
     solver: str = "MOSEK",
     **kwargs,
 ) -> dict:
-    """E_R^PPT of a channel via its Choi state.
+    """E_R^PPT of a channel *computed on its Choi state*.
+
+    IMPORTANT — channel vs Choi-state interpretation (2026-04-24 RETRACTION §8):
+
+    This function returns the Rains/PPT relative entropy of entanglement of the
+    Choi state J_N, i.e. E_R^PPT(J_N). Interpreting this quantity as an upper
+    bound on the channel two-way key capacity K^{↔}(N) requires the channel
+    to be **teleportation-covariant** (PLOB 2017 Ex.3; Pirandola 2017 Nat Comm
+    8:15043). In general, PLOB 2017 shows
+
+        E_R(N) = sup_ρ E_R[(I⊗N)(ρ)] ≥ E_R(J_N),
+
+    i.e. the Choi-state REE is only a **lower** bound on the channel REE.
+
+    Teleportation-covariant qubit channels that DO admit E_R^PPT(J_N) =
+    channel UB on K^{↔} include (but are not limited to):
+      - Pauli channels: dephasing, depolarizing (PLOB 2017 Ex.3)
+      - Erasure channel
+
+    Channels that are NOT teleportation-covariant (so Choi-state E_R^PPT
+    does NOT automatically upper-bound channel K^{↔}):
+      - Amplitude damping (AD) channel — confirmed non-tele-covariant
+        (Wilde-Tomamichel-Berta 2017, DOI 10.1109/TIT.2017.2648825)
+      - Many other non-Pauli channels
+
+    For non-tele-covariant channels, the returned `E_R_channel_bits` is
+    only a Choi-state-level observation and should not be cited as a
+    channel capacity UB. Channel-level tools for such cases include
+    amortized REE, max-Rains SDP (Wang-Fang-Duan 2019), squashed
+    entanglement (Takeoka-Guha-Wilde 2014), etc.
+
+    See docs/research/RETRACTION.md §8 for the retraction case study.
 
     Args:
         kraus_ops: list of Kraus operators K_k (each d_out × d_in).
@@ -231,7 +262,10 @@ def e_r_channel_ppt(
 
     Returns:
         dict with:
-          E_R_channel_bits: channel E_R^PPT bound (bits/channel use)
+          E_R_channel_bits: Choi-state E_R^PPT (bits/channel use).
+            **Only a channel-level UB on K^{↔}(N) if N is teleportation-
+            covariant.** For non-tele-covariant N (e.g. AD), this is only
+            the Choi-state Rains/PPT REE, not a channel UB.
           rho_choi: Choi state
           sigma_opt, status: from e_r_ppt
     """
