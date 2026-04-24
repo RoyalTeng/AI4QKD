@@ -18,23 +18,31 @@ Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1
 
 Day 4 已有 MOSEK SDP 计算 `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv`:
 
-| γ | E_R^PPT (SDP, bits) | log_neg (analytic, bits) | Q (LB, 若 γ < 1/2) | Status |
-|---|---|---|---|---|
-| 0.05 | 0.8552 | 0.9635 | 0.8311 | degradable |
-| 0.10 | 0.7590 | 0.9260 | 0.7094 | degradable |
-| 0.20 | 0.6125 | 0.8481 | 0.5062 | degradable |
-| 0.30 | 0.4984 | 0.7655 | 0.3280 | degradable |
-| **0.50** | **0.3217** | 0.5850 | 0 (boundary) | **border** |
-| **0.70** | **0.1830** | 0.3785 | **Q = 0** | anti-degradable |
-| **0.90** | **0.0616** | 0.1375 | **Q = 0** | anti-degradable |
+| γ | E_R^PPT (SDP, bits) | log_neg (analytic, bits) | Q (LB, 若 γ < 1/2) | log_neg/E_R^PPT | Status |
+|---|---|---|---|---|---|
+| 0.05 | 0.8552 | 0.9635 | 0.8311 | 1.13 | degradable |
+| 0.10 | 0.7590 | 0.9260 | 0.7094 | 1.22 | degradable |
+| 0.20 | 0.6125 | 0.8481 | 0.5062 | 1.38 | degradable |
+| 0.30 | 0.4984 | 0.7655 | 0.3280 | 1.54 | degradable |
+| **0.50** | **0.3217** | 0.5850 | 0 (boundary) | 1.82 | **border** |
+| **0.55** | **0.2844** | 0.5361 | **Q = 0** | 1.89 | anti-degradable |
+| **0.60** | **0.2491** | 0.4854 | **Q = 0** | 1.95 | anti-degradable |
+| **0.65** | **0.2154** | 0.4330 | **Q = 0** | 2.01 | anti-degradable |
+| **0.70** | **0.1830** | 0.3785 | **Q = 0** | 2.07 | anti-degradable |
+| **0.75** | **0.1517** | 0.3219 | **Q = 0** | 2.12 | anti-degradable |
+| **0.80** | **0.1213** | 0.2630 | **Q = 0** | 2.17 | anti-degradable |
+| **0.85** | **0.0913** | 0.2016 | **Q = 0** | 2.21 | anti-degradable |
+| **0.90** | **0.0616** | 0.1375 | **Q = 0** | 2.23 | anti-degradable |
+| **0.95** | **0.0315** | 0.0704 | **Q = 0** | 2.24 | anti-degradable |
 
-（Q 列通过 `quantum_capacity_amplitude_damping_degradable` 实时计算；其余来自 `qubit_E_R_PPT_SDP_all_4.csv` + `analytic_log_neg_amplitude_damping`。）
+（Q 列通过 `quantum_capacity_amplitude_damping_degradable` 实时计算；E_R^PPT 来自 `qubit_E_R_PPT_SDP_all_4.csv` + `AD_antidegradable_E_R_PPT_fill.csv`；log_neg 解析 `analytic_log_neg_amplitude_damping`。）
 
 **关键结果**:
 
-- **E_R^PPT(γ=0.7) = 0.183 bits**：非平凡 UB 上限，即使 Q = 0
-- **E_R^PPT(γ=0.9) = 0.062 bits**：近归零但仍非零
-- **log_neg 与 E_R^PPT 比率**（γ > 1/2 区）：0.585/0.322 ≈ 1.82, 0.379/0.183 ≈ 2.07, 0.138/0.062 ≈ 2.24 — log_neg 持续 ~2× 更松
+- **E_R^PPT 在整个 γ > 1/2 区保持非平凡**：γ=0.55 → 0.284, γ=0.95 → 0.032 bits
+- **Q = 0 全区** (anti-degradable) 但 E_R^PPT SDP 给出**严格 UB** 在 K^{↔}
+- **log_neg / E_R^PPT 比率单调递增**：degradable 区 1.1-1.5×, anti-degradable 区 1.9-2.2×；γ→1 趋近 log₂(3)/log₂(2) ≈ 2.25×
+- **E_R^PPT 随 γ 凸递减** 到 0 at γ=1（完全损耗），平滑衔接 degradable→anti-degradable 两区
 
 ---
 
@@ -110,8 +118,11 @@ Q(AD, γ=0.7)     = 0             （anti-degradable）
 
 ## 7. 相关产物
 
-- 数据: `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv` (Day 4 e054a1e)
-- 脚本: `scripts/qubit_E_R_PPT_SDP_all_4_channels.py`
+- 数据（原稀疏）: `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv` (Day 4 e054a1e)
+- 数据（本轮 fill）: `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` (7 new pts)
+- 脚本（原）: `scripts/qubit_E_R_PPT_SDP_all_4_channels.py`
+- 脚本（本轮）: `scripts/AD_antidegradable_E_R_PPT_fill.py` + `scripts/AD_anti_degradable_plot.py`
+- 图: `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}`（14 SDP 点 + 解析 log_neg/Q）
 - 前置 memo: `docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md`（AD 部分）
 - 前置 memo: `docs/findings/upper_bound_report.md §11.3`（4 信道 hierarchy table）
 
