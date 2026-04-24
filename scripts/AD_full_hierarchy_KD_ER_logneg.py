@@ -123,13 +123,16 @@ def main():
     print(f"  CSV:  docs/research/data/AD_complete_hierarchy.csv")
     print(f"  PNG:  docs/research/figures/AD_complete_hierarchy.png")
     print()
-    print(f"AD hierarchy (γ ≤ 1/2 degradable): Q ≤ K^{{↔}} ≤ E_R^PPT ≤ log_neg")
-    print(f"  {'γ':>6} {'Q (LB)':>9} {'E_R^PPT':>9} {'log_neg':>9} {'E_R/Q':>9} {'log_neg/Q':>11}")
+    print(f"AD (γ ≤ 1/2): channel Q (LB on K^{{↔}}) vs Choi-state E_R^PPT and log_neg")
+    print(f"  (AD not tele-covariant per WTB 2017; Choi-state E_R^PPT is NOT a channel")
+    print(f"   K^{{↔}} UB for AD. Channel K^{{↔}}(AD) OPEN. Ratios below are Choi-vs-channel")
+    print(f"   informational comparisons, not UB/LB hierarchy statements.)")
+    print(f"  {'γ':>6} {'Q (ch LB)':>10} {'E_R^PPT (Choi)':>16} {'log_neg (Choi)':>16} {'ratio ER/Q':>11} {'ratio ln/Q':>11}")
     for g, ev in er_pts:
         if g >= 0.5: break
         q = quantum_capacity_amplitude_damping_degradable(g)
         ln = analytic_log_neg_amplitude_damping(g)
-        print(f"  {g:6.4f} {q:9.4f} {ev:9.4f} {ln:9.4f} {ev/q:9.3f} {ln/q:11.3f}")
+        print(f"  {g:6.4f} {q:10.4f} {ev:16.4f} {ln:16.4f} {ev/q:11.3f} {ln/q:11.3f}")
 
 
 if __name__ == "__main__":

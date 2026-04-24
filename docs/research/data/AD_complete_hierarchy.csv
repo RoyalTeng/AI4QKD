@@ -1,4 +1,4 @@
-gamma,log_neg_analytic,K_D_degradable_analytic
+gamma,log_neg_analytic,Q_degradable_analytic_LB_on_K2way
 0.0010,0.9992784721,0.9938008937
 0.0020,0.9985580273,0.9886167825
 0.0030,0.9978372225,0.9838117772

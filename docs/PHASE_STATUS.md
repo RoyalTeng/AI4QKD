@@ -84,7 +84,7 @@
 - ✅ **Day 4 数值补强**（commits b4efaae → 7e17e44）
   - `e_r_depolarizing_analytic` bug 修复（d²-1 vs d-1）
   - `quantum_capacity_amplitude_damping_degradable` (Q = LB on K^{↔}) for γ ≤ 1/2
-  - 4 信道 Plenio 不等式 Q ≤ K^{↔} ≤ E_R ≤ log_neg 数值验证 800 pts
+  - 4 信道 Plenio 不等式 E_R ≤ log_neg 数值验证 800 pts (Choi-state level for AD; channel level for tele-covariant dephase/depolar/erasure per PLOB Ex.3; AD channel K^{↔} UB unresolved per RETRACTION §8)
 
 ### 3.2 OPEN 结构 gap（等用户 paper-level work）
 
