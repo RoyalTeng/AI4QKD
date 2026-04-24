@@ -480,35 +480,41 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
 
 ### 11.2 4 qubit 信道 log_neg 解析公式（[SYN]，SymPy 验证）
 
-| 信道 | log_neg (UB) | 最紧已知 K^{↔} 下界 | 最紧已知 K^{↔} 上界 |
-|------|------------|---------------------|---------------------|
-| AD (γ ≤ 1/2) | `log₂(2−γ)` | Q = `max_p[h₂((1-γ)p) − h₂(γp)]` (degradable, K^{↔} ≥ Q) | E_R^PPT (SDP) |
-| AD (γ > 1/2) | `log₂(2−γ)` | unknown (anti-degradable，K^{↔} OPEN) | log_neg (loose) |
-| Dephasing | `log₂(1+\|1−2p\|)` | K^{↔} = `1−h(p)` (PLOB Eq.39 [SYN]) | = log_neg UB |
-| Depolarizing | `max(0, log₂(2−3p/2))` | K^{↔} UNKNOWN (E_R = `1−h(F)` is UB) | E_R (Vollbrecht-Werner) |
-| Erasure | `log₂(2−p)` | K^{↔} = `1−p` (PLOB Eq.43) | log_neg (接近紧) |
+**前提 — Choi-state vs channel-level 的区分** (2026-04-24 corrected after Codex REJECTED review of AD memo):
+- **Teleportation-covariant 信道** (PLOB 2017 Ex.3: dephasing, depolarizing, erasure 等 Pauli 信道): Choi-state REE ≡ channel REE → `E_R^PPT(J_N)` 可作 channel `K^{↔}(N)` 的 UB
+- **Non-tele-covariant 信道** (如 AD, WTB 2017): Choi-state E_R^PPT **不**自动 upper-bound channel K^{↔} —— 需 amortized / squashed / max-Rains 等 channel-level 工具。本表 AD 行的 E_R^PPT 值仅是 **Choi 态 Rains 熵**，不是 channel UB。
+
+| 信道 | log_neg (Choi) | 最紧已知 K^{↔} 下界 | 最紧已知 K^{↔} 上界 | tele-covariant? |
+|------|----------------|---------------------|---------------------|-----------------|
+| AD (γ ≤ 1/2) | `log₂(2−γ)` | Q = `max_p[h₂((1-γ)p) − h₂(γp)]` (degradable, K^{↔} ≥ Q) | **channel UB 未知** (Choi-state E_R^PPT 不转 channel UB) | **No** |
+| AD (γ > 1/2) | `log₂(2−γ)` | unknown (anti-degradable，K^{↔} OPEN) | **channel UB 未知** | **No** |
+| Dephasing | `log₂(1+\|1−2p\|)` | K^{↔} = `1−h(p)` (PLOB Eq.39 [SYN]) | = log_neg UB (tele-cov → channel) | Yes |
+| Depolarizing | `max(0, log₂(2−3p/2))` | K^{↔} UNKNOWN (E_R = `1−h(F)` is channel UB) | E_R (Vollbrecht-Werner, channel 级) | Yes |
+| Erasure | `log₂(2−p)` | K^{↔} = `1−p` (PLOB Eq.43) | log_neg (接近紧, channel 级) | Yes |
 
 实现：`analytic_log_neg_{amplitude_damping, dephasing, depolarizing, erasure}` + `quantum_capacity_amplitude_damping_degradable` (computes Q, NOT K^{↔}) in `qkdx/numerics/upper_bound.py`。
 
 测试：13 tests in `TestAnalyticLogNegFormulas`（含 SymPy SDP 双验证 + Plenio 不等式 4 信道 × 200 grid pts × 800 检查 + bug regression）。
 
-### 11.3 上界紧度层级（**Day 4 完成 hierarchy table**）
+### 11.3 上界紧度层级（**Day 4 完成 hierarchy table**; 2026-04-24 evening Choi-state vs channel-level 修订）
 
-| 信道 | log_neg (UB) | E_R^PPT (UB) | K^{↔} 已知范围 | E_R^PPT / K^{↔}_LB |
-|------|-------------|--------------|----------------|---------------------|
-| AD γ=0.05 | 0.964 | 0.855 | Q=0.831 ≤ K^{↔} ≤ 0.855 | **1.03** |
-| AD γ=0.10 | 0.926 | 0.759 | Q=0.709 ≤ K^{↔} ≤ 0.759 | 1.07 |
-| AD γ=0.20 | 0.848 | 0.612 | Q=0.506 ≤ K^{↔} ≤ 0.612 | 1.21 |
-| AD γ=0.30 | 0.766 | 0.498 | Q=0.328 ≤ K^{↔} ≤ 0.498 | 1.52 |
-| Dephase p=0.10 | 0.848 | 0.531 | K^{↔}=0.531 (PLOB Eq.39) → E_R^PPT = K^{↔} | **1.000** |
-| Depolar p=0.10 | 0.888 | 0.616 | K^{↔} ≤ E_R = 0.616; K^{↔} UNKNOWN | K^{↔} ≤ E_R^PPT; 紧度 UNKNOWN |
+| 信道 | log_neg (Choi) | E_R^PPT (Choi, SDP) | channel K^{↔} 已知范围 | 备注 |
+|------|---------------|---------------------|------------------------|------|
+| AD γ=0.05 | 0.964 | 0.855 (Choi only) | Q=0.831 ≤ K^{↔} ≤ **channel UB 未知** | AD **not** tele-covariant; Choi-SDP 不转 channel UB |
+| AD γ=0.10 | 0.926 | 0.759 (Choi only) | Q=0.709 ≤ K^{↔} ≤ **channel UB 未知** | 同上 |
+| AD γ=0.20 | 0.848 | 0.612 (Choi only) | Q=0.506 ≤ K^{↔} ≤ **channel UB 未知** | 同上 |
+| AD γ=0.30 | 0.766 | 0.498 (Choi only) | Q=0.328 ≤ K^{↔} ≤ **channel UB 未知** | 同上 |
+| Dephase p=0.10 | 0.848 | 0.531 (**channel UB**) | K^{↔}=0.531 (PLOB Eq.39) → E_R^PPT = K^{↔} | tele-covariant (PLOB Ex.3) |
+| Depolar p=0.10 | 0.888 | 0.616 (**channel UB**) | K^{↔} ≤ E_R = 0.616; K^{↔} 真值 UNKNOWN | tele-covariant (PLOB Ex.3) |
 
-**关键 Sub-Q3 工具评估**：
-- **Dephasing: E_R^PPT = K^{↔}**（PLOB Eq.39 SDP 验证 [SYN]）→ PPT-SDP 在 K^{↔} 层完全紧化
-- **Depolarizing: E_R^PPT = E_R**（Vollbrecht-Werner SDP 验证）→ E_R 是 K^{↔} 的紧 UB（K^{↔} ≤ E_R）；K^{↔} 真值 UNKNOWN
-- **AD degradable: Q ≤ K^{↔} ≤ E_R^PPT，gap E_R^PPT/Q ∈ [1.03, 1.52]** → E_R^PPT 是接近紧 UB（相对 Q 下界）
-- **AD anti-degradable: K^{↔} 真正 OPEN**（Q=0 但 K^{↔} 可能 > 0 via 两向 LOCC）
-- **Erasure: K^{↔} ≈ 0.90，log_neg ≈ 0.93 → log_neg − K^{↔} ≤ 0.09 bits** → log_neg 接近紧
+**关键 Sub-Q3 工具评估**（修订）：
+- **Dephasing: E_R^PPT = K^{↔} (channel)**（PLOB Eq.39 SDP 验证 [SYN]）→ PPT-SDP 在 K^{↔} 层完全紧化
+- **Depolarizing: E_R^PPT = E_R (channel)**（Vollbrecht-Werner SDP 验证）→ E_R 是 channel K^{↔} 的紧 UB
+- **AD degradable: Q 是 channel 级 LB; Choi-state E_R^PPT 不是 channel UB**（AD 非 tele-covariant；gap 表述应改为 Q ≤ K^{↔}, channel UB 需 amortized/max-Rains 工具）
+- **AD anti-degradable: K^{↔} 真正 OPEN**（Q=0 但 K^{↔} 可能 > 0）；Choi-state E_R^PPT ≠ channel UB
+- **Erasure: tele-covariant → E_R^PPT 是 channel UB; K^{↔} ≈ 0.90，log_neg ≈ 0.93** → log_neg 接近紧（channel 级）
+
+**教训** (2026-04-24 Codex REJECTED `AD_anti_degradable_E_R_PPT_2026-04-24.md` v1.0 后记录): `e_r_channel_ppt` 函数计算 Choi 态 Rains 熵；对 tele-covariant 信道是 channel capacity UB，对非 tele-covariant 信道（如 AD）**不是**。先前 §11 的 AD 行 "E_R^PPT(AD) / Q ratio" 若读作 channel K^{↔} / Q 紧度，会误导。现已修订，保留数值 record（作 Choi-state benchmark）+ 显式 channel-level disclaimer。
 
 ### 11.4 BB84 / six-state 紧化分析
 
@@ -562,6 +568,7 @@ n-fold self-composition 给出 4 信道分两类参数递归：
 
 ## Changelog
 
+- **v0.7** (2026-04-24 evening post-Codex-REJECTED): §11.2 + §11.3 修订 AD 的 E_R^PPT 陈述 — Choi-state vs channel-level 区分明示。AD 非 tele-covariant (WTB 2017 + PLOB Ex.3)，Choi-state E_R^PPT 不是 channel K^{↔} UB。先前 "E_R^PPT(AD)/Q ratio" 若读作 channel 层紧度是误导，已加 disclaimer 保留数据 record。Dephasing/depolarizing/erasure 的 channel-level 陈述仍有效（tele-covariant）。
 - **v0.6** (2026-04-24 Round 2): 三项 FAIL 修正 — (1) AD K_D → Q rename（Q 是 LB on K^{↔} 非 UB）；(2) 六态 UB-LB 单位修正（per-signal 比率 ~3-6×，撤回 ≤1.8× "接近闭合"）；(3) 澄清 depolarizing K^{↔} UNKNOWN（E_R^PPT = E_R，非 K^{↔}）。
 - **v0.5** (2026-04-24 Day 4): §11 增补 — e_r_depolarizing_analytic bug 修复 + AD Q degradable 公式 + 4 信道 hierarchy + 六态 UB-LB（单位错误版）+ Plenio 4-channel 扩展。已由 v0.6 修正。
 - **v0.4** (2026-04-23 Day 3 cont.): §10.3 expanded — added E_R^PPT single-arm grid (Layer 2); golden ratio crossover η_c=1/φ; E_R^PPT < PLOB for all η; [CONJ-DRAFT] additivity pending 16×16 SDP verification

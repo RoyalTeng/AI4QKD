@@ -276,3 +276,56 @@ Claude + codex + 其他 LLM 即便独立部署,**仍可能共享训练语料偏�
 ---
 
 *RETRACTION §7 结束。β v0.4 + γ v0.6 状态: 已撤回。path β/γ formal status: user research-level work 原计划 unchanged.*
+
+---
+
+## 8. AD_anti_degradable_E_R_PPT_2026-04-24.md v1.0 撤回 (2026-04-24 evening)
+
+**背景**: Day 4 autonomous session 续（16948fe 之后）, AI 为 AD γ>1/2 anti-degradable 区 SDP 数据扩展写了 [SYN] memo。声称 "E_R^PPT(J_{N_AD}) 是 channel K^{↔}(N_AD) 的严格 UB"。
+
+**Codex 独立评审 verdict (2026-04-24)**: **REJECTED** — critical: channel capacity claim not supported; major: `log₂(3)/log₂(2) = 2.25` 数学错误（实际 = log₂(3) ≈ 1.585，数据经验值 2.24 无封闭解释）。
+
+### 8.1 关键错误
+
+1. **Choi-state E_R 是 channel E_R 的 LOWER bound, 不是 UB**
+   - PLOB 2017: `E_R(N) = sup_ρ E_R[(I⊗N)(ρ)] ≥ E_R(J_N)` — 即 channel REE ≥ Choi-state REE
+   - 从 Choi 态升到 channel capacity 需 **teleportation-covariance** (Pirandola 2017, Nat Comm 8:15043)
+   - **AD channel 不是 teleportation-covariant** (WTB 2017) → Choi-state SDP 值不直接转为 channel UB
+
+2. **K^{↔} ≤ D^{↔}_d 是 FALSE**
+   - Horodecki et al. 2005 (PRL 94:160502): private states 可有 key 而不蒸馏 ebit
+   - 所以"因 K^{↔} ≤ D^{↔}_d ≤ E_R，故 K^{↔} ≤ E_R^PPT" 推理链错
+
+3. **Horodecki 1996 2⊗2 PPT = SEP 只作用于 Choi 态层面**
+   - 升级 `E_R^PPT(J_N) = E_R(J_N)` at Choi-state level
+   - **不**继承到 channel 级反向
+
+### 8.2 Action
+
+- memo v1.1: §-1 撤回公告 + §2 重写为 "OPEN channel-level 问题"；title 改为 "Choi-state E_R^PPT 数值观察（不构成 channel-level UB）"
+- 分级降至 [SYN-DATA]（Choi-state 数值观察）
+- plot 标题撤销 "Q ≤ K^{↔} ≤ E_R^PPT"，改为 "Choi-state only, not channel-level UB"
+- CSV 数据保留（纯数值无错）
+
+### 8.3 方法论教训 — 第 6 次 trap
+
+此次是 channel-vs-state 跨层级混淆，模式**不同于** §7 的 cross-space trap 但同属**silent upgrade** 家族：
+
+- 抓取"Choi-state SDP returns nonzero value" → 默认套"channel K^{↔} ≤ ..."不审
+- 未检查 teleportation-covariance 前提
+- 未检查 K^{↔} ≤ D_d^{↔} 的正确方向（Horodecki 2005 反例就是私有态）
+- **silent upgrade 发生点**: 标题 "E_R^PPT 作为 K^{↔} 的 UB"（即立宣告 channel-level claim）
+
+**反映了 `feedback_ai_draft_structural_gaps.md` 的 red-flag 警告**: AI 易把 state-level 数值直接等同 channel-level 陈述。
+
+### 8.4 对前期 report 的回溯检查要求
+
+需检查 `docs/findings/upper_bound_report.md §11` 对 AD 的 E_R^PPT 陈述是否也犯同样错误（即是否未注明 Choi-state-only 边界）。
+
+前期 dephasing/depolarizing/erasure 的 channel-level E_R^PPT 陈述**可能仍有效**（这些信道是 teleportation-covariant per PLOB 2017 Ex.3），但需显式验证。
+
+**TODO** (下一轮 commit): upper_bound_report §11 添加明示的 "AD: Choi-state only" vs "depolarizing/dephasing/erasure: channel-level via tele-covariance" 区分。
+
+---
+
+*RETRACTION §8 结束。AD v1.0 状态: 已撤回至 Choi-state only。AD channel-level K^{↔} UB 问题: OPEN, pending user paper-level work on teleportation-covariance-free bounds.*

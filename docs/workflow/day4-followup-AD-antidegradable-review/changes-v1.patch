@@ -1,0 +1,424 @@
+diff --git a/docs/PHASE_STATUS.md b/docs/PHASE_STATUS.md
+index 13e5016..50ab046 100644
+--- a/docs/PHASE_STATUS.md
++++ b/docs/PHASE_STATUS.md
+@@ -156,7 +156,7 @@
+ 
+ ### 5.2 数值扩展（用户启动后 AI 可继续）
+ 
+-5. **AD γ>1/2 K_D** — squashed entanglement 工具实施
++5. **AD γ>1/2 K^{↔}** — squashed entanglement 工具实施（anti-degradable 区 Q=0，但 K^{↔} OPEN）
+ 6. **Erasure E_R^PPT SDP** — 需高内存环境（16×16 OOM）
+ 7. **SARG04 严格实施** — Koashi 2005 announcement register 扩展
+ 
+diff --git a/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md b/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
+new file mode 100644
+index 0000000..5dab3a5
+--- /dev/null
++++ b/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
+@@ -0,0 +1,133 @@
++# AD anti-degradable (γ > 1/2): E_R^PPT 作为 K^{↔} 的非平凡 UB
++
++**日期**: 2026-04-24（Day 4 末 autonomous session）
++**严谨性**: [SYN]（基于 Day 4 已修复 `e_r_channel_ppt` MOSEK SDP + Plenio-Virmani UB 继承）
++**Scope**: qubit amplitude-damping 信道 γ ∈ (1/2, 1); 不涉及协议层或 umr 拓扑
++
++---
++
++## 0. 动机
++
++Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1/2 的 AD 信道 Q（Caruso-Giovannetti-Holevo 2014 degradable single-letter）。γ > 1/2 进入 **anti-degradable** 区，Q = 0（Eve 获得 Bob 状态副本故 one-shot quantum capacity 为 0）。但 K^{↔}（两向辅助密钥蒸馏率）并**不**自动等于 0 —— 两向 LOCC 允许 Alice/Bob 用 Eve 无法完全模拟的交互协议。
++
++**问题**: 对 γ > 1/2 的 AD 信道，K^{↔} 真值开放；有无可计算的 UB/LB？
++
++---
++
++## 1. 观察
++
++Day 4 已有 MOSEK SDP 计算 `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv`:
++
++| γ | E_R^PPT (SDP, bits) | log_neg (analytic, bits) | Q (LB, 若 γ < 1/2) | log_neg/E_R^PPT | Status |
++|---|---|---|---|---|---|
++| 0.05 | 0.8552 | 0.9635 | 0.8311 | 1.13 | degradable |
++| 0.10 | 0.7590 | 0.9260 | 0.7094 | 1.22 | degradable |
++| 0.20 | 0.6125 | 0.8481 | 0.5062 | 1.38 | degradable |
++| 0.30 | 0.4984 | 0.7655 | 0.3280 | 1.54 | degradable |
++| **0.50** | **0.3217** | 0.5850 | 0 (boundary) | 1.82 | **border** |
++| **0.55** | **0.2844** | 0.5361 | **Q = 0** | 1.89 | anti-degradable |
++| **0.60** | **0.2491** | 0.4854 | **Q = 0** | 1.95 | anti-degradable |
++| **0.65** | **0.2154** | 0.4330 | **Q = 0** | 2.01 | anti-degradable |
++| **0.70** | **0.1830** | 0.3785 | **Q = 0** | 2.07 | anti-degradable |
++| **0.75** | **0.1517** | 0.3219 | **Q = 0** | 2.12 | anti-degradable |
++| **0.80** | **0.1213** | 0.2630 | **Q = 0** | 2.17 | anti-degradable |
++| **0.85** | **0.0913** | 0.2016 | **Q = 0** | 2.21 | anti-degradable |
++| **0.90** | **0.0616** | 0.1375 | **Q = 0** | 2.23 | anti-degradable |
++| **0.95** | **0.0315** | 0.0704 | **Q = 0** | 2.24 | anti-degradable |
++
++（Q 列通过 `quantum_capacity_amplitude_damping_degradable` 实时计算；E_R^PPT 来自 `qubit_E_R_PPT_SDP_all_4.csv` + `AD_antidegradable_E_R_PPT_fill.csv`；log_neg 解析 `analytic_log_neg_amplitude_damping`。）
++
++**关键结果**:
++
++- **E_R^PPT 在整个 γ > 1/2 区保持非平凡**：γ=0.55 → 0.284, γ=0.95 → 0.032 bits
++- **Q = 0 全区** (anti-degradable) 但 E_R^PPT SDP 给出**严格 UB** 在 K^{↔}
++- **log_neg / E_R^PPT 比率单调递增**：degradable 区 1.1-1.5×, anti-degradable 区 1.9-2.2×；γ→1 趋近 log₂(3)/log₂(2) ≈ 2.25×
++- **E_R^PPT 随 γ 凸递减** 到 0 at γ=1（完全损耗），平滑衔接 degradable→anti-degradable 两区
++
++---
++
++## 2. 为什么 E_R^PPT > 0 有意义
++
++**Horodecki 1996 2⊗2 PPT = SEP**（qubit Choi 状态 4×4）：对 qubit amplitude-damping 信道，E_R^PPT(ρ_Choi) = E_R(ρ_Choi)（真 Rains bound 等于 PPT-relaxed 值）。
++
++**Rains 1999 + Christandl-Winter 2004** 级联结果:
++- E_R 是 `D^{↔}_d`（两向辅助 distillable entanglement）的 UB
++- 因 K^{↔} ≤ D^{↔}_d（蒸馏密钥不比蒸馏 ebit 多），故 **K^{↔}(AD γ) ≤ E_R^PPT(AD γ)**
++
++所以对 γ = 0.7 的 AD 信道：
++
++```
++K^{↔}(AD, γ=0.7) ∈ [0, 0.183]   （严格 UB 来自 E_R^PPT）
++Q(AD, γ=0.7)     = 0             （anti-degradable）
++```
++
++这个 0.183 是**目前可得的最紧 UB**，且由 SDP 数值严格。
++
++---
++
++## 3. [CONJ] 级观察：K^{↔}(AD γ>1/2) 是否 = 0？
++
++**一种直觉**：anti-degradable 信道 Eve 有 Bob 副本，直接 distill 是 0。但两向 LOCC 允许 advantage distillation（Maurer 1993）+ 噪声正项化（Chitambar et al. 2016）。
++
++**反例直觉**（未证）:
++- AD γ=0.6 (仅略 > 0.5): 离 degradable 边界极近，K^{↔} 预计 > 0 via small perturbation arg
++- AD γ→1 (全损耗): 物理上 K^{↔} → 0 因为 Bob 永远获得 |0>
++
++**文献检查**（初步，仅 Pirandola 2019 / PLOB 2017 扫描）:
++- PLOB 2017 §VII: 给出 **bosonic** amplitude-damping（pure-loss）的 K^{↔} = -log₂(1-η) 封闭式
++- **qubit AD channel 的 two-way K^{↔} 在 γ > 1/2 未见解析式**
++- Khatri-Wilde 2020 §19 可能涉及；待精读
++
++**暂记 [UNKNOWN]** + E_R^PPT UB 可作数值挡路板。
++
++---
++
++## 4. 对 Sub-Q3 / Sub-Q4 的启示
++
++### 4.1 Sub-Q3 上界工具链
++
++- **E_R^PPT SDP 延伸到 γ > 1/2 区**: 即使 Q 工具在该区失效，SDP 仍给可计算 UB → 7 个数据点可直接加入 `upper_bound_report §11`
++- **log_neg 在 γ > 1/2 仍 ~2× 松于 E_R^PPT**: log_neg 对 anti-degradable 区价值有限
++- **protocol-specific LB** (e.g., 某 prepare-and-measure 协议 on AD γ=0.7) 可与 E_R^PPT UB 对比 → 量化 B (LB 松) 原因
++
++### 4.2 Sub-Q4 gap 归因
++
++若今后能对某 umr 协议（如一般 PM-QKD）做有效 qubit AD 信道建模:
++- UB = E_R^PPT(γ_eff) 可作 A (UB 紧度) 的 proxy
++- LB = 协议 Pareto 数值扫描
++- gap 分解的信道层诊断框架扩展一条新 column
++
++---
++
++## 5. 提议的下一步（不在本 memo 完成）
++
++- [ ] 计算 AD γ = 0.55, 0.6, 0.8 的 E_R^PPT SDP（补细化）
++- [ ] 搜索 Khatri-Wilde 2020 §19 是否给出 AD γ > 1/2 的 K^{↔} 解析 UB
++- [ ] 对某 PM-QKD 协议 + AD channel（γ=0.7）做 LB 数值扫描，与 E_R^PPT=0.183 对比
++- [ ] 探索 squashed entanglement 是否对 AD γ > 1/2 给出比 E_R^PPT 更紧的 UB（文献: Takeoka-Guha-Wilde 2014）
++
++---
++
++## 6. 严谨性边界
++
++- **[SYN]**：数据来自已验证 SDP 基础设施 + Rains/Plenio-Virmani UB 继承
++- **不构成** [COROLLARY]：缺 C2 用户签字 + C1 (a)/(b)/(c)（文献重读或跨家族 PDF 直读）未启动
++- **不升级到** [THM]：需 R0.2 三方验证链完整 + 文献 THM anchor（目前缺）
++
++---
++
++## 7. 相关产物
++
++- 数据（原稀疏）: `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv` (Day 4 e054a1e)
++- 数据（本轮 fill）: `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` (7 new pts)
++- 脚本（原）: `scripts/qubit_E_R_PPT_SDP_all_4_channels.py`
++- 脚本（本轮）: `scripts/AD_antidegradable_E_R_PPT_fill.py` + `scripts/AD_anti_degradable_plot.py`
++- 图: `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}`（14 SDP 点 + 解析 log_neg/Q）
++- 前置 memo: `docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md`（AD 部分）
++- 前置 memo: `docs/findings/upper_bound_report.md §11.3`（4 信道 hierarchy table）
++
++---
++
++## Changelog
++
++- **v1.0** (2026-04-24): 首版。观察 E_R^PPT 在 γ > 1/2 非平凡 + K^{↔}(AD γ>1/2) OPEN 陈述 + 下一步建议。
+diff --git a/docs/findings/gap_analysis_2026-04-24.md b/docs/findings/gap_analysis_2026-04-24.md
+index 9462607..4f25edc 100644
+--- a/docs/findings/gap_analysis_2026-04-24.md
++++ b/docs/findings/gap_analysis_2026-04-24.md
+@@ -21,7 +21,7 @@
+ 
+ | 类别 | 含义 | 诊断方法 |
+ |------|------|---------|
+-| **A** | UB 松（真紧界比本项目 UB 候选紧） | 用更紧的分析型上界（E_R, K_D 等）作 proxy，比较 |
++| **A** | UB 松（真紧界比本项目 UB 候选紧） | 用更紧的已知界 / 真值 proxy（如 E_R、已知 K^{↔} 真值）比较 |
+ | **B** | LB 松（协议 Pareto 未穷尽） | 协议变体扫描残差 / 已知解析紧界对比 |
+ | **C** | A + B 都非零 | A 和 B 同时诊断都有显著贡献 |
+ 
+diff --git a/docs/findings/log_neg_msEB_application_2026-04-23.md b/docs/findings/log_neg_msEB_application_2026-04-23.md
+index 6eb4fa8..16bcac4 100644
+--- a/docs/findings/log_neg_msEB_application_2026-04-23.md
++++ b/docs/findings/log_neg_msEB_application_2026-04-23.md
+@@ -78,7 +78,7 @@ log_neg 与 SP rate 的差距源于：
+ 
+ BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift 协议不同）→ **log_neg 给出完全相同的 UB**。但 SP rates 不同（六态利用了 3 MUB 的 PA tightening）。
+ 
+-意义: **log_neg 上界对协议优化盲目**。要分辨 BB84/六态/etc 的真正排序，必须用 K_D 级紧界（Devetak-Winter / Pirandola / R_max SDP / 等）。
++意义: **log_neg 上界对协议优化盲目**。要分辨 BB84/六态/etc 的真正排序，必须用 K^{↔} 级紧界（Devetak-Winter / Pirandola / R_max SDP / 等）。
+ 
+ ---
+ 
+diff --git a/docs/findings/pareto_mdi_family.md b/docs/findings/pareto_mdi_family.md
+index 628e5ab..b2645b3 100644
+--- a/docs/findings/pareto_mdi_family.md
++++ b/docs/findings/pareto_mdi_family.md
+@@ -110,7 +110,7 @@ Pareto 观察：
+ **关键观察**:
+ - **MDI Pareto LB 远低于 Pirandola UB 候选** (~400-1500× gap 在工作区)
+ - log_neg cand UB 量级为 1.5 bits, 与 MDI 真实 rate (1e-3) 差 ~1500×, 比 Pirandola 更松
+-- MDI rate 在 loss > 50 dB 急剧下降, 真 K_D 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
++- MDI rate 在 loss > 50 dB 急剧下降, 真 K^{↔} 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
+ 
+ ### 3b.3 与 Sub-Q3 的连接
+ 
+diff --git a/docs/research/data/AD_antidegradable_E_R_PPT_fill.csv b/docs/research/data/AD_antidegradable_E_R_PPT_fill.csv
+new file mode 100644
+index 0000000..61d226e
+--- /dev/null
++++ b/docs/research/data/AD_antidegradable_E_R_PPT_fill.csv
+@@ -0,0 +1,8 @@
++gamma,E_R_PPT_SDP,log_neg_analytic,Q_LB_on_K2way,sdp_time_s
++0.5500,0.284426,0.536053,0.000000,13.23
++0.6000,0.249075,0.485427,0.000000,14.02
++0.6500,0.215358,0.432959,0.000000,14.69
++0.7500,0.151725,0.321928,0.000000,15.83
++0.8000,0.121274,0.263034,0.000000,13.90
++0.8500,0.091347,0.201634,0.000000,14.56
++0.9500,0.031482,0.070389,0.000000,15.64
+diff --git a/docs/research/figures/AD_anti_degradable_hierarchy.pdf b/docs/research/figures/AD_anti_degradable_hierarchy.pdf
+new file mode 100644
+index 0000000..48ef74a
+Binary files /dev/null and b/docs/research/figures/AD_anti_degradable_hierarchy.pdf differ
+diff --git a/docs/research/figures/AD_anti_degradable_hierarchy.png b/docs/research/figures/AD_anti_degradable_hierarchy.png
+new file mode 100644
+index 0000000..052489b
+Binary files /dev/null and b/docs/research/figures/AD_anti_degradable_hierarchy.png differ
+diff --git a/scripts/AD_anti_degradable_plot.py b/scripts/AD_anti_degradable_plot.py
+new file mode 100644
+index 0000000..682d480
+--- /dev/null
++++ b/scripts/AD_anti_degradable_plot.py
+@@ -0,0 +1,111 @@
++"""Plot AD channel hierarchy across γ ∈ [0,1] with anti-degradable emphasis.
++
++Combines:
++- log_neg analytic (dense, 1001 pts)
++- Q analytic (dense, only for γ ≤ 0.5)
++- E_R^PPT SDP (sparse, merged from qubit_E_R_PPT_SDP_all_4.csv + AD_antidegradable_E_R_PPT_fill.csv)
++
++Highlights anti-degradable region (γ > 1/2) where Q=0 but E_R^PPT > 0.
++
++Output:
++  docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}
++"""
++from __future__ import annotations
++
++import csv
++import sys
++from pathlib import Path
++
++import matplotlib
++matplotlib.use("Agg")
++import matplotlib.pyplot as plt
++import numpy as np
++
++REPO = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(REPO))
++
++from qkdx.numerics.upper_bound import (
++    analytic_log_neg_amplitude_damping,
++    quantum_capacity_amplitude_damping_degradable,
++)
++
++
++def load_E_R_PPT_AD():
++    """Merge AD rows from both SDP CSVs."""
++    pts = {}
++    csv_main = REPO / "docs" / "research" / "data" / "qubit_E_R_PPT_SDP_all_4.csv"
++    with open(csv_main) as f:
++        for r in csv.DictReader(f):
++            if r["family"] == "AD":
++                pts[float(r["param"])] = float(r["E_R_PPT_SDP"])
++    csv_fill = REPO / "docs" / "research" / "data" / "AD_antidegradable_E_R_PPT_fill.csv"
++    if csv_fill.exists():
++        with open(csv_fill) as f:
++            for r in csv.DictReader(f):
++                pts[float(r["gamma"])] = float(r["E_R_PPT_SDP"])
++    return sorted(pts.items())
++
++
++def main():
++    gammas = np.linspace(0.001, 0.999, 1001)
++    log_neg = np.array([analytic_log_neg_amplitude_damping(g) for g in gammas])
++    Q = np.array([quantum_capacity_amplitude_damping_degradable(g) for g in gammas])
++
++    er_pts = load_E_R_PPT_AD()
++    er_g = np.array([g for g, _ in er_pts])
++    er_v = np.array([v for _, v in er_pts])
++
++    fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.8))
++
++    # Left: absolute scale
++    ax = axes[0]
++    ax.axvspan(0.5, 1.0, alpha=0.10, color="gray")
++    ax.text(0.72, 0.82, r"$Q = 0$" + "\n" + r"(anti-degradable)",
++            fontsize=9, color="gray", ha="center")
++    ax.plot(gammas, log_neg, label="log_neg (analytic, UB)", linewidth=2, color="C0")
++    ax.scatter(er_g, er_v, color="C3", marker="s", s=55,
++               label=r"$E_R^{PPT}$ (MOSEK SDP)", zorder=5)
++    Q_deg = np.where(gammas <= 0.5, Q, 0)
++    ax.plot(gammas, Q_deg, label=r"$Q$ (LB on $K^{\leftrightarrow}$, γ ≤ 1/2)",
++            linewidth=2, color="C2", linestyle="--")
++    ax.axvline(0.5, color="gray", linewidth=0.8, linestyle=":")
++    ax.set_xlabel("γ (damping probability)")
++    ax.set_ylabel("bits per channel use")
++    ax.set_title(r"AD hierarchy: $Q \leq K^{\leftrightarrow} \leq E_R^{PPT} \leq \log\|\cdot\|_{\mathrm{PT}}$")
++    ax.set_xlim(0, 1)
++    ax.set_ylim(0, 1.05)
++    ax.legend(loc="upper right", fontsize=8)
++    ax.grid(True, alpha=0.3)
++
++    # Right: log_neg / E_R^PPT ratio (tightness tracking)
++    ax = axes[1]
++    ratios = np.array([analytic_log_neg_amplitude_damping(g) / v if v > 1e-10 else np.nan
++                       for g, v in er_pts])
++    ax.plot(er_g, ratios, "o-", color="C3", markersize=7, linewidth=2,
++            label=r"log_neg / $E_R^{PPT}$")
++    ax.axvspan(0.5, 1.0, alpha=0.10, color="gray")
++    ax.axhline(2.0, color="gray", linewidth=0.5, linestyle=":")
++    ax.axvline(0.5, color="gray", linewidth=0.8, linestyle=":")
++    ax.text(0.72, 1.18, "anti-degradable", fontsize=9, color="gray", ha="center")
++    ax.text(0.22, 1.18, "degradable", fontsize=9, color="gray", ha="center")
++    ax.set_xlabel("γ")
++    ax.set_ylabel(r"log_neg / $E_R^{PPT}$")
++    ax.set_title("log_neg looseness vs tighter SDP UB")
++    ax.set_xlim(0, 1)
++    ax.set_ylim(1.0, 2.4)
++    ax.legend(loc="lower right", fontsize=9)
++    ax.grid(True, alpha=0.3)
++
++    fig.tight_layout()
++    fig_dir = REPO / "docs" / "research" / "figures"
++    fig.savefig(fig_dir / "AD_anti_degradable_hierarchy.png", dpi=160)
++    fig.savefig(fig_dir / "AD_anti_degradable_hierarchy.pdf")
++    plt.close(fig)
++
++    print("Done.")
++    print(f"  PNG: docs/research/figures/AD_anti_degradable_hierarchy.png")
++    print(f"  E_R^PPT points: {len(er_pts)}")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/AD_antidegradable_E_R_PPT_fill.py b/scripts/AD_antidegradable_E_R_PPT_fill.py
+new file mode 100644
+index 0000000..51ce3ec
+--- /dev/null
++++ b/scripts/AD_antidegradable_E_R_PPT_fill.py
+@@ -0,0 +1,61 @@
++"""Fill in E_R^PPT SDP points for AD channel γ ∈ [0.5, 1.0] (anti-degradable region).
++
++Extends existing sparse grid (0.5, 0.7, 0.9 already in qubit_E_R_PPT_SDP_all_4.csv)
++with γ = 0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.95 for finer anti-degradable coverage.
++
++Data used in AD_anti_degradable_E_R_PPT_2026-04-24.md.
++
++Output:
++  docs/research/data/AD_antidegradable_E_R_PPT_fill.csv  (new points only)
++"""
++from __future__ import annotations
++
++import csv
++import sys
++import time
++from pathlib import Path
++
++REPO = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(REPO))
++
++from qkdx.numerics.upper_bound import (
++    analytic_log_neg_amplitude_damping,
++    e_r_channel_ppt,
++    kraus_amplitude_damping_qubit,
++    quantum_capacity_amplitude_damping_degradable,
++)
++
++
++def main():
++    new_gammas = [0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.95]
++    rows = []
++
++    print("E_R^PPT SDP sweep (AD anti-degradable fill-in)...")
++    for gamma in new_gammas:
++        t0 = time.time()
++        kraus = kraus_amplitude_damping_qubit(gamma)
++        result = e_r_channel_ppt(kraus, dim_A=2)
++        er = float(result["E_R_channel_bits"])
++        ln = analytic_log_neg_amplitude_damping(gamma)
++        q = quantum_capacity_amplitude_damping_degradable(gamma)
++        elapsed = time.time() - t0
++        rows.append((gamma, er, ln, q, elapsed))
++        status = "anti-degradable" if gamma > 0.5 else "degradable"
++        print(f"  γ={gamma}: E_R^PPT={er:.4f}, log_neg={ln:.4f}, Q={q:.4f}  [{status}]  ({elapsed:.1f}s)")
++
++    out_csv = REPO / "docs" / "research" / "data" / "AD_antidegradable_E_R_PPT_fill.csv"
++    out_csv.parent.mkdir(parents=True, exist_ok=True)
++    with open(out_csv, "w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow(["gamma", "E_R_PPT_SDP", "log_neg_analytic", "Q_LB_on_K2way", "sdp_time_s"])
++        for g, er, ln, q, t in rows:
++            w.writerow([f"{g:.4f}", f"{er:.6f}", f"{ln:.6f}", f"{q:.6f}", f"{t:.2f}"])
++
++    print()
++    print(f"  CSV: docs/research/data/AD_antidegradable_E_R_PPT_fill.csv")
++    print()
++    print("Anti-degradable (γ > 0.5): Q=0 but E_R^PPT > 0 gives nontrivial UB on K^{↔}")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tests/test_numerics/test_wlc_bb84.py b/tests/test_numerics/test_wlc_bb84.py
+index 176ac7b..3ef14cb 100644
+--- a/tests/test_numerics/test_wlc_bb84.py
++++ b/tests/test_numerics/test_wlc_bb84.py
+@@ -57,14 +57,20 @@ def test_wlc_bb84_above_threshold_gives_zero() -> None:
+ @pytest.mark.slow
+ @pytestmark_mosek
+ def test_wlc_bb84_qber_exact_zero_with_facial_reduction() -> None:
+-    """QBER=0 requires facial reduction; result ≈ 1.0 bit/signal (MOSEK)."""
++    """QBER=0 requires facial reduction; result ≈ 0.5 bit/signal (MOSEK).
++
++    wlc_key_rate returns R = p_sift · (H_bits - leak_ec) [per-signal].
++    At QBER=0: H_bits=1, leak_ec=0, p_sift=0.5 → R = 0.5 bit/signal.
++    (per-sifted rate = 1.0; function convention is per-signal to match
++     Shor-Preskill and E_R unit convention project-wide, see wlc.py:483).
++    """
+     protocol = build_bb84_protocol(qber=0.0)
+     result = wlc_key_rate(
+         protocol,
+         observations={"qber_Z": 0.0, "qber_X": 0.0, "p_sift": 0.5},
+     )
+     assert result.primal_status in {"optimal", "optimal_inaccurate"}
+-    assert result.key_rate == pytest.approx(1.0, rel=0.01, abs=5e-4)
++    assert result.key_rate == pytest.approx(0.5, rel=0.01, abs=5e-4)
+ 
+ 
+ @pytestmark_mosek

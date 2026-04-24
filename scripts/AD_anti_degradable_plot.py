@@ -1,11 +1,15 @@
-"""Plot AD channel hierarchy across γ ∈ [0,1] with anti-degradable emphasis.
+"""Plot AD channel Choi-state quantities across γ ∈ [0,1].
+
+NOTE (2026-04-24 post-Codex-REJECTED): Earlier version of this plot used
+'Q ≤ K^{↔} ≤ E_R^PPT ≤ log_neg' as a hierarchy title, which is invalid
+for AD because AD is NOT teleportation-covariant — Choi-state E_R^PPT
+does NOT automatically upper-bound channel K^{↔} (PLOB 2017 Ex.3).
+This revision reports Choi-state quantities only, no channel-level claim.
 
 Combines:
-- log_neg analytic (dense, 1001 pts)
-- Q analytic (dense, only for γ ≤ 0.5)
-- E_R^PPT SDP (sparse, merged from qubit_E_R_PPT_SDP_all_4.csv + AD_antidegradable_E_R_PPT_fill.csv)
-
-Highlights anti-degradable region (γ > 1/2) where Q=0 but E_R^PPT > 0.
+- log_neg(J_{N_AD}) analytic (dense, 1001 pts) — Choi-state log-negativity
+- Q(N_AD) analytic (dense, only for γ ≤ 0.5) — channel quantum capacity (LB on K^{↔})
+- E_R^PPT(J_{N_AD}) SDP (sparse) — Choi-state Rains bound
 
 Output:
   docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}
@@ -57,24 +61,27 @@ def main():
 
     fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.8))
 
-    # Left: absolute scale
+    # Left: absolute scale — Choi-state quantities + channel Q (LB on K^{↔})
     ax = axes[0]
     ax.axvspan(0.5, 1.0, alpha=0.10, color="gray")
     ax.text(0.72, 0.82, r"$Q = 0$" + "\n" + r"(anti-degradable)",
             fontsize=9, color="gray", ha="center")
-    ax.plot(gammas, log_neg, label="log_neg (analytic, UB)", linewidth=2, color="C0")
+    ax.plot(gammas, log_neg, label=r"log_neg($J_N$) analytic (Choi state)",
+            linewidth=2, color="C0")
     ax.scatter(er_g, er_v, color="C3", marker="s", s=55,
-               label=r"$E_R^{PPT}$ (MOSEK SDP)", zorder=5)
+               label=r"$E_R^{PPT}(J_N)$ MOSEK SDP (Choi state)", zorder=5)
     Q_deg = np.where(gammas <= 0.5, Q, 0)
-    ax.plot(gammas, Q_deg, label=r"$Q$ (LB on $K^{\leftrightarrow}$, γ ≤ 1/2)",
+    ax.plot(gammas, Q_deg,
+            label=r"$Q(N_{AD})$ channel, LB on $K^{\leftrightarrow}$, γ ≤ 1/2",
             linewidth=2, color="C2", linestyle="--")
     ax.axvline(0.5, color="gray", linewidth=0.8, linestyle=":")
     ax.set_xlabel("γ (damping probability)")
-    ax.set_ylabel("bits per channel use")
-    ax.set_title(r"AD hierarchy: $Q \leq K^{\leftrightarrow} \leq E_R^{PPT} \leq \log\|\cdot\|_{\mathrm{PT}}$")
+    ax.set_ylabel("bits")
+    ax.set_title("AD: Choi-state $E_R^{PPT}$ / log_neg + channel $Q$ (LB only)\n"
+                 + r"Note: Choi-state $E_R^{PPT}$ is NOT an AD channel $K^{\leftrightarrow}$ UB (AD not tele-covariant)")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1.05)
-    ax.legend(loc="upper right", fontsize=8)
+    ax.legend(loc="upper right", fontsize=7)
     ax.grid(True, alpha=0.3)
 
     # Right: log_neg / E_R^PPT ratio (tightness tracking)
