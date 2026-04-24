@@ -37,19 +37,22 @@
 
 | 信道 | 最紧 UB (已建) | 最紧 LB (已建) | UB/LB ratio at 典型噪声 |
 |------|---------------|---------------|-------------------------|
-| AD γ=0.2 (Q ~ 0.5) | E_R^PPT = 0.61 | K_D = Q = 0.51 (解析) | **1.21×** (接近紧) |
-| Dephase p=0.1 | E_R^PPT = 0.53 | K_D = 0.53 (PLOB Eq.39) | **1.00×** (完美) |
-| Depolar p=0.1 | E_R = 0.62 (修复后) | K_D = 0.62 (Vollbrecht-Werner) | **1.00×** (完美) |
-| Erasure p=0.1 | log_neg = 0.93 | K_D = 0.90 (PLOB Eq.43) | **1.03×** (接近紧) |
+| AD γ=0.2 (Q ~ 0.5) | E_R^PPT = 0.61 | Q = 0.51 (degradable, Q ≤ K^{↔}) | **≤1.21×** (对 Q 意义下接近紧；K^{↔} ≥ Q 可能更大) |
+| Dephase p=0.1 | E_R^PPT = 0.53 | K^{↔} = 0.53 (PLOB Eq.39) | **1.00×** (K^{↔} 层完美) |
+| Depolar p=0.1 | E_R^PPT = E_R = 0.62 (Vollbrecht-Werner, UB on K^{↔}) | K^{↔} UNKNOWN (K^{↔} ≤ E_R) | K^{↔} ≤ E_R；gap UNKNOWN |
+| Erasure p=0.1 | log_neg = 0.93 | K^{↔} = 0.90 (PLOB Eq.43) | **1.03×** (接近紧) |
 
-**结论（信道层面）**: Sub-Q3 既有工具 (E_R^PPT SDP + 解析 closed form) 在 **qubit 信道级**给出**接近紧**上界。
+**结论（信道层面）**: 对 dephasing 和 erasure，E_R^PPT/log_neg 工具给出**接近紧**上界（相对已知 K^{↔} 下界）。对 depolarizing，E_R^PPT = E_R 是 K^{↔} 的严格 UB（K^{↔} ≤ E_R），但 K^{↔} 真值 UNKNOWN。
 
 ### 2.2 协议层面紧度（BB84/六态等效 depolarizing）
 
-| Protocol@QBER | UB (E_R) | LB (SP) | UB/LB | 主导因素 |
-|---------------|----------|---------|--------|---------|
-| 六态@12.62% (阈值) | 0.453 | 0.253 | **1.79×** | 接近紧 (A 小, B 小) |
-| BB84@5% | 0.714 | 0.427 | 1.67× | ~平衡 |
+**[单位修正 2026-04-24]**: SP 率以 **bits/信号**，BB84 p_sift=0.5，六态 p_sift=1/3（先前 per-sifted 错误，已修正）。
+
+| Protocol@QBER | UB (E_R, /signal) | LB (SP, /signal) | UB/LB | 主导因素 |
+|---------------|-------------------|------------------|--------|---------|
+| 六态@12.62% (阈值) | 0.453 | ≈0 | **∞** | 阈值处 SP → 0 |
+| 六态@8% | 0.598 | 0.093 | **6.4×** | 六态仍优于 BB84 但非"接近紧" |
+| BB84@5% | 0.714 | 0.214 | 3.34× | ~平衡 |
 | **BB84@11% (阈值)** | 0.500 | ≈ 0 | **∞** | **B 主导**（SP 公式 2h(QBER) 非紧） |
 
 ### 2.3 umr 拓扑紧度（TF/MDI, 本项目核心）
@@ -79,12 +82,12 @@
 ### 3.2 B 原因（LB 松）贡献诊断
 
 **BB84 SP 公式 1-2h(QBER)**: **显著松**。  
-依据: 在 BB84 阈值 11% 处 SP → 0 而 E_R = 0.50（信道层 truth UB）。真 K_D 在 [0, 0.50] 间，BB84 Shor-Preskill 给的 LB 远未触及信道上限。  
+依据: 在 BB84 阈值 11% 处 SP → 0 而 E_R = 0.50（信道层 UB on K^{↔}）。真 K^{↔} ∈ [0, 0.50]，BB84 Shor-Preskill 给的 LB 远未触及信道上界。  
 → **B 原因在 BB84 协议上显著**。
 
-**六态 SP 公式 1-h(QBER)-QBER·log₂3**: **接近紧**。  
-依据: 六态 UB/LB ≤ 1.8× 在工作区 — LB 仅 E_R 的 56-98%。  
-→ **B 原因在六态协议上小**。
+**六态 SP 公式**（per-signal = `six_state_rate(QBER, f_ec=1.0)` ≈ (1/3)·(1-h(QBER)-QBER·log₂3)）: **非接近紧**（per-signal 单位下 3-6×）。  
+依据: 六态 E_R/SP(per-signal) ≈ 3-6× 在工作 QBER 区；先前 ≤1.8× 数据是 per-sifted 单位错误，已撤回。[CONJ]  
+→ **B 原因在六态协议上中等**，优于 BB84 但仍显著。
 
 **TF/PM-QKD Ma-Zeng-Zhou 2018 公式**: **斜率紧, prefactor 可能松**。  
 依据: §2.3 UB/LB ~2000× 在 40-60 dB；斜率同 √η。  
@@ -99,8 +102,8 @@
 | 协议 | A (UB 松) | B (LB 松) | 当前分类 | 证据 |
 |------|----------|----------|---------|------|
 | BB84 (QBER > 8%) | UNKNOWN | **显著** | 倾向 B 或 C | §3.2 SP→0 at 11%, E_R=0.5 |
-| 六态 | UNKNOWN | 小 | 倾向 A | §2.2 UB/LB ≤ 1.8× 接近闭合 |
-| AD 信道自身 (degradable) | ~0 (信道层紧) | ~0 | 紧界已知 | §2.1 E_R^PPT/K_D ≤ 1.52 |
+| 六态 | UNKNOWN | 中等 (3-6× per-signal) | UNKNOWN | §2.2 修正后 per-signal UB/LB ~3-6× |
+| AD 信道自身 (degradable) | 小 (E_R^PPT/Q ≤ 1.52) | ~0 | A 较小但 K^{↔} UNKNOWN | §2.1 Q ≤ K^{↔} ≤ E_R^PPT；Q 是 LB 非 K^{↔} 真值 |
 | TF/PM-QKD umr | UNKNOWN | 斜率紧 / prefactor 可能小 | UNKNOWN | §2.3 同 √η slope, 2000× prefactor |
 | MDI umr | UNKNOWN | 噪声主导 | 类似 TF | §2.3 |
 
@@ -131,10 +134,13 @@
 - Prefactor gap ~2000× 可能是 B (下界 prefactor 松) 或 A (上界 prefactor 松) 或 C
 - 归因分解 prefactor 需要 Phase 3 后半的精读工作 (α/β/γ 形式化)
 
-### 4.3 qubit 信道族（Sub-Q3 工具链完备）
+### 4.3 qubit 信道族（Sub-Q3 工具链部分完备）
 
-- **AD degradable + Dephase + Depolar + Erasure**: E_R^PPT SDP 或解析达真 E_R/K_D，所以**信道层无 A 原因**
-- **AD anti-degradable (γ > 1/2)**: K_D 真值 OPEN，**A 原因 UNKNOWN**（squashed entanglement 等工具待精读）
+- **Dephasing**: E_R^PPT = K^{↔}（PLOB Eq.39 验证）→ **信道层无 A 原因** [SYN]
+- **Erasure**: log_neg ≈ K^{↔} (gap ≤ 0.09 bits) → **信道层 A 原因小** [SYN]
+- **AD degradable (γ ≤ 1/2)**: Q ≤ K^{↔} ≤ E_R^PPT，ratio E_R^PPT/Q ∈ [1.03, 1.52] → **A 原因存在但较小** [SYN]
+- **Depolarizing**: E_R^PPT = E_R（UB on K^{↔}），K^{↔} UNKNOWN → **A 原因 UNKNOWN**（K^{↔} ≤ E_R but K^{↔} true value not known）
+- **AD anti-degradable (γ > 1/2)**: K^{↔} 真值 OPEN，**A 原因 UNKNOWN**（squashed entanglement 等工具待精读）
 
 ---
 

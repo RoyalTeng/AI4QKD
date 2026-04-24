@@ -338,26 +338,30 @@ def e_r_depolarizing_analytic(p: float) -> float:
 # These are [SYN] — standard textbook-level calculations; R0.2 triple verification
 # applies for any label upgrade.
 
-def K_D_amplitude_damping_degradable(gamma: float) -> float:
-    """K_D = Q (quantum capacity) of qubit amplitude damping for γ ≤ 1/2.
+def quantum_capacity_amplitude_damping_degradable(gamma: float) -> float:
+    """Quantum capacity Q of qubit amplitude damping channel for γ ≤ 1/2 (degradable regime).
 
-    AD channel is **degradable** for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014;
-    standard textbook result, e.g., Khatri-Wilde 2020 §17.4). For degradable
-    channels: K_D = P = Q = single-letter regularized coherent information.
+    This computes the **quantum capacity Q** (= unassisted private capacity P),
+    which equals the single-letter coherent information for degradable channels.
+    It does NOT equal the two-way LOCC secret-key capacity K_D = K^{↔} in general;
+    K^{↔} ≥ Q = P for any channel. No closed-form K^{↔} for AD is known.
+
+    AD channel is **degradable** for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2006/2014;
+    Khatri-Wilde 2020 §17.4). For degradable channels: Q = P (private capacity).
 
         Q(N_AD, γ) = max_{p ∈ [0,1]} [h₂((1-γ)·p) − h₂(γ·p)]   for γ ≤ 1/2
-                   = 0                                            for γ > 1/2
+                   = 0                                            for γ > 1/2 (anti-degradable)
 
-    For γ > 1/2: AD is anti-degradable, Q = 0. K_D could still be > 0 via
-    two-way LOCC, but no closed form is known.
+    For γ > 1/2: anti-degradable, Q = 0. K^{↔} is unknown (could be > 0).
 
     Returns:
-        Quantum capacity in bits/use. Only equals K_D in degradable regime.
+        Quantum capacity Q in bits/use (= unassisted private capacity for γ ≤ 1/2).
+        NOT the two-way key capacity K^{↔}.
 
     Reference values:
         γ = 0:    Q = 1 bit (identity)
         γ = 0.5:  Q = 0 (degradability boundary)
-        γ → 1:    Q = 0 (no information transmission)
+        γ → 1:    Q = 0 (complete damping)
     """
     if not (0.0 <= gamma <= 1.0):
         raise ValueError(f"gamma must be in [0, 1], got {gamma}")
@@ -385,6 +389,11 @@ def K_D_amplitude_damping_degradable(gamma: float) -> float:
             a = x1
     p_opt = (a + b) / 2
     return max(0.0, h2((1 - gamma) * p_opt) - h2(gamma * p_opt))
+
+
+# Deprecated alias — kept for backward compatibility with existing tests.
+# Use quantum_capacity_amplitude_damping_degradable instead.
+K_D_amplitude_damping_degradable = quantum_capacity_amplitude_damping_degradable
 
 
 def analytic_log_neg_amplitude_damping(gamma: float) -> float:

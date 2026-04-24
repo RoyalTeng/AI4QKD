@@ -75,7 +75,7 @@
 
 - ✅ **upper_bound_report.md v0.5**（1000+ 行，11 sections）
   - §1-§10: Pirandola / TGW / WTB / Khatri-Wilde / log_neg / E_R^PPT SDP
-  - §11 (Day 4): 4 信道 tightness hierarchy + AD K_D + Plenio 不等式 + BB84/six-state 紧化
+  - §11 (Day 4, v0.6): 4 信道 tightness hierarchy + AD Q analytic (LB on K^{↔}) + Plenio 不等式 + BB84/six-state 紧化（已单位修正）
 - ✅ **路径 β.G3 (log_neg 前传)**: `log_neg(E_AD(η)) = log₂(1+η)`, η_c=1/φ
   - C1(c) SymPy 符号验证 PASS
   - C2 用户签字 PASS
@@ -83,8 +83,8 @@
   - 标签：**[SYN]**（THM anchor search 无果，保持 [SYN]）
 - ✅ **Day 4 数值补强**（commits b4efaae → 7e17e44）
   - `e_r_depolarizing_analytic` bug 修复（d²-1 vs d-1）
-  - `K_D_amplitude_damping_degradable` for γ ≤ 1/2
-  - 4 信道 Plenio 不等式 log_neg ≥ E_R ≥ K_D 数值验证 800 pts
+  - `quantum_capacity_amplitude_damping_degradable` (Q = LB on K^{↔}) for γ ≤ 1/2
+  - 4 信道 Plenio 不等式 Q ≤ K^{↔} ≤ E_R ≤ log_neg 数值验证 800 pts
 
 ### 3.2 OPEN 结构 gap（等用户 paper-level work）
 
@@ -107,8 +107,8 @@
 | TGW (squashed E) | `log₂((1+η)/(1-η))` | bosonic, pure loss | [THM for bosonic] |
 | E_R^PPT SDP | 数值 | qubit abstraction | [THM for channel, SYN for umr via lemma] |
 | log_neg analytic | log₂(2-γ) for AD | qubit abstraction | [THM] |
-| AD K_D = Q | max_p[h₂((1-γ)p)-h₂(γp)] | qubit AD degradable γ≤1/2 | [THM for qubit] |
-| AD K_D (anti-degradable) | OPEN | γ>1/2 | [UNKNOWN] |
+| AD Q (LB on K^{↔}) | max_p[h₂((1-γ)p)-h₂(γp)] | qubit AD degradable γ≤1/2; K^{↔} ≥ Q | [THM for qubit Q] |
+| AD K^{↔} (anti-degradable) | OPEN | γ>1/2; Q=0 but K^{↔} OPEN | [UNKNOWN] |
 
 ---
 
@@ -118,14 +118,14 @@
 
 ### 4.1 完成项
 
-- ✅ **gap_shape_g4_1.md v0.3**（4 candidates 包含 D=AD K_D analytic）
-  - Candidate A/B/C/D 横跨 bosonic-asymptotic + qubit abstraction
+- ✅ **gap_shape_g4_1.md v0.4**（3 UB candidates A/B/C；AD Q 为参考量非 UB）
+  - Candidate A/B/C 横跨 bosonic-asymptotic + qubit abstraction
   - Slope 分析: TF Pareto 与 Pirandola UB cand 同 √η
   - Prefactor gap: ~2000× at 40 dB
 - ✅ **gap_analysis_2026-04-24.md v0.1 (G4.2 归因初稿)**
   - A (UB 松) / B (LB 松) / C (A+B) 三类诊断框架
   - BB84 SP: **B 显著**（SP→0 at 11% 阈值 vs E_R=0.5）
-  - 六态 SP: **近紧**（E_R/SP ≤ 1.8×）
+  - 六态 SP: **中等**（E_R/SP ~3-6× per-signal；先前 ≤1.8× 单位错误已修正 2026-04-24）
   - TF/MDI umr: UNKNOWN pending Sub-Q3 升 [THM]
 
 ### 4.2 OPEN 项（AI 自主 reach 不到）

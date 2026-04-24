@@ -40,18 +40,20 @@ log_neg(BB84/6-state, QBER) = max(0, log₂(2 − 3·(4·QBER/3)/2))
 
 ## 3. 数据：log_neg vs Shor-Preskill achievable
 
-| QBER | p_depol | log_neg (UB) | SP_BB84 (LB) | SP_6state (LB) | ratio BB84 | ratio 6st |
-|------|---------|--------------|--------------|----------------|-----------|-----------|
-| 0.00% | 0.0000 | 1.0000 | 1.0000 | 1.0000 | 1.000 | 1.000 |
-| 1.00% | 0.0133 | 0.9855 | 0.8384 | 0.9034 | 1.18 | 1.09 |
-| 3.00% | 0.0400 | 0.9561 | 0.6112 | 0.7581 | 1.56 | 1.26 |
-| 5.00% | 0.0667 | 0.9260 | 0.4272 | 0.6344 | 2.17 | 1.46 |
-| 8.00% | 0.1067 | 0.8797 | 0.1956 | 0.4710 | **4.50** | 1.87 |
-| **11.0%** | 0.1467 | 0.8319 | ≈ 0 | 0.3257 | **5000+** | 2.55 |
-| **12.62%** | 0.1683 | 0.8054 | 0 | 0.2531 | ∞ | **3.18** |
-| 15.0% | 0.2000 | 0.7655 | 0 | 0.1524 | ∞ | 5.02 |
+**单位注意**：SP 率以 **bits/信号**（= bits/channel use）给出，与 E_R 同单位。BB84 p_sift=0.5，六态 p_sift=1/3；均已含 sifting 因子。
 
-**符号**: UB = upper bound (log_neg, PPT-relaxed); LB = lower bound (achievable Shor-Preskill).
+| QBER | p_depol | log_neg (UB) | SP_BB84 (LB, /signal) | SP_6state (LB, /signal) | ratio BB84 | ratio 6st |
+|------|---------|--------------|------------------------|--------------------------|-----------|-----------|
+| 0.00% | 0.0000 | 1.0000 | 0.5000 | 0.3333 | 2.000 | 3.000 |
+| 1.00% | 0.0133 | 0.9855 | 0.4192 | 0.2880 | 2.35 | 3.42 |
+| 3.00% | 0.0400 | 0.9561 | 0.3056 | 0.2213 | 3.13 | 4.32 |
+| 5.00% | 0.0667 | 0.9260 | 0.2136 | 0.1656 | 4.33 | 5.59 |
+| 8.00% | 0.1067 | 0.8797 | 0.0978 | 0.0935 | **8.99** | 9.41 |
+| **11.0%** | 0.1467 | 0.8319 | ≈ 0 | 0.0308 | **∞** | 27.0 |
+| **12.62%** | 0.1683 | 0.8054 | 0 | ≈ 0 | ∞ | **∞** |
+| 15.0% | 0.2000 | 0.7655 | 0 | 0 | ∞ | ∞ |
+
+**符号**: UB = upper bound (log_neg, PPT-relaxed); LB = lower bound (achievable Shor-Preskill, per-signal units).
 
 ---
 
@@ -59,9 +61,9 @@ log_neg(BB84/6-state, QBER) = max(0, log₂(2 − 3·(4·QBER/3)/2))
 
 ### 4.1 log_neg 在操作 QBER 区**严重过松**
 
-- BB84 阈值 QBER ≈ 11%: SP rate → 0, **log_neg 仍 0.83 bits** (5000× looser)
-- Six-state 阈值 ≈ 12.62%: SP_6state → 0.25, log_neg = 0.81 (3.2× looser)
-- 即便 1% QBER（接近理想）: log_neg 已 1.18× 高于 SP_BB84
+- BB84 阈值 QBER ≈ 11%: SP rate → 0 (per-signal), **log_neg 仍 0.83 bits** (∞ looser)
+- Six-state 阈值 ≈ 12.62%: SP_6state → 0 (per-signal), log_neg = 0.81 (∞ looser)
+- 即便 1% QBER（接近理想）: log_neg 已 2.35× 高于 SP_BB84 (per-signal)
 
 意义: **log_neg 不能作为 BB84/six-state 的紧上界**。PPT-relaxed 视角"看到"的还有 entanglement，但 SP achievable rate 已被 error correction cost (2·h(QBER)) 吃光。
 
@@ -70,7 +72,7 @@ log_neg(BB84/6-state, QBER) = max(0, log₂(2 − 3·(4·QBER/3)/2))
 log_neg 与 SP rate 的差距源于：
 - log_neg 是 **PPT-relaxed E_R 上界**：忽略了 LOCC distillation cost
 - SP rate 是**只用 Z-基**测量的 achievable rate，扣了 EC cost 和 PA cost
-- "真" K_D 在两者之间：D₁ ≤ K_D ≤ E_R^PPT ≤ log_neg
+- "真" K^{↔} 在两者之间：SP (LB) ≤ K^{↔} ≤ E_R^PPT ≤ log_neg
 
 ### 4.3 协议家族区分能力丧失
 
@@ -84,27 +86,29 @@ BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift 
 
 **[2026-04-23 后续]**: 修复 `e_r_depolarizing_analytic` bug 后, 对 BB84/six-state 等效信道直接计算真 E_R = E_R^PPT (= 1 - h(F))。
 
-| QBER | log_neg (松UB) | **E_R (corrected, 真UB)** | SP_BB84 | SP_6state | **E_R/SP_BB84** | **E_R/SP_6state** |
-|------|---------------|--------------------------|---------|-----------|----------------|-------------------|
-| 1.00% | 0.9855 | **0.9192** | 0.8384 | 0.9034 | 1.10 | **1.02** |
-| 3.00% | 0.9561 | 0.8056 | 0.6112 | 0.7581 | 1.32 | **1.06** |
-| 5.00% | 0.9260 | 0.7136 | 0.4272 | 0.6344 | 1.67 | **1.13** |
-| 8.00% | 0.8797 | 0.5978 | 0.1956 | 0.4710 | 3.06 | **1.27** |
-| 11.0% | 0.8319 | 0.5001 | ≈0 | 0.3257 | ∞ | **1.54** |
-| 12.62% | 0.8054 | 0.4531 | 0 | 0.2531 | ∞ | **1.79** |
+**[单位修正 2026-04-24]**: SP 率以 **bits/信号** (= bits/channel use) 给出，BB84 p_sift=0.5，六态 p_sift=1/3。先前表格错误使用 per-sifted 值（sift 因子未含），导致比率严重低估。
 
-**关键修订观察**:
+| QBER | log_neg (松UB) | **E_R (corrected, 真UB)** | SP_BB84 (/signal) | SP_6state (/signal) | **E_R/SP_BB84** | **E_R/SP_6state** |
+|------|---------------|--------------------------|-------------------|----------------------|----------------|-------------------|
+| 1.00% | 0.9855 | **0.9192** | 0.4192 | 0.2880 | 2.19 | **3.19** |
+| 3.00% | 0.9561 | 0.8056 | 0.3056 | 0.2213 | 2.64 | **3.64** |
+| 5.00% | 0.9260 | 0.7136 | 0.2136 | 0.1656 | 3.34 | **4.31** |
+| 8.00% | 0.8797 | 0.5978 | 0.0978 | 0.0935 | 6.11 | **6.40** |
+| 11.0% | 0.8319 | 0.5001 | ≈0 | 0.0308 | ∞ | **16.25** |
+| 12.62% | 0.8054 | 0.4531 | 0 | ≈0 | ∞ | **∞** |
+
+**关键修订观察** [单位修正后]:
 
 1. **E_R 是显著紧的 UB** vs log_neg: 在 11% QBER 处 E_R = 0.50 vs log_neg = 0.83 (40% 紧化)
-2. **六态更幸运**: E_R / SP_6state ≤ 1.8× 在阈值附近, **量级合理**
-3. **BB84 仍有大 gap**: BB84 SP rate 在 11% 阈值已 0, 而 E_R = 0.50 — 这表明 **BB84 的 EC cost (2·h(QBER)) 是非紧的**, 真 K_D 应在 [SP_BB84, E_R] 之间, 离两端都有距离
-4. **六态接近紧界**: SP_six-state 与 E_R 比率 1-1.8×, 表明 **六态 SP 公式本身已接近紧 K_D**（用 X-Y-Z 三 MUB 信息）
+2. **六态 E_R/SP 比率 ~3-6×** (per-signal)，在工作 QBER 区**不**是"接近闭合"——先前 1-1.8× 数据是 per-sifted 单位错误所致
+3. **BB84 仍有大 gap**: BB84 SP rate 在 11% 阈值已 0, 而 E_R = 0.50 — 真 K^{↔} 应在 [SP_BB84, E_R] 之间
+4. **六态 vs BB84**: 六态 SP/E_R 比率优于 BB84（六态利用 3 MUB PA tightening），但**仍非接近紧**（3-6× gap，[CONJ] 级）
 
 ### 4.5 Sub-Q3 工具评估更新
 
 修复 bug 后, **E_R^PPT (= 真 E_R for 2⊗2)** 是 qubit MS-EB 协议族的**正确紧 UB 工具**:
-- 对 BB84: log_neg → E_R 紧化 ~40%, 但 BB84 SP 离 E_R 仍远 (说明真 K_D 估计需要 protocol-specific 工作)
-- 对 six-state: E_R 与 SP 接近 (1-2×), **几乎闭合 UB-LB gap**
+- 对 BB84: log_neg → E_R 紧化 ~40%, 但 BB84 SP 离 E_R 仍远 (per-signal 比率 2-6×，说明真 K^{↔} 估计需要 protocol-specific 工作)
+- 对 six-state: E_R 与 SP(per-signal) 比率 ~3-6×，显著优于 BB84，但**不是"几乎闭合"**（先前 1-1.8× 系单位错误，已修正）
 
 ---
 
@@ -116,7 +120,7 @@ BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift 
 - **log_neg**：解析快、永远是 UB，但**操作 QBER 区无用**（5000× 松）
 - **E_R^PPT (SDP)**：紧度 ~30-50% 比 log_neg（β.G3 单臂 grid）
 - **R_max (max-Rains, SDP)**：理论上 E_R^PPT 的 dual，应同量级
-- **K_D 直接公式**：仅对 dephasing/depolarizing/erasure 已知
+- **K^{↔} 直接公式**：对 dephasing（PLOB Eq.39）和 erasure（PLOB Eq.43）已知；depolarizing 的 K^{↔} **UNKNOWN**（E_R^PPT = E_R 是 UB，真值在 [K^{↔}_LB, E_R] 区间）
 - **squashed entanglement**: 紧但 SDP 开销高
 
 **结论**: 对于实用 QKD QBER 范围（< 12%），需要 **Sub-Q3 Phase 2 PDF 精读** 找文献中的 protocol-specific 紧界。log_neg 工具适合做 sanity check，但**不是研究主轴**。
@@ -124,8 +128,9 @@ BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift 
 ### 5.2 已闭合的 vs 仍 OPEN 的
 
 - **闭合**: 解析 log_neg 公式（4 信道，C1(c) SymPy 验证）+ Plenio 不等式自洽
-- **闭合**: log_neg vs K_D 紧度量化（dephasing, depolarizing, erasure）
-- **OPEN**: BB84-effective channel 的 K_D 解析（depolarizing K_D 在中等 QBER 已接近 SP rate?）
+- **闭合**: log_neg vs K^{↔}/E_R 紧度量化 — dephasing（E_R^PPT = K^{↔}），erasure（log_neg ≈ K^{↔}）
+- **OPEN**: depolarizing K^{↔} 解析（E_R^PPT = E_R 是 UB；真 K^{↔} ∈ [LB, E_R] 未知）
+- **OPEN**: BB84-effective channel 的 K^{↔} 解析（depolarizing K^{↔} true value 待研究）
 - **OPEN**: MDI / TF-QKD 的 log_neg 应用（type B 拓扑，需考虑 BSM）
 - **OPEN**: β.G4/β.G5/γ.B.G1/γ.G3 结构 gap（不变）
 

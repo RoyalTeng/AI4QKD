@@ -412,39 +412,79 @@ class TestAnalyticLogNegFormulas:
                 analytic_log_neg_dephasing(1.0 - p), abs=1e-15
             )
 
-    def test_K_D_amplitude_damping_degradable(self):
-        """Q (= K_D for degradable γ < 1/2) of qubit AD via golden-section.
+    def test_quantum_capacity_amplitude_damping_degradable(self):
+        """Q (quantum capacity, unassisted private capacity) of qubit AD via golden-section.
+
+        For degradable channels (γ ≤ 1/2): Q = P (private capacity).
+        NOT the two-way LOCC key rate K^{↔}; K^{↔} ≥ Q for any channel.
 
         Boundary checks + monotonic decrease + degradability cliff at γ = 1/2.
+        Also includes brute-force oracle comparison for regression coverage.
         """
-        from qkdx.numerics.upper_bound import K_D_amplitude_damping_degradable
-        # Boundary
-        assert K_D_amplitude_damping_degradable(0.0) == pytest.approx(1.0, abs=1e-6)
-        assert K_D_amplitude_damping_degradable(0.5) == pytest.approx(0.0, abs=1e-6)
-        assert K_D_amplitude_damping_degradable(0.9) == pytest.approx(0.0, abs=1e-15)
-        assert K_D_amplitude_damping_degradable(1.0) == pytest.approx(0.0, abs=1e-15)
-        # Monotonic decrease for γ in degradable regime
+        from qkdx.numerics.upper_bound import quantum_capacity_amplitude_damping_degradable
+
+        def h2(x):
+            if x <= 1e-15 or x >= 1 - 1e-15:
+                return 0.0
+            return -x * math.log2(x) - (1 - x) * math.log2(1 - x)
+
+        def brute_force_q(gamma, n=500):
+            best = 0.0
+            for i in range(n + 1):
+                p = i / n
+                val = h2((1 - gamma) * p) - h2(gamma * p)
+                best = max(best, val)
+            return best
+
+        # Boundary checks
+        assert quantum_capacity_amplitude_damping_degradable(0.0) == pytest.approx(1.0, abs=1e-6)
+        assert quantum_capacity_amplitude_damping_degradable(0.5) == pytest.approx(0.0, abs=1e-6)
+        assert quantum_capacity_amplitude_damping_degradable(0.9) == pytest.approx(0.0, abs=1e-15)
+        assert quantum_capacity_amplitude_damping_degradable(1.0) == pytest.approx(0.0, abs=1e-15)
+
+        # Invalid input
+        with pytest.raises(ValueError):
+            quantum_capacity_amplitude_damping_degradable(-0.01)
+        with pytest.raises(ValueError):
+            quantum_capacity_amplitude_damping_degradable(1.01)
+
+        # Monotonic decrease + brute-force oracle comparison
         prev = float('inf')
         for g in [0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.49]:
-            q = K_D_amplitude_damping_degradable(g)
-            print(f"  γ={g}: Q = K_D = {q:.6f}")
+            q = quantum_capacity_amplitude_damping_degradable(g)
+            q_bf = brute_force_q(g)
+            print(f"  γ={g}: Q={q:.6f}, brute_force={q_bf:.6f}")
             assert q > 0, f"Q should be > 0 for γ={g} (degradable regime)"
             assert q < prev, f"Q should decrease: γ={g} got {q}, prev={prev}"
+            assert q == pytest.approx(q_bf, abs=1e-3), \
+                f"Golden-section diverges from brute-force at γ={g}: {q} vs {q_bf}"
             prev = q
 
-    def test_AD_K_D_below_log_neg_and_E_R(self):
-        """Plenio inequality for AD: K_D ≤ E_R^PPT (analytic) ≤ log_neg.
-
-        For γ ≤ 1/2 we have analytic K_D. Test inequality at several points.
+    def test_backward_compat_alias_K_D_equals_Q(self):
+        """Backward-compat alias K_D_amplitude_damping_degradable delegates to quantum_capacity_amplitude_damping_degradable.
+        The alias exists for scripts written before the rename; Q = quantum capacity (LB on K^{↔}).
         """
         from qkdx.numerics.upper_bound import (
-            K_D_amplitude_damping_degradable, analytic_log_neg_amplitude_damping,
+            K_D_amplitude_damping_degradable,
+            quantum_capacity_amplitude_damping_degradable,
+        )
+        for g in [0.1, 0.3, 0.49]:
+            assert K_D_amplitude_damping_degradable(g) == quantum_capacity_amplitude_damping_degradable(g)
+
+    def test_AD_Q_below_log_neg(self):
+        """Q (quantum capacity) ≤ log_neg for AD channel in degradable regime.
+
+        For γ ≤ 1/2: Q (= unassisted private capacity) ≤ E_R ≤ log_neg.
+        Q is a lower bound on K^{↔}; log_neg is an upper bound.
+        """
+        from qkdx.numerics.upper_bound import (
+            quantum_capacity_amplitude_damping_degradable, analytic_log_neg_amplitude_damping,
         )
         for g in [0.05, 0.10, 0.20, 0.30, 0.40]:
-            kd = K_D_amplitude_damping_degradable(g)
+            q_val = quantum_capacity_amplitude_damping_degradable(g)
             ln = analytic_log_neg_amplitude_damping(g)
-            print(f"  γ={g}: K_D={kd:.4f}, log_neg={ln:.4f}, ratio log_neg/K_D={ln/kd:.3f}")
-            assert kd <= ln + 1e-9, f"Plenio violated: K_D={kd} > log_neg={ln}"
+            print(f"  γ={g}: Q={q_val:.4f}, log_neg={ln:.4f}, ratio log_neg/Q={ln/q_val:.3f}")
+            assert q_val <= ln + 1e-9, f"Q ≤ log_neg violated: Q={q_val} > log_neg={ln}"
 
     def test_e_r_depolarizing_analytic_matches_corrected_formula(self):
         """Regression: e_r_depolarizing_analytic uses E_R = 1 - h(F) for d=2.
@@ -499,15 +539,16 @@ class TestAnalyticLogNegFormulas:
             with pytest.raises(ValueError):
                 fn(1.1)
 
-    def test_plenio_inequality_log_neg_geq_K_D(self):
-        """Plenio 2005: log_neg(ρ) ≥ E_R(ρ) ≥ K_D(ρ).
+    def test_plenio_inequality_log_neg_geq_E_R(self):
+        """Plenio 2005: log_neg(ρ) ≥ E_R(ρ) ≥ Q(ρ) (for degradable AD).
 
-        Numerical sanity: for all 4 channel families with known K_D / E_R
-        closed forms (or single-letter formula for AD degradable), verify
-        log_neg ≥ K_D / E_R on a dense grid.
+        Hierarchy: log_neg ≥ E_R ≥ K^{↔} ≥ Q (for degradable channels).
+        For AD degradable: Q is a lower bound on K^{↔}; log_neg is an upper bound.
+        Verify log_neg ≥ Q (for AD) and log_neg ≥ E_R (for dephasing/depolarizing/erasure)
+        on a dense grid.
         """
         from qkdx.numerics.upper_bound import (
-            K_D_amplitude_damping_degradable,
+            quantum_capacity_amplitude_damping_degradable,
             analytic_log_neg_amplitude_damping,
             analytic_log_neg_dephasing,
             analytic_log_neg_depolarizing,
@@ -518,32 +559,32 @@ class TestAnalyticLogNegFormulas:
 
         violations = []
         for p in np.linspace(0.001, 0.999, 200):
-            # AD: K_D = Q only valid for γ ≤ 1/2 (degradable)
+            # AD: Q (quantum capacity) valid for γ ≤ 1/2 (degradable only)
             if p <= 0.499:
-                ln, kd = analytic_log_neg_amplitude_damping(p), K_D_amplitude_damping_degradable(p)
-                if ln < kd - 1e-9:
-                    violations.append(("AD", p, ln, kd))
-            # Dephasing: PLOB Eq.39
-            ln, kd = analytic_log_neg_dephasing(p), e_r_dephasing(p)
-            if ln < kd - 1e-12:
-                violations.append(("dephasing", p, ln, kd))
-            # Depolarizing: Vollbrecht-Werner (corrected)
+                ln = analytic_log_neg_amplitude_damping(p)
+                q_val = quantum_capacity_amplitude_damping_degradable(p)
+                if ln < q_val - 1e-9:
+                    violations.append(("AD", p, ln, q_val))
+            # Dephasing: E_R = K^{↔} = PLOB Eq.39
+            ln, er = analytic_log_neg_dephasing(p), e_r_dephasing(p)
+            if ln < er - 1e-12:
+                violations.append(("dephasing", p, ln, er))
+            # Depolarizing: E_R (Vollbrecht-Werner corrected)
             ln, er = analytic_log_neg_depolarizing(p), e_r_depolarizing_analytic(p)
             if ln < er - 1e-12:
                 violations.append(("depolarizing", p, ln, er))
-            # Erasure: PLOB Eq.43
-            ln, kd = analytic_log_neg_erasure(p), e_r_erasure(p)
-            if ln < kd - 1e-12:
-                violations.append(("erasure", p, ln, kd))
+            # Erasure: E_R = K^{↔} = PLOB Eq.43
+            ln, er = analytic_log_neg_erasure(p), e_r_erasure(p)
+            if ln < er - 1e-12:
+                violations.append(("erasure", p, ln, er))
 
         print(f"  Plenio inequality verified on 4 channels × 200 grid points")
-        # Check tightness ratios at moderate noise
-        kd_AD = K_D_amplitude_damping_degradable(0.2)
+        q_AD = quantum_capacity_amplitude_damping_degradable(0.2)
         ln_AD = analytic_log_neg_amplitude_damping(0.2)
-        print(f"  AD γ=0.2: log_neg/K_D = {ln_AD/kd_AD:.3f}")
-        kd_DP = e_r_dephasing(0.2)
+        print(f"  AD γ=0.2: log_neg/Q = {ln_AD/q_AD:.3f}")
+        er_DP = e_r_dephasing(0.2)
         ln_DP = analytic_log_neg_dephasing(0.2)
-        print(f"  Dephase p=0.2: log_neg/K_D = {ln_DP/kd_DP:.3f}")
+        print(f"  Dephase p=0.2: log_neg/E_R = {ln_DP/er_DP:.3f}")
         assert not violations, f"Plenio inequality violated: {violations[:5]}"
 
     def test_erasure_log_neg_formula(self):

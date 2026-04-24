@@ -1,6 +1,6 @@
 # Gap 定量形状（G4.1 Sub-Q4 §5.1 初稿）
 
-**版本**：v0.3 [CONJ 级 + AD K_D candidate D 加入]
+**版本**：v0.4 [Candidate D 修正 — Q 是 LB 而非 UB]
 **日期**：2026-04-24（v0.3 增补）/ 2026-04-21 首稿
 **状态**：[CONJ] — 依赖 U3.6 三候选路径 α/β/γ 的形式化尚未完成
 **数据**：[../research/data/gap_shape.csv](../research/data/gap_shape.csv)
@@ -34,9 +34,14 @@ FINDINGS v2 §4.2 的红线被严格遵守：
 | **A** PLOB 最弱 edge | $-\log_2(1 - \min(\eta_A, \eta_B))$ | [CONJ for umr under Assumption DP] | 单信道两方 |
 | **B** Pirandola N=1 | $-\log_2(1 - \sqrt{\eta_\text{end2end}})$ | [CONJ for umr] | trusted-relay chain |
 | **C** E_R^PPT amp-damp | numerical SDP on qubit amp-damp with $\gamma = 1-\eta_\text{arm}$ | [CONJ + qubit abstraction] | qubit-level |
-| **D** AD K_D = Q analytic | $\max_p [h_2((1-\gamma)p) - h_2(\gamma p)]$ for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014) | [THM for qubit AD channel, CONJ for umr applicability] | qubit-level (degradable region only) |
 
-**Candidate D 是 [THM] 级的 qubit AD channel 真 K_D**（degradable single-letter formula）；但其 umr 适用性需 cross-task lemma，仍 [CONJ]。在 loss > 3 dB（η_arm < 0.5）AD 进入 anti-degradable 区，candidate D 不适用（Q=0 但 2-way K_D 真值 OPEN）。
+**参考量（非上界候选）**：
+
+| 量 | 公式 | 说明 |
+|---|---|---|
+| AD Q (ref) | $\max_p [h_2((1-\gamma)p) - h_2(\gamma p)]$ for γ ≤ 1/2 | **量子容量 Q（= degradable AD 的单字母公式）**；Q 是 K^{↔} 的**下界**（K^{↔} ≥ Q），**不是上界候选**。仅在 loss < 3 dB（η_arm > 0.5）的 degradable 区有效。见 `gap_shape_analysis.py`。 |
+
+**[2026-04-24 修正]**: 先前 v0.3 错误将 AD Q 列为"Candidate D (UB)"，已撤回。Q 是 K^{↔} 的下界，不是上界。使用 Q 作为 UB 候选会导致 gap 计算逻辑反转（LB > claimed UB 的区域 = 错误）。已从 `gap_shape_analysis.py` 中移除 Candidate D 并重新标注为参考量。
 
 **对称 umr 情形**（$\eta_A = \eta_B = \eta_\text{arm}$，$\eta_\text{end2end} = \eta_\text{arm}^2$）候选 A 与 B 公式一致。
 
