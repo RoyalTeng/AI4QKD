@@ -110,7 +110,7 @@ Pareto 观察：
 **关键观察**:
 - **MDI Pareto LB 远低于 Pirandola UB 候选** (~400-1500× gap 在工作区)
 - log_neg cand UB 量级为 1.5 bits, 与 MDI 真实 rate (1e-3) 差 ~1500×, 比 Pirandola 更松
-- MDI rate 在 loss > 50 dB 急剧下降, 真 K_D 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
+- MDI rate 在 loss > 50 dB 急剧下降, 真 K^{↔} 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
 
 ### 3b.3 与 Sub-Q3 的连接
 

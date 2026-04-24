@@ -78,7 +78,7 @@ log_neg 与 SP rate 的差距源于：
 
 BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift 协议不同）→ **log_neg 给出完全相同的 UB**。但 SP rates 不同（六态利用了 3 MUB 的 PA tightening）。
 
-意义: **log_neg 上界对协议优化盲目**。要分辨 BB84/六态/etc 的真正排序，必须用 K_D 级紧界（Devetak-Winter / Pirandola / R_max SDP / 等）。
+意义: **log_neg 上界对协议优化盲目**。要分辨 BB84/六态/etc 的真正排序，必须用 K^{↔} 级紧界（Devetak-Winter / Pirandola / R_max SDP / 等）。
 
 ---
 

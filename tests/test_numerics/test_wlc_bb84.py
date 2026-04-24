@@ -57,14 +57,20 @@ def test_wlc_bb84_above_threshold_gives_zero() -> None:
 @pytest.mark.slow
 @pytestmark_mosek
 def test_wlc_bb84_qber_exact_zero_with_facial_reduction() -> None:
-    """QBER=0 requires facial reduction; result ≈ 1.0 bit/signal (MOSEK)."""
+    """QBER=0 requires facial reduction; result ≈ 0.5 bit/signal (MOSEK).
+
+    wlc_key_rate returns R = p_sift · (H_bits - leak_ec) [per-signal].
+    At QBER=0: H_bits=1, leak_ec=0, p_sift=0.5 → R = 0.5 bit/signal.
+    (per-sifted rate = 1.0; function convention is per-signal to match
+     Shor-Preskill and E_R unit convention project-wide, see wlc.py:483).
+    """
     protocol = build_bb84_protocol(qber=0.0)
     result = wlc_key_rate(
         protocol,
         observations={"qber_Z": 0.0, "qber_X": 0.0, "p_sift": 0.5},
     )
     assert result.primal_status in {"optimal", "optimal_inaccurate"}
-    assert result.key_rate == pytest.approx(1.0, rel=0.01, abs=5e-4)
+    assert result.key_rate == pytest.approx(0.5, rel=0.01, abs=5e-4)
 
 
 @pytestmark_mosek

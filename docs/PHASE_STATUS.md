@@ -156,7 +156,7 @@
 
 ### 5.2 数值扩展（用户启动后 AI 可继续）
 
-5. **AD γ>1/2 K_D** — squashed entanglement 工具实施
+5. **AD γ>1/2 K^{↔}** — squashed entanglement 工具实施（anti-degradable 区 Q=0，但 K^{↔} OPEN）
 6. **Erasure E_R^PPT SDP** — 需高内存环境（16×16 OOM）
 7. **SARG04 严格实施** — Koashi 2005 announcement register 扩展
 
