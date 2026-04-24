@@ -55,6 +55,11 @@ def main():
     # PLOB upper bound reference
     plob_rates = -np.log2(np.maximum(1.0 - eta, 1e-30))
 
+    # Pirandola 2019 Type B (untrusted relay) UB candidate [CONJ for umr]
+    # R_UB = -log2(1 - sqrt(eta_total)) — valid for N=1 relay in symmetric link
+    sqrt_eta_total = np.sqrt(eta)
+    pirandola_ub = -np.log2(np.maximum(1.0 - sqrt_eta_total, 1e-30))
+
     # √η and η reference lines
     sqrt_eta = np.sqrt(eta)
     eta_line = eta
@@ -83,7 +88,9 @@ def main():
 
     # Reference scaling lines
     ax.semilogy(bb84_loss, plob_rates, ":", color="red", alpha=0.6,
-                label="PLOB upper bound: −log₂(1−η)")
+                label="PLOB UB: −log₂(1−η) [THM, direct link]")
+    ax.semilogy(bb84_loss, pirandola_ub, "-.", color="purple", alpha=0.7,
+                label="Pirandola UB cand: −log₂(1−√η) [CONJ, umr N=1]")
     ax.semilogy(bb84_loss, sqrt_eta, "--", color="gray", alpha=0.4,
                 label="√η reference (TF scaling)")
     ax.semilogy(bb84_loss, eta_line, "--", color="lightgray", alpha=0.4,
@@ -92,7 +99,7 @@ def main():
     ax.set_xlabel("Loss [dB]", fontsize=12)
     ax.set_ylabel("Key rate (bits/signal)", fontsize=12)
     ax.set_title(
-        "DV-QKD Family Pareto Map: BB84 / MDI-QKD / PM-QKD vs PLOB",
+        "DV-QKD Family Pareto Map: BB84 / MDI / PM-QKD vs UB candidates",
         fontsize=13,
     )
     ax.grid(True, which="both", ls="--", alpha=0.4)

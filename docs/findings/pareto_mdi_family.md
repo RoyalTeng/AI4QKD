@@ -127,7 +127,7 @@ MDI 是 PROSPECTUS §3.1 H1-H3 的核心 Type B 协议。Pirandola UB 候选是 
 |---|---|
 | 每个族能在参数空间扫 ≥ 1000 点 | ✅ 2581 points total |
 | Pareto 前沿上包络被记录 | ✅ `upper_envelope_loss` helper + CSV |
-| 族间比较图（BB84 vs MDI vs TF 在 (η, R) 平面） | ⏳ 待 TF family Pareto 完成后组合 |
+| 族间比较图（BB84 vs MDI vs TF 在 (η, R) 平面） | ✓ [family_comparison.png](../research/figures/family_comparison.png) (2026-04-24 含 Pirandola UB 候选线) |
 
 ---
 

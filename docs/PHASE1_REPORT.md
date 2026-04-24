@@ -198,6 +198,56 @@ CSV 文件（`docs/research/data/`）：
 
 ---
 
+## 9. Phase 2/3 延伸（2026-04-22 → 2026-04-24 自主 session）
+
+本 Phase 1 v1.0 完成后，自主 session 继续推进 Sub-Q3 / Sub-Q4 轨道，在 Phase 1 产出之上叠加：
+
+### 9.1 Sub-Q3 上界工具链
+
+- **upper_bound_report.md v0.5**（Day 2-4 连续更新）：§1-§11 覆盖 Pirandola / TGW / WTB / Khatri-Wilde / log_neg / E_R^PPT SDP / E_R analytic
+- **路径 β.G3 (log_neg 前传)**: AD-AD concatenation log_neg additivity → `log_neg(E_AD(η)) = log₂(1+η)`, crossover η_c=1/φ — **[SYN]** 已通过 R0.2 C1(c) SymPy + C2 用户签字 + C3 dev-reviewer R2 PASS triple verification (2026-04-22)
+- **路径 β/γ 结构 gap 全部 OPEN**（β.G4 Eve model transfer / β.G5 adversarial comb / γ.B.G1 DPI target / γ.G3 ε-composable）—— 用户 paper-level work 依赖项
+
+### 9.2 Day 4 (2026-04-24) 数值补强
+
+- **E_R analytic bug 修复** [commit b4efaae]: `e_r_depolarizing_analytic` 旧公式含非法项 `(1-F)·log₂(d²-1)`，修复为 d=2 正确形式 `1-h(F)` (Plenio-Virmani 2007 §V.E V.86)
+- **AD K_D analytic** [commit 73bd18f]: `K_D_amplitude_damping_degradable(γ)` = max_p[h₂((1-γ)p) - h₂(γp)] for γ ≤ 1/2 (Caruso-Giovannetti-Holevo)
+- **4 信道 tightness hierarchy** (upper_bound_report v0.5 §11):
+  - Dephase/Depolar: E_R^PPT ≡ E_R (2⊗2 PPT=SEP, Horodecki 1996) — **完美匹配**
+  - AD degradable: E_R^PPT/K_D ∈ [1.03, 1.52] — **接近紧**
+  - 六态 E_R/SP_6st ≤ 1.8× 在工作区 — **近闭合**
+
+### 9.3 Sub-Q4 Gap shape + 归因
+
+- **gap_shape_g4_1.md v0.3**（2026-04-24）: candidate D (AD K_D analytic) 加入 [THM for qubit AD, CONJ for umr]
+- **gap_analysis_2026-04-24.md v0.1**: G4.2 归因初稿 —— A/B/C 分类基于信道 vs 协议 vs 拓扑三层诊断
+  - BB84 SP 公式: **B 原因显著**（在 11% 阈值 SP→0 而 E_R=0.5）
+  - 六态 SP 公式: **接近紧**（B 原因小）
+  - TF/MDI umr 拓扑: UB 仍 [CONJ]，A/C 原因 **UNKNOWN** pending Sub-Q3 升 [THM]
+
+### 9.4 族间 Pareto 主图 v2 (2026-04-24)
+
+`family_comparison.{png,pdf}` 加入 **Pirandola N=1 Type B UB 候选线** `-log₂(1-√η)` [CONJ for umr]：
+- 在 40 dB: Pirandola UB cand ≈ 0.0145，TF Pareto ≈ 7.67e-6 → gap ~1890×
+- Pirandola UB cand 与 TF Pareto **同 √η slope**（√η 是紧 scaling exponent 的 [SYN] 实证证据）
+- Prefactor ~2000× gap 归因待 Sub-Q3 升 [THM] 后分解 A vs B
+
+### 9.5 Phase 2/3 自主可达边界
+
+R0.2 三方验证规则下，AI 自主 pipeline 结论上限 = **[CONJ] / [SYN]**。
+升 [COROLLARY]/[THM] 必须用户纸笔复核或非 AI 工具独立验证 + 用户签字 + dev-reviewer PASS（C1 ∧ C2 ∧ C3）。
+
+**当前用户决策队列**（self-contained brief 见 `docs/AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md`）:
+1. β.G4 Eve model transfer: Khatri-Wilde 2020 §19 Prop 19.2 umr 适用性精读
+2. β.G5 amortization 在 untrusted relay 下继承: WTB 2017 Thm 4 / Cor 5 直读
+3. γ.B.G1 DPI target lemma: Pirandola 2019 Eq. 9 拓扑适用性精读
+4. γ.G3 ε-composable transfer: Metger 2024 GEAT asymptotic → finite 桥接
+5. AD γ>1/2 K_D (anti-degradable): squashed entanglement 工具精读
+6. SARG04 严格实施 (Koashi 2005 announcement register)
+
+---
+
 ## Changelog
 
+- **v1.1** (2026-04-24) — §9 延伸: Day 4 numerical findings + β.G3 [SYN] triple-verified + gap attribution G4.2 initial + family_comparison v2 with Pirandola UB cand line
 - **v1.0** (2026-04-21) — 首发 Phase 1 综合报告。三族 Pareto + Kamin GEAT + 族地图完整。

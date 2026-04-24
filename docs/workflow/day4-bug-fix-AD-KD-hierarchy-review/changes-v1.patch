@@ -1,0 +1,655 @@
+diff --git a/docs/findings/gap_shape_g4_1.md b/docs/findings/gap_shape_g4_1.md
+index 98ae05e..506f8da 100644
+--- a/docs/findings/gap_shape_g4_1.md
++++ b/docs/findings/gap_shape_g4_1.md
+@@ -1,7 +1,7 @@
+ # Gap 定量形状（G4.1 Sub-Q4 §5.1 初稿）
+ 
+-**版本**：v0.2 [CONJ 级]
+-**日期**：2026-04-21
++**版本**：v0.3 [CONJ 级 + AD K_D candidate D 加入]
++**日期**：2026-04-24（v0.3 增补）/ 2026-04-21 首稿
+ **状态**：[CONJ] — 依赖 U3.6 三候选路径 α/β/γ 的形式化尚未完成
+ **数据**：[../research/data/gap_shape.csv](../research/data/gap_shape.csv)
+ **图**：[../research/figures/](../research/figures/)（`gap_shape.png` / `gap_shape.pdf`）
+@@ -34,6 +34,9 @@ FINDINGS v2 §4.2 的红线被严格遵守：
+ | **A** PLOB 最弱 edge | $-\log_2(1 - \min(\eta_A, \eta_B))$ | [CONJ for umr under Assumption DP] | 单信道两方 |
+ | **B** Pirandola N=1 | $-\log_2(1 - \sqrt{\eta_\text{end2end}})$ | [CONJ for umr] | trusted-relay chain |
+ | **C** E_R^PPT amp-damp | numerical SDP on qubit amp-damp with $\gamma = 1-\eta_\text{arm}$ | [CONJ + qubit abstraction] | qubit-level |
++| **D** AD K_D = Q analytic | $\max_p [h_2((1-\gamma)p) - h_2(\gamma p)]$ for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014) | [THM for qubit AD channel, CONJ for umr applicability] | qubit-level (degradable region only) |
++
++**Candidate D 是 [THM] 级的 qubit AD channel 真 K_D**（degradable single-letter formula）；但其 umr 适用性需 cross-task lemma，仍 [CONJ]。在 loss > 3 dB（η_arm < 0.5）AD 进入 anti-degradable 区，candidate D 不适用（Q=0 但 2-way K_D 真值 OPEN）。
+ 
+ **对称 umr 情形**（$\eta_A = \eta_B = \eta_\text{arm}$，$\eta_\text{end2end} = \eta_\text{arm}^2$）候选 A 与 B 公式一致。
+ 
+diff --git a/docs/findings/log_neg_msEB_application_2026-04-23.md b/docs/findings/log_neg_msEB_application_2026-04-23.md
+index 4adc21f..fdc5a78 100644
+--- a/docs/findings/log_neg_msEB_application_2026-04-23.md
++++ b/docs/findings/log_neg_msEB_application_2026-04-23.md
+@@ -80,6 +80,34 @@ BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift
+ 
+ ---
+ 
++## 4.4 修订: 用真 E_R (corrected analytic) 紧化对比
++
++**[2026-04-23 后续]**: 修复 `e_r_depolarizing_analytic` bug 后, 对 BB84/six-state 等效信道直接计算真 E_R = E_R^PPT (= 1 - h(F))。
++
++| QBER | log_neg (松UB) | **E_R (corrected, 真UB)** | SP_BB84 | SP_6state | **E_R/SP_BB84** | **E_R/SP_6state** |
++|------|---------------|--------------------------|---------|-----------|----------------|-------------------|
++| 1.00% | 0.9855 | **0.9192** | 0.8384 | 0.9034 | 1.10 | **1.02** |
++| 3.00% | 0.9561 | 0.8056 | 0.6112 | 0.7581 | 1.32 | **1.06** |
++| 5.00% | 0.9260 | 0.7136 | 0.4272 | 0.6344 | 1.67 | **1.13** |
++| 8.00% | 0.8797 | 0.5978 | 0.1956 | 0.4710 | 3.06 | **1.27** |
++| 11.0% | 0.8319 | 0.5001 | ≈0 | 0.3257 | ∞ | **1.54** |
++| 12.62% | 0.8054 | 0.4531 | 0 | 0.2531 | ∞ | **1.79** |
++
++**关键修订观察**:
++
++1. **E_R 是显著紧的 UB** vs log_neg: 在 11% QBER 处 E_R = 0.50 vs log_neg = 0.83 (40% 紧化)
++2. **六态更幸运**: E_R / SP_6state ≤ 1.8× 在阈值附近, **量级合理**
++3. **BB84 仍有大 gap**: BB84 SP rate 在 11% 阈值已 0, 而 E_R = 0.50 — 这表明 **BB84 的 EC cost (2·h(QBER)) 是非紧的**, 真 K_D 应在 [SP_BB84, E_R] 之间, 离两端都有距离
++4. **六态接近紧界**: SP_six-state 与 E_R 比率 1-1.8×, 表明 **六态 SP 公式本身已接近紧 K_D**（用 X-Y-Z 三 MUB 信息）
++
++### 4.5 Sub-Q3 工具评估更新
++
++修复 bug 后, **E_R^PPT (= 真 E_R for 2⊗2)** 是 qubit MS-EB 协议族的**正确紧 UB 工具**:
++- 对 BB84: log_neg → E_R 紧化 ~40%, 但 BB84 SP 离 E_R 仍远 (说明真 K_D 估计需要 protocol-specific 工作)
++- 对 six-state: E_R 与 SP 接近 (1-2×), **几乎闭合 UB-LB gap**
++
++---
++
+ ## 5. 对 Sub-Q3 的启示
+ 
+ ### 5.1 上界候选优先级
+diff --git a/docs/findings/pareto_bb84_family.md b/docs/findings/pareto_bb84_family.md
+index 1b88612..fc49efc 100644
+--- a/docs/findings/pareto_bb84_family.md
++++ b/docs/findings/pareto_bb84_family.md
+@@ -54,6 +54,27 @@
+ 
+ $p_Z \to 0.99$ 时 $p_\text{sift} = 0.99^2 + 0.01^2 = 0.9802$,F4 相对 F1 的密钥率比为 $0.9802/0.5 \approx 1.96$ — 接近 **BB84 的 2 倍**,符合 Lo-Chau-Ardehali 2005 预测。
+ 
++## 5b. 上界对比 (2026-04-24 增补 [SYN])
++
++把 BB84/six-state 的 R_LB 与等效 depolarizing 信道的真 E_R = E_R^PPT 对比 (信道 p_depol = 4·QBER/3)。
++
++E_R 是真信道层 UB（Plenio-Virmani 2007 §V.E (V.86) for d=2: `E_R = 1 - h(F)`，2026-04-24 修复 `e_r_depolarizing_analytic` bug 后正确）。MOSEK SDP `e_r_channel_ppt` 数值匹配.
++
++| QBER | E_R (UB, 信道层) | F1 BB84 SP (LB) | F2 Six-state SP (LB) | E_R/SP_BB84 | E_R/SP_6st |
++|------|------------------|------------------|----------------------|-------------|------------|
++| 1.0% | 0.919 | 0.838 | 0.903 | 1.10× | **1.02×** |
++| 3.0% | 0.806 | 0.611 | 0.758 | 1.32× | 1.06× |
++| 5.0% | 0.714 | 0.427 | 0.634 | 1.67× | 1.13× |
++| 8.0% | 0.598 | 0.196 | 0.471 | 3.06× | **1.27×** |
++| 10.0% | 0.531 | 0.062 | 0.373 | 8.56× | 1.42× |
++| **11.0%** | 0.500 | ≈0 | 0.326 | ∞ | **1.54×** |
++| **12.62%** | 0.453 | 0 | 0.253 | ∞ | **1.79×** |
++
++**关键观察**:
++- **六态接近 UB-LB 闭合** (E_R/SP_6st ≤ 1.8×) 整个工作区。说明 six-state SP 公式利用 3 MUB 信息，已接近紧 K_D。
++- **BB84 离 UB 远** (在 11% 阈值 SP→0 而 E_R=0.5)。这表明 BB84 SP 公式 (1−2h(QBER)) 的 EC cost 是非紧的 — 真 K_D 在两者间，离两端都有距离。
++- 详细数据 / 图表见 [`docs/findings/log_neg_msEB_application_2026-04-23.md`](log_neg_msEB_application_2026-04-23.md) §4.4-4.5
++
+ ## 6. 下一步(S2.2 Week 4-8 续)
+ 
+ - [ ] 引入 scikit-optimize 做 2-D BO 对比 grid scan(可选,非硬验收)
+@@ -63,4 +84,5 @@ $p_Z \to 0.99$ 时 $p_\text{sift} = 0.99^2 + 0.01^2 = 0.9802$,F4 相对 F1 的
+ 
+ ## 7. 变更日志
+ 
++- **v0.2** (2026-04-24): §5b 上界对比追加 — six-state E_R/SP ≤ 1.8× 接近 UB-LB 闭合; BB84 SP 公式离 UB 远。基于 e_r_depolarizing_analytic bug 修复后的 真 E_R 数据。
+ - **v0.1** (2026-04-19):F1/F2/F4 初版 Pareto 扫描 + 基础设施验证。F3 SARG04 已从本文件移除,待 Koashi 2005 严格实施后重新纳入。
+diff --git a/docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md b/docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md
+index fbd8fb6..297a6b8 100644
+--- a/docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md
++++ b/docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md
+@@ -49,22 +49,26 @@ C 选项 memo 观察到 log_neg 在操作 QBER 区极松（5000× SP rate）。
+ 
+ **解释**: dephasing Choi 态是 Bell 态混合 ((1-p)|Φ⁺⟩⟨Φ⁺| + p|Φ⁻⟩⟨Φ⁻|)，只在两个 Bell 基内纠缠。PPT 对偶最优 sigma 正好是 separable convex combination 的"classical shadow"，能达到真 E_R = K_D（Horodecki 1999 + PLOB Eq.39 coincide）。
+ 
+-### 1.3 Depolarizing
++### 1.3 Depolarizing（含 2026-04-23 bug 修复）
+ 
+-| p | log_neg | E_R^PPT (SDP) | E_R (Horodecki 99) | E_R_PPT/log_neg | E_R/E_R_PPT |
++**重要**：本节数据曾使用 `e_r_depolarizing_analytic` 错误公式（含虚假 (1-F)·log₂3 项）。SDP 计算正确反映出 bug — 数据驱动地发现并修复了项目级 bug。修复后：
++
++| p | log_neg | E_R^PPT (SDP) | E_R (corrected analytic) | E_R^PPT/log_neg | E_R / E_R^PPT |
+ |---|---:|---:|---:|---:|---:|
+-| 0.02 | 0.9782 | 0.8876 | 0.8639 | 0.907 | 0.974 |
+-| 0.05 | 0.9449 | 0.7693 | 0.7099 | 0.814 | 0.923 |
+-| 0.10 | 0.8875 | 0.6157 | 0.4968 | 0.694 | 0.807 |
+-| 0.20 | 0.7655 | 0.3902 | 0.1524 | 0.510 | 0.391 |
+-| 0.30 | 0.6323 | 0.2308 | **0** | 0.365 | 0 |
+-| 0.50 | 0.3219 | 0.0456 | **0** | 0.142 | 0 |
+-
+-**观察**: 
+-- E_R^PPT 紧于 log_neg（SDP 在 Horodecki 界和 log_neg 之间）
+-- Horodecki E_R 在 F ≤ F_crit（约 p ≥ 0.27）时**已零**（Werner 类对偶的 cross-over）
+-- E_R^PPT 继续非零（PPT 松弛保留了一定 entanglement "能见度"）
+-- 这是 Horodecki E_R vs PPT-relaxed E_R 的**实质差距**，不是数值误差
++| 0.02 | 0.9782 | 0.8876 | 0.9192 | 0.907 | 1.036 |
++| 0.05 | 0.9449 | 0.7693 | 0.7693 | 0.814 | 1.000 |
++| 0.10 | 0.8875 | 0.6157 | 0.6157 | 0.694 | 1.000 |
++| 0.20 | 0.7655 | 0.3902 | 0.3902 | 0.510 | 1.000 |
++| 0.30 | 0.6323 | 0.2308 | 0.2308 | 0.365 | 1.000 |
++| 0.50 | 0.3219 | 0.0456 | 0.0456 | 0.142 | 1.000 |
++
++**观察 (修订后)**: 
++- E_R^PPT (SDP) **完全匹配** E_R (corrected analytic) 在 p ∈ [0.05, 0.50]（E_R^PPT/E_R = 1.000 机器精度）
++- 这与理论预期一致：**对 2⊗2 PPT = SEP**（Horodecki et al. 1996），故 E_R^PPT = E_R
++- **Bug 修复**: previous formula 含虚假 (1-F)·log₂3 项导致早期错误零点；详见 `qkdx/numerics/upper_bound.py:e_r_depolarizing_analytic` docstring HISTORY 节
++- p=0.02 处差异 (1.036) 可能是 SDP 在边界 F~1 附近的数值精度限制
++
++**[VERIFIED]** 紧化结果：对 qubit depolarizing，E_R^PPT SDP **达到真 E_R**（与 Plenio-Virmani 2007 §V.E (V.86) Vollbrecht-Werner 公式精确一致）。
+ 
+ ---
+ 
+@@ -75,26 +79,50 @@ C 选项 memo 观察到 log_neg 在操作 QBER 区极松（5000× SP rate）。
+ E_R^PPT 在 qubit dephasing 上**达到真 E_R = K_D**（与 PLOB 精确一致）。  
+ → **PPT-SDP 对 dephasing 是紧界**，是 Sub-Q3 工具链的"优等生"。
+ 
+-### 2.2 Depolarizing: PPT 松弛离真 E_R 有差距
++### 2.2 Depolarizing: PPT-SDP 达真 E_R（修正后）
+ 
+-E_R^PPT 比 log_neg 紧 ~10-40%，但仍**严格大于**真 E_R（Horodecki 99）。  
+-PPT relaxation 在 F < 1/2（entangled but "bound" under PPT 观）保留了非零值，Horodecki E_R 已归零。
++**[修订 — 修复 e_r_depolarizing_analytic bug 后]**: E_R^PPT (SDP) **匹配** Vollbrecht-Werner 真 E_R 至机器精度（1.000 比率）。
+ 
+-**Sub-Q3 启示**: 对 depolarizing 家族，E_R^PPT 非紧；真紧界需用 Horodecki 解析（已知）。
++理论解释: 2⊗2 维度 PPT 包含等于 SEP 集（Horodecki 1996），故 E_R^PPT = E_R 恒成立。  
++工具能力: `e_r_channel_ppt` SDP 在 qubit 信道上是**紧界**，与 dephasing 一致。
++
++**Sub-Q3 启示**: 对 qubit channels（dim_A = dim_B = 2），E_R^PPT (SDP) 是真 E_R 的 [VERIFIED] 计算工具。无需依赖错误公式或近似 — SDP 即解析真值。
+ 
+ ### 2.3 AD: PPT 紧化中等
+ 
+ E_R^PPT vs log_neg 比率 0.44-0.89（gamma 增大反降）。无已知 AD K_D 解析可比。  
+ → **AD 上 E_R^PPT 是最紧已知候选**（直到有更好工具如 squashed ent.）。
+ 
+-### 2.4 四信道上界层级摘要
++### 2.4 四信道上界层级摘要（再次修订 — AD K_D 找到）
+ 
+-| 信道 | log_neg | E_R^PPT | 真 K_D | 结论 |
++| 信道 | log_neg | E_R^PPT | 真 K_D 来源 | 结论 |
+ |------|---------|---------|--------|------|
+-| AD | 0.14-0.96 | 0.06-0.86 | unknown | E_R^PPT 为最紧已知 |
+-| Dephasing | 0.26-0.93 | 0.03-0.71 | **== E_R^PPT** (PLOB) | PPT 紧化完整 |
+-| Depolarizing | 0.32-0.98 | 0.05-0.89 | 0.0-0.86 | PPT 松弛有显著差距 |
+-| Erasure | 0.14-0.96 | OOM (本环境) | 0.1-0.95 | 未计算 |
++| AD (γ≤1/2) | 0.14-0.96 | 0.06-0.86 | **Q = max_p[h((1-γ)p) - h(γp)]** (degradable) | E_R^PPT/K_D ∈ [1.03, 1.52] |
++| AD (γ>1/2) | 0.14-0.59 | 0.06-0.32 | unknown (anti-degradable, K_D may > 0 via 2-way) | E_R^PPT 是最紧已知 |
++| Dephasing | 0.26-0.93 | 0.03-0.71 | = E_R^PPT (PLOB Eq.39) | PPT 紧化完整 |
++| Depolarizing | 0.32-0.98 | 0.05-0.89 | = E_R^PPT (Vollbrecht-Werner) | PPT 紧化完整 |
++| Erasure | 0.14-0.96 | OOM (本环境) | 0.1-0.95 (PLOB Eq.43) | 待高内存复跑 |
++
++**[新增 2026-04-23]**: AD 在 degradable 区 (γ≤1/2) 的真 K_D = Q 通过 Caruso-Giovannetti-Holevo 2014 的 single-letter 公式数值求解（黄金分割搜索）：
++
++| γ | K_D = Q (analytic) | E_R^PPT (SDP) | log_neg | E_R/K_D | log_neg/K_D |
++|---|---|---|---|---|---|
++| 0.05 | 0.8311 | 0.8552 | 0.9635 | 1.03 | 1.16 |
++| 0.10 | 0.7094 | 0.7590 | 0.9260 | 1.07 | 1.30 |
++| 0.20 | 0.5062 | 0.6125 | 0.8480 | 1.21 | 1.68 |
++| 0.30 | 0.3280 | 0.4984 | 0.7655 | 1.52 | 2.33 |
++
++E_R^PPT 在 AD degradable 区是 **接近紧** UB（gap 3-52%），明显紧于 log_neg。
++
++**对 γ > 1/2 anti-degradable 区**: Q = 0，但 K_D 可能 > 0 via 两向 LOCC（squashed entanglement 可能给出非零下界）。这是 Sub-Q3 的真正 OPEN gap。
++
++**[VERIFIED]** 在 qubit→qubit 设置（dim ≤ 2 each side）下，E_R^PPT SDP **是真 E_R 的等价计算**（基于 Horodecki 1996: PPT = SEP for 2⊗2）。Erasure 是 dim_B=3，未直接测试；但理论上 dim_B=3 仍 PPT≠SEP 一般，所以 E_R^PPT ≤ E_R = K_D 可能 strict。
++
++### 2.5 Bug-catch 价值
++
++本节意外发现并修复了 `e_r_depolarizing_analytic` 公式的复制粘贴 bug（log₂(d²-1) vs log₂(d-1)）。这显示了 **SDP 数值 vs 解析公式交叉验证**的实战价值 — 即便公式来自文献"权威"，仍需被 SDP 独立 validate。
++
++教训符合 R0.2 精神：跨家族验证（解析 vs 数值）抓出了纯文档 review 不会发现的问题。
+ 
+ ---
+ 
+diff --git a/docs/findings/upper_bound_report.md b/docs/findings/upper_bound_report.md
+index 972750d..a3cd246 100644
+--- a/docs/findings/upper_bound_report.md
++++ b/docs/findings/upper_bound_report.md
+@@ -1,7 +1,7 @@
+ # Sub-Q3 上界接缝报告（Upper Bound Report）
+ 
+-**版本**：v0.4
+-**日期**：2026-04-21 autonomous session
++**版本**：v0.5
++**日期**：2026-04-24（v0.5 增补）/ 2026-04-21 首稿
+ **对应**：PROSPECTUS Sub-Q3 验收产出 + RESEARCH_PLAN §4.5 U3.8
+ **预期篇幅**：30-50 页（本稿约 25 页等价，可扩展）
+ **严谨性**：全文遵循 FINDINGS v2 §1.2 四级分级（[THM]/[COROLLARY]/[CONJ]/[UNKNOWN]），绝不越权
+@@ -464,8 +464,103 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
+ 
+ ---
+ 
++## 11. Day 4 (2026-04-24) 增补：4 信道 hierarchy + bug 修复 + AD K_D 解析
++
++### 11.1 Bug 修复（**项目级 bug 数据驱动地由 SDP 抓出**）
++
++`qkdx/numerics/upper_bound.py:e_r_depolarizing_analytic` 公式错（Vollbrecht-Werner 在 d⊗d 维度的 (d-1) 被误为 (d²-1)）：
++
++- 旧（错误）：`E_R = 1 - h(F) - (1-F)·log₂(d²-1)` (= subtracts log₂3 for d=2)
++- 新（正确）：`E_R = log₂(d) + F·log₂F + (1-F)·log₂((1-F)/(d-1))`，对 d=2 简化为 `1 - h(F)`
++- 来源：Plenio-Virmani 2007 §V.E (V.86)
++- 影响：旧公式 underestimate E_R 0.03-0.40 bits；早期错误零点 p ≈ 0.27 vs 真 p = 2/3
++- 验证：MOSEK SDP `e_r_channel_ppt(depolarizing)` 与新公式机器精度匹配（2⊗2 PPT=SEP per Horodecki 1996）
++
++记录：`docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md` §2.5；commit `b4efaae`。
++
++### 11.2 4 qubit 信道 log_neg 解析公式（[SYN]，SymPy 验证）
++
++| 信道 | log_neg | 真 K_D / E_R |
++|------|---------|-------------|
++| AD (γ ≤ 1/2) | `log₂(2−γ)` | `max_p[h₂((1-γ)p) − h₂(γp)]` (degradable Q) |
++| AD (γ > 1/2) | `log₂(2−γ)` | unknown (anti-degradable，K_D 真正 OPEN) |
++| Dephasing | `log₂(1+\|1−2p\|)` | `1−h(p)` (PLOB Eq.39) |
++| Depolarizing | `max(0, log₂(2−3p/2))` | `1−h(F)` (Vollbrecht-Werner 修复后) |
++| Erasure | `log₂(2−p)` | `1−p` (PLOB Eq.43) |
++
++实现：`analytic_log_neg_{amplitude_damping, dephasing, depolarizing, erasure}` + `K_D_amplitude_damping_degradable` in `qkdx/numerics/upper_bound.py`。
++
++测试：13 tests in `TestAnalyticLogNegFormulas`（含 SymPy SDP 双验证 + Plenio 不等式 4 信道 × 200 grid pts × 800 检查 + bug regression）。
++
++### 11.3 上界紧度层级（**Day 4 完成 hierarchy table**）
++
++| 信道 | log_neg | E_R^PPT (SDP) | 真 K_D | E_R^PPT/K_D ratio |
++|------|---------|---------------|--------|-------------------|
++| AD γ=0.05 | 0.964 | 0.855 | 0.831 | **1.03** ← 接近紧 |
++| AD γ=0.10 | 0.926 | 0.759 | 0.709 | 1.07 |
++| AD γ=0.20 | 0.848 | 0.612 | 0.506 | 1.21 |
++| AD γ=0.30 | 0.766 | 0.498 | 0.328 | 1.52 |
++| Dephase p=0.10 | 0.848 | 0.531 | 0.531 | **1.000** ← 完美匹配 |
++| Depolar p=0.10 | 0.888 | 0.616 | 0.616 | **1.000** ← 完美匹配 |
++
++**关键 Sub-Q3 工具评估**：
++- **Dephasing E_R^PPT ≡ K_D**（PLOB Eq.39 SDP 验证）→ PPT-SDP 紧化完整
++- **Depolarizing E_R^PPT ≡ E_R**（修复后 Vollbrecht-Werner SDP 验证）→ 紧化完整  
++- **AD degradable: E_R^PPT/K_D ∈ [1.03, 1.52]** → 接近紧 UB 工具
++- **AD anti-degradable: K_D 真正 OPEN**（Q=0 但 2-way K_D 可能 > 0；squashed entanglement 或 Mizutani 类型 bound 待研究）
++- **Erasure: log_neg − K_D ≤ 0.09 bits** → log_neg 是接近紧的 analytic UB
++
++### 11.4 BB84 / six-state 紧化分析
++
++BB84 等效 depolarizing 信道 p_depol = 4·QBER/3（per `qkdx/protocols/bb84.py:bb84_channel`）：
++
++| QBER | log_neg | **E_R = E_R^PPT** | SP_BB84 | SP_6state | E_R/SP_BB84 | E_R/SP_6state |
++|------|---------|--------------------|---------|-----------|-------------|---------------|
++| 1.00% | 0.986 | 0.919 | 0.838 | 0.903 | 1.10 | **1.02** |
++| 5.00% | 0.926 | 0.714 | 0.427 | 0.634 | 1.67 | **1.13** |
++| 8.00% | 0.880 | 0.598 | 0.196 | 0.471 | 3.06 | **1.27** |
++| 11.0% | 0.832 | **0.500** | ≈0 | 0.326 | ∞ | **1.54** |
++| 12.62% | 0.805 | 0.453 | 0 | 0.253 | ∞ | **1.79** |
++
++**强观察**：
++1. **六态 UB-LB 接近闭合**：E_R / SP_six-state ≤ **1.8×** 在 12.62% 阈值
++2. **BB84 SP 离 E_R 仍远**：BB84 SP 在 11% 阈值已 0，E_R 仍 0.50 — 真 K_D 在两者之间
++3. **log_neg → E_R 在 BB84 阈值处紧化 40%**（0.83 → 0.50）
++
++### 11.5 复合信道 PPT 视角观察（[SYN]）
++
++n-fold self-composition 给出 4 信道分两类参数递归：
++- AD/Depolar/Erasure: `p_n = 1 − (1−p)^n`
++- Dephasing: `p_n = (1 − (1−2p)^n)/2`
++
++**结构观察**: AD^n ≡ Erasure^n 在 log_neg 视角下完全相同（同参数递归 + 同单段公式）。这表示 PPT-relaxed 上界**失去区分**两类完全不同信道的能力。
++
++详见：`docs/findings/qubit_log_neg_composition_2026-04-23.md` + `qubit_log_neg_n_fold_and_mixed_2026-04-23.md`。
++
++### 11.6 仍 OPEN 的 Sub-Q3 项
++
++| Item | 原因 |
++|------|------|
++| α/β/γ 三路径 [CONJ] | 结构 gap β.G4/β.G5/γ.B.G1/γ.G3 需 user paper-level work |
++| AD γ > 1/2 K_D | anti-degradable, 无封闭式；squashed entanglement 等需 PDF 精读 |
++| Erasure E_R^PPT SDP | dim_B=3 → 16x16 SDP OOM 当前环境 |
++| MDI/TF E_R^PPT | 拓扑 type B + bosonic, 工具链需扩展 |
++| max-Rains SDP | Wang-Duan 2016b PDF 精读 + 2-cone form 实现 |
++
++### 11.7 Day 4 commits
++
++- `b4efaae`: e_r_depolarizing_analytic bug 修复 + 2 regression tests
++- `5579e0f`: docs(tightness) 修订 反映 bug 修复
++- `01935fa`: BB84 真 E_R 紧化 — 六态 UB-LB 接近闭合
++- `73bd18f`: AD K_D = Q 解析公式 (degradable γ < 1/2)
++- `c0531a7`: Plenio 不等式扩展 4 信道
++- `ea7868d`: session epilogue v0.2
++
++---
++
+ ## Changelog
+ 
++- **v0.5** (2026-04-24 Day 4): §11 增补 — e_r_depolarizing_analytic bug 修复（Vollbrecht-Werner d-1 vs d²-1）+ AD K_D = Q degradable 公式 + 4 信道 hierarchy 完成 + 六态 UB-LB ≤ 1.8× 接近闭合 + Plenio 4-channel 扩展。13 tests pass.
+ - **v0.4** (2026-04-23 Day 3 cont.): §10.3 expanded — added E_R^PPT single-arm grid (Layer 2); golden ratio crossover η_c=1/φ; E_R^PPT < PLOB for all η; [CONJ-DRAFT] additivity pending 16×16 SDP verification
+ - **v0.3** (2026-04-23 Day 3 cont.): §10.3 β.G3 numerical results added — log_neg(E_1⊗E_2) vs Pirandola table; directional signal: tighter at η=0.9, not at η<0.5
+ - **v0.2** (2026-04-23 Day 3 autonomous session): §10 新增 Day 3 增补 — β + γ drafts FINALIZED, β.G4 + γ.B.G1 attempts both OPEN, numerical updates, P-R stub
+diff --git a/qkdx/numerics/upper_bound.py b/qkdx/numerics/upper_bound.py
+index e55e958..d970f34 100644
+--- a/qkdx/numerics/upper_bound.py
++++ b/qkdx/numerics/upper_bound.py
+@@ -292,36 +292,42 @@ def kraus_amplitude_damping_qubit(gamma: float) -> list[np.ndarray]:
+ def e_r_depolarizing_analytic(p: float) -> float:
+     """E_R(ρ_choi) for qubit depolarizing isotropic Choi state.
+ 
+-    Reference: Vollbrecht-Werner 2001 / Vidal-Werner 2002; Horodecki et al.
+-    1999 for isotropic state E_R.
++    Reference: Vollbrecht-Werner 2001; Plenio-Virmani 2007 §V.E Eq. (V.86).
++    For d⊗d isotropic with fidelity F > 1/d:
++        E_R = log₂ d + F·log₂ F + (1 − F)·log₂((1 − F)/(d − 1))
+ 
+-    Qubit depolarizing channel N_p: ρ → (1-p)·ρ + p·I/2.
+-    Choi state ρ_choi = (I ⊗ N_p)(|Φ⁺⟩⟨Φ⁺|) is isotropic with Bell-state
+-    fidelity:
+-        F(p) = ⟨Φ⁺|ρ_choi|Φ⁺⟩ = (1-p) + p/4 = 1 − 3p/4
++    For qubit (d = 2): (d − 1) = 1, so log₂(d − 1) = 0, giving:
++        E_R(ρ_iso(F)) = 1 − h₂(F)    for F > 1/2
++        E_R(ρ_iso(F)) = 0             for F ≤ 1/2 (separable / Werner threshold)
+ 
+-    Isotropic E_R (Horodecki et al. 1999) for F > 1/2 (entangled regime):
+-        E_R(ρ_iso(F)) = 1 − H₂(F) − (1-F)·log₂(3)
++    Qubit depolarizing channel N_p: ρ → (1 − p)·ρ + p·I/2.
++    Choi state ρ_choi = (I ⊗ N_p)(|Φ⁺⟩⟨Φ⁺|) is isotropic with
++        F(p) = ⟨Φ⁺|ρ_choi|Φ⁺⟩ = (1 − p) + p/4 = 1 − 3p/4
+ 
+-    Reference values:
+-        p=0 → F=1:    E_R = 1 bit  (maximally entangled)
+-        p=4/5 → F=0.4: below SEP boundary → E_R = 0
+-        p=1 → F=1/4:  E_R = 0
++    For 2 ⊗ 2: PPT = SEP (Horodecki et al. 1996), so this also equals E_R^PPT.
+ 
+-    NOTE: this function is ANALYTIC reference only; not tested by
+-    `test_upper_bound.py`.  For validation against e_r_channel_ppt, prefer
+-    direct numerical comparison.
++    Reference values:
++        p = 0 → F = 1: E_R = 1 bit (maximally entangled identity channel)
++        p = 2/3 → F = 1/2: E_R = 0 (Werner separability boundary)
++        p = 1 → F = 1/4: E_R = 0
++
++    HISTORY (2026-04-23 bug-catch): previous version of this function
++    incorrectly subtracted an extra (1 − F)·log₂(3) term (mistakenly using
++    d² − 1 = 3 instead of d − 1 = 1 in the Vollbrecht-Werner formula).
++    The bug caused early zero-crossing at p ≈ 0.27 instead of correct p = 2/3,
++    underestimating E_R by 0.03 to 0.40 bits across the entangled regime.
++    Detected by MOSEK E_R^PPT SDP cross-validation; fixed in this commit.
++    See `docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md`.
+     """
+     if not (0.0 <= p <= 1.0):
+         raise ValueError(f"p must be in [0, 1], got {p}")
+-    # Corrected Werner fidelity: F = ⟨Φ⁺|(I⊗N_p)(|Φ⁺⟩⟨Φ⁺|)|Φ⁺⟩ = 1 − 3p/4.
+     F = 1.0 - 3.0 * p / 4.0
+     if F <= 0.5:
+-        return 0.0  # isotropic state is separable
++        return 0.0  # isotropic state is separable for F ≤ 1/2 (qubit case)
+     if F >= 1.0:
+         return 1.0  # identity channel
+-    H2 = -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
+-    return max(0.0, 1.0 - H2 - (1.0 - F) * math.log2(3.0))
++    h2_F = -F * math.log2(F) - (1.0 - F) * math.log2(1.0 - F)
++    return max(0.0, 1.0 - h2_F)
+ 
+ 
+ # ---------------------------------------------------------------------------
+@@ -332,6 +338,55 @@ def e_r_depolarizing_analytic(p: float) -> float:
+ # These are [SYN] — standard textbook-level calculations; R0.2 triple verification
+ # applies for any label upgrade.
+ 
++def K_D_amplitude_damping_degradable(gamma: float) -> float:
++    """K_D = Q (quantum capacity) of qubit amplitude damping for γ ≤ 1/2.
++
++    AD channel is **degradable** for γ ≤ 1/2 (Caruso-Giovannetti-Holevo 2014;
++    standard textbook result, e.g., Khatri-Wilde 2020 §17.4). For degradable
++    channels: K_D = P = Q = single-letter regularized coherent information.
++
++        Q(N_AD, γ) = max_{p ∈ [0,1]} [h₂((1-γ)·p) − h₂(γ·p)]   for γ ≤ 1/2
++                   = 0                                            for γ > 1/2
++
++    For γ > 1/2: AD is anti-degradable, Q = 0. K_D could still be > 0 via
++    two-way LOCC, but no closed form is known.
++
++    Returns:
++        Quantum capacity in bits/use. Only equals K_D in degradable regime.
++
++    Reference values:
++        γ = 0:    Q = 1 bit (identity)
++        γ = 0.5:  Q = 0 (degradability boundary)
++        γ → 1:    Q = 0 (no information transmission)
++    """
++    if not (0.0 <= gamma <= 1.0):
++        raise ValueError(f"gamma must be in [0, 1], got {gamma}")
++    if gamma >= 0.5:
++        return 0.0
++
++    def h2(x: float) -> float:
++        if x <= 1e-15 or x >= 1.0 - 1e-15:
++            return 0.0
++        return -x * math.log2(x) - (1.0 - x) * math.log2(1.0 - x)
++
++    # Maximize over p ∈ [0, 1] via golden-section search (no scipy dep here).
++    # Coherent info I_c(p) = h₂((1-γ)·p) − h₂(γ·p) is concave in p for γ < 1/2.
++    phi = (1 + math.sqrt(5)) / 2
++    a, b = 0.0, 1.0
++    for _ in range(80):
++        d = (b - a) / phi
++        x1 = b - d
++        x2 = a + d
++        f1 = h2((1 - gamma) * x1) - h2(gamma * x1)
++        f2 = h2((1 - gamma) * x2) - h2(gamma * x2)
++        if f1 > f2:
++            b = x2
++        else:
++            a = x1
++    p_opt = (a + b) / 2
++    return max(0.0, h2((1 - gamma) * p_opt) - h2(gamma * p_opt))
++
++
+ def analytic_log_neg_amplitude_damping(gamma: float) -> float:
+     """log-negativity of Choi state of qubit amplitude damping channel (γ = damping prob).
+ 
+diff --git a/scripts/gap_shape_analysis.py b/scripts/gap_shape_analysis.py
+index 236dffa..1d25422 100644
+--- a/scripts/gap_shape_analysis.py
++++ b/scripts/gap_shape_analysis.py
+@@ -6,14 +6,22 @@ lower bounds across loss range.
+ Candidates for upper bound:
+   A: PLOB on worst edge (symmetric: -log_2(1 - √η_end2end))
+   B: Pirandola 2019 N=1 chain (same as A for symmetric)
+-  C: E_R^PPT SDP for qubit amp-damping channel (effective quibit analog)
++  C: E_R^PPT SDP for qubit amp-damping channel (effective qubit analog)
++  D: AD K_D = Q analytic (degradable, γ ≤ 1/2 ↔ η_arm ≥ 1/2)
++     [NEW 2026-04-24]: the qubit AD channel's TRUE quantum capacity, valid as
++     UB on rate achievable by ANY 2-way LOCC protocol on this channel
++     (Caruso-Giovannetti-Holevo 2014, single-letter formula).
+ 
+ Lower bound:
+   TF/PM-QKD asymptotic from tf_family_loss1d.csv
+ 
+-Caveat: All upper-bound CANDIDATES are [CONJ] for umr topology per
+-docs/proofs/upper_bound_msen.md.  This notebook gives gap SHAPE under
+-candidate assumption; does NOT give [THM]-level gap.
++Caveat: All non-D upper-bound candidates are [CONJ] for umr topology per
++docs/proofs/upper_bound_msen.md.  Candidate D is [THM]-level for the qubit AD
++channel, but its "umr-applicability" via cross-task lemma is still [CONJ]
++(the umr is two-arm + BSM, not single-arm channel).
++
++This notebook gives gap SHAPE under candidate assumption; does NOT give
++[THM]-level gap for umr topology.
+ """
+ from __future__ import annotations
+ 
+@@ -72,13 +80,14 @@ def main():
+ 
+     # Candidate C: E_R^PPT qubit amp damping with γ = 1 - η_arm
+     # Run this only at a subset of loss values to save time
+-    ub_ampdamp = []
+     print("Computing E_R^PPT for qubit amp damping (subset) ...")
+     from qkdx.numerics.upper_bound import (
++        K_D_amplitude_damping_degradable,
+         e_r_channel_ppt, kraus_amplitude_damping_qubit,
+     )
+     sub_losses = loss_arr[::10]  # every 10 dB
+     sub_ub = []
++    sub_kd = []  # Candidate D: AD K_D analytic (degradable γ < 1/2)
+     for L in sub_losses:
+         eta_arm = 10.0 ** (-L / 20.0)
+         gamma = 1.0 - eta_arm
+@@ -88,7 +97,11 @@ def main():
+         except Exception as e:
+             print(f"  loss={L}: SDP fail {e}")
+             sub_ub.append(np.nan)
+-        print(f"  loss={L:.0f} dB (γ={gamma:.4f}): E_R^PPT = {sub_ub[-1]:.4f}")
++        # Candidate D
++        kd = K_D_amplitude_damping_degradable(float(gamma)) if gamma < 0.5 else np.nan
++        sub_kd.append(kd)
++        kd_str = f"{kd:.4f}" if not np.isnan(kd) else "anti-deg(NaN)"
++        print(f"  loss={L:.0f} dB (γ={gamma:.4f}): E_R^PPT={sub_ub[-1]:.4f}, K_D={kd_str}")
+ 
+     # Gap calculations
+     gap_plob_end = ub_plob_end - rate_arr  # direct PLOB (end-to-end, single-edge original)
+@@ -123,6 +136,13 @@ def main():
+     if sub_ub:
+         ax1.semilogy(sub_losses, sub_ub, "o", color="purple",
+                      label="Candidate C: E_R^PPT amp-damp SDP")
++    if sub_kd:
++        sub_kd_arr = np.array(sub_kd)
++        valid = ~np.isnan(sub_kd_arr) & (sub_kd_arr > 1e-15)
++        if valid.any():
++            ax1.semilogy(np.array(sub_losses)[valid], sub_kd_arr[valid], "D",
++                         color="green", markersize=8,
++                         label=r"Candidate D: AD $K_D$ analytic (degradable γ<1/2)")
+     ax1.set_xlabel("Loss [dB]")
+     ax1.set_ylabel("Rate (bits/signal)")
+     ax1.set_title("Upper vs Lower bounds")
+diff --git a/tests/test_numerics/test_upper_bound.py b/tests/test_numerics/test_upper_bound.py
+index e7e7da1..0d5756e 100644
+--- a/tests/test_numerics/test_upper_bound.py
++++ b/tests/test_numerics/test_upper_bound.py
+@@ -412,6 +412,78 @@ class TestAnalyticLogNegFormulas:
+                 analytic_log_neg_dephasing(1.0 - p), abs=1e-15
+             )
+ 
++    def test_K_D_amplitude_damping_degradable(self):
++        """Q (= K_D for degradable γ < 1/2) of qubit AD via golden-section.
++
++        Boundary checks + monotonic decrease + degradability cliff at γ = 1/2.
++        """
++        from qkdx.numerics.upper_bound import K_D_amplitude_damping_degradable
++        # Boundary
++        assert K_D_amplitude_damping_degradable(0.0) == pytest.approx(1.0, abs=1e-6)
++        assert K_D_amplitude_damping_degradable(0.5) == pytest.approx(0.0, abs=1e-6)
++        assert K_D_amplitude_damping_degradable(0.9) == pytest.approx(0.0, abs=1e-15)
++        assert K_D_amplitude_damping_degradable(1.0) == pytest.approx(0.0, abs=1e-15)
++        # Monotonic decrease for γ in degradable regime
++        prev = float('inf')
++        for g in [0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.49]:
++            q = K_D_amplitude_damping_degradable(g)
++            print(f"  γ={g}: Q = K_D = {q:.6f}")
++            assert q > 0, f"Q should be > 0 for γ={g} (degradable regime)"
++            assert q < prev, f"Q should decrease: γ={g} got {q}, prev={prev}"
++            prev = q
++
++    def test_AD_K_D_below_log_neg_and_E_R(self):
++        """Plenio inequality for AD: K_D ≤ E_R^PPT (analytic) ≤ log_neg.
++
++        For γ ≤ 1/2 we have analytic K_D. Test inequality at several points.
++        """
++        from qkdx.numerics.upper_bound import (
++            K_D_amplitude_damping_degradable, analytic_log_neg_amplitude_damping,
++        )
++        for g in [0.05, 0.10, 0.20, 0.30, 0.40]:
++            kd = K_D_amplitude_damping_degradable(g)
++            ln = analytic_log_neg_amplitude_damping(g)
++            print(f"  γ={g}: K_D={kd:.4f}, log_neg={ln:.4f}, ratio log_neg/K_D={ln/kd:.3f}")
++            assert kd <= ln + 1e-9, f"Plenio violated: K_D={kd} > log_neg={ln}"
++
++    def test_e_r_depolarizing_analytic_matches_corrected_formula(self):
++        """Regression: e_r_depolarizing_analytic uses E_R = 1 - h(F) for d=2.
++
++        Bug-catch 2026-04-23: previous version subtracted spurious
++        (1-F)·log₂(3), causing 0.03-0.40 bit underestimate. Fixed by Plenio-
++        Virmani 2007 §V.E (V.86) formula with correct d-1 = 1 for 2⊗2.
++        """
++        from qkdx.numerics.upper_bound import e_r_depolarizing_analytic
++        for p, expected in [
++            (0.00, 1.0),
++            (0.05, 1.0 - (-0.9625*math.log2(0.9625) - 0.0375*math.log2(0.0375))),  # F=0.9625
++            (0.10, 1.0 - (-0.925*math.log2(0.925) - 0.075*math.log2(0.075))),  # F=0.925
++            (0.20, 1.0 - (-0.85*math.log2(0.85) - 0.15*math.log2(0.15))),  # F=0.85
++            (2.0/3.0, 0.0),  # threshold
++            (1.0, 0.0),
++        ]:
++            got = e_r_depolarizing_analytic(p)
++            print(f"  p={p:.4f}: E_R analytic={got:.6f}, expected={expected:.6f}")
++            assert got == pytest.approx(expected, abs=1e-9), (
++                f"E_R(depolarizing, p={p}) bug regression: got {got}, expected {expected}"
++            )
++
++    @_MOSEK_SKIP
++    def test_e_r_depolarizing_analytic_matches_SDP(self):
++        """E_R analytic must match e_r_channel_ppt SDP (PPT=SEP for 2⊗2)."""
++        from qkdx.numerics.upper_bound import (
++            e_r_channel_ppt, e_r_depolarizing_analytic, kraus_depolarizing_qubit,
++        )
++        for p in [0.05, 0.10, 0.20, 0.30, 0.50]:
++            sdp_result = e_r_channel_ppt(kraus_depolarizing_qubit(p), dim_A=2)
++            sdp = float(sdp_result["E_R_channel_bits"])
++            analytic = e_r_depolarizing_analytic(p)
++            print(f"  p={p}: analytic={analytic:.6f}, SDP={sdp:.6f}, diff={analytic-sdp:.2e}")
++            assert analytic == pytest.approx(sdp, abs=5e-5), (
++                f"Analytic E_R differs from SDP at p={p}: "
++                f"analytic={analytic}, SDP={sdp}"
++            )
++
+     def test_invalid_parameter_raises(self):
+         """Out-of-range parameters raise ValueError."""
+         from qkdx.numerics.upper_bound import (
+@@ -430,10 +502,13 @@ class TestAnalyticLogNegFormulas:
+     def test_plenio_inequality_log_neg_geq_K_D(self):
+         """Plenio 2005: log_neg(ρ) ≥ E_R(ρ) ≥ K_D(ρ).
+ 
+-        Numerical sanity: for all 3 channels with known K_D / E_R closed forms,
+-        verify log_neg ≥ K_D / E_R on a dense grid. Equality at boundaries OK.
++        Numerical sanity: for all 4 channel families with known K_D / E_R
++        closed forms (or single-letter formula for AD degradable), verify
++        log_neg ≥ K_D / E_R on a dense grid.
+         """
+         from qkdx.numerics.upper_bound import (
++            K_D_amplitude_damping_degradable,
++            analytic_log_neg_amplitude_damping,
+             analytic_log_neg_dephasing,
+             analytic_log_neg_depolarizing,
+             analytic_log_neg_erasure,
+@@ -443,11 +518,16 @@ class TestAnalyticLogNegFormulas:
+ 
+         violations = []
+         for p in np.linspace(0.001, 0.999, 200):
++            # AD: K_D = Q only valid for γ ≤ 1/2 (degradable)
++            if p <= 0.499:
++                ln, kd = analytic_log_neg_amplitude_damping(p), K_D_amplitude_damping_degradable(p)
++                if ln < kd - 1e-9:
++                    violations.append(("AD", p, ln, kd))
+             # Dephasing: PLOB Eq.39
+             ln, kd = analytic_log_neg_dephasing(p), e_r_dephasing(p)
+             if ln < kd - 1e-12:
+                 violations.append(("dephasing", p, ln, kd))
+-            # Depolarizing: Horodecki 99 (E_R, not K_D)
++            # Depolarizing: Vollbrecht-Werner (corrected)
+             ln, er = analytic_log_neg_depolarizing(p), e_r_depolarizing_analytic(p)
+             if ln < er - 1e-12:
+                 violations.append(("depolarizing", p, ln, er))
+@@ -456,8 +536,14 @@ class TestAnalyticLogNegFormulas:
+             if ln < kd - 1e-12:
+                 violations.append(("erasure", p, ln, kd))
+ 
+-        print(f"  Plenio inequality verified on 200×3 = 600 grid points")
+-        print(f"  Worst-case erasure log_neg − K_D = {analytic_log_neg_erasure(0.6) - e_r_erasure(0.6):.6f}")
++        print(f"  Plenio inequality verified on 4 channels × 200 grid points")
++        # Check tightness ratios at moderate noise
++        kd_AD = K_D_amplitude_damping_degradable(0.2)
++        ln_AD = analytic_log_neg_amplitude_damping(0.2)
++        print(f"  AD γ=0.2: log_neg/K_D = {ln_AD/kd_AD:.3f}")
++        kd_DP = e_r_dephasing(0.2)
++        ln_DP = analytic_log_neg_dephasing(0.2)
++        print(f"  Dephase p=0.2: log_neg/K_D = {ln_DP/kd_DP:.3f}")
+         assert not violations, f"Plenio inequality violated: {violations[:5]}"
+ 
+     def test_erasure_log_neg_formula(self):

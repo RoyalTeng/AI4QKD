@@ -23,7 +23,7 @@
 |--------|------|----------|
 | 扫描点数 ≥ 1000 | per family | **F4 40×40 = 1600 点** ✓ |
 | Pareto 上包络记录 | per family | ✓(F1/F2/F4 envelope 已记录 §4) |
-| 族间比较图 | BB84 vs MDI vs TF | ✗ 待 MDI/TF 实施(Phase 1 后续) |
+| 族间比较图 | BB84 vs MDI vs TF | ✓ [family_comparison.png](../research/figures/family_comparison.png) (2026-04-24 含 Pirandola UB 候选线) |
 
 ## 3. Threshold QBER(key rate → 0 点,f_ec=1.0)
 

@@ -135,7 +135,7 @@ PROSPECTUS interim verdict v2 (FINDINGS) 指出 √η 是放宽 bosonic-asymptot
 |---|---|
 | ≥ 1000 扫描点 | ✅ 2831 points |
 | Pareto 上包络记录 | ✅ `upper_envelope_loss` helper |
-| 族间比较图 | ⏳ 待 A.2 PHASE1_REPORT 综合 |
+| 族间比较图 | ✓ [family_comparison.png](../research/figures/family_comparison.png) (2026-04-24 含 Pirandola UB 候选线) |
 
 ---
 
