@@ -117,9 +117,12 @@ Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1
 
 ## 6. 提议的下一步（诚实化版）
 
-- [ ] **撤销 plot 中的 "Q ≤ K^{↔} ≤ E_R^PPT" 标题**（下一次脚本 run 时修订）
-- [ ] 若需 channel-level AD UB，需调研 amortized REE / max-Rains / squashed E 是否适用 —— **需用户 PDF 精读**
-- [ ] `upper_bound_report §11` AD 部分应明示 "Choi-state only, not channel-level" (跟 dephasing/depolarizing/erasure 的 teleportation-covariance 论据区分) —— **下一轮提交**
+**本轮已完成**:
+- [x] 更新 plot 脚本移除 "Q ≤ K^{↔} ≤ E_R^PPT" 标题，改为 "Choi-state only" + tele-covariance disclaimer（commit 0b8cf40）
+- [x] `upper_bound_report §11` AD 部分加 Choi-state vs channel-level 区分（v0.7, commit 0b8cf40）
+
+**仍 OPEN**:
+- [ ] 若需 channel-level AD UB，需调研 **amortized REE** / **max-Rains** / **squashed entanglement** 是否适用 —— **需用户 PDF 精读**（R0.2 C1 外部依赖）
 
 ---
 

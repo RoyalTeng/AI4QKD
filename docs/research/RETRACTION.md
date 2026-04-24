@@ -324,7 +324,9 @@ Claude + codex + 其他 LLM 即便独立部署,**仍可能共享训练语料偏�
 
 前期 dephasing/depolarizing/erasure 的 channel-level E_R^PPT 陈述**可能仍有效**（这些信道是 teleportation-covariant per PLOB 2017 Ex.3），但需显式验证。
 
-**TODO** (下一轮 commit): upper_bound_report §11 添加明示的 "AD: Choi-state only" vs "depolarizing/dephasing/erasure: channel-level via tele-covariance" 区分。
+**DONE** (commit 0b8cf40): upper_bound_report §11 已添加 "AD: Choi-state only" vs "depolarizing/dephasing/erasure: channel-level via tele-covariance" 区分（v0.7）。
+
+**仍 OPEN** (需用户 PDF 精读): 寻找 AD channel 的有效 channel-level K^{↔} UB — 候选方向 amortized REE / max-Rains / squashed E。
 
 ---
 

@@ -1,0 +1,857 @@
+diff --git a/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md b/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
+index 5dab3a5..34d73a7 100644
+--- a/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
++++ b/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
+@@ -1,133 +1,129 @@
+-# AD anti-degradable (γ > 1/2): E_R^PPT 作为 K^{↔} 的非平凡 UB
++# AD anti-degradable (γ > 1/2): Choi-state E_R^PPT 的数值观察（不构成 channel-level UB）
+ 
+-**日期**: 2026-04-24（Day 4 末 autonomous session）
+-**严谨性**: [SYN]（基于 Day 4 已修复 `e_r_channel_ppt` MOSEK SDP + Plenio-Virmani UB 继承）
+-**Scope**: qubit amplitude-damping 信道 γ ∈ (1/2, 1); 不涉及协议层或 umr 拓扑
++**日期**: 2026-04-24（Day 4 末 autonomous session; 2026-04-24 evening revised after Codex REJECTED）
++**严谨性**: [SYN-DATA]（Choi-state 数值观察 only; **不**构成 channel capacity K^{↔} 的 UB — 见 §-1）
++**Scope**: qubit amplitude-damping 信道 γ ∈ [0, 1] 的 **Choi 态 E_R^PPT 数值**; 协议 / umr 拓扑 / channel capacity 陈述**不在本 memo 范围**
+ 
+ ---
+ 
+-## 0. 动机
++## -1. 撤回公告 / Correction Banner
+ 
+-Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1/2 的 AD 信道 Q（Caruso-Giovannetti-Holevo 2014 degradable single-letter）。γ > 1/2 进入 **anti-degradable** 区，Q = 0（Eve 获得 Bob 状态副本故 one-shot quantum capacity 为 0）。但 K^{↔}（两向辅助密钥蒸馏率）并**不**自动等于 0 —— 两向 LOCC 允许 Alice/Bob 用 Eve 无法完全模拟的交互协议。
++**v1.0 (本 memo 首版) 曾声称**: "E_R^PPT(J_{N_AD}) 是 K^{↔}(N_AD) 的严格 UB"。
+ 
+-**问题**: 对 γ > 1/2 的 AD 信道，K^{↔} 真值开放；有无可计算的 UB/LB？
++**Codex 独立评审 (2026-04-24) 判定**: **REJECTED — silent structural upgrade**。关键错误:
++
++1. **K^{↔} ≤ D^{↔}_d 是 FALSE**：Horodecki et al. 2005 (PRL 94, 160502) 证明 private states 可有 key 但不蒸馏 ebit —— 所以此推理链不对。
++2. **Choi-state E_R 是 channel E_R 的 LOWER bound**：PLOB 2017 明示 `E_R(N) = sup_ρ E_R[(I⊗N)(ρ)] ≥ E_R(J_N)`。从 Choi-state 上到 channel capacity 需要 **teleportation-covariance**（Pirandola 2017 Nat Comm 8:15043），而 **AD channel 不是 teleportation-covariant**（WTB 2017）。
++3. **Horodecki 1996 2⊗2 PPT=SEP 只在 Choi 态层面**：只升级 `E_R^PPT(J_N) = E_R(J_N)` at Choi-state level；**不**继承到 channel 级反向。
++
++**结果**: v1.0 声明的"K^{↔}(AD,γ=0.7) ≤ 0.183" 撤回。本 memo 降级为**纯 Choi-state 数值观察**，无 channel-level 陈述。
++
++**教训**（符合 `feedback_ai_draft_structural_gaps.md` red-flag 警告）：AI autonomous 轻易把"Choi state 上的 E_R^PPT SDP 返回非零"误读为"channel K^{↔} 有 UB"——这是一个 channel-vs-state 跨层级混淆，属于 silent upgrade。
+ 
+ ---
+ 
+-## 1. 观察
++## 0. 动机（保留）
++
++Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1/2 的 AD 信道 Q（Caruso-Giovannetti-Holevo 2014）。γ > 1/2 是 anti-degradable，Q = 0。
++
++**合规目标**（修订）：量化 AD 信道的 **Choi 态** Rains bound 在 γ 扫描下的行为。不再声称这是 channel K^{↔} 的 UB。
++
++---
+ 
+-Day 4 已有 MOSEK SDP 计算 `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv`:
++## 1. 数值观察（仅 Choi-state 层级）
+ 
+-| γ | E_R^PPT (SDP, bits) | log_neg (analytic, bits) | Q (LB, 若 γ < 1/2) | log_neg/E_R^PPT | Status |
++| γ | E_R^PPT(J_{N_AD}) (SDP, bits) | log_neg(J_{N_AD}) (analytic, bits) | Q(N_AD) (若 γ < 1/2) | log_neg/E_R^PPT (Choi) | Status |
+ |---|---|---|---|---|---|
+ | 0.05 | 0.8552 | 0.9635 | 0.8311 | 1.13 | degradable |
+ | 0.10 | 0.7590 | 0.9260 | 0.7094 | 1.22 | degradable |
+ | 0.20 | 0.6125 | 0.8481 | 0.5062 | 1.38 | degradable |
+ | 0.30 | 0.4984 | 0.7655 | 0.3280 | 1.54 | degradable |
+-| **0.50** | **0.3217** | 0.5850 | 0 (boundary) | 1.82 | **border** |
+-| **0.55** | **0.2844** | 0.5361 | **Q = 0** | 1.89 | anti-degradable |
+-| **0.60** | **0.2491** | 0.4854 | **Q = 0** | 1.95 | anti-degradable |
+-| **0.65** | **0.2154** | 0.4330 | **Q = 0** | 2.01 | anti-degradable |
+-| **0.70** | **0.1830** | 0.3785 | **Q = 0** | 2.07 | anti-degradable |
+-| **0.75** | **0.1517** | 0.3219 | **Q = 0** | 2.12 | anti-degradable |
+-| **0.80** | **0.1213** | 0.2630 | **Q = 0** | 2.17 | anti-degradable |
+-| **0.85** | **0.0913** | 0.2016 | **Q = 0** | 2.21 | anti-degradable |
+-| **0.90** | **0.0616** | 0.1375 | **Q = 0** | 2.23 | anti-degradable |
+-| **0.95** | **0.0315** | 0.0704 | **Q = 0** | 2.24 | anti-degradable |
++| 0.50 | 0.3217 | 0.5850 | 0 (boundary) | 1.82 | border |
++| 0.55 | 0.2844 | 0.5361 | Q = 0 | 1.89 | anti-degradable |
++| 0.60 | 0.2491 | 0.4854 | Q = 0 | 1.95 | anti-degradable |
++| 0.65 | 0.2154 | 0.4330 | Q = 0 | 2.01 | anti-degradable |
++| 0.70 | 0.1830 | 0.3785 | Q = 0 | 2.07 | anti-degradable |
++| 0.75 | 0.1517 | 0.3219 | Q = 0 | 2.12 | anti-degradable |
++| 0.80 | 0.1213 | 0.2630 | Q = 0 | 2.17 | anti-degradable |
++| 0.85 | 0.0913 | 0.2016 | Q = 0 | 2.21 | anti-degradable |
++| 0.90 | 0.0616 | 0.1375 | Q = 0 | 2.23 | anti-degradable |
++| 0.95 | 0.0315 | 0.0704 | Q = 0 | 2.24 | anti-degradable |
+ 
+ （Q 列通过 `quantum_capacity_amplitude_damping_degradable` 实时计算；E_R^PPT 来自 `qubit_E_R_PPT_SDP_all_4.csv` + `AD_antidegradable_E_R_PPT_fill.csv`；log_neg 解析 `analytic_log_neg_amplitude_damping`。）
+ 
+-**关键结果**:
++### 观察（不含 channel-level claim）
+ 
+-- **E_R^PPT 在整个 γ > 1/2 区保持非平凡**：γ=0.55 → 0.284, γ=0.95 → 0.032 bits
+-- **Q = 0 全区** (anti-degradable) 但 E_R^PPT SDP 给出**严格 UB** 在 K^{↔}
+-- **log_neg / E_R^PPT 比率单调递增**：degradable 区 1.1-1.5×, anti-degradable 区 1.9-2.2×；γ→1 趋近 log₂(3)/log₂(2) ≈ 2.25×
+-- **E_R^PPT 随 γ 凸递减** 到 0 at γ=1（完全损耗），平滑衔接 degradable→anti-degradable 两区
++- **E_R^PPT(J_{N_AD}) 作为 Choi 态函数**: 在整个 γ ∈ [0, 1] 区保持单调递减至 0 (γ=1)
++- **log_neg / E_R^PPT 比率 (Choi 态层面)**: 从 1.13 (γ=0.05) 单调升到 **2.24 (γ=0.95)**（经验观察，无封闭推导 —— 不是 log₂(3) = 1.585 也不是其他已知常数；**留作 open question**）
++- **Q = 0 区的 Choi-state E_R^PPT 非零**: 说明 Choi 态含 nonzero Rains 熵，但**不意味** channel 能在该区有 nonzero K^{↔}
+ 
+ ---
+ 
+-## 2. 为什么 E_R^PPT > 0 有意义
++## 2. Channel-level 意义（现在标 OPEN, v1.0 之 §2 撤回）
+ 
+-**Horodecki 1996 2⊗2 PPT = SEP**（qubit Choi 状态 4×4）：对 qubit amplitude-damping 信道，E_R^PPT(ρ_Choi) = E_R(ρ_Choi)（真 Rains bound 等于 PPT-relaxed 值）。
++**OPEN 问题**：对 AD 信道 γ > 1/2，channel two-way key capacity K^{↔}(N_AD) 的 UB/LB 是什么？
+ 
+-**Rains 1999 + Christandl-Winter 2004** 级联结果:
+-- E_R 是 `D^{↔}_d`（两向辅助 distillable entanglement）的 UB
+-- 因 K^{↔} ≤ D^{↔}_d（蒸馏密钥不比蒸馏 ebit 多），故 **K^{↔}(AD γ) ≤ E_R^PPT(AD γ)**
++**本 memo 的 Choi-state E_R^PPT 数据 NOT 直接适用**，因为：
+ 
+-所以对 γ = 0.7 的 AD 信道：
++- Channel-level REE converse 要求 teleportation-covariance / teleportation-simulability
++- AD channel **不是** teleportation-covariant（WTB 2017; Pirandola 2017）
++- Choi-state 上的 Rains bound 仅给 Choi 态 distillation rate 信息，不直接等价于 channel capacity
+ 
+-```
+-K^{↔}(AD, γ=0.7) ∈ [0, 0.183]   （严格 UB 来自 E_R^PPT）
+-Q(AD, γ=0.7)     = 0             （anti-degradable）
+-```
++**可能的正确路径**（均**未**在本 memo 完成）:
++- **Amortized REE** / 递归 channel REE（Khatri-Wilde 2020 §16.2）
++- **Squashed entanglement** channel version（Takeoka-Guha-Wilde 2014）
++- **max-Rains** (Wang-Fang-Duan 2019) — channel 级 SDP
++- **Direct converse** via simulability classes that DO include AD（若存在）
+ 
+-这个 0.183 是**目前可得的最紧 UB**，且由 SDP 数值严格。
++这些都需要 paper-level 精读（**R0.2 C1 依赖**, 不在 AI 自主范围内）。
+ 
+ ---
+ 
+-## 3. [CONJ] 级观察：K^{↔}(AD γ>1/2) 是否 = 0？
++## 3. 修订后的 Sub-Q3 / Sub-Q4 启示
+ 
+-**一种直觉**：anti-degradable 信道 Eve 有 Bob 副本，直接 distill 是 0。但两向 LOCC 允许 advantage distillation（Maurer 1993）+ 噪声正项化（Chitambar et al. 2016）。
++### 3.1 对 Sub-Q3
+ 
+-**反例直觉**（未证）:
+-- AD γ=0.6 (仅略 > 0.5): 离 degradable 边界极近，K^{↔} 预计 > 0 via small perturbation arg
+-- AD γ→1 (全损耗): 物理上 K^{↔} → 0 因为 Bob 永远获得 |0>
++- Choi-state E_R^PPT SDP 本身是 **state-level** 工具，不能作为 channel capacity 的直接 UB
++- 对 **teleportation-covariant** 信道（dephasing, depolarizing, erasure），Choi-state REE 确实 = channel REE （PLOB 2017 Ex.3），故前期 report 中 dephasing/depolarizing/erasure 的 E_R^PPT 信道 UB 陈述**仍有效**
++- AD 不在这个类 —— 需要专门 channel-level 工具
+ 
+-**文献检查**（初步，仅 Pirandola 2019 / PLOB 2017 扫描）:
+-- PLOB 2017 §VII: 给出 **bosonic** amplitude-damping（pure-loss）的 K^{↔} = -log₂(1-η) 封闭式
+-- **qubit AD channel 的 two-way K^{↔} 在 γ > 1/2 未见解析式**
+-- Khatri-Wilde 2020 §19 可能涉及；待精读
++### 3.2 对 Sub-Q4 gap 归因
+ 
+-**暂记 [UNKNOWN]** + E_R^PPT UB 可作数值挡路板。
++- 先前(`upper_bound_report §11.3`)标注 AD "E_R^PPT ∈ [Q, E_R^PPT]" 应解读为 **Choi-state 的**上下界，**不是** channel K^{↔} 的界
++- AD 协议 Pareto vs UB 的 gap 归因在 channel-level 工具就绪前保留 OPEN
+ 
+ ---
+ 
+-## 4. 对 Sub-Q3 / Sub-Q4 的启示
+-
+-### 4.1 Sub-Q3 上界工具链
+-
+-- **E_R^PPT SDP 延伸到 γ > 1/2 区**: 即使 Q 工具在该区失效，SDP 仍给可计算 UB → 7 个数据点可直接加入 `upper_bound_report §11`
+-- **log_neg 在 γ > 1/2 仍 ~2× 松于 E_R^PPT**: log_neg 对 anti-degradable 区价值有限
+-- **protocol-specific LB** (e.g., 某 prepare-and-measure 协议 on AD γ=0.7) 可与 E_R^PPT UB 对比 → 量化 B (LB 松) 原因
+-
+-### 4.2 Sub-Q4 gap 归因
+-
+-若今后能对某 umr 协议（如一般 PM-QKD）做有效 qubit AD 信道建模:
+-- UB = E_R^PPT(γ_eff) 可作 A (UB 紧度) 的 proxy
+-- LB = 协议 Pareto 数值扫描
+-- gap 分解的信道层诊断框架扩展一条新 column
+-
+----
++## 4. 数据产物（无变更，仅作数值 artifact）
+ 
+-## 5. 提议的下一步（不在本 memo 完成）
++### 新增
++- `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` — 7 个新 Choi-state SDP 点 (γ=0.55...0.95)
++- `scripts/AD_antidegradable_E_R_PPT_fill.py` — SDP 扫描脚本
++- `scripts/AD_anti_degradable_plot.py` — 可视化脚本（标题需修订：见下）
++- `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}` — 标题 "Q ≤ K^{↔} ≤ E_R^PPT" 需撤回（Plot 标题需改为 "AD Choi-state: log_neg vs E_R^PPT vs Q"）
+ 
+-- [ ] 计算 AD γ = 0.55, 0.6, 0.8 的 E_R^PPT SDP（补细化）
+-- [ ] 搜索 Khatri-Wilde 2020 §19 是否给出 AD γ > 1/2 的 K^{↔} 解析 UB
+-- [ ] 对某 PM-QKD 协议 + AD channel（γ=0.7）做 LB 数值扫描，与 E_R^PPT=0.183 对比
+-- [ ] 探索 squashed entanglement 是否对 AD γ > 1/2 给出比 E_R^PPT 更紧的 UB（文献: Takeoka-Guha-Wilde 2014）
++**Action**: plot 会在下一轮修订脚本重新生成；本次 memo 降级后数据 CSV 保留（纯数值无错）。
+ 
+ ---
+ 
+-## 6. 严谨性边界
++## 5. 严谨性边界（修订）
+ 
+-- **[SYN]**：数据来自已验证 SDP 基础设施 + Rains/Plenio-Virmani UB 继承
+-- **不构成** [COROLLARY]：缺 C2 用户签字 + C1 (a)/(b)/(c)（文献重读或跨家族 PDF 直读）未启动
+-- **不升级到** [THM]：需 R0.2 三方验证链完整 + 文献 THM anchor（目前缺）
++- **[SYN-DATA]**: Choi-state SDP 数值观察；不涉及 channel capacity 陈述
++- **降级自 [SYN]**: v1.0 误声称 channel-level UB; 已撤回至纯 Choi-state 层级
++- **不构成** [COROLLARY]: 无 channel-level 内容，连候选都不是
++- **OPEN**: channel K^{↔}(AD, γ > 1/2) 的 UB/LB；需用户 paper-level work + C1/C2/C3
+ 
+ ---
+ 
+-## 7. 相关产物
++## 6. 提议的下一步（诚实化版）
+ 
+-- 数据（原稀疏）: `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv` (Day 4 e054a1e)
+-- 数据（本轮 fill）: `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` (7 new pts)
+-- 脚本（原）: `scripts/qubit_E_R_PPT_SDP_all_4_channels.py`
+-- 脚本（本轮）: `scripts/AD_antidegradable_E_R_PPT_fill.py` + `scripts/AD_anti_degradable_plot.py`
+-- 图: `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}`（14 SDP 点 + 解析 log_neg/Q）
+-- 前置 memo: `docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md`（AD 部分）
+-- 前置 memo: `docs/findings/upper_bound_report.md §11.3`（4 信道 hierarchy table）
++- [ ] **撤销 plot 中的 "Q ≤ K^{↔} ≤ E_R^PPT" 标题**（下一次脚本 run 时修订）
++- [ ] 若需 channel-level AD UB，需调研 amortized REE / max-Rains / squashed E 是否适用 —— **需用户 PDF 精读**
++- [ ] `upper_bound_report §11` AD 部分应明示 "Choi-state only, not channel-level" (跟 dephasing/depolarizing/erasure 的 teleportation-covariance 论据区分) —— **下一轮提交**
+ 
+ ---
+ 
+-## Changelog
++## 7. Changelog
+ 
+-- **v1.0** (2026-04-24): 首版。观察 E_R^PPT 在 γ > 1/2 非平凡 + K^{↔}(AD γ>1/2) OPEN 陈述 + 下一步建议。
++- **v1.1** (2026-04-24 evening, post-Codex-REJECTED): **整体降级**。删除 channel-level K^{↔} UB 声明（§-1 撤回公告 + §2 重写）；log₂(3)/log₂(2) 数学错误去除；plot 标题撤回 flagged for next revision。
++- **v1.0** (2026-04-24): 首版 [SYN]，声称 E_R^PPT(J_N) 是 channel K^{↔} UB —— **撤回** per §-1。
+diff --git a/docs/findings/upper_bound_report.md b/docs/findings/upper_bound_report.md
+index b7601dc..9a44310 100644
+--- a/docs/findings/upper_bound_report.md
++++ b/docs/findings/upper_bound_report.md
+@@ -480,35 +480,41 @@ Amplitude damping sweep（γ ∈ [0, 1]）:
+ 
+ ### 11.2 4 qubit 信道 log_neg 解析公式（[SYN]，SymPy 验证）
+ 
+-| 信道 | log_neg (UB) | 最紧已知 K^{↔} 下界 | 最紧已知 K^{↔} 上界 |
+-|------|------------|---------------------|---------------------|
+-| AD (γ ≤ 1/2) | `log₂(2−γ)` | Q = `max_p[h₂((1-γ)p) − h₂(γp)]` (degradable, K^{↔} ≥ Q) | E_R^PPT (SDP) |
+-| AD (γ > 1/2) | `log₂(2−γ)` | unknown (anti-degradable，K^{↔} OPEN) | log_neg (loose) |
+-| Dephasing | `log₂(1+\|1−2p\|)` | K^{↔} = `1−h(p)` (PLOB Eq.39 [SYN]) | = log_neg UB |
+-| Depolarizing | `max(0, log₂(2−3p/2))` | K^{↔} UNKNOWN (E_R = `1−h(F)` is UB) | E_R (Vollbrecht-Werner) |
+-| Erasure | `log₂(2−p)` | K^{↔} = `1−p` (PLOB Eq.43) | log_neg (接近紧) |
++**前提 — Choi-state vs channel-level 的区分** (2026-04-24 corrected after Codex REJECTED review of AD memo):
++- **Teleportation-covariant 信道** (PLOB 2017 Ex.3: dephasing, depolarizing, erasure 等 Pauli 信道): Choi-state REE ≡ channel REE → `E_R^PPT(J_N)` 可作 channel `K^{↔}(N)` 的 UB
++- **Non-tele-covariant 信道** (如 AD, WTB 2017): Choi-state E_R^PPT **不**自动 upper-bound channel K^{↔} —— 需 amortized / squashed / max-Rains 等 channel-level 工具。本表 AD 行的 E_R^PPT 值仅是 **Choi 态 Rains 熵**，不是 channel UB。
++
++| 信道 | log_neg (Choi) | 最紧已知 K^{↔} 下界 | 最紧已知 K^{↔} 上界 | tele-covariant? |
++|------|----------------|---------------------|---------------------|-----------------|
++| AD (γ ≤ 1/2) | `log₂(2−γ)` | Q = `max_p[h₂((1-γ)p) − h₂(γp)]` (degradable, K^{↔} ≥ Q) | **channel UB 未知** (Choi-state E_R^PPT 不转 channel UB) | **No** |
++| AD (γ > 1/2) | `log₂(2−γ)` | unknown (anti-degradable，K^{↔} OPEN) | **channel UB 未知** | **No** |
++| Dephasing | `log₂(1+\|1−2p\|)` | K^{↔} = `1−h(p)` (PLOB Eq.39 [SYN]) | = log_neg UB (tele-cov → channel) | Yes |
++| Depolarizing | `max(0, log₂(2−3p/2))` | K^{↔} UNKNOWN (E_R = `1−h(F)` is channel UB) | E_R (Vollbrecht-Werner, channel 级) | Yes |
++| Erasure | `log₂(2−p)` | K^{↔} = `1−p` (PLOB Eq.43) | log_neg (接近紧, channel 级) | Yes |
+ 
+ 实现：`analytic_log_neg_{amplitude_damping, dephasing, depolarizing, erasure}` + `quantum_capacity_amplitude_damping_degradable` (computes Q, NOT K^{↔}) in `qkdx/numerics/upper_bound.py`。
+ 
+ 测试：13 tests in `TestAnalyticLogNegFormulas`（含 SymPy SDP 双验证 + Plenio 不等式 4 信道 × 200 grid pts × 800 检查 + bug regression）。
+ 
+-### 11.3 上界紧度层级（**Day 4 完成 hierarchy table**）
++### 11.3 上界紧度层级（**Day 4 完成 hierarchy table**; 2026-04-24 evening Choi-state vs channel-level 修订）
+ 
+-| 信道 | log_neg (UB) | E_R^PPT (UB) | K^{↔} 已知范围 | E_R^PPT / K^{↔}_LB |
+-|------|-------------|--------------|----------------|---------------------|
+-| AD γ=0.05 | 0.964 | 0.855 | Q=0.831 ≤ K^{↔} ≤ 0.855 | **1.03** |
+-| AD γ=0.10 | 0.926 | 0.759 | Q=0.709 ≤ K^{↔} ≤ 0.759 | 1.07 |
+-| AD γ=0.20 | 0.848 | 0.612 | Q=0.506 ≤ K^{↔} ≤ 0.612 | 1.21 |
+-| AD γ=0.30 | 0.766 | 0.498 | Q=0.328 ≤ K^{↔} ≤ 0.498 | 1.52 |
+-| Dephase p=0.10 | 0.848 | 0.531 | K^{↔}=0.531 (PLOB Eq.39) → E_R^PPT = K^{↔} | **1.000** |
+-| Depolar p=0.10 | 0.888 | 0.616 | K^{↔} ≤ E_R = 0.616; K^{↔} UNKNOWN | K^{↔} ≤ E_R^PPT; 紧度 UNKNOWN |
++| 信道 | log_neg (Choi) | E_R^PPT (Choi, SDP) | channel K^{↔} 已知范围 | 备注 |
++|------|---------------|---------------------|------------------------|------|
++| AD γ=0.05 | 0.964 | 0.855 (Choi only) | Q=0.831 ≤ K^{↔} ≤ **channel UB 未知** | AD **not** tele-covariant; Choi-SDP 不转 channel UB |
++| AD γ=0.10 | 0.926 | 0.759 (Choi only) | Q=0.709 ≤ K^{↔} ≤ **channel UB 未知** | 同上 |
++| AD γ=0.20 | 0.848 | 0.612 (Choi only) | Q=0.506 ≤ K^{↔} ≤ **channel UB 未知** | 同上 |
++| AD γ=0.30 | 0.766 | 0.498 (Choi only) | Q=0.328 ≤ K^{↔} ≤ **channel UB 未知** | 同上 |
++| Dephase p=0.10 | 0.848 | 0.531 (**channel UB**) | K^{↔}=0.531 (PLOB Eq.39) → E_R^PPT = K^{↔} | tele-covariant (PLOB Ex.3) |
++| Depolar p=0.10 | 0.888 | 0.616 (**channel UB**) | K^{↔} ≤ E_R = 0.616; K^{↔} 真值 UNKNOWN | tele-covariant (PLOB Ex.3) |
+ 
+-**关键 Sub-Q3 工具评估**：
+-- **Dephasing: E_R^PPT = K^{↔}**（PLOB Eq.39 SDP 验证 [SYN]）→ PPT-SDP 在 K^{↔} 层完全紧化
+-- **Depolarizing: E_R^PPT = E_R**（Vollbrecht-Werner SDP 验证）→ E_R 是 K^{↔} 的紧 UB（K^{↔} ≤ E_R）；K^{↔} 真值 UNKNOWN
+-- **AD degradable: Q ≤ K^{↔} ≤ E_R^PPT，gap E_R^PPT/Q ∈ [1.03, 1.52]** → E_R^PPT 是接近紧 UB（相对 Q 下界）
+-- **AD anti-degradable: K^{↔} 真正 OPEN**（Q=0 但 K^{↔} 可能 > 0 via 两向 LOCC）
+-- **Erasure: K^{↔} ≈ 0.90，log_neg ≈ 0.93 → log_neg − K^{↔} ≤ 0.09 bits** → log_neg 接近紧
++**关键 Sub-Q3 工具评估**（修订）：
++- **Dephasing: E_R^PPT = K^{↔} (channel)**（PLOB Eq.39 SDP 验证 [SYN]）→ PPT-SDP 在 K^{↔} 层完全紧化
++- **Depolarizing: E_R^PPT = E_R (channel)**（Vollbrecht-Werner SDP 验证）→ E_R 是 channel K^{↔} 的紧 UB
++- **AD degradable: Q 是 channel 级 LB; Choi-state E_R^PPT 不是 channel UB**（AD 非 tele-covariant；gap 表述应改为 Q ≤ K^{↔}, channel UB 需 amortized/max-Rains 工具）
++- **AD anti-degradable: K^{↔} 真正 OPEN**（Q=0 但 K^{↔} 可能 > 0）；Choi-state E_R^PPT ≠ channel UB
++- **Erasure: tele-covariant → E_R^PPT 是 channel UB; K^{↔} ≈ 0.90，log_neg ≈ 0.93** → log_neg 接近紧（channel 级）
++
++**教训** (2026-04-24 Codex REJECTED `AD_anti_degradable_E_R_PPT_2026-04-24.md` v1.0 后记录): `e_r_channel_ppt` 函数计算 Choi 态 Rains 熵；对 tele-covariant 信道是 channel capacity UB，对非 tele-covariant 信道（如 AD）**不是**。先前 §11 的 AD 行 "E_R^PPT(AD) / Q ratio" 若读作 channel K^{↔} / Q 紧度，会误导。现已修订，保留数值 record（作 Choi-state benchmark）+ 显式 channel-level disclaimer。
+ 
+ ### 11.4 BB84 / six-state 紧化分析
+ 
+@@ -562,6 +568,7 @@ n-fold self-composition 给出 4 信道分两类参数递归：
+ 
+ ## Changelog
+ 
++- **v0.7** (2026-04-24 evening post-Codex-REJECTED): §11.2 + §11.3 修订 AD 的 E_R^PPT 陈述 — Choi-state vs channel-level 区分明示。AD 非 tele-covariant (WTB 2017 + PLOB Ex.3)，Choi-state E_R^PPT 不是 channel K^{↔} UB。先前 "E_R^PPT(AD)/Q ratio" 若读作 channel 层紧度是误导，已加 disclaimer 保留数据 record。Dephasing/depolarizing/erasure 的 channel-level 陈述仍有效（tele-covariant）。
+ - **v0.6** (2026-04-24 Round 2): 三项 FAIL 修正 — (1) AD K_D → Q rename（Q 是 LB on K^{↔} 非 UB）；(2) 六态 UB-LB 单位修正（per-signal 比率 ~3-6×，撤回 ≤1.8× "接近闭合"）；(3) 澄清 depolarizing K^{↔} UNKNOWN（E_R^PPT = E_R，非 K^{↔}）。
+ - **v0.5** (2026-04-24 Day 4): §11 增补 — e_r_depolarizing_analytic bug 修复 + AD Q degradable 公式 + 4 信道 hierarchy + 六态 UB-LB（单位错误版）+ Plenio 4-channel 扩展。已由 v0.6 修正。
+ - **v0.4** (2026-04-23 Day 3 cont.): §10.3 expanded — added E_R^PPT single-arm grid (Layer 2); golden ratio crossover η_c=1/φ; E_R^PPT < PLOB for all η; [CONJ-DRAFT] additivity pending 16×16 SDP verification
+diff --git a/docs/research/RETRACTION.md b/docs/research/RETRACTION.md
+index 0318271..27e505b 100644
+--- a/docs/research/RETRACTION.md
++++ b/docs/research/RETRACTION.md
+@@ -276,3 +276,56 @@ Claude + codex + 其他 LLM 即便独立部署,**仍可能共享训练语料偏
+ ---
+ 
+ *RETRACTION §7 结束。β v0.4 + γ v0.6 状态: 已撤回。path β/γ formal status: user research-level work 原计划 unchanged.*
++
++---
++
++## 8. AD_anti_degradable_E_R_PPT_2026-04-24.md v1.0 撤回 (2026-04-24 evening)
++
++**背景**: Day 4 autonomous session 续（16948fe 之后）, AI 为 AD γ>1/2 anti-degradable 区 SDP 数据扩展写了 [SYN] memo。声称 "E_R^PPT(J_{N_AD}) 是 channel K^{↔}(N_AD) 的严格 UB"。
++
++**Codex 独立评审 verdict (2026-04-24)**: **REJECTED** — critical: channel capacity claim not supported; major: `log₂(3)/log₂(2) = 2.25` 数学错误（实际 = log₂(3) ≈ 1.585，数据经验值 2.24 无封闭解释）。
++
++### 8.1 关键错误
++
++1. **Choi-state E_R 是 channel E_R 的 LOWER bound, 不是 UB**
++   - PLOB 2017: `E_R(N) = sup_ρ E_R[(I⊗N)(ρ)] ≥ E_R(J_N)` — 即 channel REE ≥ Choi-state REE
++   - 从 Choi 态升到 channel capacity 需 **teleportation-covariance** (Pirandola 2017, Nat Comm 8:15043)
++   - **AD channel 不是 teleportation-covariant** (WTB 2017) → Choi-state SDP 值不直接转为 channel UB
++
++2. **K^{↔} ≤ D^{↔}_d 是 FALSE**
++   - Horodecki et al. 2005 (PRL 94:160502): private states 可有 key 而不蒸馏 ebit
++   - 所以"因 K^{↔} ≤ D^{↔}_d ≤ E_R，故 K^{↔} ≤ E_R^PPT" 推理链错
++
++3. **Horodecki 1996 2⊗2 PPT = SEP 只作用于 Choi 态层面**
++   - 升级 `E_R^PPT(J_N) = E_R(J_N)` at Choi-state level
++   - **不**继承到 channel 级反向
++
++### 8.2 Action
++
++- memo v1.1: §-1 撤回公告 + §2 重写为 "OPEN channel-level 问题"；title 改为 "Choi-state E_R^PPT 数值观察（不构成 channel-level UB）"
++- 分级降至 [SYN-DATA]（Choi-state 数值观察）
++- plot 标题撤销 "Q ≤ K^{↔} ≤ E_R^PPT"，改为 "Choi-state only, not channel-level UB"
++- CSV 数据保留（纯数值无错）
++
++### 8.3 方法论教训 — 第 6 次 trap
++
++此次是 channel-vs-state 跨层级混淆，模式**不同于** §7 的 cross-space trap 但同属**silent upgrade** 家族：
++
++- 抓取"Choi-state SDP returns nonzero value" → 默认套"channel K^{↔} ≤ ..."不审
++- 未检查 teleportation-covariance 前提
++- 未检查 K^{↔} ≤ D_d^{↔} 的正确方向（Horodecki 2005 反例就是私有态）
++- **silent upgrade 发生点**: 标题 "E_R^PPT 作为 K^{↔} 的 UB"（即立宣告 channel-level claim）
++
++**反映了 `feedback_ai_draft_structural_gaps.md` 的 red-flag 警告**: AI 易把 state-level 数值直接等同 channel-level 陈述。
++
++### 8.4 对前期 report 的回溯检查要求
++
++需检查 `docs/findings/upper_bound_report.md §11` 对 AD 的 E_R^PPT 陈述是否也犯同样错误（即是否未注明 Choi-state-only 边界）。
++
++前期 dephasing/depolarizing/erasure 的 channel-level E_R^PPT 陈述**可能仍有效**（这些信道是 teleportation-covariant per PLOB 2017 Ex.3），但需显式验证。
++
++**TODO** (下一轮 commit): upper_bound_report §11 添加明示的 "AD: Choi-state only" vs "depolarizing/dephasing/erasure: channel-level via tele-covariance" 区分。
++
++---
++
++*RETRACTION §8 结束。AD v1.0 状态: 已撤回至 Choi-state only。AD channel-level K^{↔} UB 问题: OPEN, pending user paper-level work on teleportation-covariance-free bounds.*
+diff --git a/docs/research/figures/AD_anti_degradable_hierarchy.pdf b/docs/research/figures/AD_anti_degradable_hierarchy.pdf
+index 48ef74a..3b08ea3 100644
+Binary files a/docs/research/figures/AD_anti_degradable_hierarchy.pdf and b/docs/research/figures/AD_anti_degradable_hierarchy.pdf differ
+diff --git a/docs/research/figures/AD_anti_degradable_hierarchy.png b/docs/research/figures/AD_anti_degradable_hierarchy.png
+index 052489b..6057c71 100644
+Binary files a/docs/research/figures/AD_anti_degradable_hierarchy.png and b/docs/research/figures/AD_anti_degradable_hierarchy.png differ
+diff --git a/docs/workflow/day4-followup-AD-antidegradable-review/changes-v1.patch b/docs/workflow/day4-followup-AD-antidegradable-review/changes-v1.patch
+new file mode 100644
+index 0000000..25d5bdc
+--- /dev/null
++++ b/docs/workflow/day4-followup-AD-antidegradable-review/changes-v1.patch
+@@ -0,0 +1,424 @@
++diff --git a/docs/PHASE_STATUS.md b/docs/PHASE_STATUS.md
++index 13e5016..50ab046 100644
++--- a/docs/PHASE_STATUS.md
+++++ b/docs/PHASE_STATUS.md
++@@ -156,7 +156,7 @@
++ 
++ ### 5.2 数值扩展（用户启动后 AI 可继续）
++ 
++-5. **AD γ>1/2 K_D** — squashed entanglement 工具实施
+++5. **AD γ>1/2 K^{↔}** — squashed entanglement 工具实施（anti-degradable 区 Q=0，但 K^{↔} OPEN）
++ 6. **Erasure E_R^PPT SDP** — 需高内存环境（16×16 OOM）
++ 7. **SARG04 严格实施** — Koashi 2005 announcement register 扩展
++ 
++diff --git a/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md b/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
++new file mode 100644
++index 0000000..5dab3a5
++--- /dev/null
+++++ b/docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md
++@@ -0,0 +1,133 @@
+++# AD anti-degradable (γ > 1/2): E_R^PPT 作为 K^{↔} 的非平凡 UB
+++
+++**日期**: 2026-04-24（Day 4 末 autonomous session）
+++**严谨性**: [SYN]（基于 Day 4 已修复 `e_r_channel_ppt` MOSEK SDP + Plenio-Virmani UB 继承）
+++**Scope**: qubit amplitude-damping 信道 γ ∈ (1/2, 1); 不涉及协议层或 umr 拓扑
+++
+++---
+++
+++## 0. 动机
+++
+++Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1/2 的 AD 信道 Q（Caruso-Giovannetti-Holevo 2014 degradable single-letter）。γ > 1/2 进入 **anti-degradable** 区，Q = 0（Eve 获得 Bob 状态副本故 one-shot quantum capacity 为 0）。但 K^{↔}（两向辅助密钥蒸馏率）并**不**自动等于 0 —— 两向 LOCC 允许 Alice/Bob 用 Eve 无法完全模拟的交互协议。
+++
+++**问题**: 对 γ > 1/2 的 AD 信道，K^{↔} 真值开放；有无可计算的 UB/LB？
+++
+++---
+++
+++## 1. 观察
+++
+++Day 4 已有 MOSEK SDP 计算 `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv`:
+++
+++| γ | E_R^PPT (SDP, bits) | log_neg (analytic, bits) | Q (LB, 若 γ < 1/2) | log_neg/E_R^PPT | Status |
+++|---|---|---|---|---|---|
+++| 0.05 | 0.8552 | 0.9635 | 0.8311 | 1.13 | degradable |
+++| 0.10 | 0.7590 | 0.9260 | 0.7094 | 1.22 | degradable |
+++| 0.20 | 0.6125 | 0.8481 | 0.5062 | 1.38 | degradable |
+++| 0.30 | 0.4984 | 0.7655 | 0.3280 | 1.54 | degradable |
+++| **0.50** | **0.3217** | 0.5850 | 0 (boundary) | 1.82 | **border** |
+++| **0.55** | **0.2844** | 0.5361 | **Q = 0** | 1.89 | anti-degradable |
+++| **0.60** | **0.2491** | 0.4854 | **Q = 0** | 1.95 | anti-degradable |
+++| **0.65** | **0.2154** | 0.4330 | **Q = 0** | 2.01 | anti-degradable |
+++| **0.70** | **0.1830** | 0.3785 | **Q = 0** | 2.07 | anti-degradable |
+++| **0.75** | **0.1517** | 0.3219 | **Q = 0** | 2.12 | anti-degradable |
+++| **0.80** | **0.1213** | 0.2630 | **Q = 0** | 2.17 | anti-degradable |
+++| **0.85** | **0.0913** | 0.2016 | **Q = 0** | 2.21 | anti-degradable |
+++| **0.90** | **0.0616** | 0.1375 | **Q = 0** | 2.23 | anti-degradable |
+++| **0.95** | **0.0315** | 0.0704 | **Q = 0** | 2.24 | anti-degradable |
+++
+++（Q 列通过 `quantum_capacity_amplitude_damping_degradable` 实时计算；E_R^PPT 来自 `qubit_E_R_PPT_SDP_all_4.csv` + `AD_antidegradable_E_R_PPT_fill.csv`；log_neg 解析 `analytic_log_neg_amplitude_damping`。）
+++
+++**关键结果**:
+++
+++- **E_R^PPT 在整个 γ > 1/2 区保持非平凡**：γ=0.55 → 0.284, γ=0.95 → 0.032 bits
+++- **Q = 0 全区** (anti-degradable) 但 E_R^PPT SDP 给出**严格 UB** 在 K^{↔}
+++- **log_neg / E_R^PPT 比率单调递增**：degradable 区 1.1-1.5×, anti-degradable 区 1.9-2.2×；γ→1 趋近 log₂(3)/log₂(2) ≈ 2.25×
+++- **E_R^PPT 随 γ 凸递减** 到 0 at γ=1（完全损耗），平滑衔接 degradable→anti-degradable 两区
+++
+++---
+++
+++## 2. 为什么 E_R^PPT > 0 有意义
+++
+++**Horodecki 1996 2⊗2 PPT = SEP**（qubit Choi 状态 4×4）：对 qubit amplitude-damping 信道，E_R^PPT(ρ_Choi) = E_R(ρ_Choi)（真 Rains bound 等于 PPT-relaxed 值）。
+++
+++**Rains 1999 + Christandl-Winter 2004** 级联结果:
+++- E_R 是 `D^{↔}_d`（两向辅助 distillable entanglement）的 UB
+++- 因 K^{↔} ≤ D^{↔}_d（蒸馏密钥不比蒸馏 ebit 多），故 **K^{↔}(AD γ) ≤ E_R^PPT(AD γ)**
+++
+++所以对 γ = 0.7 的 AD 信道：
+++
+++```
+++K^{↔}(AD, γ=0.7) ∈ [0, 0.183]   （严格 UB 来自 E_R^PPT）
+++Q(AD, γ=0.7)     = 0             （anti-degradable）
+++```
+++
+++这个 0.183 是**目前可得的最紧 UB**，且由 SDP 数值严格。
+++
+++---
+++
+++## 3. [CONJ] 级观察：K^{↔}(AD γ>1/2) 是否 = 0？
+++
+++**一种直觉**：anti-degradable 信道 Eve 有 Bob 副本，直接 distill 是 0。但两向 LOCC 允许 advantage distillation（Maurer 1993）+ 噪声正项化（Chitambar et al. 2016）。
+++
+++**反例直觉**（未证）:
+++- AD γ=0.6 (仅略 > 0.5): 离 degradable 边界极近，K^{↔} 预计 > 0 via small perturbation arg
+++- AD γ→1 (全损耗): 物理上 K^{↔} → 0 因为 Bob 永远获得 |0>
+++
+++**文献检查**（初步，仅 Pirandola 2019 / PLOB 2017 扫描）:
+++- PLOB 2017 §VII: 给出 **bosonic** amplitude-damping（pure-loss）的 K^{↔} = -log₂(1-η) 封闭式
+++- **qubit AD channel 的 two-way K^{↔} 在 γ > 1/2 未见解析式**
+++- Khatri-Wilde 2020 §19 可能涉及；待精读
+++
+++**暂记 [UNKNOWN]** + E_R^PPT UB 可作数值挡路板。
+++
+++---
+++
+++## 4. 对 Sub-Q3 / Sub-Q4 的启示
+++
+++### 4.1 Sub-Q3 上界工具链
+++
+++- **E_R^PPT SDP 延伸到 γ > 1/2 区**: 即使 Q 工具在该区失效，SDP 仍给可计算 UB → 7 个数据点可直接加入 `upper_bound_report §11`
+++- **log_neg 在 γ > 1/2 仍 ~2× 松于 E_R^PPT**: log_neg 对 anti-degradable 区价值有限
+++- **protocol-specific LB** (e.g., 某 prepare-and-measure 协议 on AD γ=0.7) 可与 E_R^PPT UB 对比 → 量化 B (LB 松) 原因
+++
+++### 4.2 Sub-Q4 gap 归因
+++
+++若今后能对某 umr 协议（如一般 PM-QKD）做有效 qubit AD 信道建模:
+++- UB = E_R^PPT(γ_eff) 可作 A (UB 紧度) 的 proxy
+++- LB = 协议 Pareto 数值扫描
+++- gap 分解的信道层诊断框架扩展一条新 column
+++
+++---
+++
+++## 5. 提议的下一步（不在本 memo 完成）
+++
+++- [ ] 计算 AD γ = 0.55, 0.6, 0.8 的 E_R^PPT SDP（补细化）
+++- [ ] 搜索 Khatri-Wilde 2020 §19 是否给出 AD γ > 1/2 的 K^{↔} 解析 UB
+++- [ ] 对某 PM-QKD 协议 + AD channel（γ=0.7）做 LB 数值扫描，与 E_R^PPT=0.183 对比
+++- [ ] 探索 squashed entanglement 是否对 AD γ > 1/2 给出比 E_R^PPT 更紧的 UB（文献: Takeoka-Guha-Wilde 2014）
+++
+++---
+++
+++## 6. 严谨性边界
+++
+++- **[SYN]**：数据来自已验证 SDP 基础设施 + Rains/Plenio-Virmani UB 继承
+++- **不构成** [COROLLARY]：缺 C2 用户签字 + C1 (a)/(b)/(c)（文献重读或跨家族 PDF 直读）未启动
+++- **不升级到** [THM]：需 R0.2 三方验证链完整 + 文献 THM anchor（目前缺）
+++
+++---
+++
+++## 7. 相关产物
+++
+++- 数据（原稀疏）: `docs/research/data/qubit_E_R_PPT_SDP_all_4.csv` (Day 4 e054a1e)
+++- 数据（本轮 fill）: `docs/research/data/AD_antidegradable_E_R_PPT_fill.csv` (7 new pts)
+++- 脚本（原）: `scripts/qubit_E_R_PPT_SDP_all_4_channels.py`
+++- 脚本（本轮）: `scripts/AD_antidegradable_E_R_PPT_fill.py` + `scripts/AD_anti_degradable_plot.py`
+++- 图: `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}`（14 SDP 点 + 解析 log_neg/Q）
+++- 前置 memo: `docs/findings/qubit_E_R_PPT_hierarchy_2026-04-23.md`（AD 部分）
+++- 前置 memo: `docs/findings/upper_bound_report.md §11.3`（4 信道 hierarchy table）
+++
+++---
+++
+++## Changelog
+++
+++- **v1.0** (2026-04-24): 首版。观察 E_R^PPT 在 γ > 1/2 非平凡 + K^{↔}(AD γ>1/2) OPEN 陈述 + 下一步建议。
++diff --git a/docs/findings/gap_analysis_2026-04-24.md b/docs/findings/gap_analysis_2026-04-24.md
++index 9462607..4f25edc 100644
++--- a/docs/findings/gap_analysis_2026-04-24.md
+++++ b/docs/findings/gap_analysis_2026-04-24.md
++@@ -21,7 +21,7 @@
++ 
++ | 类别 | 含义 | 诊断方法 |
++ |------|------|---------|
++-| **A** | UB 松（真紧界比本项目 UB 候选紧） | 用更紧的分析型上界（E_R, K_D 等）作 proxy，比较 |
+++| **A** | UB 松（真紧界比本项目 UB 候选紧） | 用更紧的已知界 / 真值 proxy（如 E_R、已知 K^{↔} 真值）比较 |
++ | **B** | LB 松（协议 Pareto 未穷尽） | 协议变体扫描残差 / 已知解析紧界对比 |
++ | **C** | A + B 都非零 | A 和 B 同时诊断都有显著贡献 |
++ 
++diff --git a/docs/findings/log_neg_msEB_application_2026-04-23.md b/docs/findings/log_neg_msEB_application_2026-04-23.md
++index 6eb4fa8..16bcac4 100644
++--- a/docs/findings/log_neg_msEB_application_2026-04-23.md
+++++ b/docs/findings/log_neg_msEB_application_2026-04-23.md
++@@ -78,7 +78,7 @@ log_neg 与 SP rate 的差距源于：
++ 
++ BB84 vs six-state 在等效 depolarizing 模型下使用同一信道（仅 sift 协议不同）→ **log_neg 给出完全相同的 UB**。但 SP rates 不同（六态利用了 3 MUB 的 PA tightening）。
++ 
++-意义: **log_neg 上界对协议优化盲目**。要分辨 BB84/六态/etc 的真正排序，必须用 K_D 级紧界（Devetak-Winter / Pirandola / R_max SDP / 等）。
+++意义: **log_neg 上界对协议优化盲目**。要分辨 BB84/六态/etc 的真正排序，必须用 K^{↔} 级紧界（Devetak-Winter / Pirandola / R_max SDP / 等）。
++ 
++ ---
++ 
++diff --git a/docs/findings/pareto_mdi_family.md b/docs/findings/pareto_mdi_family.md
++index 628e5ab..b2645b3 100644
++--- a/docs/findings/pareto_mdi_family.md
+++++ b/docs/findings/pareto_mdi_family.md
++@@ -110,7 +110,7 @@ Pareto 观察：
++ **关键观察**:
++ - **MDI Pareto LB 远低于 Pirandola UB 候选** (~400-1500× gap 在工作区)
++ - log_neg cand UB 量级为 1.5 bits, 与 MDI 真实 rate (1e-3) 差 ~1500×, 比 Pirandola 更松
++-- MDI rate 在 loss > 50 dB 急剧下降, 真 K_D 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
+++- MDI rate 在 loss > 50 dB 急剧下降, 真 K^{↔} 离 UB 越来越远 — 这是 MDI 协议自身的 e_d/p_d 噪声主导, 非 channel 限制
++ 
++ ### 3b.3 与 Sub-Q3 的连接
++ 
++diff --git a/docs/research/data/AD_antidegradable_E_R_PPT_fill.csv b/docs/research/data/AD_antidegradable_E_R_PPT_fill.csv
++new file mode 100644
++index 0000000..61d226e
++--- /dev/null
+++++ b/docs/research/data/AD_antidegradable_E_R_PPT_fill.csv
++@@ -0,0 +1,8 @@
+++gamma,E_R_PPT_SDP,log_neg_analytic,Q_LB_on_K2way,sdp_time_s
+++0.5500,0.284426,0.536053,0.000000,13.23
+++0.6000,0.249075,0.485427,0.000000,14.02
+++0.6500,0.215358,0.432959,0.000000,14.69
+++0.7500,0.151725,0.321928,0.000000,15.83
+++0.8000,0.121274,0.263034,0.000000,13.90
+++0.8500,0.091347,0.201634,0.000000,14.56
+++0.9500,0.031482,0.070389,0.000000,15.64
++diff --git a/docs/research/figures/AD_anti_degradable_hierarchy.pdf b/docs/research/figures/AD_anti_degradable_hierarchy.pdf
++new file mode 100644
++index 0000000..48ef74a
++Binary files /dev/null and b/docs/research/figures/AD_anti_degradable_hierarchy.pdf differ
++diff --git a/docs/research/figures/AD_anti_degradable_hierarchy.png b/docs/research/figures/AD_anti_degradable_hierarchy.png
++new file mode 100644
++index 0000000..052489b
++Binary files /dev/null and b/docs/research/figures/AD_anti_degradable_hierarchy.png differ
++diff --git a/scripts/AD_anti_degradable_plot.py b/scripts/AD_anti_degradable_plot.py
++new file mode 100644
++index 0000000..682d480
++--- /dev/null
+++++ b/scripts/AD_anti_degradable_plot.py
++@@ -0,0 +1,111 @@
+++"""Plot AD channel hierarchy across γ ∈ [0,1] with anti-degradable emphasis.
+++
+++Combines:
+++- log_neg analytic (dense, 1001 pts)
+++- Q analytic (dense, only for γ ≤ 0.5)
+++- E_R^PPT SDP (sparse, merged from qubit_E_R_PPT_SDP_all_4.csv + AD_antidegradable_E_R_PPT_fill.csv)
+++
+++Highlights anti-degradable region (γ > 1/2) where Q=0 but E_R^PPT > 0.
+++
+++Output:
+++  docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}
+++"""
+++from __future__ import annotations
+++
+++import csv
+++import sys
+++from pathlib import Path
+++
+++import matplotlib
+++matplotlib.use("Agg")
+++import matplotlib.pyplot as plt
+++import numpy as np
+++
+++REPO = Path(__file__).resolve().parents[1]
+++sys.path.insert(0, str(REPO))
+++
+++from qkdx.numerics.upper_bound import (
+++    analytic_log_neg_amplitude_damping,
+++    quantum_capacity_amplitude_damping_degradable,
+++)
+++
+++
+++def load_E_R_PPT_AD():
+++    """Merge AD rows from both SDP CSVs."""
+++    pts = {}
+++    csv_main = REPO / "docs" / "research" / "data" / "qubit_E_R_PPT_SDP_all_4.csv"
+++    with open(csv_main) as f:
+++        for r in csv.DictReader(f):
+++            if r["family"] == "AD":
+++                pts[float(r["param"])] = float(r["E_R_PPT_SDP"])
+++    csv_fill = REPO / "docs" / "research" / "data" / "AD_antidegradable_E_R_PPT_fill.csv"
+++    if csv_fill.exists():
+++        with open(csv_fill) as f:
+++            for r in csv.DictReader(f):
+++                pts[float(r["gamma"])] = float(r["E_R_PPT_SDP"])
+++    return sorted(pts.items())
+++
+++
+++def main():
+++    gammas = np.linspace(0.001, 0.999, 1001)
+++    log_neg = np.array([analytic_log_neg_amplitude_damping(g) for g in gammas])
+++    Q = np.array([quantum_capacity_amplitude_damping_degradable(g) for g in gammas])
+++
+++    er_pts = load_E_R_PPT_AD()
+++    er_g = np.array([g for g, _ in er_pts])
+++    er_v = np.array([v for _, v in er_pts])
+++
+++    fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.8))
+++
+++    # Left: absolute scale
+++    ax = axes[0]
+++    ax.axvspan(0.5, 1.0, alpha=0.10, color="gray")
+++    ax.text(0.72, 0.82, r"$Q = 0$" + "\n" + r"(anti-degradable)",
+++            fontsize=9, color="gray", ha="center")
+++    ax.plot(gammas, log_neg, label="log_neg (analytic, UB)", linewidth=2, color="C0")
+++    ax.scatter(er_g, er_v, color="C3", marker="s", s=55,
+++               label=r"$E_R^{PPT}$ (MOSEK SDP)", zorder=5)
+++    Q_deg = np.where(gammas <= 0.5, Q, 0)
+++    ax.plot(gammas, Q_deg, label=r"$Q$ (LB on $K^{\leftrightarrow}$, γ ≤ 1/2)",
+++            linewidth=2, color="C2", linestyle="--")
+++    ax.axvline(0.5, color="gray", linewidth=0.8, linestyle=":")
+++    ax.set_xlabel("γ (damping probability)")
+++    ax.set_ylabel("bits per channel use")
+++    ax.set_title(r"AD hierarchy: $Q \leq K^{\leftrightarrow} \leq E_R^{PPT} \leq \log\|\cdot\|_{\mathrm{PT}}$")
+++    ax.set_xlim(0, 1)
+++    ax.set_ylim(0, 1.05)
+++    ax.legend(loc="upper right", fontsize=8)
+++    ax.grid(True, alpha=0.3)
+++
+++    # Right: log_neg / E_R^PPT ratio (tightness tracking)
+++    ax = axes[1]
+++    ratios = np.array([analytic_log_neg_amplitude_damping(g) / v if v > 1e-10 else np.nan
+++                       for g, v in er_pts])
+++    ax.plot(er_g, ratios, "o-", color="C3", markersize=7, linewidth=2,
+++            label=r"log_neg / $E_R^{PPT}$")
+++    ax.axvspan(0.5, 1.0, alpha=0.10, color="gray")
+++    ax.axhline(2.0, color="gray", linewidth=0.5, linestyle=":")
+++    ax.axvline(0.5, color="gray", linewidth=0.8, linestyle=":")
+++    ax.text(0.72, 1.18, "anti-degradable", fontsize=9, color="gray", ha="center")
+++    ax.text(0.22, 1.18, "degradable", fontsize=9, color="gray", ha="center")
+++    ax.set_xlabel("γ")
+++    ax.set_ylabel(r"log_neg / $E_R^{PPT}$")
+++    ax.set_title("log_neg looseness vs tighter SDP UB")
+++    ax.set_xlim(0, 1)
+++    ax.set_ylim(1.0, 2.4)
+++    ax.legend(loc="lower right", fontsize=9)
+++    ax.grid(True, alpha=0.3)
+++
+++    fig.tight_layout()
+++    fig_dir = REPO / "docs" / "research" / "figures"
+++    fig.savefig(fig_dir / "AD_anti_degradable_hierarchy.png", dpi=160)
+++    fig.savefig(fig_dir / "AD_anti_degradable_hierarchy.pdf")
+++    plt.close(fig)
+++
+++    print("Done.")
+++    print(f"  PNG: docs/research/figures/AD_anti_degradable_hierarchy.png")
+++    print(f"  E_R^PPT points: {len(er_pts)}")
+++
+++
+++if __name__ == "__main__":
+++    main()
++diff --git a/scripts/AD_antidegradable_E_R_PPT_fill.py b/scripts/AD_antidegradable_E_R_PPT_fill.py
++new file mode 100644
++index 0000000..51ce3ec
++--- /dev/null
+++++ b/scripts/AD_antidegradable_E_R_PPT_fill.py
++@@ -0,0 +1,61 @@
+++"""Fill in E_R^PPT SDP points for AD channel γ ∈ [0.5, 1.0] (anti-degradable region).
+++
+++Extends existing sparse grid (0.5, 0.7, 0.9 already in qubit_E_R_PPT_SDP_all_4.csv)
+++with γ = 0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.95 for finer anti-degradable coverage.
+++
+++Data used in AD_anti_degradable_E_R_PPT_2026-04-24.md.
+++
+++Output:
+++  docs/research/data/AD_antidegradable_E_R_PPT_fill.csv  (new points only)
+++"""
+++from __future__ import annotations
+++
+++import csv
+++import sys
+++import time
+++from pathlib import Path
+++
+++REPO = Path(__file__).resolve().parents[1]
+++sys.path.insert(0, str(REPO))
+++
+++from qkdx.numerics.upper_bound import (
+++    analytic_log_neg_amplitude_damping,
+++    e_r_channel_ppt,
+++    kraus_amplitude_damping_qubit,
+++    quantum_capacity_amplitude_damping_degradable,
+++)
+++
+++
+++def main():
+++    new_gammas = [0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.95]
+++    rows = []
+++
+++    print("E_R^PPT SDP sweep (AD anti-degradable fill-in)...")
+++    for gamma in new_gammas:
+++        t0 = time.time()
+++        kraus = kraus_amplitude_damping_qubit(gamma)
+++        result = e_r_channel_ppt(kraus, dim_A=2)
+++        er = float(result["E_R_channel_bits"])
+++        ln = analytic_log_neg_amplitude_damping(gamma)
+++        q = quantum_capacity_amplitude_damping_degradable(gamma)
+++        elapsed = time.time() - t0
+++        rows.append((gamma, er, ln, q, elapsed))
+++        status = "anti-degradable" if gamma > 0.5 else "degradable"
+++        print(f"  γ={gamma}: E_R^PPT={er:.4f}, log_neg={ln:.4f}, Q={q:.4f}  [{status}]  ({elapsed:.1f}s)")
+++
+++    out_csv = REPO / "docs" / "research" / "data" / "AD_antidegradable_E_R_PPT_fill.csv"
+++    out_csv.parent.mkdir(parents=True, exist_ok=True)
+++    with open(out_csv, "w", newline="") as f:
+++        w = csv.writer(f)
+++        w.writerow(["gamma", "E_R_PPT_SDP", "log_neg_analytic", "Q_LB_on_K2way", "sdp_time_s"])
+++        for g, er, ln, q, t in rows:
+++            w.writerow([f"{g:.4f}", f"{er:.6f}", f"{ln:.6f}", f"{q:.6f}", f"{t:.2f}"])
+++
+++    print()
+++    print(f"  CSV: docs/research/data/AD_antidegradable_E_R_PPT_fill.csv")
+++    print()
+++    print("Anti-degradable (γ > 0.5): Q=0 but E_R^PPT > 0 gives nontrivial UB on K^{↔}")
+++
+++
+++if __name__ == "__main__":
+++    main()
++diff --git a/tests/test_numerics/test_wlc_bb84.py b/tests/test_numerics/test_wlc_bb84.py
++index 176ac7b..3ef14cb 100644
++--- a/tests/test_numerics/test_wlc_bb84.py
+++++ b/tests/test_numerics/test_wlc_bb84.py
++@@ -57,14 +57,20 @@ def test_wlc_bb84_above_threshold_gives_zero() -> None:
++ @pytest.mark.slow
++ @pytestmark_mosek
++ def test_wlc_bb84_qber_exact_zero_with_facial_reduction() -> None:
++-    """QBER=0 requires facial reduction; result ≈ 1.0 bit/signal (MOSEK)."""
+++    """QBER=0 requires facial reduction; result ≈ 0.5 bit/signal (MOSEK).
+++
+++    wlc_key_rate returns R = p_sift · (H_bits - leak_ec) [per-signal].
+++    At QBER=0: H_bits=1, leak_ec=0, p_sift=0.5 → R = 0.5 bit/signal.
+++    (per-sifted rate = 1.0; function convention is per-signal to match
+++     Shor-Preskill and E_R unit convention project-wide, see wlc.py:483).
+++    """
++     protocol = build_bb84_protocol(qber=0.0)
++     result = wlc_key_rate(
++         protocol,
++         observations={"qber_Z": 0.0, "qber_X": 0.0, "p_sift": 0.5},
++     )
++     assert result.primal_status in {"optimal", "optimal_inaccurate"}
++-    assert result.key_rate == pytest.approx(1.0, rel=0.01, abs=5e-4)
+++    assert result.key_rate == pytest.approx(0.5, rel=0.01, abs=5e-4)
++ 
++ 
++ @pytestmark_mosek
+diff --git a/docs/workflow/day4-followup-AD-antidegradable-review/review-diff-1.json b/docs/workflow/day4-followup-AD-antidegradable-review/review-diff-1.json
+new file mode 100644
+index 0000000..c06a01e
+--- /dev/null
++++ b/docs/workflow/day4-followup-AD-antidegradable-review/review-diff-1.json
+@@ -0,0 +1 @@
++{"verdict":"REJECTED","summary":"The three K_D→K^{↔}/Q prose cleanups are stylistically coherent with the prior R5 direction, the `tests/test_numerics/test_wlc_bb84.py` expectation change from `1.0` to `0.5` is correct for the per-signal convention implemented in `qkdx/numerics/wlc.py:483`, and the new AD fill CSV is numerically well-behaved: `E_R^PPT` decreases monotonically while `log_neg/E_R^PPT` increases monotonically across the sampled AD points. However, the new AD memo/plot make a fundamental scientific overclaim: they treat the Choi-state quantity computed by `e_r_channel_ppt` as a proven upper bound on the channel two-way key capacity `K^{↔}` for qubit amplitude damping, but the cited chain does not justify that step and one inequality in the memo is explicitly reversed. That breaks the memo’s main conclusion and makes the current `[SYN]` label unsound.","issues":[{"severity":"critical","category":"correctness","location":"docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md:43-64; scripts/AD_anti_degradable_plot.py:74; scripts/AD_antidegradable_E_R_PPT_fill.py:57","description":"The memo’s central claim `K^{↔}(N_AD) ≤ E_R^PPT(J_N)` is not established by the cited reasoning. The text first states `K^{↔} ≤ D_d^{↔}` at line 55, but that direction is false: distillable entanglement is not an upper bound on distillable key; private states can have key without comparable distillable entanglement (Horodecki et al., PRL 94, 160502, https://doi.org/10.1103/PhysRevLett.94.160502). More importantly, `e_r_channel_ppt` computes REE/PPT-REE of the Choi state, while PLOB distinguishes channel REE from Choi-state REE (`E_R(N) = sup_ρ E_R[(I⊗N)(ρ)] ≥ E_R(J_N)`) and only collapses to a Choi-state converse for teleportation-simulable / teleportation-covariant channels; amplitude damping is explicitly not teleportation-covariant (Nature Comm. 8:15043, https://www.nature.com/articles/ncomms15043; WTB 2017 DOI https://doi.org/10.1109/TIT.2017.2648825). Horodecki’s `2⊗2` PPT=SEP result (https://doi.org/10.1016/S0375-9601(97)00416-7) only upgrades `E_R^PPT(J_N)` to `E_R(J_N)` for the Choi state; it does not prove a converse for the channel key capacity. As written, the memo title, the `Q ≤ K^{↔} ≤ E_R^PPT` plot title, and the fill-script status message all silently upgrade a numerical Choi-state observation into a channel-capacity bound.","suggestion":"Remove all statements that present `E_R^PPT(J_N)` as a strict or proven upper bound on AD channel `K^{↔}`. Recast the memo as a data note about the Choi-state quantity only, or replace the argument with a valid channel-level converse (for example a channel REE / amortized REE / squashed-entanglement bound) and prove why the Choi-state value is the right channel quantity for this family before restoring the bound. The `[SYN]` tag should be downgraded until that bridge is supplied."},{"severity":"major","category":"correctness","location":"docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md:44","description":"The stated asymptotic ratio `log_neg/E_R^PPT → log₂(3)/log₂(2) ≈ 2.25` is internally inconsistent and numerically wrong. `log₂(2)=1`, so `log₂(3)/log₂(2)=log₂(3)≈1.585`, not `2.25`. The sampled data in the attached CSV instead approach about `2.236` by `γ=0.95`. Since no derivation is given, this should not be written as a named logarithmic constant.","suggestion":"Keep this as a purely empirical statement only, e.g. `the sampled ratio increases monotonically and appears to approach ~2.24 near γ→1`, or supply an actual derivation for the limit before naming a constant. Do not attach the current `log₂(3)/log₂(2)` formula."}],"round_recommendation":"Rework the AD memo/plot around a valid channel-level converse or downgrade them to Choi-state numerical observations, then fix the ratio-limit line. The prose replacements and WLC unit-test correction can remain."}
+\ No newline at end of file
+diff --git a/scripts/AD_anti_degradable_plot.py b/scripts/AD_anti_degradable_plot.py
+index 682d480..f28617f 100644
+--- a/scripts/AD_anti_degradable_plot.py
++++ b/scripts/AD_anti_degradable_plot.py
+@@ -1,11 +1,15 @@
+-"""Plot AD channel hierarchy across γ ∈ [0,1] with anti-degradable emphasis.
++"""Plot AD channel Choi-state quantities across γ ∈ [0,1].
+ 
+-Combines:
+-- log_neg analytic (dense, 1001 pts)
+-- Q analytic (dense, only for γ ≤ 0.5)
+-- E_R^PPT SDP (sparse, merged from qubit_E_R_PPT_SDP_all_4.csv + AD_antidegradable_E_R_PPT_fill.csv)
++NOTE (2026-04-24 post-Codex-REJECTED): Earlier version of this plot used
++'Q ≤ K^{↔} ≤ E_R^PPT ≤ log_neg' as a hierarchy title, which is invalid
++for AD because AD is NOT teleportation-covariant — Choi-state E_R^PPT
++does NOT automatically upper-bound channel K^{↔} (PLOB 2017 Ex.3).
++This revision reports Choi-state quantities only, no channel-level claim.
+ 
+-Highlights anti-degradable region (γ > 1/2) where Q=0 but E_R^PPT > 0.
++Combines:
++- log_neg(J_{N_AD}) analytic (dense, 1001 pts) — Choi-state log-negativity
++- Q(N_AD) analytic (dense, only for γ ≤ 0.5) — channel quantum capacity (LB on K^{↔})
++- E_R^PPT(J_{N_AD}) SDP (sparse) — Choi-state Rains bound
+ 
+ Output:
+   docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}
+@@ -57,24 +61,27 @@ def main():
+ 
+     fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.8))
+ 
+-    # Left: absolute scale
++    # Left: absolute scale — Choi-state quantities + channel Q (LB on K^{↔})
+     ax = axes[0]
+     ax.axvspan(0.5, 1.0, alpha=0.10, color="gray")
+     ax.text(0.72, 0.82, r"$Q = 0$" + "\n" + r"(anti-degradable)",
+             fontsize=9, color="gray", ha="center")
+-    ax.plot(gammas, log_neg, label="log_neg (analytic, UB)", linewidth=2, color="C0")
++    ax.plot(gammas, log_neg, label=r"log_neg($J_N$) analytic (Choi state)",
++            linewidth=2, color="C0")
+     ax.scatter(er_g, er_v, color="C3", marker="s", s=55,
+-               label=r"$E_R^{PPT}$ (MOSEK SDP)", zorder=5)
++               label=r"$E_R^{PPT}(J_N)$ MOSEK SDP (Choi state)", zorder=5)
+     Q_deg = np.where(gammas <= 0.5, Q, 0)
+-    ax.plot(gammas, Q_deg, label=r"$Q$ (LB on $K^{\leftrightarrow}$, γ ≤ 1/2)",
++    ax.plot(gammas, Q_deg,
++            label=r"$Q(N_{AD})$ channel, LB on $K^{\leftrightarrow}$, γ ≤ 1/2",
+             linewidth=2, color="C2", linestyle="--")
+     ax.axvline(0.5, color="gray", linewidth=0.8, linestyle=":")
+     ax.set_xlabel("γ (damping probability)")
+-    ax.set_ylabel("bits per channel use")
+-    ax.set_title(r"AD hierarchy: $Q \leq K^{\leftrightarrow} \leq E_R^{PPT} \leq \log\|\cdot\|_{\mathrm{PT}}$")
++    ax.set_ylabel("bits")
++    ax.set_title("AD: Choi-state $E_R^{PPT}$ / log_neg + channel $Q$ (LB only)\n"
++                 + r"Note: Choi-state $E_R^{PPT}$ is NOT an AD channel $K^{\leftrightarrow}$ UB (AD not tele-covariant)")
+     ax.set_xlim(0, 1)
+     ax.set_ylim(0, 1.05)
+-    ax.legend(loc="upper right", fontsize=8)
++    ax.legend(loc="upper right", fontsize=7)
+     ax.grid(True, alpha=0.3)
+ 
+     # Right: log_neg / E_R^PPT ratio (tightness tracking)

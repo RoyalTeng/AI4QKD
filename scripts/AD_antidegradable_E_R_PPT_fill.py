@@ -1,9 +1,13 @@
-"""Fill in E_R^PPT SDP points for AD channel γ ∈ [0.5, 1.0] (anti-degradable region).
+"""Fill in Choi-state E_R^PPT SDP points for AD channel γ ∈ [0.5, 1.0] (anti-degradable region).
+
+NOTE (2026-04-24 post-Codex-REJECTED): The E_R^PPT values here are computed
+on the Choi state J_{N_AD}. For AD channel these are NOT automatic upper
+bounds on the channel two-way key capacity K^{↔}(N_AD), because AD is not
+teleportation-covariant (WTB 2017). Channel-level K^{↔}(AD) remains OPEN.
+See docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md §-1.
 
 Extends existing sparse grid (0.5, 0.7, 0.9 already in qubit_E_R_PPT_SDP_all_4.csv)
 with γ = 0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.95 for finer anti-degradable coverage.
-
-Data used in AD_anti_degradable_E_R_PPT_2026-04-24.md.
 
 Output:
   docs/research/data/AD_antidegradable_E_R_PPT_fill.csv  (new points only)
@@ -54,7 +58,10 @@ def main():
     print()
     print(f"  CSV: docs/research/data/AD_antidegradable_E_R_PPT_fill.csv")
     print()
-    print("Anti-degradable (γ > 0.5): Q=0 but E_R^PPT > 0 gives nontrivial UB on K^{↔}")
+    print("Note: E_R^PPT here is the Choi-state Rains bound only. For AD")
+    print("(not teleportation-covariant), this does NOT upper-bound the")
+    print("channel K^{↔}; channel-level K^{↔}(AD, γ>1/2) remains OPEN.")
+    print("See docs/findings/AD_anti_degradable_E_R_PPT_2026-04-24.md §-1.")
 
 
 if __name__ == "__main__":
