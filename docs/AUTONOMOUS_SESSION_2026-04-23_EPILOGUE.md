@@ -136,7 +136,7 @@ log_neg ≥ K_D / E_R 在 600 grid points × 3 信道全部满足（$10^{-12}$ �
 ### 5.1 仍 OPEN（不在 AI 边界内）
 
 - β.G4 / β.G5 / γ.B.G1 / γ.G3 — 4 个 umr 结构 gap，需用户研究级 PDF 精读
-- AD 信道的 K_D 解析（无封闭式，本 session 未涉及）
+- AD channel 的 K^{↔} 解析 / channel-level UB 工具（无封闭式；需 amortized REE / max-Rains / squashed E paper-level；本 session 未涉及）
 - 异信道复合 E_A ∘ E_B（混合）
 - 多于 2 段的复合（n-fold chain）
 

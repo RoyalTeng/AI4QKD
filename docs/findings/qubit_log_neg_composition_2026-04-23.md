@@ -48,9 +48,9 @@ umr 拓扑中，单 transmission 经过两段信道（Alice→Charlie→Bob）�
 
 **原因**：两个信道有相同的复合参数规则（p_eff = 2p − p²），且单段 log_neg 公式都是 log₂(2 − param)。所以复合后函数形式恒等。
 
-**意义**：在 PPT-relaxed 上界视角下，**AD 和 erasure 信道的两段复合是不可区分的**。但这两个信道的 K_D 行为完全不同（erasure K_D = (1−p)², AD K_D 复杂），所以两种信道仅在 PPT 投影下"等价"。
+**意义**：在 PPT-relaxed 上界视角下，**AD 和 erasure 信道的两段复合是不可区分的**。但两个信道的 operational 行为完全不同（erasure K^{↔} = (1−p)² per PLOB Eq.43; AD 的 channel K^{↔} OPEN，仅 Q 在 γ ≤ 1/2 封闭）—— 即仅在 PPT 投影下"等价"，实际 operational 性能不同。
 
-**警示**：如果用 log_neg 作 Sub-Q3 上界，AD 和 erasure 给同样的紧度，但实际可达 K_D 差距很大 — log_neg 失去了区分这两类信道的能力。
+**警示**：如果用 log_neg 作 Sub-Q3 上界候选，AD 和 erasure 给同样的紧度，但实际 LB 差距很大 — log_neg 失去区分这两类信道的能力（erasure 有已知 K^{↔}=(1-p)²；AD 的 channel K^{↔} OPEN 且 AD 非 tele-covariant 使 Choi-state 工具不直接适用）。
 
 ### 3.2 Depolarizing 复合的 PPT 边界提前到达
 

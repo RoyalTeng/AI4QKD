@@ -46,7 +46,7 @@
 
 6. **pareto_mdi_family v0.2** (commit 7e17e44 之前): §3b Pirandola Type B UB + log_neg AD per-arm cand, gap 400-1500× 在工作区
 7. **pareto_tf_family v0.2**: §3b TF Pareto 与 Pirandola UB cand 同 √η slope, prefactor gap ~2000×
-8. **gap_analysis_2026-04-24.md v0.1 (G4.2 归因初稿)** (7e17e44): A/B/C 分类框架 + BB84 B 显著 / 六态近紧 / TF-MDI UNKNOWN
+8. **gap_analysis_2026-04-24.md v0.1 (G4.2 归因初稿)** (7e17e44): A/B/C 分类框架 + BB84 B 显著 / 六态中等（per-signal E_R/SP ~3-6×; 先前"六态近紧 ≤1.8×" 已撤回 per e054a1e 单位修正）/ TF-MDI UNKNOWN
 9. **family_comparison 主图 v2**: Pirandola N=1 Type B UB 候选线加入（purple 虚线）
 10. **PHASE1_REPORT v1.1**: §9 Phase 2/3 延伸记录
 11. **PHASE_STATUS.md v1.0** (本 session 新文档): Phase 0-3 snapshot + 用户决策队列
