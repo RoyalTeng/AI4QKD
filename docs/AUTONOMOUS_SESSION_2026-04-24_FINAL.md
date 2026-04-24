@@ -188,7 +188,36 @@ dev-reviewer 共运行 5 轮，产出如下:
 
 ---
 
+---
+
+## 9. Evening followup — Codex R1-R7 retraction (AD channel-UB overclaim)
+
+本 session 末续：尝试写 AD anti-degradable E_R^PPT memo，Codex R1 **REJECTED**（critical: Choi-state E_R^PPT 被误作 channel K^{↔} UB，但 AD 非 tele-covariant per WTB 2017 + PLOB 2017 Ex.3）。
+
+7 轮 iteration (commits 0b8cf40 → 81d7c0d):
+
+| Round | Verdict | 主要 residual |
+|-------|---------|--------------|
+| R1 | REJECTED | Fundamental channel-vs-state 混淆 |
+| R2 | REJECTED | fill script print banner + stale TODO |
+| R3 | REJECTED | AD_full_hierarchy docstring + PHASE1_REPORT + gap_analysis |
+| R4 | REJECTED | AD_full_hierarchy runtime banner 依旧印 channel hierarchy |
+| R5 | REJECTED | EPILOGUE §8 + FINAL §2.1 session log 残 K_D prose |
+| R6 | FAIL | 3 minor prose residuals |
+| **R7** | **PASS** | 无剩余 live overclaim outside retraction banners |
+
+**产物**:
+- RETRACTION §8: 第 6 次 silent-upgrade trap 记录（channel-vs-state，与 §7 cross-space trap 同家族）
+- memory/feedback_channel_vs_state_trap.md: 固化教训 + red-flag checklist
+- upper_bound_report.md v0.7: AD rows 标 "Choi only"，tele-cov 信道保持 channel-level
+- AD CSV 数据保留（Choi-state 数值无错），语义解释降级完成
+
+**教训**: Codex 独立评审在本 session 续 catch 到了 AI 本轮引入的 fundamental 错误。 R0.2 C3 闸门工作如预期 —— 但也暴露了 "一个 silent upgrade 会自动扩散到所有 summary/script/log" 的 repo-wide 污染问题，下次写 capacity 陈述前必须 **pre-flight check tele-cov 前提**。
+
+---
+
 ## Changelog
 
+- **v1.2** (2026-04-24 evening 续): §9 加入 — AD anti-degradable 尝试 + Codex R1-R7 retraction cycle + RETRACTION §8 + 第 6 次 silent-upgrade trap 固化。
 - **v1.1** (2026-04-24 session 末续): 更新 dev-reviewer 结果（5 轮 → R5 PASS）；修正科学结论分级（六态 ≤1.8× 撤回 → per-signal ~3-6×；K_D → Q LB on K^{↔}）；R0.2 状态表同步。
 - **v1.0** (2026-04-24 session 末): 首版。Day 4 完整 summary + R0.2 三方验证状态表 + 用户决策队列指向 PHASE_STATUS.md。
