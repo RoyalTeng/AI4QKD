@@ -1,8 +1,8 @@
 # Phase 1 Research Report — DV-QKD 协议族 Pareto + 有限密钥框架
 
-**版本**：v1.0
-**日期**：2026-04-21
-**作者**：autonomous session (2026-04-19 → 2026-04-21)
+**版本**：v1.1
+**日期**：2026-04-21（首版）/ 2026-04-24（§9 Day 4 延伸）/ 2026-04-25（AD channel-level 撤回 propagation）
+**作者**：autonomous session (2026-04-19 → 2026-04-25)
 **对应 PROSPECTUS**：Sub-Q2 验收产出
 **授权**：用户 2026-04-21 批准持续自主推进
 

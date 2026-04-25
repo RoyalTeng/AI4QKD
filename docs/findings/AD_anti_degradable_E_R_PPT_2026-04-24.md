@@ -65,9 +65,10 @@ Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1
 
 **本 memo 的 Choi-state E_R^PPT 数据 NOT 直接适用**，因为：
 
-- Channel-level REE converse 要求 teleportation-covariance / teleportation-simulability
-- AD channel **不是** teleportation-covariant（WTB 2017; Pirandola 2017）
-- Choi-state 上的 Rains bound 仅给 Choi 态 distillation rate 信息，不直接等价于 channel capacity
+- 一般 channel REE `E_R(N) = sup_ρ E_R[(I⊗N)(ρ)]`，与 Choi-state REE `E_R(J_N)` 满足 `E_R(N) ≥ E_R(J_N)`（PLOB 2017；Choi 态只是 sup 中一个特殊取法）
+- 用 **Choi-state REE 作为 channel REE converse**（即 `E_R(N) = E_R(J_N)` 闭合）需要 channel **teleportation-covariance / teleportation-simulability**（PLOB 2017 Ex.3 + Pirandola 2017 Nat Comm 8:15043）
+- AD channel **不是** teleportation-covariant（WTB 2017）→ 对 AD `E_R(J_N) ≤ E_R(N)`，本 memo 的数值是 channel REE 的 **下界**而非上界
+- Choi-state 上的 Rains bound 给的是 Choi 态 distillation rate 信息，不直接等价于 channel capacity
 
 **可能的正确路径**（均**未**在本 memo 完成）:
 - **Amortized REE** / 递归 channel REE（Khatri-Wilde 2020 §16.2）
@@ -102,7 +103,7 @@ Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1
 - `scripts/AD_anti_degradable_plot.py` — 可视化脚本（标题已改为 "Choi-state only, not channel-level UB for AD (non-tele-covariant)", commit 0b8cf40）
 - `docs/research/figures/AD_anti_degradable_hierarchy.{png,pdf}` — 已基于修订后脚本 regenerate（commit 0b8cf40）
 
-**CSV 数据本身未变（纯 Choi-state SDP 数值），语义解释降级至 Choi-state only 完成。**
+**CSV 物理数据未变**（`gamma`, `E_R_PPT_SDP`, `log_neg_analytic`, `Q_LB_on_K2way` 列保持不变；仅 `sdp_time_s` 运行时 metadata 因脚本重跑刷新 — 不影响科学内容）。语义解释降级至 Choi-state only 完成。
 
 ---
 
@@ -128,5 +129,6 @@ Day 4 新加 `quantum_capacity_amplitude_damping_degradable(γ)` 给出 γ ≤ 1
 
 ## 7. Changelog
 
-- **v1.1** (2026-04-24 evening, post-Codex-REJECTED): **整体降级**。删除 channel-level K^{↔} UB 声明（§-1 撤回公告 + §2 重写）；log₂(3)/log₂(2) 数学错误去除；plot 标题撤回 flagged for next revision。
+- **v1.2** (2026-04-25 follow-up review fix): §1 "channel REE converse" 表述精化（区分 `E_R(N)` 与 `E_R(J_N)` 关系：`E_R(N) ≥ E_R(J_N)` always；channel-level converse 闭合需 tele-cov）；§7 v1.1 entry 中"flagged for next revision"修正为"已完成"（plot 已 regenerate 在 commit 0b8cf40）。
+- **v1.1** (2026-04-24 evening, post-Codex-REJECTED): **整体降级**。删除 channel-level K^{↔} UB 声明（§-1 撤回公告 + §2 重写）；log₂(3)/log₂(2) 数学错误去除；plot 标题已修订并 regenerate（commit 0b8cf40）。
 - **v1.0** (2026-04-24): 首版 [SYN]，声称 E_R^PPT(J_N) 是 channel K^{↔} UB —— **撤回** per §-1。

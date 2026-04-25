@@ -1,8 +1,8 @@
 # 2026-04-24 Autonomous Session — Final Summary
 
-**版本**: v1.1  
-**日期**: 2026-04-24（Day 4 末）  
-**状态**: dev-reviewer R5 **PASS** — Day 4 所有提交 C3 通过；等待用户审阅  
+**版本**: v1.2  
+**日期**: 2026-04-24（Day 4 末; 2026-04-25 evening followup-review fix）  
+**状态**: dev-reviewer R5 (Day 4) PASS + R7 (AD anti-degradable retraction) PASS + post-R7 followup review FAIL→fix；等待用户审阅  
 **前置**: [AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md v0.2](AUTONOMOUS_SESSION_2026-04-23_EPILOGUE.md)
 
 ---
@@ -75,11 +75,15 @@ dev-reviewer 共运行 5 轮，产出如下:
 
 ## 3. 科学结论（本 session 新增）
 
-### 3.1 [THM] 级（可对外引用）
+### 3.1 文献 [THM] 之 *实现 / 验证*（**项目内尚未升 [THM]，需 C2 用户签字**）
 
-- **`e_r_depolarizing_analytic` 正确形式** for qubit depolarizing: E_R = 1 - h(F), Plenio-Virmani 2007 §V.E V.86 — bug 修复后严格对齐文献
-- **AD Q (channel, LB on K^{↔}) for γ ≤ 1/2**: Q = max_p[h₂((1-γ)p) - h₂(γp)], Caruso-Giovannetti-Holevo 2014 degradable single-letter — Q is LB on channel K^{↔}, **not** K_D/K^{↔} itself
-- **2⊗2 PPT = SEP → E_R^PPT = E_R**: Horodecki 1996 — qubit abstractions (dephase/depolar/AD) 的 E_R^PPT SDP 严格等于真 E_R
+以下三项的**外部文献结论**是 [THM]，本 session 完成的是数值实现 + 与文献公式一致性验证 (R0.2 C1 数值条件 + C3 dev-reviewer 满足；**C2 用户签字 pending** — 不符合 R0.2 完整三条件，故对**项目内引用层面**仍 [SYN]，不可对外引用为本项目独立 [THM]):
+
+- **`e_r_depolarizing_analytic` 正确形式** for qubit depolarizing: E_R = 1 - h(F), Plenio-Virmani 2007 §V.E V.86 — **文献 [THM]**；本 session bug 修复后与文献严格对齐
+- **AD Q (channel, LB on K^{↔}) for γ ≤ 1/2**: Q = max_p[h₂((1-γ)p) - h₂(γp)], Caruso-Giovannetti-Holevo 2014 degradable single-letter — **文献 [THM]**；Q is LB on channel K^{↔}, **不是** K^{↔} 本身
+- **2⊗2 PPT = SEP → E_R^PPT = E_R**: Horodecki 1996 — **文献 [THM]**；本 session 在 qubit abstractions (dephase/depolar/AD) 的 Choi 态 E_R^PPT SDP 与 E_R 数值匹配验证
+
+**升级 eligibility 状态** (R0.2 三条件)：项目内升 [THM] 需 C1 (b) 人类纸笔复核 **或** C1 (a) 跨家族 PDF 直读 — 当前 C1 是 (c) 数值复现，本身合规但**与 C2 用户签字一并缺失** → 三条件未齐 → 本表条目暂留 [SYN] 而非 [THM]。
 
 ### 3.2 [SYN] 级（内部可用，原 [COROLLARY] 候选因 R5 修正而下调）
 

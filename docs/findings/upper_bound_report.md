@@ -1,7 +1,7 @@
 # Sub-Q3 上界接缝报告（Upper Bound Report）
 
-**版本**：v0.6
-**日期**：2026-04-24（v0.6 修正）/ 2026-04-21 首稿
+**版本**：v0.7
+**日期**：2026-04-25（v0.7 followup-review 后修正） / 2026-04-24（v0.6 修正）/ 2026-04-21 首稿
 **对应**：PROSPECTUS Sub-Q3 验收产出 + RESEARCH_PLAN §4.5 U3.8
 **预期篇幅**：30-50 页（本稿约 25 页等价，可扩展）
 **严谨性**：全文遵循 FINDINGS v2 §1.2 四级分级（[THM]/[COROLLARY]/[CONJ]/[UNKNOWN]），绝不越权
@@ -186,7 +186,7 @@
 
 ### 3.3 可数值计算的 $R_\text{UB}^\text{current}(\eta_\text{arm})$
 
-**[COROLLARY under Assumption DP]**（候选 A/B 对称情形）：
+**[CONJ — candidate UB form, Assumption DP 未独立验证]**（候选 A/B 对称情形）：
 
 $$R_\text{UB}^\text{current}(\eta_\text{arm}) = -\log_2(1 - \eta_\text{arm}) \text{ bits/round}$$
 
@@ -195,13 +195,17 @@ $$R_\text{UB}^\text{current}(\eta_\text{arm}) = -\log_2(1 - \eta_\text{arm}) \te
 - $\eta_\text{arm} = 0.1$（10 dB）：$R_\text{UB} = 0.152$
 - $\eta_\text{arm} = 0.01$（20 dB）：$R_\text{UB} = 0.0145$
 
-**[COROLLARY under LOPC monotonicity reduction]**（候选 C）：
+**[CONJ — candidate UB form, LOPC monotonicity reduction 未独立验证]**（候选 C）：
 
 $$R_\text{UB}^\text{current}(\eta_\text{arm}) = R_\max(\text{amp-damping}(\gamma = 1 - \eta_\text{arm}))$$
 
-数值（本报告 §4 生成）：
-- $\eta_\text{arm} = 0.316$（10 dB）：$R_\max \approx 0.193$
-- $\eta_\text{arm} = 0.1$ (20 dB)：$R_\max \approx 0.062$
+**注意 (2026-04-25 修订)**：候选 C 在 R_max 已知是 channel-level UB 的前提下成立；对 AD channel R_max 的真值与 channel K^{↔}(N_AD) 关系**未独立验证**（AD 非 tele-covariant per RETRACTION §8 — Choi-state log_neg/E_R^PPT 不等于 channel-level R_max；需 Wang-Fang-Duan 2019 或 amortized REE 真正 channel converse），故标 [CONJ]。
+
+数值（本报告 §4 生成 — Choi-state log-neg of AD as a *upper bound proxy* for R_max, NOT validated channel R_max）：
+- $\eta_\text{arm} = 0.316$（10 dB）：log-neg(AD γ=0.684) ≈ 0.193 bits（Choi-state, **不**直接转 channel UB）
+- $\eta_\text{arm} = 0.1$ (20 dB)：log-neg(AD γ=0.9) ≈ 0.062 bits（Choi-state）
+
+先前 [COROLLARY under ...] 标签于 2026-04-25 review 后改为 [CONJ]：assumptions DP / LOPC 都未在本项目内 close（C1 paper-level 依赖未启动），不符合 R0.2 [COROLLARY] 升级条件。
 
 ---
 

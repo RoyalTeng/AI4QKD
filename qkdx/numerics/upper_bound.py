@@ -518,7 +518,27 @@ def log_negativity_channel_sdp(
     solver: str = "MOSEK",
     verbose: bool = False,
 ) -> dict:
-    """Log-negativity of the Choi state via SDP (upper bound on max-Rains).
+    """Log-negativity of the *Choi state* via SDP (upper bound on max-Rains).
+
+    IMPORTANT — Choi-state vs channel interpretation (2026-04-24 RETRACTION §8):
+        This function returns the log-negativity of the Choi state J_N
+        (a state-level quantity). Whether it upper-bounds the *channel*
+        K^{↔}(N) requires the channel-level converse via the strong-converse
+        max-Rains rate (Khatri-Wilde 2024 Thm 19.8), which itself relies on
+        amortization arguments that hold for general channels but whose
+        equality with the Choi-state quantity reduces cleanly only for
+        teleportation-covariant channels (PLOB 2017 Ex.3; Pirandola 2017
+        Nat Comm 8:15043).
+
+        For amplitude damping (NOT teleportation-covariant per WTB 2017,
+        DOI 10.1109/TIT.2017.2648825), Choi-state log-negativity is only
+        a state-level diagnostic; channel-level UB on K^{↔}(N_AD) requires
+        the strict amortized / max-Rains channel rate (Wang-Fang-Duan 2019
+        for the strict R_max; or Berta-Wilde 2018 for amortized REE), or
+        squashed entanglement (Takeoka-Guha-Wilde 2014).
+
+        See docs/research/RETRACTION.md §8 for the AD case study where this
+        Choi-vs-channel distinction was missed.
 
     References:
         - Vidal-Werner 2002, PRA 65:032314 (logarithmic negativity)

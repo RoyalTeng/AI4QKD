@@ -1,7 +1,7 @@
-# Phase Status Snapshot — 2026-04-24
+# Phase Status Snapshot — 2026-04-24 (last revised 2026-04-25)
 
-**版本**：v1.0  
-**日期**：2026-04-24（Day 4 自主 session 末）  
+**版本**：v1.1  
+**日期**：2026-04-25（post-R7 retraction + followup-review fix） / 2026-04-24（首版）  
 **用途**：Phase 0/1/2/3 当前进度一览 + 用户决策队列
 
 ---
@@ -12,7 +12,7 @@
 |-------|---------|-------|
 | **Phase 0** | ✅ 完成 | MS-EB 框架 + WLC SDP + 七族五元组 + M1-M4 数值 |
 | **Phase 1** | ✅ 完成 (v1.1) | 三族 Pareto 2581+2831+1600 pts + Kamin GEAT + family_comparison 主图 |
-| **Phase 2 (Sub-Q3)** | 🟡 部分完成（AI 自主上限 [CONJ]/[SYN]） | upper_bound_report v0.5 + β.G3 [SYN] triple-verified + 4 路径 OPEN gap |
+| **Phase 2 (Sub-Q3)** | 🟡 部分完成（AI 自主上限 [CONJ]/[SYN]） | upper_bound_report v0.7 + β.G3 [SYN] (C2/C3 满足，THM anchor 缺) + 4 路径 OPEN gap + AD channel-level 撤回 |
 | **Phase 3 (Sub-Q4)** | 🟡 初步（数据驱动 [CONJ]） | gap_shape v0.3 4 candidates + gap_analysis G4.2 v0.1 归因初稿 |
 
 **AI 自主边界**：所有 [THM] 升级被 R0.2 C1 (independent non-AI validation) 硬门槛阻挡。**等用户 paper-level work 解锁**。
@@ -156,7 +156,7 @@
 
 ### 5.2 数值扩展（用户启动后 AI 可继续）
 
-5. **AD γ>1/2 K^{↔}** — squashed entanglement 工具实施（anti-degradable 区 Q=0，但 K^{↔} OPEN）
+5. **AD channel-level K^{↔} 上界工具选型 + paper-level 验证**（anti-degradable γ>1/2 区 Q=0；channel K^{↔} OPEN per RETRACTION §8）：先做 (a) 候选工具家族选型（amortized REE / max-Rains / squashed entanglement / 其他 channel-level converse for non-tele-cov），再 (b) PDF-level 验证适用性条件，**最后**才考虑 (c) 数值实施。**步骤 (a)/(b) 是 R0.2 C1 外部依赖**，不在 AI 自主范围；步骤 (c) 在 (a)/(b) 完成后可恢复 AI 自主
 6. **Erasure E_R^PPT SDP** — 需高内存环境（16×16 OOM）
 7. **SARG04 严格实施** — Koashi 2005 announcement register 扩展
 
