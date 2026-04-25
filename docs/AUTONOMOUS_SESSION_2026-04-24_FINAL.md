@@ -36,7 +36,7 @@
    - 返回 **Q = channel quantum capacity (LB on K^{↔}, 非 K_D 真值)**
    - γ > 1/2 anti-degradable → 返回 0 (Q=0; channel K^{↔}(AD) 真值 OPEN)
 
-3. **upper_bound_report v0.5** (a049de0): §11 整合 Day 4 findings + 4 信道 tightness hierarchy
+3. **upper_bound_report v0.5** (commit a049de0, **historical** — current version v0.7 per 2026-04-24 v0.6 R5 修正 + 2026-04-25 v0.7 followup-review 修订): §11 整合 Day 4 findings + 4 信道 tightness hierarchy
 
 4. **gap_shape v0.3** (2c565cc): Candidate D (AD Q analytic, channel LB on K^{↔} [THM for qubit]; 后 v0.4 改为"参考量非 UB 候选" per RETRACTION §8)
 
@@ -114,7 +114,7 @@ R0.2 C1 接受**任何** (a)/(b)/(c) 形式的 independent validation；本表 C
 |------|-----|-----|-----|------------------|
 | β.G3 log_neg(E_AD) = log₂(1+η) | ✅ SymPy (c) | ✅ 用户 2026-04-23 | ✅ dev-reviewer R2 | [SYN] (无 THM anchor) |
 | `e_r_depolarizing_analytic` bug 修复 | ✅ MOSEK SDP (c) | ⏳ | ✅ R5 PASS | bug 修复本身不需升级；E_R = 1-h(F) 正确 |
-| AD Q for γ ≤ 1/2 (原 K_D) | ⏳ 等用户 paper-level | ⏳ | ✅ R5 PASS | [THM for qubit] 需 C1+C2+C3；Q = LB on K^{↔} |
+| AD Q for γ ≤ 1/2 (原 K_D) | ✅ (c) golden-section 实现 + degradable single-letter 公式一致 | ⏳ 等用户签字 | ✅ R5 PASS | [SYN]；缺 C2 → 项目内未升 [THM]；C1 (a)/(b) paper-level 增强可选但非必须 |
 | 4 信道 hierarchy | ✅ 数值 SDP (c) | ⏳ | ✅ R5 PASS | [SYN]；K^{↔}(depol) UNKNOWN；C2 用户签字待 |
 | 六态 E_R/SP 比率 ~3-6× (per-signal) | ✅ 数值 (c) | ⏳ | ✅ R5 PASS | [SYN]（先前 ≤1.8× 因 units 错误已撤回） |
 | Day 4 Codex 评审 | - | - | ✅ R5 PASS | C3 已通过 |

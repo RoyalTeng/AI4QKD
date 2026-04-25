@@ -73,7 +73,7 @@
 
 ### 3.1 完成项
 
-- ✅ **upper_bound_report.md v0.5**（1000+ 行，11 sections）
+- ✅ **upper_bound_report.md v0.7**（1000+ 行，11 sections；v0.5 = Day 4 内嵌增补，v0.6 = R5 修正，v0.7 = 2026-04-25 followup-review 后修订）
   - §1-§10: Pirandola / TGW / WTB / Khatri-Wilde / log_neg / E_R^PPT SDP
   - §11 (Day 4, v0.6): 4 信道 tightness hierarchy + AD Q analytic (LB on K^{↔}) + Plenio 不等式 + BB84/six-state 紧化（已单位修正）
 - ✅ **路径 β.G3 (log_neg 前传)**: `log_neg(E_AD(η)) = log₂(1+η)`, η_c=1/φ
@@ -197,7 +197,7 @@
 ### 7.1 文档
 
 - **总报告**: [PHASE0_REPORT.md](PHASE0_REPORT.md), [PHASE1_REPORT.md](PHASE1_REPORT.md)
-- **Sub-Q3**: [upper_bound_report.md v0.5](findings/upper_bound_report.md)
+- **Sub-Q3**: [upper_bound_report.md v0.7](findings/upper_bound_report.md)
 - **Sub-Q4**: [gap_shape_g4_1.md v0.3](findings/gap_shape_g4_1.md), [gap_analysis_2026-04-24.md v0.1](findings/gap_analysis_2026-04-24.md)
 - **Pareto family sheets**: [pareto_bb84_family v0.2](findings/pareto_bb84_family.md), [pareto_mdi_family v0.2](findings/pareto_mdi_family.md), [pareto_tf_family v0.2](findings/pareto_tf_family.md)
 - **证明**: [log_neg prefactor crossover (β.G3 analytic)](findings/log_neg_msEB_application_2026-04-23.md), [qubit E_R PPT hierarchy](findings/qubit_E_R_PPT_hierarchy_2026-04-23.md)
