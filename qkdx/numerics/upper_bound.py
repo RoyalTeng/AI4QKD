@@ -575,8 +575,19 @@ def log_negativity_channel_sdp(
 
     Returns:
         dict with:
-          log_negativity_bits: E_N = log_2(Tr[V]) in bits (upper bounds R_max)
-          R_max_bits: alias for log_negativity_bits (backward compat)
+          log_negativity_bits: Choi-state log-negativity E_N(J_N) =
+            log_2(Tr[V]) in bits. **State-level** quantity. For tele-cov
+            channels (dephase/depolar/erasure) this also serves as a
+            channel UB (Khatri-Wilde 2024 Thm 19.8 path). For non-tele-cov
+            channels (AD per WTB 2017), this is a state-level diagnostic
+            only — channel UB requires amortized REE / max-Rains / etc.
+          R_max_bits: **backward-compat alias of log_negativity_bits — a
+            Choi-state proxy for R_max, NOT the validated channel R_max**
+            (Wang-Duan 2016b max-Rains is a strict channel quantity; this
+            function does not compute it. See max_rains_wang_duan_channel_sdp
+            stub which raises NotImplementedError pending PDF verification).
+            On the **state level** for any state ρ, E_N(ρ) ≥ R_max(ρ);
+            channel-level analog requires the simulability arguments above.
           V_opt: optimal V variable
           status: solver status
           rho_choi: Choi state used
@@ -619,7 +630,12 @@ def log_negativity_channel_sdp(
     }
 
 
-# Backward-compat alias: previous API name
+# Backward-compat alias: previous API name.
+# WARNING (2026-04-25): This alias is a Choi-state proxy for channel R_max,
+# NOT the validated channel max-Rains rate. The strict Wang-Duan 2016b form
+# is in max_rains_wang_duan_channel_sdp (currently NotImplementedError stub).
+# For non-tele-covariant channels (e.g. AD), Choi-state log-neg does not
+# automatically upper-bound channel K^{↔}. See RETRACTION §8.
 r_max_channel_sdp = log_negativity_channel_sdp
 
 

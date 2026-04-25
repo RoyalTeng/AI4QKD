@@ -170,7 +170,7 @@
 
 当 C1 上述 1-4 任一通过后:
 - β.G3 [SYN] 若找到 THM anchor (Wilde-Horodecki 2013 / Plenio-Virmani 2007 §V.C) 可升 [THM]
-- upper_bound_report v0.5 §11 hierarchy table 可升 [COROLLARY]
+- upper_bound_report v0.7 §11 hierarchy table 可升 [COROLLARY]（仅 tele-covariant 信道行 — dephase/depolar/erasure；AD 行 channel-level UB 仍 OPEN per RETRACTION §8）
 - gap_analysis G4.2 可升到 [THM] 级归因 verdict
 
 ---

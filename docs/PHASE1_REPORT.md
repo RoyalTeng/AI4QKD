@@ -204,7 +204,7 @@ CSV 文件（`docs/research/data/`）：
 
 ### 9.1 Sub-Q3 上界工具链
 
-- **upper_bound_report.md v0.5**（Day 2-4 连续更新）：§1-§11 覆盖 Pirandola / TGW / WTB / Khatri-Wilde / log_neg / E_R^PPT SDP / E_R analytic
+- **upper_bound_report.md v0.7**（Day 2-4 连续更新 + 2026-04-25 followup-review 修订）：§1-§11 覆盖 Pirandola / TGW / WTB / Khatri-Wilde / log_neg / E_R^PPT SDP / E_R analytic + AD Choi-state vs channel-level 区分
 - **路径 β.G3 (log_neg 前传)**: AD-AD concatenation log_neg additivity → `log_neg(E_AD(η)) = log₂(1+η)`, crossover η_c=1/φ — **[SYN]** 已通过 R0.2 C1(c) SymPy + C2 用户签字 + C3 dev-reviewer R2 PASS triple verification (2026-04-22)
 - **路径 β/γ 结构 gap 全部 OPEN**（β.G4 Eve model transfer / β.G5 adversarial comb / γ.B.G1 DPI target / γ.G3 ε-composable）—— 用户 paper-level work 依赖项
 
@@ -243,7 +243,7 @@ R0.2 三方验证规则下，AI 自主 pipeline 结论上限 = **[CONJ] / [SYN]*
 2. β.G5 amortization 在 untrusted relay 下继承: WTB 2017 Thm 4 / Cor 5 直读
 3. γ.B.G1 DPI target lemma: Pirandola 2019 Eq. 9 拓扑适用性精读
 4. γ.G3 ε-composable transfer: Metger 2024 GEAT asymptotic → finite 桥接
-5. AD γ>1/2 K^{↔} (anti-degradable, K^{↔} OPEN): squashed entanglement 工具精读
+5. AD channel-level K^{↔} 上界工具选型 + paper-level 验证 (γ>1/2 anti-degradable Q=0；channel K^{↔} OPEN per RETRACTION §8): 候选工具家族 (amortized REE / max-Rains / squashed entanglement / 其他 channel-level converse) 选型 → PDF 验证适用性 → 数值实施。前两步是 R0.2 C1 外部依赖
 6. SARG04 严格实施 (Koashi 2005 announcement register)
 
 ---

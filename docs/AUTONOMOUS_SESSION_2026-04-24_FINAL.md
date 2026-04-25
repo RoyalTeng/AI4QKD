@@ -75,15 +75,17 @@ dev-reviewer 共运行 5 轮，产出如下:
 
 ## 3. 科学结论（本 session 新增）
 
-### 3.1 文献 [THM] 之 *实现 / 验证*（**项目内尚未升 [THM]，需 C2 用户签字**）
+### 3.1 文献 [THM] 之 *实现 / 验证*（**项目内尚未升 [THM]，需 R0.2 C1 ∧ C2 ∧ C3 同时满足**）
 
-以下三项的**外部文献结论**是 [THM]，本 session 完成的是数值实现 + 与文献公式一致性验证 (R0.2 C1 数值条件 + C3 dev-reviewer 满足；**C2 用户签字 pending** — 不符合 R0.2 完整三条件，故对**项目内引用层面**仍 [SYN]，不可对外引用为本项目独立 [THM]):
+以下三项的**外部文献结论**是 [THM]。本 session 完成的是数值实现 + 与文献公式一致性验证。R0.2 升级条件 = `C1 (a/b/c 之一) ∧ C2 用户签字 ∧ C3 dev-reviewer PASS`，**逐项判定如下**：
 
-- **`e_r_depolarizing_analytic` 正确形式** for qubit depolarizing: E_R = 1 - h(F), Plenio-Virmani 2007 §V.E V.86 — **文献 [THM]**；本 session bug 修复后与文献严格对齐
-- **AD Q (channel, LB on K^{↔}) for γ ≤ 1/2**: Q = max_p[h₂((1-γ)p) - h₂(γp)], Caruso-Giovannetti-Holevo 2014 degradable single-letter — **文献 [THM]**；Q is LB on channel K^{↔}, **不是** K^{↔} 本身
-- **2⊗2 PPT = SEP → E_R^PPT = E_R**: Horodecki 1996 — **文献 [THM]**；本 session 在 qubit abstractions (dephase/depolar/AD) 的 Choi 态 E_R^PPT SDP 与 E_R 数值匹配验证
+| 结论 | 文献 anchor | C1 状态 | C2 状态 | C3 状态 | 项目内 tag |
+|------|-------------|---------|---------|---------|------------|
+| `e_r_depolarizing_analytic = 1 − h(F)` | Plenio-Virmani 2007 §V.E V.86 | ✅ (c) bug-fix 后 SDP-vs-formula 数值匹配 | ⏳ 未签 | ✅ R5 PASS | **[SYN]**（缺 C2，不可对外引用为本项目 [THM]）|
+| AD Q (channel, LB on K^{↔}) for γ ≤ 1/2 = `max_p[h₂((1-γ)p)-h₂(γp)]` | Caruso-Giovannetti-Holevo 2014 | ✅ (c) golden-section 实现 + 与 degradable single-letter 公式一致 | ⏳ 未签 | ✅ R5 PASS | **[SYN]** |
+| 2⊗2 PPT = SEP → E_R^PPT(J) = E_R(J) at Choi-state level | Horodecki 1996 | ✅ (c) MOSEK SDP 在 dephase/depolar/AD Choi 态匹配 E_R 文献公式 | ⏳ 未签 | ✅ R5+R7 PASS | **[SYN]**（**注意**：仅 Choi-state 层；channel-level 升级对 AD 仍 OPEN per RETRACTION §8）|
 
-**升级 eligibility 状态** (R0.2 三条件)：项目内升 [THM] 需 C1 (b) 人类纸笔复核 **或** C1 (a) 跨家族 PDF 直读 — 当前 C1 是 (c) 数值复现，本身合规但**与 C2 用户签字一并缺失** → 三条件未齐 → 本表条目暂留 [SYN] 而非 [THM]。
+R0.2 C1 接受**任何** (a)/(b)/(c) 形式的 independent validation；本表 C1 全部走 (c) 数值复现路径。**项目内升 [THM] 仅缺 C2 用户签字** —— 当签字到位 + 上述每行 C3 仍 PASS，可逐项升至本项目 [THM] 状态。
 
 ### 3.2 [SYN] 级（内部可用，原 [COROLLARY] 候选因 R5 修正而下调）
 
