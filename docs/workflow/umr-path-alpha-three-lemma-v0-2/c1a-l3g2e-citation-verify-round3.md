@@ -1,0 +1,1 @@
+PASS. Line 64 now says `post-split L3.G3 剩余 5 个 sub-residual`, and line 205 now says `post-split L3.G3 剩余 5 项`; `§2.4/§2.4.E` still keep the same split-out framing from Round 2, with no new scope drift in the operative lemma text.

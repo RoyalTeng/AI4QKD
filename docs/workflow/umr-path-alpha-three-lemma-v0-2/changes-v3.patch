@@ -1,0 +1,936 @@
+diff --git a/docs/PHASE_STATUS.md b/docs/PHASE_STATUS.md
+index 52210e4..e8982d4 100644
+--- a/docs/PHASE_STATUS.md
++++ b/docs/PHASE_STATUS.md
+@@ -143,16 +143,57 @@
+ 
+ ---
+ 
++## 4.5 User directive 2026-04-25 — path α 三 lemma 优先策略 **[USER-APPROVED PRIORITY, §7.3 OVERRIDDEN by user 2026-04-25]**
++
++> **🟡 [USER-APPROVED PRIORITY 2026-04-25 — direction-level approval, NOT C3-passed]**
++>
++> v0.3 dev-reviewer round 2 verdict REJECTED (diff) + FAIL (holistic) 触发了 §7.3 rollback condition。
++>
++> **user 2026-04-25 同 session 显式 override §7.3**（user 原话）："如果和红线违背，那就以我的 approve 为准 ... 我已经经过反复论证了，我的 approve 没问题"
++>
++> **override scope**：approve **path α direction** + v0.3 维持 active draft；**不**等价 C3 PASS；**不**等价 [SYN] → [COROLLARY] 升级；**不**得对外引用 lemma 表述为定理级。
++>
++> **R0.2 硬红线维持**：[COROLLARY] / [THM] 升级仍需 C1 ∧ C2 ∧ C3 完整流程。user override 仅适用于 cleanup-level + direction priority。
++>
++> **诚实风险记录**：user override Codex C3 verdict 的先例对应 v1 retraction（user 当时也 "反复论证过"）。后续若发现同型 trap → 按 v1 retraction 流程处理。
++>
++> ---
++
++**用户决议**（autonomous session 内显式给出）：
++
++> 反转 Log 07 的 γ-first 优先级。**path α 三 lemma 路径**（resource-enhancement / protocol-class inclusion，旧 [umr_path_alpha_scaffolding.md](proofs/umr_path_alpha_scaffolding.md) 的 11-gap 形式）作 Phase 2 优先策略，**优先于** path γ direct converse 与 path β 紧界 converse。
++>
++> **理由**（用户原话）："我手头时间紧迫，γ 估计需要更长精读周期，先看 α 能否在更短周期出 scaling-级结论。"
++
++**directive scope**（重要边界）：
++
++- ✅ approve **方向**与**优先级**：path α 三 lemma 是 Phase 2 优先 work direction
++- ✅ approve **scaling 级目标**：仅追求 $K_{\text{umr}} \leq -\log_2(1-\sqrt{\eta_{AB}})$ scaling 级 looser UB；**不**追求 prefactor-紧 UB
++- ❌ **不** approve [umr_path_alpha_three_lemma_v0_2.md](proofs/umr_path_alpha_three_lemma_v0_2.md) v0.2 [REJECTED] 文档的任何具体 lemma 表述、综合链或 [SYN] 数值断言
++- ❌ **不** approve 任何 Lemma A/B/C 的 closure / draft proof / Justification sketch
++- ❌ **不** approve 升级路径绕过 R0.2 (C1 ∧ C2 ∧ C3) 三闸门
++
++**v0.2 retraction 维持**；后续 v0.3 重写产出按此 directive 进行。**任何 [SYN] → [COROLLARY] 升级**仍需 R0.2 (C1 ∧ C2 ∧ C3) 完整流程，user directive 仅 approve 方向不替代 C2 升级签字。
++
++**回滚条件**：v0.3 dev-reviewer 再 REJECTED → directive 失效，回到 Log 07 的 γ-first 顺序。
++
++---
++
+ ## 5. 用户决策队列（AI 自主 reach 不到）
+ 
+-按优先级从高到低：
++按优先级从高到低（**§4.5 directive 生效，user 2026-04-25 override §7.3** — path α 三 lemma framework 升至最高）：
+ 
+ ### 5.1 Sub-Q3 结构 gap (R0.2 C1 非 AI 验证依赖)
+ 
+-1. **β.G4 Eve model transfer** — Khatri-Wilde 2020 §19 Prop 19.2 umr 适用性（最高优先级）
+-2. **β.G5 adversarial comb reduction** — WTB 2017 Thm 4 umr 继承
+-3. **γ.B.G1 DPI target lemma** — Pirandola 2019 Eq. 9 拓扑适用性
+-4. **γ.G3 ε-composable transfer** — Metger 2024 GEAT asymptotic→finite 桥接
++**§4.5 user-directive 顺序**（2026-04-25 起生效，user override §7.3 后维持）：
++
++1. **path α 三 lemma framework** ([v0.3 USER-APPROVED PRIORITY](proofs/umr_path_alpha_three_lemma_v0_3.md))：L1.G1-G4 / L2.G1-G4 / L3.G1-G3 共 11 sub-gap [UNKNOWN]，user 直读 PDF + 形式化（Pirandola 2019 §III-IV / Khatri-Wilde §19-20 / Lucamarini 2018 / Wang 2019 / Curras-Lorenzo 2021 / Portmann-Renner 2022）。**user 时间约束 hedge 选择**，不主张比 γ 更稳。
++2. **β.G4 Eve model transfer** — Khatri-Wilde 2020 §19 Prop 19.2 umr 适用性（path α scaling-级失败时的 fallback；prefactor-紧 UB 仍依赖此）
++3. **β.G5 adversarial comb reduction** — WTB 2017 Thm 4 umr 继承
++4. **γ.B.G1 DPI target lemma** — Pirandola 2019 Eq. 9 拓扑适用性
++5. **γ.G3 ε-composable transfer** — Metger 2024 GEAT asymptotic→finite 桥接
++
++**回滚指针**（若 user 后续撤销 override）：original Log 07 γ-first 顺序 = β.G4 → β.G5 → γ.B.G1 → γ.G3
+ 
+ ### 5.2 数值扩展（用户启动后 AI 可继续）
+ 
+diff --git a/docs/research/FINDINGS.md b/docs/research/FINDINGS.md
+index 92ec1bf..0f1aab7 100644
+--- a/docs/research/FINDINGS.md
++++ b/docs/research/FINDINGS.md
+@@ -136,6 +136,49 @@
+ 
+ 本 interim 撤回"γ 预判"(两端都松)。Sub-Q4 的归因 α/β/γ 应在 Sub-Q3 完成**之后**基于定理级上界重新启动,**不以本 interim 为预定位**。
+ 
++### 4.3 Phase 2 strategy — path α 三 lemma 路径 **[USER-APPROVED PRIORITY 2026-04-25, NOT C3-PASSED]**
++
++**最终结果（2026-04-25 session 末）**：path α 三 lemma 路径在 dev-reviewer 双 round 均 REJECTED 后，user **2026-04-25 同 session 显式 override §7.3 rollback condition**，path α 维持 Phase 2 优先方向。但 **R0.2 三闸门未走完**，C3 verdict 留痕 REJECTED。
++
++**Override 性质**（user 原话）："如果和红线违背，那就以我的 approve 为准 ... 我已经经过反复论证了，我的 approve 没问题"
++- ✅ approve **path α direction** 作 Phase 2 优先策略
++- ✅ approve [v0.3](../proofs/umr_path_alpha_three_lemma_v0_3.md) 维持 active draft
++- ❌ **不**等价 C3 PASS（C3 verdict 留痕 REJECTED）
++- ❌ **不**等价 [SYN] → [COROLLARY] 升级
++- ❌ **不**得对外论文 / 展示稿引用 v0.3 任何 lemma 表述、综合链或数值断言为定理级
++
++**评审历史（永久留痕）**：
++- **v0.3 round 2** ([umr_path_alpha_three_lemma_v0_3.md](../proofs/umr_path_alpha_three_lemma_v0_3.md)): diff REJECTED (1 major + 1 minor) + holistic FAIL；6/7 round-1 trap 已修复；user override 后追加 round-3 cleanup 修剩余 5 issues
++- **v0.2 round 1** ([umr_path_alpha_three_lemma_v0_2.md](../proofs/umr_path_alpha_three_lemma_v0_2.md)): diff REJECTED (1 critical + 3 major) + holistic UNSOUND；永久 [REJECTED] banner
++
++**诚实风险记录**：user override Codex C3 verdict 在项目 spec 文档层为**首次**先例。先例风险参考 v1 retraction（user 当时也 "反复论证过"）。后续若发现 v0.3 在使用中触发任何**结构 rigor** trap（cross-task / cross-space transfer 同型 / [SYN] 越权升级 / etc.）→ 按 v1 retraction 流程处理，**本 override 失效**。
++
++**R0.2 硬红线维持不变**：升级到 [COROLLARY] / [THM] 仍需 C1 ∧ C2 ∧ C3 完整流程。user override 仅适用 cleanup-level issues + direction priority，**不**替代 R0.2 三闸门。
++
++以下为原 v0.2 [REJECTED round 1] 记录（保留作历史）：
++
++---
++
++### 4.3.bak v0.2 [REJECTED round 1] 历史记录
++
++**立项后即被 R0.2 红线撤回**:[docs/proofs/umr_path_alpha_three_lemma_v0_2.md](../proofs/umr_path_alpha_three_lemma_v0_2.md) v0.2 [SPEC] 经 dev-reviewer 双 Codex 评审,**双 reviewer 均触发 R0.2 红线**(Diff: REJECTED 1 critical + 3 major; Holistic: UNSOUND)。
++
++- **撤回时序**:2026-04-25 同一 session 内,user directive "三件事都做了" → autonomous 立项 → autonomous 提交 dev-reviewer C3 评审 → 双 reviewer 撤回 → autonomous 加 [REJECTED] banner
++- **核心 trap 模式**(双 reviewer 收敛):
++  - Lemma B 隐含未列 sub-gap(把 Charlie broadcast 当 standard partial-trace 而非结构假设)
++  - Lemma A/B/C "Justification sketch" 实为 draft proof closure
++  - §3 综合包含链 + §3.1 "数值 confirm" 措辞**实质升级到 conditional-COROLLARY**
++  - 与旧 [umr_path_alpha_scaffolding.md](../proofs/umr_path_alpha_scaffolding.md) 的 11-gap inventory 脱节
++  - 反转 Log 07 的 γ-first 优先级,无 user 直读依据
++- **数值对齐脚本保留**:[scripts/path_alpha_v0_2_alignment.py](../../scripts/path_alpha_v0_2_alignment.py) + [data/path_alpha_v0_2_alignment.csv](data/path_alpha_v0_2_alignment.csv) + [figures/path_alpha_v0_2_alignment.png](figures/path_alpha_v0_2_alignment.png) — **仅 reframe** 无新 LB claim,撤回不影响数值,但需在使用时显式说明 path α v0.2 已 REJECTED
++- **被 supersede 的中间方案**:[docs/proofs/umr_path_delta_relaxed_trust_v0_1.md](../proofs/umr_path_delta_relaxed_trust_v0_1.md) v0.1 [SUPERSEDED] banner **维持**(δ 自身的 capacity-monotonicity 路径仍被 α 撤回理由间接驳回:Eve-set 比较与 protocol-class 嵌入都在 cross-space 范畴)
++- **本 interim 影响**:**无结论变更**。§1.1 上界 [CONJ] 标签维持,§1.2 可信度评级维持。Sub-Q3 主路径仍是 β/γ + Log 07 推荐的 user 直读
++- **第 6 次 trap 教训**(本 session 实例):AI autonomous"立项 → 数值 + ledger 同步 → C3 评审"完整链条**仍可能在 statement-only spec 文档里 smuggling structural gap closure**;dev-reviewer 双 Codex 是有效 C3 闸门,但 autonomous workflow 仍需 user 显式 review framework intent 才能避免
++
++**评审产物**:[docs/workflow/umr-path-alpha-three-lemma-v0-2/](../workflow/umr-path-alpha-three-lemma-v0-2/)(review-diff-1.json + review-holistic-1.md + workflow-log.md)
++
++**下一步**:由 user 决定是否启动 v0.3 重写(reviewer 给的 specific recommendation 见 banner),或直接放弃本路径回到 path β/γ 主线 + Log 07 推荐的 γ-first 顺序。
++
+ ---
+ 
+ ## 5. 对 Phase V 审计流程本身的反省
+=== NEW FILE: docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md ===
+diff --git a/docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md b/docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md
+new file mode 100644
+index 0000000..0768923
+--- /dev/null
++++ b/docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md
+@@ -0,0 +1,404 @@
++# Path α Lemma Skeletons (v0.1 — Statement-Stub Only, Anchor: Cui 2019)
++
++**版本**：v0.1 [SCAFFOLDING — statement-only stubs, NO proof drafts]
++**日期**：2026-04-25
++**前身 / 关系**：
++- 派生自 [path α v0.3 [USER-APPROVED PRIORITY]](umr_path_alpha_three_lemma_v0_3.md)
++- 基于 [PDF synthesis v0.1](umr_path_alpha_pdf_synthesis_v0_1.md) §6.6 + v0.1 update 3 (Cui 2019 直读)
++- 引用 [path α scaffolding v0.1](umr_path_alpha_scaffolding.md) 11-gap inventory
++
++**严谨性**：
++- ✅ 全文 [SYN] / [DRAFT statement-stub]
++- ❌ **不**含任何 lemma proof / Justification sketch
++- ❌ **不**升级任何 sub-gap 状态
++- ❌ Claude single-AI 直读 ≠ C1 (a)；本文档**不**构成 R0.2 升级证据
++
++---
++
++## §-1 R0.1 / R0.2 显式状态声明
++
++### -1.1 这份文档**不**做什么
++
++- ❌ **不**证明 Lemma A / B / C 任一
++- ❌ **不**含 "Justification sketch" / "non-proof argument" 等中间态措辞（v0.2 round 1 trap 教训）
++- ❌ **不**升级 [SYN] 到 [COROLLARY]
++- ❌ **不**主张 sub-gap 已闭合 —— 全部 11 个 [scaffolding v0.1](umr_path_alpha_scaffolding.md) §5 的 sub-gap **维持 [UNKNOWN]**
++
++### -1.2 这份文档**做**什么
++
++- ✅ 把 path α 三 lemma 的 **statement target** 用 Cui 2019 Eq. (1) Hilbert 空间框架 + Pirandola 2019 SI Note 1 trusted-relay 协议类**精确表述**
++- ✅ 标注每个 sub-gap 在新框架下的**精确位置**（哪个步骤需要补什么）
++- ✅ 标识可作 C1 验证 entry point 的**具体公式**
++
++### -1.3 与 path α v0.3 banner 的对应
++
++[path α v0.3](umr_path_alpha_three_lemma_v0_2.md) banner 显示：
++- ✅ user-approved direction（[PHASE_STATUS §4.5](../PHASE_STATUS.md)）
++- ❌ 不等价 C3 PASS（dev-reviewer round 1/2 REJECTED 留痕）
++
++本文档**不**改变上述状态。本文档是 user-approved direction 下的**进一步 scaffolding**，需要 user/cross-family AI/non-AI tool 验证后才能升级。
++
++---
++
++## §1 Anchor Protocol：Cui-Yin-Wang-Chen-Wang-Guo-Han 2019
++
++**选 Cui 2019 作 anchor 的理由**：
++1. Page 2 Step 2.a **直接声明** untrusted measurement device controlled by Eve — 这就是 path α 想 bound 的 umr Eve
++2. Eq. (1) **形式化整个 Hilbert 空间**结构（Alice ⊗ Bob ⊗ Eve ancilla ⊗ Message）
++3. Section III + Appendix A 给出**完整安全证明** against general collective attack
++4. Page 3 通过 de Finetti / postselection reduction **延伸到 asymptotic coherent attack**
++
++**备选 anchor**：[Wang 2018 SNS](../literature/pdfs/WangYuHu-2018-SendingOrNotSending.pdf)（"Charlie possibly dishonest"）或 [Ma 2018 PM-QKD](../literature/pdfs/MaZengZhou-2018-PhaseMatchingQKD.pdf)（"untrusted relay held by Eve"）。
++
++**禁用 anchor**：Lucamarini 2018 原版（自己承认 + Wang 2018 给反例 + Cui 2019 引 Tamaki 等 2018 重证）。
++
++---
++
++## §2 Notation & Formal Setup
++
++记号沿用 Cui 2019 Eq. (1) + Pirandola 2019 SI Note 1。
++
++### 2.1 Hilbert space (来自 Cui 2019 Eq. (1))
++
++- $\mathcal{H}_A$：Alice 输出 Fock space (光子数 base $|n\rangle_{A-out}$)
++- $\mathcal{H}_B$：Bob 输出 Fock space (光子数 base $|m\rangle_{B-out}$)
++- $\mathcal{H}_C$：Charlie's measurement device 局部 Hilbert space
++- $\mathcal{H}_E$：Eve ancilla
++- $\mathcal{H}_M$：Charlie 公开宣告的 classical message register（含 $|0\rangle_M, |1\rangle_M, |L\rangle_M, |R\rangle_M$ 等态）
++
++### 2.2 UMR 协议 $\Pi$ 的形式化（对应 Cui 2019 Eq. (1)）
++
++UMR 协议下 Charlie 执行的操作是**任意 unitary** $\hat{U}$（由 Eve 选择）后接 measurement：
++
++$$\hat{U}^{\Pi_{umr}}|n\rangle_{A-out}|m\rangle_{B-out}|E_0\rangle_{Ea}|0\rangle_M = \sqrt{Y_{n,m}}|\gamma_{n,m}\rangle_E|1\rangle_M + \sqrt{1-Y_{n,m}}|other\rangle_E|0\rangle_M$$
++
++**$\hat{U}$ 选择 Eve 控制** —— 这就是 umr。
++
++### 2.3 Trusted-Relay 协议 $\Pi_{tr}$ 的形式化（对应 Pirandola 2019 SI Note 1）
++
++Pirandola SI Note 1 page 15 trusted-relay 协议类定义：
++> "adaptive LOs performed by all points of the network on their local registers, which are assisted by unlimited two-way CC involving the entire network"
++
++这意味着 Charlie 这个 trusted node 执行**协议规定的固定** local quantum operation $\hat{U}^{spec}$ + classical broadcast。
++
++**Path α 的 embedding 构造**：取 Cui 2019 protocol-specified honest Charlie 操作（即 Cui 2019 Section II Step 3 描述的 honest single-photon interference detection + announcement）作 $\hat{U}^{spec}$；声明 $\Pi_{tr}$ 中 Charlie 执行 $\hat{U}^{spec}$（不再被 Eve 控制）。
++
++---
++
++## §3 Lemma A — Protocol Embedding [DRAFT statement-stub]
++
++### 3.1 Statement target
++
++设 $\Pi$ 是 Cui 2019 simplified TFQKD 协议（in umr setting，Charlie 由 Eve 控制）。定义 $\iota(\Pi) := \Pi_{tr}$ 如下：
++- (a) Alice 与 Bob 的 state preparation 和 classical post-processing 操作**与 $\Pi$ 完全相同**
++- (b) Charlie 执行 Cui 2019 Section II Step 3 描述的 honest measurement + announcement (即 $\hat{U}^{spec}$ 而非 Eve-chosen $\hat{U}$)
++- (c) 声明 $\Pi_{tr}$ 中 Charlie 是 trusted-network node，符合 Pirandola SI Note 1 的"adaptive LOs by all points"协议类
++
++**Statement target**：$\iota(\Pi) = \Pi_{tr}$ 是 Pirandola 2019 SI Note 1 (page 15) 定义的 trusted-relay 协议类的合法成员。
++
++### 3.2 Sub-gap reduction（继承 [scaffolding v0.1](umr_path_alpha_scaffolding.md) §5）
++
++| Sub-gap | 在 §3.1 statement 中的位置 | 闭合需要 |
++|---|---|---|
++| **L1.G1** $\mathcal{A}_{umr}$ vs $\mathcal{A}_{tr}$ Hilbert 空间对齐 | $\Pi$ 与 $\Pi_{tr}$ 共享 $\mathcal{H}_A \otimes \mathcal{H}_B \otimes \mathcal{H}_C \otimes \mathcal{H}_E \otimes \mathcal{H}_M$；Eve 在 $\Pi$ 控 $\mathcal{H}_C \otimes \mathcal{H}_E$，在 $\Pi_{tr}$ 仅控 $\mathcal{H}_E$ | user 形式化"同一 Hilbert space，不同 Eve access 子集"声明 |
++| **L1.G2** embedding $\iota$ 具体构造 | §3.1 (a)/(b)/(c) 三条声明 | user 验证 (b) Cui 2019 honest Charlie operation $\hat{U}^{spec}$ 是 well-defined CPTP / measurement |
++| **L1.G3** Stinespring gauge invariance | $\hat{U}^{spec}$ 的 Stinespring dilation 选择 | 标准 quantum information argument |
++| **L1.G4** Output state equivalence metric | trace distance / fidelity criterion | 标准（Pirandola Eq. 36 + KW §20.1.17 已支持） |
++
++**所有 4 个 L1 gap 维持 [UNKNOWN]**。**不**做 closure。
++
++### 3.3 关键验证点（user 直读 Pirandola SI Note 1 + Cui 2019 时核对）
++
++- **核对 1**：Cui 2019 Step 3 描述的 Charlie operation（single-photon interference + classical announcement）是否符合 Pirandola "local quantum operation + classical broadcast"
++- **核对 2**：Pirandola SI Note 1 "adaptive LOs by all points" 是否覆盖 Charlie 的 measurement + 经典 broadcast (vs 仅 unitary + 经典 communication)
++- **核对 3**：$\Pi_{tr}$ 的 channel definitions $\mathcal{E}_{A-C}, \mathcal{E}_{C-B}$ 是否符合 Pirandola SI Note 1 "memoryless quantum channels along edges"
++
++---
++
++## §4 Lemma B — Security Reduction [DRAFT statement-stub]
++
++### 4.1 Statement target
++
++设 $\Pi$ 是 Cui 2019 protocol，已证（per Cui 2019 Section III + Appendix A）对 Cui Eq. (1) 形式 Eve 是 $\varepsilon$-secure。设 $\Pi_{tr} = \iota(\Pi)$。则 $\Pi_{tr}$ 在 trusted-relay 模型下对 Pirandola SI Note 1 / KW §20.1 形式 Eve 也是 $\varepsilon$-secure。
++
++### 4.2 Eve set 关系（继承 path δ §1.4 / α.G2.E）
++
++记：
++- $\mathbb{E}_{Cui}$ := Cui 2019 Eq. (1) Eve 集合 = arbitrary unitary on $\mathcal{H}_A \otimes \mathcal{H}_B \otimes \mathcal{H}_C \otimes \mathcal{H}_E$ + measurement on $\mathcal{H}_M$
++- $\mathbb{E}_{tr}$ := Pirandola/KW §20.1 trusted-relay Eve = isometric extension on $\mathcal{H}_E$ only + classical access to $\mathcal{H}_M$
++
++**Statement target B.a**：$\mathbb{E}_{tr} \subseteq \mathbb{E}_{Cui}$（trusted Eve 是 umr Eve 的 strict subset）
++
++**Statement target B.b**：trace distance contraction: $\|\rho^{\Pi_{tr}}_{ABE_{tr}} - \overline{\Phi}_{AB} \otimes \sigma_{E_{tr}}\|_1 \leq \|\rho^{\Pi}_{ABE_{Cui}} - \overline{\Phi}_{AB} \otimes \sigma_{E_{Cui}}\|_1$（partial trace contraction）
++
++### 4.3 Sub-gap reduction
++
++| Sub-gap | §4.2 中的位置 | 闭合需要 |
++|---|---|---|
++| **L2.G1** rate-direction sign | $\mathbb{E}_{tr} \subseteq \mathbb{E}_{Cui}$ → $R^{\Pi_{tr}}_{tr} \geq R^{\Pi}_{Cui}$ | user 显式核对方向（避免 v1 retraction sign-flip trap） |
++| **L2.G2** ε-composable 三分量 | 是 $\Pi$ 整体 ε security 还是 secret/correct/complete 分别 | Portmann-Renner 2022 standard |
++| **L2.G3** Eve set across spaces | §4.2 B.a 的 ⊆ 关系 | user 显式声明：trusted-relay Eve 仅访问 $\mathcal{H}_E$，**不**触 $\mathcal{H}_C$ |
++| **L2.G4** non-LOCC joint attack | Cui Eq. (1) 已是 most general collective + asymptotic coherent (page 3) | Cui 2019 已 cover；finite-key 留待后续 |
++
++**所有 4 个 L2 gap 维持 [UNKNOWN]**。L2.G3 由 Cui 2019 Eq. (1) 框架显著简化（umr Eve 与 trusted-relay Eve 在同一 Hilbert space，仅 access 子集不同）。
++
++### 4.4 关键验证点
++
++- **核对 4**：Cui 2019 Section III 安全 statement 是否 ε-composable（vs ε on fidelity only）
++- **核对 5**：Curras-Azuma-Lo 2018 [arXiv:1807.07667] 的 entanglement-distillation-based proof 是否给 Lemma B partial trace argument 直接 citation（**待 user 补 PDF**）
++- **核对 6**：KW §20.2 SKA ↔ private-state distillation purification trick 在 Cui 2019 Eve 模型下是否直接适用
++
++---
++
++## §5 Lemma C — Rate Definition Alignment [DRAFT statement-stub]
++
++### 5.1 Statement target
++
++设 $R_{Cui}(\Pi)$ = Cui 2019 Eq. (3) 给出的 secret key rate，$R_{Pirandola}(\Pi_{tr})$ = Pirandola 2019 SI Note 1 trusted-chain capacity rate。则：
++
++**Statement target C**：在 channel use 计数对齐 + 同 ε-secure criterion 下，$R_{Cui}(\Pi) \leq R_{Pirandola}(\Pi_{tr})$
++
++### 5.2 Sub-gap reduction
++
++| Sub-gap | §5.1 中的位置 | 闭合需要 |
++|---|---|---|
++| **L3.G1** LOPC syntax 跨 topology | Cui Step 3 announcement vs Pirandola "two-way CC" | user 显式 reconcile（KW §20.1.12 LOPC channel 公式是 baseline） |
++| **L3.G2** Key length cross-topology | Cui Eq. (3) Devetak-Winter rate vs Pirandola Eq. 8 ε-close to private state | Portmann-Renner 2022 standard |
++| **L3.G3** Pirandola Eq. 11 适用 in $\iota(\Pi)$ | $\Pi_{tr}$ 是 trusted-relay 协议 → Pirandola Eq. 11 直接 apply | 取决于 L1.G2 (Lemma A 合法性) |
++
++**所有 3 个 L3 gap 维持 [UNKNOWN]**。
++
++### 5.3 关键验证点
++
++- **核对 7**：Cui Eq. (3) channel use 计数（"per trial"）是否对齐 Pirandola "n channel uses"
++- **核对 8**：Cui 安全 ε（implicit in Devetak-Winter formula）与 Pirandola ε-close to private state 是否等价
++
++---
++
++## §6 Combined Chain — **CONDITIONAL** [SYN]
++
++**严格条件句**（per v0.2 round 1 trap fix）：
++
++**If** all 11 sub-gaps (L1.G1, L1.G2, L1.G3, L1.G4, L2.G1, L2.G2, L2.G3, L2.G4, L3.G1, L3.G2, L3.G3) are independently established **then**:
++
++$$\underbrace{R_{Cui}(\Pi)}_{\text{TF-QKD secret key rate}} \stackrel{\text{Lemma A+B+C}}{\leq} \underbrace{R_{Pirandola}(\Pi_{tr})}_{\text{trusted-chain rate}} \stackrel{\text{Pirandola 2019 Eq. 11 [THM]}}{\leq} \underbrace{-\log_2(1-\sqrt{\eta_{AB}})}_{\text{single-repeater bound}}$$
++
++**Status**：[SYN, conditional on 11 OPEN gaps]
++**Strict scope**：在 Cui 2019 anchor 协议下，bosonic-asymptotic 区间，asymptotic（finite-key 不在 scope）
++**对外引用资格**：[NONE] until R0.2 (C1 ∧ C2 ∧ C3) 完整流程
++
++---
++
++## §7 验证 entry points 清单（user 直读 PDF 时的具体核对项）
++
++按 §3-§5 的 8 个 "关键验证点"汇总，user 在 paper-level work 时应在以下文献位置对照核对：
++
++| 核对点 | 引用位置（user 直读时核对） |
++|---|---|
++| 1, 2, 3 (Lemma A) | [Pirandola 2019 SI Note 1, page 15](../literature/pdfs/Pirandola-2019-EndToEndCapacities.pdf) + [Cui 2019 Section II Step 3](../literature/pdfs/Cui%20等%20-%202019%20-%20Twin-Field%20Quantum%20Key%20Distribution%20without%20Phase%20.pdf) |
++| 4, 5, 6 (Lemma B) | [Cui 2019 Section III + Appendix A Eq. (A1)-(A7)](../literature/pdfs/Cui%20等%20-%202019%20-%20Twin-Field%20Quantum%20Key%20Distribution%20without%20Phase%20.pdf) + KW Ch 20 §20.2 (purification trick) + Curras-Azuma-Lo 2018 (待补 PDF) |
++| 7, 8 (Lemma C) | [Cui 2019 Eq. (3)-(4)](../literature/pdfs/Cui%20等%20-%202019%20-%20Twin-Field%20Quantum%20Key%20Distribution%20without%20Phase%20.pdf) + Pirandola 2019 SI Note 1 Eq. (91)-(92) + KW Ch 20 §20.1 Eq. (20.1.17)-(20.1.18) |
++
++---
++
++## §7.x 用户验证响应记录（2026-04-26 session）
++
++**Banner**：本节记录 user 对 §7 八个核对点（§3.3 + §4.4 + §5.3）的判断响应。**这是 user judgment**，**不**等价 R0.2 C1(b) 直读 PDF 形式化验证（除非 user 单独显式声明已直读 PDF 并形式化核对）。**所有 11 sub-gaps 维持 [UNKNOWN]**。
++
++### §7.x.1 用户响应汇总（user message 2026-04-26 verbatim）
++
++> "1、是；2、是；3、是；4、是；5、你下载pdf，然后精度找支持的点；6、是；7、这个你再核对一下；8、等价"
++
++| 核对点 | 用户判断 | Claude 后续动作 |
++|---|---|---|
++| 1. Cui Step 3 honest Charlie ⊆ Pirandola "local quantum operation + classical broadcast" | **是** | 记录为 user judgment；待 C1(b) 直读 PDF 二次确认 |
++| 2. Pirandola "adaptive LOs by all points" 覆盖 Charlie measurement + 经典 broadcast | **是** | 同上 |
++| 3. $\Pi_{tr}$ channel definitions 符合 Pirandola "memoryless quantum channels along edges" | **是** | 同上 |
++| 4. Cui Section III 安全 statement ε-composable | **是** | 同上 |
++| 5. Curras-Azuma-Lo 2018 给 Lemma B partial trace argument 直接 citation | **user 委托 Claude 下载 PDF 找支持点** | **§7.x.2 已执行** |
++| 6. KW §20.2 SKA ↔ private-state purification trick 在 Cui Eve 模型下适用 | **是** | 记录为 user judgment；待 C1(b) 二次确认 |
++| 7. Cui Eq. (3) per-trial 与 Pirandola "n channel uses" 对齐 | **user 要求 Claude recheck** | **§7.x.3 已执行** |
++| 8. Cui ε（Devetak-Winter）与 Pirandola ε-close to private state 等价 | **等价** | 记录为 user judgment；待 C1(b) 二次确认 |
++
++**严格 caveat（R0.2 红线维持）**：
++
++- 上述 user 判断在 R0.2 框架下：
++  - **C2（user signature）**：user "是" / "等价" 响应是 user explicit position **+** §-1.3 v0.3 user-approved direction → **C2 已满足**
++  - **C1(b) 候选证据 [USER-CONFIRMED 2026-04-26]**：user 后续显式确认（message: "1、前者"）"是" 判断基于**直读 PDF 原文**（Pirandola SI Note 1 + Cui 2019 + KW Ch 20）。这构成 **C1(b)-level cross-reference verification**（针对 8 个 textual alignment checks 的层面，**不**等价 sub-gap closure-level pen-and-paper formalization）
++  - **C1(a)**：仍待跨家族 AI 双方直读 PDF 完成（启动中 — §7.x.5 Codex 直读）
++  - **C3**：dev-reviewer round 3 待提交（启动中 — §7.x.5）
++- **关键限制**（不可跨越）：
++  - C1(b) cross-reference 层证据**不等价** sub-gap closure pen-and-paper formalization
++  - 11 sub-gaps 各自的 closure 仍需 **独立** pen-and-paper formalization 工作
++  - 任何 sub-gap **不因本节 user 响应闭合** —— [UNKNOWN] 维持
++  - 升级 [SYN] → [COROLLARY] 仍需 (C1 ∧ C2 ∧ C3) 三闸门**同时**通过且**针对每个 sub-gap**独立执行
++
++### §7.x.2 核对点 5：Curty-Azuma-Lo 2018 PDF 直读结果
++
++**PDF**：[Curty-Azuma-Lo-2018-SimpleSecurityTwinField.pdf](../literature/pdfs/Curty-Azuma-Lo-2018-SimpleSecurityTwinField.pdf) (arXiv:1807.07667v2, 2018-12-18, 11 pages)
++
++**Claude 直读 11 页全文** —— 提取与 Lemma B partial trace argument 相关支持点：
++
++**支持点 5.1：Eve 完全控制 node C 的形式化（page 3, "Security proof of Protocol 3"）**
++
++> "without loss of generality, we shall assume that the node C is under the full control of an eavesdropper, Eve. After a QKD run, Alice and Bob can estimate the conditional probability distribution $p_{ZZ}(k_c, k_d|β_A, β_B)$..."
++
++**与 path α 关系**：直接对应 Cui 2019 Eq. (1) 的 untrusted-Charlie 设定。Curty 2018 与 Cui 2019 在 Eve 模型层面**完全一致**。
++
++**支持点 5.2：Virtual entanglement state 框架（page 4, around Eq. (10)）**
++
++> "if Alice and Bob choose the X basis in step (i'') of Protocol 3, Eve cannot distinguish this step from the following fictitious step: Alice (Bob) prepares an optical pulse a (b) and a qubit A (B) in an entangled state $|\psi_X\rangle_{Aa} = (|+\rangle_A|\alpha\rangle_a + |-\rangle_A|-\alpha\rangle_a)/\sqrt{2}$"
++>
++> "By running this fictitious step together with steps (ii)-(iv) in order, Alice and Bob obtain a state $|\chi_{k_c,k_d}\rangle_{Aa'Bb'} := \hat{M}^{ab}_{k_c,k_d}|\psi_X\rangle_{Aa}|\psi_X\rangle_{Bb} / \sqrt{p_{XX}(k_c,k_d)}$"
++
++**与 path α Lemma B 关系**：Curty 2018 用**reduced state after Charlie's announcement** $|\chi_{k_c,k_d}\rangle_{Aa'Bb'}$ 作 phase-error rate 计算基础。这是 Lemma B partial trace argument 的**直接 textual analog**：从 umr Eve 视角的全局 state $\rho^\Pi_{ABCE}$，partial trace 掉 Charlie 的 ancilla，得到 announcement-conditioned reduced state。
++
++**支持点 5.3：Phase-error rate 公式（Eq. 11）**
++
++$$e_{Z,k_c,k_d} = \sum_{i,j=0,1} \|_{AB}\langle jj\| \chi_{k_c,k_d}\rangle_{Aa'Bb'}\|^2$$
++
++**与 path α 关系**：phase-error rate 直接由 announcement-conditioned reduced state 决定，**无需** trust Charlie 的内部 unitary $\hat{U}$ —— 这就是"trace out Eve-controlled $\mathcal{H}_C$"的具体实现。
++
++**支持点 5.4：√η scaling claim（Abstract + Conclusion）**
++
++> Abstract: "the secret key rate of our protocol has a square-root improvement over the point-to-point private capacity"
++>
++> Page 4 right column: "the net transmittance of the signal is thus of order $\sqrt{\eta}$, which leads to a very high key rate for TF-type QKD at long distances"
++
++**与 path α 关系**：Curty 2018 与 Cui 2019 共同支持 "TF-type per-trial rate scales as $\sqrt{\eta}$" 这一结论。
++
++**支持点 5.5：MDI-QKD inheritance 声明（page 5, Conclusion）**
++
++> "this protocol could also be regarded as a phase-encoding MDI-QKD scheme with single-photon interference. Indeed, it inherits the major advantage of standard MDI-QKD, *i.e.*, it is robust against any side channel in the measurement unit."
++
++**与 path α 关系**：直接支持 Lemma A protocol embedding 的合法性 —— 一旦在虚拟 entanglement-distillation picture 下做完安全证明，protocol 是否被 Eve 控制 measurement device **不**影响 phase-error rate 形式（仅影响 announcement statistics 的具体值）。这与 path α "把 umr Eve 嵌入 trusted-relay protocol class" 的结构一致。
++
++**支持点 5.6：与 Koashi 2009 / Azuma's inequality 的 framework alignment（page 5）**
++
++> "(...) is a convex function over probabilities that can be obtained by performing positive operator-valued measure (POVM) measurements on a quantum state realized in a virtual scenario. This is enough [43] to prove the security of Protocol 3 against coherent attacks, thanks to Azuma's inequality [44]."
++
++**与 path α 关系**：Curty 2018 用 Koashi 2009 complementarity-based proof + Azuma's inequality 把 collective attack 推广到 coherent attack。Cui 2019 用 de Finetti / postselection。**两条路径独立**给出 asymptotic coherent security，path α Lemma B 在此选 Cui 2019 anchor 时**无需** Curty 路径的具体技术，但 Curty 路径是**独立旁证**。
++
++**核对点 5 verdict（Claude judgment，需 user / cross-family AI 二次确认）**：
++
++- ✅ Curty 2018 **支持** Lemma B partial trace argument 框架 —— Eq. (10)-(11) 给出 announcement-conditioned reduced state 直接 citation
++- ✅ Curty 2018 **支持** √η scaling 与 MDI-QKD inheritance 声明
++- ⚠️ Curty 2018 **不直接**给"trusted-relay reduction" claim —— 它在 untrusted-Charlie picture 下完成全证明，**未** explicitly 走 path α 想做的 $\Pi \to \iota(\Pi) = \Pi_{tr}$ 嵌入路径
++- ⚠️ 因此 Curty 2018 是 Lemma B 的 **technical foundation citation**，**不**等价 Lemma A protocol embedding 的 closure
++
++**对 sub-gap 状态的影响**：**无**。L2.G3 (Eve set across spaces) 仍 [UNKNOWN]。Curty 2018 的 reduced state 框架是**有用的 foundation**，但 path α 嵌入论证仍需独立 close。
++
++### §7.x.3 核对点 7：Cui Eq. (3) 与 Pirandola "channel use" 对齐 recheck
++
++**user 要求 recheck**。Claude 重读 Cui 2019 page 2 + Pirandola 2019 SI Note 1 page 15：
++
++**Cui 2019 Eq. (3) 计数单位（page 2 verbatim）**：
++
++> "According to Devetak-Winter's bound [24], the secret key rate **per trial** in a code mode is then given by $R = Q_\mu[1 - fh(e_\mu, 1-e_\mu)] - I^u_{AE}$"
++
++**"trial" 定义（Cui page 2, Step 1-3）**：每个 trial = (a) Alice/Bob 各选 code/decoy mode；(b) Alice/Bob 各送一个 pulse 给 Eve；(c) Eve 公开 announce $|1\rangle_M$ (success) 或 $|0\rangle_M$ (failure)，及 success 时 announce $|L\rangle_M$/$|R\rangle_M$。
++
++**所以**：每个 trial 使用 quantum channels 的次数 = 1 次 A→Charlie + 1 次 B→Charlie = 2 次 (但是 in parallel；不是 2 次同一 channel)。
++
++**Pirandola 2019 SI Note 1 chain bound（per [PDF synthesis v0.1 update 1](umr_path_alpha_pdf_synthesis_v0_1.md)）**：
++
++- 对 N+1-channel chain（N=1 即 single-repeater 即 A-C-B）：chain capacity ≤ $-\log_2(1 - \eta_{min})$
++- "Per channel use" 通常指**每次使用 bottleneck link**（worst link）
++- 对称 umr setting：$\eta_{AC} = \eta_{BC} = \sqrt{\eta_{AB}}$，所以 $\eta_{min} = \sqrt{\eta_{AB}}$，chain bound = $-\log_2(1 - \sqrt{\eta_{AB}})$ per use of bottleneck link
++
++**对齐方式（Claude recheck 后表述）**：
++
++每个 Cui trial → **1 次** bottleneck link 使用（A-C 或 B-C，对称下两者等价）。所以：
++
++$$R_{Cui}\text{ (per trial)} \stackrel{\text{每 trial 用 1 次 bottleneck}}{\equiv} R_{Cui}\text{ (per bottleneck-link use)} \stackrel{\text{Pirandola chain bound}}{\leq} -\log_2(1 - \sqrt{\eta_{AB}})$$
++
++**关键技术 caveat（path α v0.3 §6 sub-gap L3.G2 涉及）**：
++
++1. **"per trial" vs "per total quantum channel use"** 的 factor-of-2 区分：
++   - "per total use" 计数下，每 trial = 2 次 quantum channel use（A-C + B-C）
++   - "per trial" = "per bottleneck-link use" 仅在**对称 bottleneck**且**两 link 同步使用**时直接成立
++   - **不对称 case**（$\eta_{AC} \neq \eta_{BC}$）下需重新核对
++2. **Pirandola SI Note 1 的具体定义**：
++   - 用户 verbal 判断"是"对应"对齐"
++   - 但 SI Note 1 是否显式定义"chain rate per channel use" = "per use of any one link in the chain (assumed used in lockstep)" 需 user 直读 PDF Eq. (91)-(92) 二次确认
++   - **不**等价 C1(b)，仍是 [UNKNOWN]
++3. **Devetak-Winter rate 与 capacity rate 的 limiting alignment**：
++   - Cui Eq. (3) 是**asymptotic per-trial rate**（从 Devetak-Winter formula 推）
++   - Pirandola chain bound 是 **n→∞ 极限 capacity**
++   - 这两个 "asymptotic limit" 的具体定义 + 收敛意义对齐需 user / cross-family AI 直读 Pirandola SI Note 1 page 15 公式 (91)-(92) 二次确认
++
++**Cui Fig 1 自洽性（独立旁证）**：
++
++Cui 2019 page 3 Fig 1 caption：
++
++> "the linear key rate bound (blue) [16] and the bound with a single repeater (dotted blue) [27] are also shown in the figure"
++
++Cui 2019 page 3 正文：
++
++> "Note that the slope of the key rate in our protocol is the same as the linear bound with a single repeater [27] when the fiber loss is less than 60 dB"
++
++**含义**：Cui 2019 作者**自己**就在 Fig 1 把自己的 per-trial rate 与 single-repeater bound（即 Pirandola single-repeater chain bound 的 [27] = Pirandola-Laurenza-Ottaviani-Banchi 2017）直接做横坐标-纵坐标比较，**默认**计数单位对齐（"per trial" vs "per channel use" 在 horizontal axis "Loss [-10 log10(η)] Alice-Bob (dB)" 下做直接 visual 比较）。
++
++**这是 path α §3.1 数值 simulation 的依据** —— Cui 自己已在文献中做这一对齐。但 user 直读 + 显式形式化核对**仍有必要**（Cui Fig 1 是 visualization，**不**等价 formal alignment statement）。
++
++**核对点 7 verdict（Claude recheck）**：
++
++- ✅ "per trial = per bottleneck-link use" 对齐**在对称 umr + lockstep 使用前提下成立**
++- ✅ Cui 2019 Fig 1 自身已 implicit 做这一对齐（独立旁证）
++- ⚠️ Pirandola SI Note 1 Eq. (91)-(92) 的"channel use"显式定义**仍需 user 直读**
++- ⚠️ 不对称 case（$\eta_{AC} \neq \eta_{BC}$）的对齐**未在 path α v0.3 scope 内**，留作 future extension
++
++**对 sub-gap 状态的影响**：**无**。L3.G2 (Key length cross-topology) 仍 [UNKNOWN]。但本 recheck 给 user 直读 Pirandola SI Note 1 page 15 时**精确定位**应核对的具体公式（Eq. (91)-(92)）。
++
++### §7.x.4 当前进度小结（2026-04-26 session）
++
++**已完成**：
++- 8/8 核对点有响应（6 user "是" + 1 Claude PDF 直读 + 1 Claude recheck）
++- Curty-Azuma-Lo 2018 PDF 已下载并 11 页全文直读，技术支持点提取
++- Cui Eq. (3) "per trial" 与 Pirandola chain bound "per channel use" 对齐已重做
++
++**未变更**：
++- 11 sub-gaps **全部维持 [UNKNOWN]**
++- path α v0.3 banner（[USER-APPROVED PRIORITY 2026-04-25, NOT C3-passed]）维持
++- FINDINGS / PHASE_STATUS / RETRACTION **未**编辑
++- 没有 [SYN] → [COROLLARY] 升级
++- dev-reviewer round 3 **未**自主提交
++
++**待 user 决定**：
++1. user "是" 响应是否升级为 C1(b) 候选证据？
++   - 若 user 已直读 Pirandola SI Note 1 page 15 + Cui 2019 Section II/III 原文 → 可标 C1(b) PASS（核对点 1-4, 6, 8）
++   - 若 user 仅基于 Claude summary → 维持 user judgment 状态，C1(b) 待补
++2. 是否提交 dev-reviewer round 3（基于 v0.3 + 本节 §7.x 增量）测 C3?
++3. 是否启动 cross-family AI direct PDF 验证测 C1(a)（Codex 直读 Cui 2019 + Pirandola SI + Curty 2018）?
++
++---
++
++## §8 升级路径（R0.2 三闸门）
++
++### 8.1 升级 v0.1 → [SYN] v0.2 / [COROLLARY] candidate
++
++**C1 (independent validation)**：
++- (a) 跨家族 AI（Claude + GPT/Codex 双方直读 Cui 2019 + Pirandola SI Note 1）
++- (b) user 本人纸笔形式化 Lemma A/B/C
++- (c) Coq/Lean 形式化（复杂但可行）
++
++**C2 (user 签字)**：user 对 §3-§5 三 lemma 表述 + §6 conditional chain + §7 验证点**逐项**确认
++
++**C3 (dev-reviewer)**：本文档 v0.1 → 提交 dev-reviewer round 3（基于 v0.3 cleanup 后的最新基线）
++
++### 8.2 不做的事
++
++- ❌ 不预设短期时间表（per v0.2 round 1 trap fix）
++- ❌ 不主张"path α 比 γ 更稳"
++- ❌ 不在外稿 / 论文引用本文档为 [COROLLARY]
++
++---
++
++## §9 Changelog
++
++- **v0.1** (2026-04-25)：首版。基于 [PDF synthesis v0.1 update 3](umr_path_alpha_pdf_synthesis_v0_1.md) 的 Cui 2019 直读，把三 lemma statement target 用 Cui Eq. (1) Hilbert 空间 + Pirandola SI Note 1 协议类**精确表述**。所有 11 sub-gap [UNKNOWN] 维持。8 个 user 直读核对点列出。**未**做任何 lemma proof / closure。
++- **v0.1 + §7.x append** (2026-04-26)：附加 §7.x 用户验证响应记录（user message 2026-04-26）。核对点 1-4/6/8 user "是"/等价（标为 user judgment，**不**等价 C1(b)）。核对点 5 Claude 直读 [Curty-Azuma-Lo 2018 PDF](../literature/pdfs/Curty-Azuma-Lo-2018-SimpleSecurityTwinField.pdf) 11 页全文，提取 6 项支持点（Eve 控制 node C / virtual entanglement state / phase-error reduced state Eq. (11) / √η scaling / MDI inheritance / Koashi-Azuma 路径）。核对点 7 Claude recheck Cui Eq. (3) per-trial 与 Pirandola chain bound 对齐（对称 umr + lockstep 前提下成立；Cui Fig 1 自身已隐式做对齐；不对称 case 留 future extension）。**11 sub-gaps 全部维持 [UNKNOWN]，无升级，无 closure，无 FINDINGS/PHASE_STATUS 编辑**。
++
++---
++
++*END OF v0.1.* 11 sub-gaps OPEN. R0.1 不降级 / R0.2 不越权 / R0.3 [SYN] 维持. Cui 2019 anchor 选定. user-directive 2026-04-25 priority 维持. 任何升级仍需 R0.2 三闸门.
+# Path α Lemma Skeletons (v0.1 — Statement-Stub Only, Anchor: Cui 2019)
+
+**版本**：v0.1 [SCAFFOLDING — statement-only stubs, NO proof drafts]
+**日期**：2026-04-25
+**前身 / 关系**：
+- 派生自 [path α v0.3 [USER-APPROVED PRIORITY]](umr_path_alpha_three_lemma_v0_3.md)
+- 基于 [PDF synthesis v0.1](umr_path_alpha_pdf_synthesis_v0_1.md) §6.6 + v0.1 update 3 (Cui 2019 直读)
+- 引用 [path α scaffolding v0.1](umr_path_alpha_scaffolding.md) 11-gap inventory
+
+**严谨性**：
+- ✅ 全文 [SYN] / [DRAFT statement-stub]
+- ❌ **不**含任何 lemma proof / Justification sketch
+- ❌ **不**升级任何 sub-gap 状态
+- ❌ Claude single-AI 直读 ≠ C1 (a)；本文档**不**构成 R0.2 升级证据
+
+---
+
+## §-1 R0.1 / R0.2 显式状态声明
+
+### -1.1 这份文档**不**做什么
+
+- ❌ **不**证明 Lemma A / B / C 任一
+- ❌ **不**含 "Justification sketch" / "non-proof argument" 等中间态措辞（v0.2 round 1 trap 教训）
+- ❌ **不**升级 [SYN] 到 [COROLLARY]
+- ❌ **不**主张 sub-gap 已闭合 —— 全部 11 个 [scaffolding v0.1](umr_path_alpha_scaffolding.md) §5 的 sub-gap **维持 [UNKNOWN]**
+
+### -1.2 这份文档**做**什么
+
+- ✅ 把 path α 三 lemma 的 **statement target** 用 Cui 2019 Eq. (1) Hilbert 空间框架 + Pirandola 2019 SI Note 1 trusted-relay 协议类**精确表述**
+- ✅ 标注每个 sub-gap 在新框架下的**精确位置**（哪个步骤需要补什么）
+- ✅ 标识可作 C1 验证 entry point 的**具体公式**
+
+### -1.3 与 path α v0.3 banner 的对应
+
+[path α v0.3](umr_path_alpha_three_lemma_v0_2.md) banner 显示：
+- ✅ user-approved direction（[PHASE_STATUS §4.5](../PHASE_STATUS.md)）
+- ❌ 不等价 C3 PASS（dev-reviewer round 1/2 REJECTED 留痕）
+
+本文档**不**改变上述状态。本文档是 user-approved direction 下的**进一步 scaffolding**，需要 user/cross-family AI/non-AI tool 验证后才能升级。
+
+---
+
+## §1 Anchor Protocol：Cui-Yin-Wang-Chen-Wang-Guo-Han 2019
+
+**选 Cui 2019 作 anchor 的理由**：
+1. Page 2 Step 2.a **直接声明** untrusted measurement device controlled by Eve — 这就是 path α 想 bound 的 umr Eve
+2. Eq. (1) **形式化整个 Hilbert 空间**结构（Alice ⊗ Bob ⊗ Eve ancilla ⊗ Message）
+3. Section III + Appendix A 给出**完整安全证明** against general collective attack
+4. Page 3 通过 de Finetti / postselection reduction **延伸到 asymptotic coherent attack**
+
+**备选 anchor**：[Wang 2018 SNS](../literature/pdfs/WangYuHu-2018-SendingOrNotSending.pdf)（"Charlie possibly dishonest"）或 [Ma 2018 PM-QKD](../literature/pdfs/MaZengZhou-2018-PhaseMatchingQKD.pdf)（"untrusted relay held by Eve"）。
+
+**禁用 anchor**：Lucamarini 2018 原版（自己承认 + Wang 2018 给反例 + Cui 2019 引 Tamaki 等 2018 重证）。
+
+---
+
+## §2 Notation & Formal Setup
+
+记号沿用 Cui 2019 Eq. (1) + Pirandola 2019 SI Note 1。
+
+### 2.1 Hilbert space (来自 Cui 2019 Eq. (1))
+
+- $\mathcal{H}_A$：Alice 输出 Fock space (光子数 base $|n\rangle_{A-out}$)
+- $\mathcal{H}_B$：Bob 输出 Fock space (光子数 base $|m\rangle_{B-out}$)
+- $\mathcal{H}_C$：Charlie's measurement device 局部 Hilbert space
+- $\mathcal{H}_E$：Eve ancilla
+- $\mathcal{H}_M$：Charlie 公开宣告的 classical message register（含 $|0\rangle_M, |1\rangle_M, |L\rangle_M, |R\rangle_M$ 等态）
+
+### 2.2 UMR 协议 $\Pi$ 的形式化（对应 Cui 2019 Eq. (1)）
+
+UMR 协议下 Charlie 执行的操作是**任意 unitary** $\hat{U}$（由 Eve 选择）后接 measurement：
+
+$$\hat{U}^{\Pi_{umr}}|n\rangle_{A-out}|m\rangle_{B-out}|E_0\rangle_{Ea}|0\rangle_M = \sqrt{Y_{n,m}}|\gamma_{n,m}\rangle_E|1\rangle_M + \sqrt{1-Y_{n,m}}|other\rangle_E|0\rangle_M$$
+
+**$\hat{U}$ 选择 Eve 控制** —— 这就是 umr。
+
+### 2.3 Trusted-Relay 协议 $\Pi_{tr}$ 的形式化（对应 Pirandola 2019 SI Note 1）
+
+Pirandola SI Note 1 page 15 trusted-relay 协议类定义：
+> "adaptive LOs performed by all points of the network on their local registers, which are assisted by unlimited two-way CC involving the entire network"
+
+这意味着 Charlie 这个 trusted node 执行**协议规定的固定** local quantum operation $\hat{U}^{spec}$ + classical broadcast。
+
+**Path α 的 embedding 构造**：取 Cui 2019 protocol-specified honest Charlie 操作（即 Cui 2019 Section II Step 3 描述的 honest single-photon interference detection + announcement）作 $\hat{U}^{spec}$；声明 $\Pi_{tr}$ 中 Charlie 执行 $\hat{U}^{spec}$（不再被 Eve 控制）。
+
+---
+
+## §3 Lemma A — Protocol Embedding [DRAFT statement-stub]
+
+### 3.1 Statement target
+
+设 $\Pi$ 是 Cui 2019 simplified TFQKD 协议（in umr setting，Charlie 由 Eve 控制）。定义 $\iota(\Pi) := \Pi_{tr}$ 如下：
+- (a) Alice 与 Bob 的 state preparation 和 classical post-processing 操作**与 $\Pi$ 完全相同**
+- (b) Charlie 执行 Cui 2019 Section II Step 3 描述的 honest measurement + announcement (即 $\hat{U}^{spec}$ 而非 Eve-chosen $\hat{U}$)
+- (c) 声明 $\Pi_{tr}$ 中 Charlie 是 trusted-network node，符合 Pirandola SI Note 1 的"adaptive LOs by all points"协议类
+
+**Statement target**：$\iota(\Pi) = \Pi_{tr}$ 是 Pirandola 2019 SI Note 1 (page 15) 定义的 trusted-relay 协议类的合法成员。
+
+### 3.2 Sub-gap reduction（继承 [scaffolding v0.1](umr_path_alpha_scaffolding.md) §5）
+
+| Sub-gap | 在 §3.1 statement 中的位置 | 闭合需要 |
+|---|---|---|
+| **L1.G1** $\mathcal{A}_{umr}$ vs $\mathcal{A}_{tr}$ Hilbert 空间对齐 | $\Pi$ 与 $\Pi_{tr}$ 共享 $\mathcal{H}_A \otimes \mathcal{H}_B \otimes \mathcal{H}_C \otimes \mathcal{H}_E \otimes \mathcal{H}_M$；Eve 在 $\Pi$ 控 $\mathcal{H}_C \otimes \mathcal{H}_E$，在 $\Pi_{tr}$ 仅控 $\mathcal{H}_E$ | user 形式化"同一 Hilbert space，不同 Eve access 子集"声明 |
+| **L1.G2** embedding $\iota$ 具体构造 | §3.1 (a)/(b)/(c) 三条声明 | user 验证 (b) Cui 2019 honest Charlie operation $\hat{U}^{spec}$ 是 well-defined CPTP / measurement |
+| **L1.G3** Stinespring gauge invariance | $\hat{U}^{spec}$ 的 Stinespring dilation 选择 | 标准 quantum information argument |
+| **L1.G4** Output state equivalence metric | trace distance / fidelity criterion | 标准（Pirandola Eq. 36 + KW §20.1.17 已支持） |
+
+**所有 4 个 L1 gap 维持 [UNKNOWN]**。**不**做 closure。
+
+### 3.3 关键验证点（user 直读 Pirandola SI Note 1 + Cui 2019 时核对）
+
+- **核对 1**：Cui 2019 Step 3 描述的 Charlie operation（single-photon interference + classical announcement）是否符合 Pirandola "local quantum operation + classical broadcast"
+- **核对 2**：Pirandola SI Note 1 "adaptive LOs by all points" 是否覆盖 Charlie 的 measurement + 经典 broadcast (vs 仅 unitary + 经典 communication)
+- **核对 3**：$\Pi_{tr}$ 的 channel definitions $\mathcal{E}_{A-C}, \mathcal{E}_{C-B}$ 是否符合 Pirandola SI Note 1 "memoryless quantum channels along edges"
+
+---
+
+## §4 Lemma B — Security Reduction [DRAFT statement-stub]
+
+### 4.1 Statement target
+
+设 $\Pi$ 是 Cui 2019 protocol，已证（per Cui 2019 Section III + Appendix A）对 Cui Eq. (1) 形式 Eve 是 $\varepsilon$-secure。设 $\Pi_{tr} = \iota(\Pi)$。则 $\Pi_{tr}$ 在 trusted-relay 模型下对 Pirandola SI Note 1 / KW §20.1 形式 Eve 也是 $\varepsilon$-secure。
+
+### 4.2 Eve set 关系（继承 path δ §1.4 / α.G2.E）
+
+记：
+- $\mathbb{E}_{Cui}$ := Cui 2019 Eq. (1) Eve 集合 = arbitrary unitary on $\mathcal{H}_A \otimes \mathcal{H}_B \otimes \mathcal{H}_C \otimes \mathcal{H}_E$ + measurement on $\mathcal{H}_M$
+- $\mathbb{E}_{tr}$ := Pirandola/KW §20.1 trusted-relay Eve = isometric extension on $\mathcal{H}_E$ only + classical access to $\mathcal{H}_M$
+
+**Statement target B.a**：$\mathbb{E}_{tr} \subseteq \mathbb{E}_{Cui}$（trusted Eve 是 umr Eve 的 strict subset）
+
+**Statement target B.b**：trace distance contraction: $\|\rho^{\Pi_{tr}}_{ABE_{tr}} - \overline{\Phi}_{AB} \otimes \sigma_{E_{tr}}\|_1 \leq \|\rho^{\Pi}_{ABE_{Cui}} - \overline{\Phi}_{AB} \otimes \sigma_{E_{Cui}}\|_1$（partial trace contraction）
+
+### 4.3 Sub-gap reduction
+
+| Sub-gap | §4.2 中的位置 | 闭合需要 |
+|---|---|---|
+| **L2.G1** rate-direction sign | $\mathbb{E}_{tr} \subseteq \mathbb{E}_{Cui}$ → $R^{\Pi_{tr}}_{tr} \geq R^{\Pi}_{Cui}$ | user 显式核对方向（避免 v1 retraction sign-flip trap） |
+| **L2.G2** ε-composable 三分量 | 是 $\Pi$ 整体 ε security 还是 secret/correct/complete 分别 | Portmann-Renner 2022 standard |
+| **L2.G3** Eve set across spaces | §4.2 B.a 的 ⊆ 关系 | user 显式声明：trusted-relay Eve 仅访问 $\mathcal{H}_E$，**不**触 $\mathcal{H}_C$ |
+| **L2.G4** non-LOCC joint attack | Cui Eq. (1) 已是 most general collective + asymptotic coherent (page 3) | Cui 2019 已 cover；finite-key 留待后续 |
+
+**所有 4 个 L2 gap 维持 [UNKNOWN]**。L2.G3 由 Cui 2019 Eq. (1) 框架显著简化（umr Eve 与 trusted-relay Eve 在同一 Hilbert space，仅 access 子集不同）。
+
+### 4.4 关键验证点
+
+- **核对 4**：Cui 2019 Section III 安全 statement 是否 ε-composable（vs ε on fidelity only）
+- **核对 5**：Curras-Azuma-Lo 2018 [arXiv:1807.07667] 的 entanglement-distillation-based proof 是否给 Lemma B partial trace argument 直接 citation（**待 user 补 PDF**）
+- **核对 6**：KW §20.2 SKA ↔ private-state distillation purification trick 在 Cui 2019 Eve 模型下是否直接适用
+
+---
+
+## §5 Lemma C — Rate Definition Alignment [DRAFT statement-stub]
+
+### 5.1 Statement target
+
+设 $R_{Cui}(\Pi)$ = Cui 2019 Eq. (3) 给出的 secret key rate，$R_{Pirandola}(\Pi_{tr})$ = Pirandola 2019 SI Note 1 trusted-chain capacity rate。则：
+
+**Statement target C**：在 channel use 计数对齐 + 同 ε-secure criterion 下，$R_{Cui}(\Pi) \leq R_{Pirandola}(\Pi_{tr})$
+
+### 5.2 Sub-gap reduction
+
+| Sub-gap | §5.1 中的位置 | 闭合需要 |
+|---|---|---|
+| **L3.G1** LOPC syntax 跨 topology | Cui Step 3 announcement vs Pirandola "two-way CC" | user 显式 reconcile（KW §20.1.12 LOPC channel 公式是 baseline） |
+| **L3.G2** Key length cross-topology | Cui Eq. (3) Devetak-Winter rate vs Pirandola Eq. 8 ε-close to private state | Portmann-Renner 2022 standard |
+| **L3.G3** Pirandola Eq. 11 适用 in $\iota(\Pi)$ | $\Pi_{tr}$ 是 trusted-relay 协议 → Pirandola Eq. 11 直接 apply | 取决于 L1.G2 (Lemma A 合法性) |
+
+**所有 3 个 L3 gap 维持 [UNKNOWN]**。
+
+### 5.3 关键验证点
+
+- **核对 7**：Cui Eq. (3) channel use 计数（"per trial"）是否对齐 Pirandola "n channel uses"
+- **核对 8**：Cui 安全 ε（implicit in Devetak-Winter formula）与 Pirandola ε-close to private state 是否等价
+
+---
+
+## §6 Combined Chain — **CONDITIONAL** [SYN]
+
+**严格条件句**（per v0.2 round 1 trap fix）：
+
+**If** all 11 sub-gaps (L1.G1, L1.G2, L1.G3, L1.G4, L2.G1, L2.G2, L2.G3, L2.G4, L3.G1, L3.G2, L3.G3) are independently established **then**:
+
+$$\underbrace{R_{Cui}(\Pi)}_{\text{TF-QKD secret key rate}} \stackrel{\text{Lemma A+B+C}}{\leq} \underbrace{R_{Pirandola}(\Pi_{tr})}_{\text{trusted-chain rate}} \stackrel{\text{Pirandola 2019 Eq. 11 [THM]}}{\leq} \underbrace{-\log_2(1-\sqrt{\eta_{AB}})}_{\text{single-repeater bound}}$$
+
+**Status**：[SYN, conditional on 11 OPEN gaps]
+**Strict scope**：在 Cui 2019 anchor 协议下，bosonic-asymptotic 区间，asymptotic（finite-key 不在 scope）
+**对外引用资格**：[NONE] until R0.2 (C1 ∧ C2 ∧ C3) 完整流程
+
+---
+
+## §7 验证 entry points 清单（user 直读 PDF 时的具体核对项）
+
+按 §3-§5 的 8 个 "关键验证点"汇总，user 在 paper-level work 时应在以下文献位置对照核对：
+
+| 核对点 | 引用位置（user 直读时核对） |
+|---|---|
+| 1, 2, 3 (Lemma A) | [Pirandola 2019 SI Note 1, page 15](../literature/pdfs/Pirandola-2019-EndToEndCapacities.pdf) + [Cui 2019 Section II Step 3](../literature/pdfs/Cui%20等%20-%202019%20-%20Twin-Field%20Quantum%20Key%20Distribution%20without%20Phase%20.pdf) |
+| 4, 5, 6 (Lemma B) | [Cui 2019 Section III + Appendix A Eq. (A1)-(A7)](../literature/pdfs/Cui%20等%20-%202019%20-%20Twin-Field%20Quantum%20Key%20Distribution%20without%20Phase%20.pdf) + KW Ch 20 §20.2 (purification trick) + Curras-Azuma-Lo 2018 (待补 PDF) |
+| 7, 8 (Lemma C) | [Cui 2019 Eq. (3)-(4)](../literature/pdfs/Cui%20等%20-%202019%20-%20Twin-Field%20Quantum%20Key%20Distribution%20without%20Phase%20.pdf) + Pirandola 2019 SI Note 1 Eq. (91)-(92) + KW Ch 20 §20.1 Eq. (20.1.17)-(20.1.18) |
+
+---
+
+## §7.x 用户验证响应记录（2026-04-26 session）
+
+**Banner**：本节记录 user 对 §7 八个核对点（§3.3 + §4.4 + §5.3）的判断响应。**这是 user judgment**，**不**等价 R0.2 C1(b) 直读 PDF 形式化验证（除非 user 单独显式声明已直读 PDF 并形式化核对）。**所有 11 sub-gaps 维持 [UNKNOWN]**。
+
+### §7.x.1 用户响应汇总（user message 2026-04-26 verbatim）
+
+> "1、是；2、是；3、是；4、是；5、你下载pdf，然后精度找支持的点；6、是；7、这个你再核对一下；8、等价"
+
+| 核对点 | 用户判断 | Claude 后续动作 |
+|---|---|---|
+| 1. Cui Step 3 honest Charlie ⊆ Pirandola "local quantum operation + classical broadcast" | **是** | 记录为 user judgment；待 C1(b) 直读 PDF 二次确认 |
+| 2. Pirandola "adaptive LOs by all points" 覆盖 Charlie measurement + 经典 broadcast | **是** | 同上 |
+| 3. $\Pi_{tr}$ channel definitions 符合 Pirandola "memoryless quantum channels along edges" | **是** | 同上 |
+| 4. Cui Section III 安全 statement ε-composable | **是** | 同上 |
+| 5. Curras-Azuma-Lo 2018 给 Lemma B partial trace argument 直接 citation | **user 委托 Claude 下载 PDF 找支持点** | **§7.x.2 已执行** |
+| 6. KW §20.2 SKA ↔ private-state purification trick 在 Cui Eve 模型下适用 | **是** | 记录为 user judgment；待 C1(b) 二次确认 |
+| 7. Cui Eq. (3) per-trial 与 Pirandola "n channel uses" 对齐 | **user 要求 Claude recheck** | **§7.x.3 已执行** |
+| 8. Cui ε（Devetak-Winter）与 Pirandola ε-close to private state 等价 | **等价** | 记录为 user judgment；待 C1(b) 二次确认 |
+
+**严格 caveat（R0.2 红线维持）**：
+
+- 上述 user 判断在 R0.2 框架下：
+  - **C2（user signature）**：user "是" / "等价" 响应是 user explicit position **+** §-1.3 v0.3 user-approved direction → **C2 已满足**
+  - **C1(b) 候选证据 [USER-CONFIRMED 2026-04-26]**：user 后续显式确认（message: "1、前者"）"是" 判断基于**直读 PDF 原文**（Pirandola SI Note 1 + Cui 2019 + KW Ch 20）。这构成 **C1(b)-level cross-reference verification**（针对 8 个 textual alignment checks 的层面，**不**等价 sub-gap closure-level pen-and-paper formalization）
+  - **C1(a)**：仍待跨家族 AI 双方直读 PDF 完成（启动中 — §7.x.5 Codex 直读）
+  - **C3**：dev-reviewer round 3 待提交（启动中 — §7.x.5）
+- **关键限制**（不可跨越）：
+  - C1(b) cross-reference 层证据**不等价** sub-gap closure pen-and-paper formalization
+  - 11 sub-gaps 各自的 closure 仍需 **独立** pen-and-paper formalization 工作
+  - 任何 sub-gap **不因本节 user 响应闭合** —— [UNKNOWN] 维持
+  - 升级 [SYN] → [COROLLARY] 仍需 (C1 ∧ C2 ∧ C3) 三闸门**同时**通过且**针对每个 sub-gap**独立执行
+
+### §7.x.2 核对点 5：Curty-Azuma-Lo 2018 PDF 直读结果
+
+**PDF**：[Curty-Azuma-Lo-2018-SimpleSecurityTwinField.pdf](../literature/pdfs/Curty-Azuma-Lo-2018-SimpleSecurityTwinField.pdf) (arXiv:1807.07667v2, 2018-12-18, 11 pages)
+
+**Claude 直读 11 页全文** —— 提取与 Lemma B partial trace argument 相关支持点：
+
+**支持点 5.1：Eve 完全控制 node C 的形式化（page 3, "Security proof of Protocol 3"）**
+
+> "without loss of generality, we shall assume that the node C is under the full control of an eavesdropper, Eve. After a QKD run, Alice and Bob can estimate the conditional probability distribution $p_{ZZ}(k_c, k_d|β_A, β_B)$..."
+
+**与 path α 关系**：直接对应 Cui 2019 Eq. (1) 的 untrusted-Charlie 设定。Curty 2018 与 Cui 2019 在 Eve 模型层面**完全一致**。
+
+**支持点 5.2：Virtual entanglement state 框架（page 4, around Eq. (10)）**
+
+> "if Alice and Bob choose the X basis in step (i'') of Protocol 3, Eve cannot distinguish this step from the following fictitious step: Alice (Bob) prepares an optical pulse a (b) and a qubit A (B) in an entangled state $|\psi_X\rangle_{Aa} = (|+\rangle_A|\alpha\rangle_a + |-\rangle_A|-\alpha\rangle_a)/\sqrt{2}$"
+>
+> "By running this fictitious step together with steps (ii)-(iv) in order, Alice and Bob obtain a state $|\chi_{k_c,k_d}\rangle_{Aa'Bb'} := \hat{M}^{ab}_{k_c,k_d}|\psi_X\rangle_{Aa}|\psi_X\rangle_{Bb} / \sqrt{p_{XX}(k_c,k_d)}$"
+
+**与 path α Lemma B 关系**：Curty 2018 用**reduced state after Charlie's announcement** $|\chi_{k_c,k_d}\rangle_{Aa'Bb'}$ 作 phase-error rate 计算基础。这是 Lemma B partial trace argument 的**直接 textual analog**：从 umr Eve 视角的全局 state $\rho^\Pi_{ABCE}$，partial trace 掉 Charlie 的 ancilla，得到 announcement-conditioned reduced state。
+
+**支持点 5.3：Phase-error rate 公式（Eq. 11）**
+
+$$e_{Z,k_c,k_d} = \sum_{i,j=0,1} \|_{AB}\langle jj\| \chi_{k_c,k_d}\rangle_{Aa'Bb'}\|^2$$
+
+**与 path α 关系**：phase-error rate 直接由 announcement-conditioned reduced state 决定，**无需** trust Charlie 的内部 unitary $\hat{U}$ —— 这就是"trace out Eve-controlled $\mathcal{H}_C$"的具体实现。
+
+**支持点 5.4：√η scaling claim（Abstract + Conclusion）**
+
+> Abstract: "the secret key rate of our protocol has a square-root improvement over the point-to-point private capacity"
+>
+> Page 4 right column: "the net transmittance of the signal is thus of order $\sqrt{\eta}$, which leads to a very high key rate for TF-type QKD at long distances"
+
+**与 path α 关系**：Curty 2018 与 Cui 2019 共同支持 "TF-type per-trial rate scales as $\sqrt{\eta}$" 这一结论。
+
+**支持点 5.5：MDI-QKD inheritance 声明（page 5, Conclusion）**
+
+> "this protocol could also be regarded as a phase-encoding MDI-QKD scheme with single-photon interference. Indeed, it inherits the major advantage of standard MDI-QKD, *i.e.*, it is robust against any side channel in the measurement unit."
+
+**与 path α 关系**：直接支持 Lemma A protocol embedding 的合法性 —— 一旦在虚拟 entanglement-distillation picture 下做完安全证明，protocol 是否被 Eve 控制 measurement device **不**影响 phase-error rate 形式（仅影响 announcement statistics 的具体值）。这与 path α "把 umr Eve 嵌入 trusted-relay protocol class" 的结构一致。
+
+**支持点 5.6：与 Koashi 2009 / Azuma's inequality 的 framework alignment（page 5）**
+
+> "(...) is a convex function over probabilities that can be obtained by performing positive operator-valued measure (POVM) measurements on a quantum state realized in a virtual scenario. This is enough [43] to prove the security of Protocol 3 against coherent attacks, thanks to Azuma's inequality [44]."
+
+**与 path α 关系**：Curty 2018 用 Koashi 2009 complementarity-based proof + Azuma's inequality 把 collective attack 推广到 coherent attack。Cui 2019 用 de Finetti / postselection。**两条路径独立**给出 asymptotic coherent security，path α Lemma B 在此选 Cui 2019 anchor 时**无需** Curty 路径的具体技术，但 Curty 路径是**独立旁证**。
+
+**核对点 5 verdict（Claude judgment，需 user / cross-family AI 二次确认）**：
+
+- ✅ Curty 2018 **支持** Lemma B partial trace argument 框架 —— Eq. (10)-(11) 给出 announcement-conditioned reduced state 直接 citation
+- ✅ Curty 2018 **支持** √η scaling 与 MDI-QKD inheritance 声明
+- ⚠️ Curty 2018 **不直接**给"trusted-relay reduction" claim —— 它在 untrusted-Charlie picture 下完成全证明，**未** explicitly 走 path α 想做的 $\Pi \to \iota(\Pi) = \Pi_{tr}$ 嵌入路径
+- ⚠️ 因此 Curty 2018 是 Lemma B 的 **technical foundation citation**，**不**等价 Lemma A protocol embedding 的 closure
+
+**对 sub-gap 状态的影响**：**无**。L2.G3 (Eve set across spaces) 仍 [UNKNOWN]。Curty 2018 的 reduced state 框架是**有用的 foundation**，但 path α 嵌入论证仍需独立 close。
+
+### §7.x.3 核对点 7：Cui Eq. (3) 与 Pirandola "channel use" 对齐 recheck
+
+**user 要求 recheck**。Claude 重读 Cui 2019 page 2 + Pirandola 2019 SI Note 1 page 15：
+
+**Cui 2019 Eq. (3) 计数单位（page 2 verbatim）**：
+
+> "According to Devetak-Winter's bound [24], the secret key rate **per trial** in a code mode is then given by $R = Q_\mu[1 - fh(e_\mu, 1-e_\mu)] - I^u_{AE}$"
+
+**"trial" 定义（Cui page 2, Step 1-3）**：每个 trial = (a) Alice/Bob 各选 code/decoy mode；(b) Alice/Bob 各送一个 pulse 给 Eve；(c) Eve 公开 announce $|1\rangle_M$ (success) 或 $|0\rangle_M$ (failure)，及 success 时 announce $|L\rangle_M$/$|R\rangle_M$。
+
+**所以**：每个 trial 使用 quantum channels 的次数 = 1 次 A→Charlie + 1 次 B→Charlie = 2 次 (但是 in parallel；不是 2 次同一 channel)。
+
+**Pirandola 2019 SI Note 1 chain bound（per [PDF synthesis v0.1 update 1](umr_path_alpha_pdf_synthesis_v0_1.md)）**：
+
+- 对 N+1-channel chain（N=1 即 single-repeater 即 A-C-B）：chain capacity ≤ $-\log_2(1 - \eta_{min})$
+- "Per channel use" 通常指**每次使用 bottleneck link**（worst link）
+- 对称 umr setting：$\eta_{AC} = \eta_{BC} = \sqrt{\eta_{AB}}$，所以 $\eta_{min} = \sqrt{\eta_{AB}}$，chain bound = $-\log_2(1 - \sqrt{\eta_{AB}})$ per use of bottleneck link
+
+**对齐方式（Claude recheck 后表述）**：
+
+每个 Cui trial → **1 次** bottleneck link 使用（A-C 或 B-C，对称下两者等价）。所以：
+
+$$R_{Cui}\text{ (per trial)} \stackrel{\text{每 trial 用 1 次 bottleneck}}{\equiv} R_{Cui}\text{ (per bottleneck-link use)} \stackrel{\text{Pirandola chain bound}}{\leq} -\log_2(1 - \sqrt{\eta_{AB}})$$
+
+**关键技术 caveat（path α v0.3 §6 sub-gap L3.G2 涉及）**：
+
+1. **"per trial" vs "per total quantum channel use"** 的 factor-of-2 区分：
+   - "per total use" 计数下，每 trial = 2 次 quantum channel use（A-C + B-C）
+   - "per trial" = "per bottleneck-link use" 仅在**对称 bottleneck**且**两 link 同步使用**时直接成立
+   - **不对称 case**（$\eta_{AC} \neq \eta_{BC}$）下需重新核对
+2. **Pirandola SI Note 1 的具体定义**：
+   - 用户 verbal 判断"是"对应"对齐"
+   - 但 SI Note 1 是否显式定义"chain rate per channel use" = "per use of any one link in the chain (assumed used in lockstep)" 需 user 直读 PDF Eq. (91)-(92) 二次确认
+   - **不**等价 C1(b)，仍是 [UNKNOWN]
+3. **Devetak-Winter rate 与 capacity rate 的 limiting alignment**：
+   - Cui Eq. (3) 是**asymptotic per-trial rate**（从 Devetak-Winter formula 推）
+   - Pirandola chain bound 是 **n→∞ 极限 capacity**
+   - 这两个 "asymptotic limit" 的具体定义 + 收敛意义对齐需 user / cross-family AI 直读 Pirandola SI Note 1 page 15 公式 (91)-(92) 二次确认
+
+**Cui Fig 1 自洽性（独立旁证）**：
+
+Cui 2019 page 3 Fig 1 caption：
+
+> "the linear key rate bound (blue) [16] and the bound with a single repeater (dotted blue) [27] are also shown in the figure"
+
+Cui 2019 page 3 正文：
+
+> "Note that the slope of the key rate in our protocol is the same as the linear bound with a single repeater [27] when the fiber loss is less than 60 dB"
+
+**含义**：Cui 2019 作者**自己**就在 Fig 1 把自己的 per-trial rate 与 single-repeater bound（即 Pirandola single-repeater chain bound 的 [27] = Pirandola-Laurenza-Ottaviani-Banchi 2017）直接做横坐标-纵坐标比较，**默认**计数单位对齐（"per trial" vs "per channel use" 在 horizontal axis "Loss [-10 log10(η)] Alice-Bob (dB)" 下做直接 visual 比较）。
+
+**这是 path α §3.1 数值 simulation 的依据** —— Cui 自己已在文献中做这一对齐。但 user 直读 + 显式形式化核对**仍有必要**（Cui Fig 1 是 visualization，**不**等价 formal alignment statement）。
+
+**核对点 7 verdict（Claude recheck）**：
+
+- ✅ "per trial = per bottleneck-link use" 对齐**在对称 umr + lockstep 使用前提下成立**
+- ✅ Cui 2019 Fig 1 自身已 implicit 做这一对齐（独立旁证）
+- ⚠️ Pirandola SI Note 1 Eq. (91)-(92) 的"channel use"显式定义**仍需 user 直读**
+- ⚠️ 不对称 case（$\eta_{AC} \neq \eta_{BC}$）的对齐**未在 path α v0.3 scope 内**，留作 future extension
+
+**对 sub-gap 状态的影响**：**无**。L3.G2 (Key length cross-topology) 仍 [UNKNOWN]。但本 recheck 给 user 直读 Pirandola SI Note 1 page 15 时**精确定位**应核对的具体公式（Eq. (91)-(92)）。
+
+### §7.x.4 当前进度小结（2026-04-26 session）
+
+**已完成**：
+- 8/8 核对点有响应（6 user "是" + 1 Claude PDF 直读 + 1 Claude recheck）
+- Curty-Azuma-Lo 2018 PDF 已下载并 11 页全文直读，技术支持点提取
+- Cui Eq. (3) "per trial" 与 Pirandola chain bound "per channel use" 对齐已重做
+
+**未变更**：
+- 11 sub-gaps **全部维持 [UNKNOWN]**
+- path α v0.3 banner（[USER-APPROVED PRIORITY 2026-04-25, NOT C3-passed]）维持
+- FINDINGS / PHASE_STATUS / RETRACTION **未**编辑
+- 没有 [SYN] → [COROLLARY] 升级
+- dev-reviewer round 3 **未**自主提交
+
+**待 user 决定**：
+1. user "是" 响应是否升级为 C1(b) 候选证据？
+   - 若 user 已直读 Pirandola SI Note 1 page 15 + Cui 2019 Section II/III 原文 → 可标 C1(b) PASS（核对点 1-4, 6, 8）
+   - 若 user 仅基于 Claude summary → 维持 user judgment 状态，C1(b) 待补
+2. 是否提交 dev-reviewer round 3（基于 v0.3 + 本节 §7.x 增量）测 C3?
+3. 是否启动 cross-family AI direct PDF 验证测 C1(a)（Codex 直读 Cui 2019 + Pirandola SI + Curty 2018）?
+
+---
+
+## §8 升级路径（R0.2 三闸门）
+
+### 8.1 升级 v0.1 → [SYN] v0.2 / [COROLLARY] candidate
+
+**C1 (independent validation)**：
+- (a) 跨家族 AI（Claude + GPT/Codex 双方直读 Cui 2019 + Pirandola SI Note 1）
+- (b) user 本人纸笔形式化 Lemma A/B/C
+- (c) Coq/Lean 形式化（复杂但可行）
+
+**C2 (user 签字)**：user 对 §3-§5 三 lemma 表述 + §6 conditional chain + §7 验证点**逐项**确认
+
+**C3 (dev-reviewer)**：本文档 v0.1 → 提交 dev-reviewer round 3（基于 v0.3 cleanup 后的最新基线）
+
+### 8.2 不做的事
+
+- ❌ 不预设短期时间表（per v0.2 round 1 trap fix）
+- ❌ 不主张"path α 比 γ 更稳"
+- ❌ 不在外稿 / 论文引用本文档为 [COROLLARY]
+
+---
+
+## §9 Changelog
+
+- **v0.1** (2026-04-25)：首版。基于 [PDF synthesis v0.1 update 3](umr_path_alpha_pdf_synthesis_v0_1.md) 的 Cui 2019 直读，把三 lemma statement target 用 Cui Eq. (1) Hilbert 空间 + Pirandola SI Note 1 协议类**精确表述**。所有 11 sub-gap [UNKNOWN] 维持。8 个 user 直读核对点列出。**未**做任何 lemma proof / closure。
+- **v0.1 + §7.x append** (2026-04-26)：附加 §7.x 用户验证响应记录（user message 2026-04-26）。核对点 1-4/6/8 user "是"/等价（标为 user judgment，**不**等价 C1(b)）。核对点 5 Claude 直读 [Curty-Azuma-Lo 2018 PDF](../literature/pdfs/Curty-Azuma-Lo-2018-SimpleSecurityTwinField.pdf) 11 页全文，提取 6 项支持点（Eve 控制 node C / virtual entanglement state / phase-error reduced state Eq. (11) / √η scaling / MDI inheritance / Koashi-Azuma 路径）。核对点 7 Claude recheck Cui Eq. (3) per-trial 与 Pirandola chain bound 对齐（对称 umr + lockstep 前提下成立；Cui Fig 1 自身已隐式做对齐；不对称 case 留 future extension）。**11 sub-gaps 全部维持 [UNKNOWN]，无升级，无 closure，无 FINDINGS/PHASE_STATUS 编辑**。
+
+---
+
+*END OF v0.1.* 11 sub-gaps OPEN. R0.1 不降级 / R0.2 不越权 / R0.3 [SYN] 维持. Cui 2019 anchor 选定. user-directive 2026-04-25 priority 维持. 任何升级仍需 R0.2 三闸门.

@@ -1,0 +1,3 @@
+PASS
+
+The live `docs/proofs/path_alpha_l3g2_closure_v0_1.md` §4 cross-link now correctly targets `path_alpha_subgap_closure_integration_v0_2.md` for integration v0.2 §3.3, and the added forward reference to `path_alpha_l3g2e_closure_v0_1.md` is well-formed. I do not see new scope drift: the added text stays limited to disclaiming the counting residual and pointing to its separate tracking/opened sub-gap.

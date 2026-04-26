@@ -136,6 +136,49 @@
 
 本 interim 撤回"γ 预判"(两端都松)。Sub-Q4 的归因 α/β/γ 应在 Sub-Q3 完成**之后**基于定理级上界重新启动,**不以本 interim 为预定位**。
 
+### 4.3 Phase 2 strategy — path α 三 lemma 路径 **[USER-APPROVED PRIORITY 2026-04-25, NOT C3-PASSED]**
+
+**最终结果（2026-04-25 session 末）**：path α 三 lemma 路径在 dev-reviewer 双 round 均 REJECTED 后，user **2026-04-25 同 session 显式 override §7.3 rollback condition**，path α 维持 Phase 2 优先方向。但 **R0.2 三闸门未走完**，C3 verdict 留痕 REJECTED。
+
+**Override 性质**（user 原话）："如果和红线违背，那就以我的 approve 为准 ... 我已经经过反复论证了，我的 approve 没问题"
+- ✅ approve **path α direction** 作 Phase 2 优先策略
+- ✅ approve [v0.3](../proofs/umr_path_alpha_three_lemma_v0_3.md) 维持 active draft
+- ❌ **不**等价 C3 PASS（C3 verdict 留痕 REJECTED）
+- ❌ **不**等价 [SYN] → [COROLLARY] 升级
+- ❌ **不**得对外论文 / 展示稿引用 v0.3 任何 lemma 表述、综合链或数值断言为定理级
+
+**评审历史（永久留痕）**：
+- **v0.3 round 2** ([umr_path_alpha_three_lemma_v0_3.md](../proofs/umr_path_alpha_three_lemma_v0_3.md)): diff REJECTED (1 major + 1 minor) + holistic FAIL；6/7 round-1 trap 已修复；user override 后追加 round-3 cleanup 修剩余 5 issues
+- **v0.2 round 1** ([umr_path_alpha_three_lemma_v0_2.md](../proofs/umr_path_alpha_three_lemma_v0_2.md)): diff REJECTED (1 critical + 3 major) + holistic UNSOUND；永久 [REJECTED] banner
+
+**诚实风险记录**：user override Codex C3 verdict 在项目 spec 文档层为**首次**先例。先例风险参考 v1 retraction（user 当时也 "反复论证过"）。后续若发现 v0.3 在使用中触发任何**结构 rigor** trap（cross-task / cross-space transfer 同型 / [SYN] 越权升级 / etc.）→ 按 v1 retraction 流程处理，**本 override 失效**。
+
+**R0.2 硬红线维持不变**：升级到 [COROLLARY] / [THM] 仍需 C1 ∧ C2 ∧ C3 完整流程。user override 仅适用 cleanup-level issues + direction priority，**不**替代 R0.2 三闸门。
+
+以下为原 v0.2 [REJECTED round 1] 记录（保留作历史）：
+
+---
+
+### 4.3.bak v0.2 [REJECTED round 1] 历史记录
+
+**立项后即被 R0.2 红线撤回**:[docs/proofs/umr_path_alpha_three_lemma_v0_2.md](../proofs/umr_path_alpha_three_lemma_v0_2.md) v0.2 [SPEC] 经 dev-reviewer 双 Codex 评审,**双 reviewer 均触发 R0.2 红线**(Diff: REJECTED 1 critical + 3 major; Holistic: UNSOUND)。
+
+- **撤回时序**:2026-04-25 同一 session 内,user directive "三件事都做了" → autonomous 立项 → autonomous 提交 dev-reviewer C3 评审 → 双 reviewer 撤回 → autonomous 加 [REJECTED] banner
+- **核心 trap 模式**(双 reviewer 收敛):
+  - Lemma B 隐含未列 sub-gap(把 Charlie broadcast 当 standard partial-trace 而非结构假设)
+  - Lemma A/B/C "Justification sketch" 实为 draft proof closure
+  - §3 综合包含链 + §3.1 "数值 confirm" 措辞**实质升级到 conditional-COROLLARY**
+  - 与旧 [umr_path_alpha_scaffolding.md](../proofs/umr_path_alpha_scaffolding.md) 的 11-gap inventory 脱节
+  - 反转 Log 07 的 γ-first 优先级,无 user 直读依据
+- **数值对齐脚本保留**:[scripts/path_alpha_v0_2_alignment.py](../../scripts/path_alpha_v0_2_alignment.py) + [data/path_alpha_v0_2_alignment.csv](data/path_alpha_v0_2_alignment.csv) + [figures/path_alpha_v0_2_alignment.png](figures/path_alpha_v0_2_alignment.png) — **仅 reframe** 无新 LB claim,撤回不影响数值,但需在使用时显式说明 path α v0.2 已 REJECTED
+- **被 supersede 的中间方案**:[docs/proofs/umr_path_delta_relaxed_trust_v0_1.md](../proofs/umr_path_delta_relaxed_trust_v0_1.md) v0.1 [SUPERSEDED] banner **维持**(δ 自身的 capacity-monotonicity 路径仍被 α 撤回理由间接驳回:Eve-set 比较与 protocol-class 嵌入都在 cross-space 范畴)
+- **本 interim 影响**:**无结论变更**。§1.1 上界 [CONJ] 标签维持,§1.2 可信度评级维持。Sub-Q3 主路径仍是 β/γ + Log 07 推荐的 user 直读
+- **第 6 次 trap 教训**(本 session 实例):AI autonomous"立项 → 数值 + ledger 同步 → C3 评审"完整链条**仍可能在 statement-only spec 文档里 smuggling structural gap closure**;dev-reviewer 双 Codex 是有效 C3 闸门,但 autonomous workflow 仍需 user 显式 review framework intent 才能避免
+
+**评审产物**:[docs/workflow/umr-path-alpha-three-lemma-v0-2/](../workflow/umr-path-alpha-three-lemma-v0-2/)(review-diff-1.json + review-holistic-1.md + workflow-log.md)
+
+**下一步**:由 user 决定是否启动 v0.3 重写(reviewer 给的 specific recommendation 见 banner),或直接放弃本路径回到 path β/γ 主线 + Log 07 推荐的 γ-first 顺序。
+
 ---
 
 ## 5. 对 Phase V 审计流程本身的反省

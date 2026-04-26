@@ -331,3 +331,109 @@ Claude + codex + 其他 LLM 即便独立部署,**仍可能共享训练语料偏�
 ---
 
 *RETRACTION §8 结束。AD v1.0 状态: 已撤回至 Choi-state only。AD channel-level K^{↔} UB 问题: OPEN, pending user paper-level work on teleportation-covariance-free bounds.*
+
+---
+
+## 9. Path α L1.G4 closure v0.1 撤回 + L3.G3 Eq. 11 specialization-chain 大修 (2026-04-26 C3 batch)
+
+**Trigger**：path α 11 sub-gap closure 工作 C3 dev-reviewer 双 Codex batch round 1（[c3-dev-reviewer-batch-diff-1.md](../workflow/umr-path-alpha-three-lemma-v0-2/c3-dev-reviewer-batch-diff-1.md) + [c3-dev-reviewer-batch-holistic-1.md](../workflow/umr-path-alpha-three-lemma-v0-2/c3-dev-reviewer-batch-holistic-1.md)）+ L3.G3 exploratory gap-identification round（[c1a-l3g3-gap-identification-round1.md](../workflow/umr-path-alpha-three-lemma-v0-2/c1a-l3g3-gap-identification-round1.md)）。
+
+**整体 verdict**：diff/scope = **REJECTED**（critical at L1.G4，major at L3.G2）；holistic = **FAIL**（major architectural concern）；L3.G3 gap-id 揭露 lemma_skeletons §6 + integration v0.1 + path α v0.3 spec 一处重大 citation/specialization 错误。
+
+### 9.1 L1.G4 v0.1 closure 撤回
+
+**File**：[docs/proofs/path_alpha_l1g4_closure_v0_1.md](../proofs/path_alpha_l1g4_closure_v0_1.md)
+
+**REJECTED 依据（C3 diff reviewer Round 1，2026-04-26）**：
+
+- §1.2 derivation 同时使用了 (i) `ρ^{Π_tr}_{ABE'} = Tr_C(ρ^{Π}_{ABCE})` 身份（前提是 L2.G3 trusted-relay Eve 仅控 H_E）+ (ii) `if Π is ε-secure ... then Π_tr is ε-secure` 结论（前提是 L1.G2 ι embedding 合法性）
+- §1.3 同时声明 `❌ 不主张 Π → Π_tr 嵌入 ι 的合法性（依赖 L1.G2）` + `❌ 不主张 trusted-relay Eve 仅控 H_E 不触 H_C 的协议设定（依赖 L1.G1）`
+- **scope contradiction**：§1.2 derivation 实际依赖 §1.3 explicit 排除的 assumption；属于 adjacent-gap smuggling
+
+**关键边界（保留有效部分）**：
+
+- **L1.G4 §1.1 lemma 本身（trace-distance contraction under partial trace）+ §3 数学推导（KW Theorem 6.3 + §4.4.2 partial-trace CPTP）+ §3.4 数值 PASS（300 trials）仍然有效**作 standalone partial-trace contraction 引用
+- **§1.2 path α application（"if Π ε-secure then Π_tr ε-secure"）不**作 L1.G4 的 closure 内容；它是 Lemma A 整体的 conclusion，不单独由 L1.G4 close
+
+**v0.2 后续 path**：移除 §1.2 application 内容或重写为 "Lemma A integration 的 contributing step"；新一轮 C1(a) + C3。**未启动**前 L1.G4 维持 [RETRACTED]，L1.G4 closure 状态 = **未** PASS。
+
+**第 5 + 6 次 trap 模式归类**：scope drift via adjacent-gap smuggling — closure 文档在 derivation 中暗用未独立 close 的 sub-gap 结论。**memory feedback `feedback_ai_draft_structural_gaps`** 警告的 cross-task / cross-space gap 越权的具体表现。
+
+### 9.2 L3.G2 v0.3 final closure §4 stale reference 修补（FAIL minor）
+
+**File**：[docs/proofs/path_alpha_l3g2_closure_v0_1.md](../proofs/path_alpha_l3g2_closure_v0_1.md)
+
+**FAIL 依据（C3 diff reviewer Round 1，2026-04-26）**：§2.3 已 round 3 corrected 为 "near Eq. (35) unnumbered condition"，但 §4 still asks Codex to verify "Pirandola Methods Eq. (8) — ε-close-to-private-state form"。round-2/round-3 correction 未完整 propagate 到 §4 stale text。
+
+**Action**：§4 stale reference patch（FAIL → patchable，不需 retract）。L3.G2 closure 主体（§1-§3 + §2.3 corrected attribution）有效；C3 verdict 修补后 round 2 重评。
+
+### 9.3 L3.G3 gap-id round 揭露重大 Pirandola Eq. 11 citation/specialization 错误
+
+**Discovery**：lemma_skeletons §6 combined chain + integration v0.1 §4 + path α v0.3 spec 全部把 Pirandola 2019 main paper Eq. 11 等同于 `-log_2(1-√η_{AB})` 的 single-repeater bound。**这是 citation 错误**。
+
+**Pirandola 2019 实际结构**（per [c1a-l3g3-gap-identification-round1.md](../workflow/umr-path-alpha-three-lemma-v0-2/c1a-l3g3-gap-identification-round1.md) §A direct PDF read）：
+
+- **Eq. 11**：`C(N) ≤ min_C E_R(C)`，配 Eq. 10 `E_R(C) := max_{(x,y)∈Č} E_R(σ_{xy})` —— 是 **REE cut bound** for end-to-end network capacity
+- **Eq. (8) / (9)**：lossy chain 的 specialization；Eq. (9) 是 equidistant-fixed-total-loss 形式；N=1 时 Eq. (9) 给 `-log_2(1-√η)`
+- **`-log_2(1-√η_{AB})` 的 derivation** 需要 Eq. 11 + Eq. (8)/(9) + tele-covariance（pure-loss bosonic）+ distillability + symmetric / equidistant η split (`η_{AB} = η_{AC}·η_{BC}`)，NOT Eq. 11 alone
+
+**影响范围**：
+
+- **lemma_skeletons §6 combined chain** 第二个不等式标 "Pirandola 2019 Eq. 11 [THM]" 不准；应为 "Pirandola 2019 Eq. 11 + Eq. (8)/(9) specialization + tele-covariance + symmetric η split [THM]"
+- **integration v0.1 §4** combined chain 同样问题
+- **path α v0.3 spec** 同样问题
+- **L3.G3 sub-gap statement target** 应明示是 "Eq. 11 + 完整 specialization chain to `-log_2(1-√η_{AB})`"，不是单独 Eq. 11
+
+**L3.G3 OPEN gaps inventory**（per gap-id round §D）：
+
+1. **Citation gap**：Eq. 11 → distillable / pure-loss single-route formulas（Eq. (8)/(9)）的 specialization chain 缺
+2. **Parameter-identification gap**：是 `η_min` vs `η_AC·η_BC` vs symmetric？三个不可互换
+3. **Symmetry / equidistance gap**：`√η_{AB}` 形式要求 equidistant split；否则 generic bound 是 `-log_2(1-min{η_AC, η_BC})`
+4. **Channel-use accounting gap**：one Cui trial = one Pirandola network use 须 explicit
+5. **Protocol-model gap**：honest Charlie 干涉 / detection 须 written explicitly as Pirandola Note 1/2 permitted local op
+6. **Edge-model gap**：A-C / B-C links 须 explicit declared 为 fixed memoryless pure-loss bosonic
+
+**Action**：所有引用 "Pirandola Eq. 11" 作为 `-log_2(1-√η_{AB})` 来源的 path α 文档须修正为完整 specialization chain；L3.G3 维持 [UNKNOWN]，6 个 gap 显式列入 integration v0.2。
+
+### 9.4 Holistic FAIL — Lemma C counting/normalization residual
+
+**Issue**（per [c3-dev-reviewer-batch-holistic-1.md](../workflow/umr-path-alpha-three-lemma-v0-2/c3-dev-reviewer-batch-holistic-1.md) §1）：lemma_skeletons §157 originally 要求 "channel use 计数对齐 + 同 ε-secure criterion"。L3.G2 closure 仅在 user Option B 下 close 后者；前者（per-trial vs per-chain-use accounting）未被 L3.G2 完整吸收，残留在 lemma_skeletons §7.x.3。
+
+**Action**：integration v0.2 必须 explicit 列 "Lemma C counting/normalization residual" 作 named residual sub-gap（命名为 L3.G2.E 或独立列），不再说 "Lemma C 仅 L3.G3 OPEN"。
+
+### 9.5 Integration v0.1 over-tightening 修正
+
+**Issue**：v0.1 把 lemma_skeletons §6 的 "[SYN, conditional on 11 OPEN gaps]" 压成 "[SYN, conditional on 2 OPEN gaps]"；rhetorically 让 outer framework 看起来比 v0.3 draft posture 实际成熟程度更高。
+
+**Action**：integration v0.2 改为 "9 provisional C1(a)-passed closure candidates + L1.G4 [RETRACTED] + 2 explicit structural gaps still open + Lemma C counting residual + Pirandola Eq. 11 specialization chain caveat"。
+
+修正后状态实为 **8/11 sub-gap C1(a) PASS**（L1.G4 撤回；L3.G2 待 §4 patch round 2 verify）+ **3 explicit OPEN/residual**（L2.G3 + L3.G3 + Lemma C counting）+ **Pirandola Eq. 11 specialization chain caveat**。
+
+### 9.6 第 5/6 次 trap memory 复盘
+
+**第 5 次 trap (cross-task / cross-space) 实例**：L1.G4 §1.2 derivation 暗用 L1.G2 + L2.G3 结论作 application，是 cross-task gap smuggling 的具体表现 → C3 REJECTED 触发撤回。
+
+**第 6 次 trap (channel-vs-state silent upgrade) 类似模式**：path α 文档群把 single-channel REE bound (Eq. 11) silent-upgrade 为 specific-η-form chain capacity (`-log_2(1-√η_{AB})`)；结构上类似 AD channel-vs-state trap（state-level value silent-upgrade 为 channel-level claim），区别在于本次是 generic-formula vs specialized-formula。**memory feedback `feedback_channel_vs_state_trap`** 的 lesson 直接 applicable。
+
+**第 7 次 trap (path α v0.2 spec-doc) 部分复发警告**：integration v0.1 "2 OPEN" 措辞虽不在 spec 文档但仍犯 over-rhetorical-tightening 的同类 trap pattern（statement-only 文档让外部 framework 看起来更成熟）。
+
+### 9.7 Action 总结 (2026-04-26 same-day)
+
+- ✅ L1.G4 closure v0.1 加 [RETRACTED] banner + 撤回引述
+- ✅ RETRACTION.md §9 本节
+- ⏳ L3.G2 closure §4 stale reference patch（v0.4）
+- ⏳ integration v0.1 → v0.2（含本次全部 finding）
+- ⏳ lemma_skeletons §6 combined chain Pirandola Eq. 11 specialization 修正
+- ⏳ C3 dev-reviewer Round 2 重评（lemma_skeletons + integration + L3.G2 patch）
+- 🛑 **path α 11 sub-gap closure batch C1∧C2∧C3 流程 NOT 完成**；任何对外引用仍 [NONE]
+
+### 9.8 用户行动事项
+
+- L1.G4 v0.2 是否值得起草（移除 §1.2 应用层 → Lemma A integration 的 contributing step）由 user 决定；AI 不**自动** draft v0.2
+- L2.G3 trusted-relay Eve set ⊆ 显式声明仍 OPEN（per integration v0.1 §3.1，user 显式 declaration 范畴）
+- L3.G3 6 个 gap inventory 须 user 决定推进策略（结构性 OPEN per memory feedback；AI 不 draft closure）
+- Pirandola Eq. 11 specialization chain 是 user 直读 PDF 或人类纸笔工作（C1(b)）的范畴；AI 完成的 C1(a) gap-id round 不替代
+
+---
+
+*RETRACTION §9 结束。Path α C3 batch round 1 (2026-04-26) verdict: L1.G4 RETRACTED + L3.G2 FAIL patchable + holistic FAIL architectural + L3.G3 gap-id 揭露 Eq. 11 specialization chain citation 错误。Path α 整体仍 [SYN, conditional on 3+ OPEN/residual gaps]。任何升级仍 [NONE]。*

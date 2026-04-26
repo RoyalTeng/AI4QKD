@@ -1,0 +1,13 @@
+**Verdict: FAIL**
+
+- `A: PASS`  
+  [proof §2.1.b](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:83>) now splits Cui Step 2.a and Step 3, and the synthesis is explicitly labeled `inference` at [line 97](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:97>) rather than presented as verbatim. This matches [Cui PDF](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/literature/pdfs/Cui 等 - 2019 - Twin-Field Quantum Key Distribution without Phase .pdf>) p.2, where Step 2.a begins `If code mode is selected, Alice (Bob) ... sends ...` and Step 3 begins `For each trial, the middle receiver Eve must publicly announce ...`.
+
+- `C: PASS`  
+  [proof §2.3](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:123>) now has the `是 denominator unit？` column. Rows 1-2 are correctly marked as metered edge uses, while rows 3-4 are only admissible structure and not independently metered. The alignment statement at [lines 138-146](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:138>) is now explicitly per-edge-use. This matches [Pirandola PDF](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/literature/pdfs/Pirandola-2019-EndToEndCapacities.pdf>) main p.2 `all the channels are used exactly once` and SI Note 1 p.15 `bits per chain use`.
+
+- `D: FAIL`  
+  [proof §2.4](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:148>) is corrected locally: it now says L3.G2.E is the split-out former L3.G3 item 4, consistent with the original [L3.G3 round1 item 4](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/workflow/umr-path-alpha-three-lemma-v0-2/c1a-l3g3-gap-identification-round1.md:63>). But the fix was not propagated through the rest of the file. Two stale references remain:
+  [line 64](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:64>) still says `L3.G3 6 个 sub-residual`, and [line 205](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:205>) still labels the η-specialization as `L3.G3 sub-residual 4`. So the post-split 5-item boundary is not described consistently document-wide.
+
+Concise summary: A and C are fixed. D is only partially fixed: `§2.4` is correct, but stale pre-split references elsewhere keep the Round 1 boundary issue alive. B remains source-clean, and E/F are not otherwise regressed apart from this D-related bookkeeping inconsistency.

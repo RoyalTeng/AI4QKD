@@ -1,0 +1,45 @@
+{
+  "lemma": "L1.G4 (output-state equivalence metric: trace distance contraction under partial trace)",
+  "claim_text": "For all \u03c1,\u03c3 on H_A\u2297H_C\u2297H_E and partial trace over H_C: ||Tr_C(\u03c1)-Tr_C(\u03c3)||_1 \u2264 ||\u03c1-\u03c3||_1",
+  "n_total_trials": 300,
+  "n_violations": 0,
+  "min_margin_td_full_minus_td_traced": 0.3196688813725139,
+  "mean_margin": 0.6635284296634851,
+  "max_td_full_observed": 1.3061970163709542,
+  "pass": true,
+  "rng_seed": 20260426,
+  "case_dims_AxCxE": [
+    [
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      3,
+      2
+    ],
+    [
+      3,
+      2,
+      3
+    ],
+    [
+      2,
+      4,
+      2
+    ],
+    [
+      4,
+      2,
+      4
+    ],
+    [
+      3,
+      3,
+      3
+    ]
+  ],
+  "trials_per_case": 50,
+  "numerical_floor": 1e-10
+}

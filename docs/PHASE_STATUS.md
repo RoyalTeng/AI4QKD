@@ -143,16 +143,57 @@
 
 ---
 
+## 4.5 User directive 2026-04-25 — path α 三 lemma 优先策略 **[USER-APPROVED PRIORITY, §7.3 OVERRIDDEN by user 2026-04-25]**
+
+> **🟡 [USER-APPROVED PRIORITY 2026-04-25 — direction-level approval, NOT C3-passed]**
+>
+> v0.3 dev-reviewer round 2 verdict REJECTED (diff) + FAIL (holistic) 触发了 §7.3 rollback condition。
+>
+> **user 2026-04-25 同 session 显式 override §7.3**（user 原话）："如果和红线违背，那就以我的 approve 为准 ... 我已经经过反复论证了，我的 approve 没问题"
+>
+> **override scope**：approve **path α direction** + v0.3 维持 active draft；**不**等价 C3 PASS；**不**等价 [SYN] → [COROLLARY] 升级；**不**得对外引用 lemma 表述为定理级。
+>
+> **R0.2 硬红线维持**：[COROLLARY] / [THM] 升级仍需 C1 ∧ C2 ∧ C3 完整流程。user override 仅适用于 cleanup-level + direction priority。
+>
+> **诚实风险记录**：user override Codex C3 verdict 的先例对应 v1 retraction（user 当时也 "反复论证过"）。后续若发现同型 trap → 按 v1 retraction 流程处理。
+>
+> ---
+
+**用户决议**（autonomous session 内显式给出）：
+
+> 反转 Log 07 的 γ-first 优先级。**path α 三 lemma 路径**（resource-enhancement / protocol-class inclusion，旧 [umr_path_alpha_scaffolding.md](proofs/umr_path_alpha_scaffolding.md) 的 11-gap 形式）作 Phase 2 优先策略，**优先于** path γ direct converse 与 path β 紧界 converse。
+>
+> **理由**（用户原话）："我手头时间紧迫，γ 估计需要更长精读周期，先看 α 能否在更短周期出 scaling-级结论。"
+
+**directive scope**（重要边界）：
+
+- ✅ approve **方向**与**优先级**：path α 三 lemma 是 Phase 2 优先 work direction
+- ✅ approve **scaling 级目标**：仅追求 $K_{\text{umr}} \leq -\log_2(1-\sqrt{\eta_{AB}})$ scaling 级 looser UB；**不**追求 prefactor-紧 UB
+- ❌ **不** approve [umr_path_alpha_three_lemma_v0_2.md](proofs/umr_path_alpha_three_lemma_v0_2.md) v0.2 [REJECTED] 文档的任何具体 lemma 表述、综合链或 [SYN] 数值断言
+- ❌ **不** approve 任何 Lemma A/B/C 的 closure / draft proof / Justification sketch
+- ❌ **不** approve 升级路径绕过 R0.2 (C1 ∧ C2 ∧ C3) 三闸门
+
+**v0.2 retraction 维持**；后续 v0.3 重写产出按此 directive 进行。**任何 [SYN] → [COROLLARY] 升级**仍需 R0.2 (C1 ∧ C2 ∧ C3) 完整流程，user directive 仅 approve 方向不替代 C2 升级签字。
+
+**回滚条件**：v0.3 dev-reviewer 再 REJECTED → directive 失效，回到 Log 07 的 γ-first 顺序。
+
+---
+
 ## 5. 用户决策队列（AI 自主 reach 不到）
 
-按优先级从高到低：
+按优先级从高到低（**§4.5 directive 生效，user 2026-04-25 override §7.3** — path α 三 lemma framework 升至最高）：
 
 ### 5.1 Sub-Q3 结构 gap (R0.2 C1 非 AI 验证依赖)
 
-1. **β.G4 Eve model transfer** — Khatri-Wilde 2020 §19 Prop 19.2 umr 适用性（最高优先级）
-2. **β.G5 adversarial comb reduction** — WTB 2017 Thm 4 umr 继承
-3. **γ.B.G1 DPI target lemma** — Pirandola 2019 Eq. 9 拓扑适用性
-4. **γ.G3 ε-composable transfer** — Metger 2024 GEAT asymptotic→finite 桥接
+**§4.5 user-directive 顺序**（2026-04-25 起生效，user override §7.3 后维持）：
+
+1. **path α 三 lemma framework** ([v0.3 USER-APPROVED PRIORITY](proofs/umr_path_alpha_three_lemma_v0_3.md))：L1.G1-G4 / L2.G1-G4 / L3.G1-G3 共 11 sub-gap [UNKNOWN]，user 直读 PDF + 形式化（Pirandola 2019 §III-IV / Khatri-Wilde §19-20 / Lucamarini 2018 / Wang 2019 / Curras-Lorenzo 2021 / Portmann-Renner 2022）。**user 时间约束 hedge 选择**，不主张比 γ 更稳。
+2. **β.G4 Eve model transfer** — Khatri-Wilde 2020 §19 Prop 19.2 umr 适用性（path α scaling-级失败时的 fallback；prefactor-紧 UB 仍依赖此）
+3. **β.G5 adversarial comb reduction** — WTB 2017 Thm 4 umr 继承
+4. **γ.B.G1 DPI target lemma** — Pirandola 2019 Eq. 9 拓扑适用性
+5. **γ.G3 ε-composable transfer** — Metger 2024 GEAT asymptotic→finite 桥接
+
+**回滚指针**（若 user 后续撤销 override）：original Log 07 γ-first 顺序 = β.G4 → β.G5 → γ.B.G1 → γ.G3
 
 ### 5.2 数值扩展（用户启动后 AI 可继续）
 

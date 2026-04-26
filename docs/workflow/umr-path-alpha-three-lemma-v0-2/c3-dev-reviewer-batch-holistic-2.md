@@ -1,0 +1,34 @@
+§1 `ARCHITECTURE_FIT` — `FAIL`
+
+The underlying split is directionally right, but the holistic document set is not yet architecturally synchronized. [path_alpha_l3g2e_closure_v0_1.md](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:154>) cleanly reclassifies former `L3.G3` residual 4 as `L3.G2.E` and explicitly reduces post-split `L3.G3` to 5 residuals at [lines 160-170](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:160>). But the canonical integration note still tracks a separate “Lemma C counting residual” at [§3.3](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:119>) and still describes `L3.G3` as a 6-item open inventory at [§3.2](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:102>). [umr_path_alpha_lemma_skeletons_v0_1.md](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md:182>) also still conditions the combined chain on “11 sub-gaps + Lemma C counting residual + Eq. 11 specialization chain,” not on a propagated `L3.G2.E` split. So the residual is now named, but not yet cleanly absorbed across the active architecture.
+
+§2 `INTEGRATION_COHERENCE` — `FAIL`
+
+[integration_v0_2](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:21>) was a real improvement over `v0.1`, but it is no longer coherent with the current R2 full set. It still reports `L1.G4` as `[RETRACTED]` in the main matrix at [line 28](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:28>), still shows `L3.G2` as “C1 PASS / C3 R2 待” at [lines 34, 41](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:34>), and does not promote `L3.G2.E` into the primary status inventory at all. It also still says AI must not draft closure candidates for the counting residual at [line 188](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:188>), which is now false given [L3.G2.E](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l3g2e_closure_v0_1.md:1>). So `v0.2` coheres with “post-R1 immediate repair,” but not with the later same-day state you asked me to evaluate.
+
+§3 `PATH_ALPHA_V0_3_CONSISTENCY` — `FAIL`
+
+The statement-only / all-gaps-unknown posture is still preserved in [umr_path_alpha_three_lemma_v0_3.md](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_three_lemma_v0_3.md:133>) and that part remains sound. The problem is the corrected Pirandola specialization chain has not been propagated back into `v0.3`. The file still states claim C as a direct upper bound at [lines 104-107](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_three_lemma_v0_3.md:104>) and still gives the conditional chain as `K_umr <= K_trusted <= -log_2(1-\sqrt{\eta_AB})` at [lines 212-214](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_three_lemma_v0_3.md:212>), without the now-required “Eq. 11 = REE cut bound; specific single-repeater form requires Eq. (8)/(9) + tele-covariance + symmetric split” caveat that is present in [lemma_skeletons §6](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md:182>) and [integration §4](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:160>). That is now a real cross-document inconsistency.
+
+§4 `PRIOR_TRAP_AVOIDANCE` — `PASS`
+
+The R1 caveat is substantively resolved. [path_alpha_l1g4_closure_v0_2.md](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l1g4_closure_v0_2.md:120>) explicitly removes Pirandola Eq. 36 as a live dependency and keeps the lemma on the KW-only route. The only remaining Eq. 36 mention is historical cleanup narration, not operative support. That is enough to clear the trap.
+
+§5 `R0.2 BOUNDARY` — `PASS`
+
+The tightening in `integration_v0_2 §5.2` is genuine. `v0.1` said the session had already satisfied the `(a)` “双方直读 PDF” condition via “Claude draft based on prior PDF synthesis” at [v0.1 line 151](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_1.md:151>). `v0.2` explicitly walks that back at [lines 192-196](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:192>): Codex directly re-read PDFs, Claude is only indirect / “weak fit,” and further cross-verification or re-read is recommended. That is a real narrowing, not cosmetic wording churn.
+
+§6 `COMPLETENESS` — `FAIL`
+
+The exact post-split inventory you propose is not yet the canonical inventory of the document set. The active integration report still says “8/11 clean + 1 pending + 2 OPEN + extra named residual” at [lines 39-45](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_subgap_closure_integration_v0_2.md:39>), not “8 confirmed + 1 pending `L3.G2` + 1 pending `L3.G2.E` + 2 OPEN.” Also, if “confirmed” means current active candidate without unresolved C3, `L1.G4 v0.2` does not yet satisfy that status in its own file: it is C1-clean but still shows `C3` pending at [line 145](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/path_alpha_l1g4_closure_v0_2.md:145>). So the inventory is materially closer to your proposed form, but not yet exactly there.
+
+§7 `RECOMMENDATIONS`
+
+1. Issue an `integration_v0.3` that promotes `L1.G4 v0.2`, `L3.G2 v0.5 final`, and `L3.G2.E v0.3 final` into the primary matrix, and removes the separate “Lemma C counting residual” bucket.
+2. Propagate the split into [lemma_skeletons §6](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_lemma_skeletons_v0_1.md:178>) so the combined-chain condition references `L3.G2.E` and post-split `L3.G3 = 5`, not both.
+3. Patch [umr_path_alpha_three_lemma_v0_3.md](</Users/tengjun/Desktop/ai4qkd (1)/AI4QKD/docs/proofs/umr_path_alpha_three_lemma_v0_3.md:104>) to add the same specialization-chain caveat already adopted elsewhere.
+4. Decide explicitly whether `L1.G4 v0.2` is only C1-redo-verified or has also passed a C3 redo; the current files do not support calling it fully “confirmed.”
+
+§8 `OVERALL HOLISTIC VERDICT` — `FAIL`
+
+The Round 2 fixes are substantive and they do resolve the two R1 caveats in `L1.G4` and `integration §5.2`. But the full bundle still fails holistic review because the architecture/integration state has not been fully propagated: `L3.G2.E` is not yet the canonical absorber of the counting residual everywhere, `post-split L3.G3 = 5` is not consistently reflected, and `path_alpha_v0_3` still lags the corrected Pirandola specialization chain.

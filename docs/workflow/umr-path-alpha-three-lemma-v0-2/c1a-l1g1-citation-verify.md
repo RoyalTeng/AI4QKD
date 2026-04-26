@@ -1,0 +1,10 @@
+Verdict: FAIL
+
+- [path_alpha_l1g1_closure_v0_1.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/path_alpha_l1g1_closure_v0_1.md:32) §1.1 is consistent with Cui Eq. (1): Cui explicitly has `A-out ⊗ B-out ⊗ Ea ⊗ M`; treating `H_C` as an explicit dilation/internal-device factor is a defensible definitional unpacking.
+- [path_alpha_l1g1_closure_v0_1.md](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/path_alpha_l1g1_closure_v0_1.md:44) §1.2 also matches the intended framework claim: same ambient space, different Charlie operation (`Û` vs specified `Û^spec`), different Eve-access description.
+- §3.1 and §3.2 stay within framework alignment. [§3.2](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/path_alpha_l1g1_closure_v0_1.md:116) does not smuggle `A^{Π_tr}_{Eve} ⊆ A^Π_{Eve}`; it only states `A^Π_Eve ⊆ B(H_C⊗H_E)` and `A^{Π_tr}_Eve ⊆ B(H_E)`, then explicitly disclaims the cross-protocol inclusion claim.
+- Scope is clean: [§1.3](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/path_alpha_l1g1_closure_v0_1.md:54) and [§4](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/path_alpha_l1g1_closure_v0_1.md:137) do not close L1.G2 / L2.G3 / L2.G1.
+- The failure is citation accuracy in §2.2: it labels the Pirandola line as “verbatim,” but SI Note 1 p.15 actually says the protocol “is based on adaptive LOs and unlimited two-way CC involving all the points in the chain,” plus a follow-up sentence about broadcasts/feedback/local registers. The quoted wording in [§2.2](/Users/tengjun/Desktop/ai4qkd%20(1)/AI4QKD/docs/proofs/path_alpha_l1g1_closure_v0_1.md:80) is not verbatim.
+- Cui §2.1 and KW §20.1 are substantively aligned with the note; the blocker is the strict verbatim-check requirement, not the underlying definitional claim.
+
+Minimal fix: replace the Pirandola “verbatim” quote with the actual SI Note 1 wording, or relabel it as paraphrase/inference.
