@@ -5,7 +5,7 @@
 **版本**：v0.1
 **日期**：2026-04-26
 **C1 path used**：**C1(a)** 跨家族 AI 直读 Cui 2019 + Pirandola SI Note 1 + KW Ch 20
-**严谨性 banner**：[SYN candidate-for-COROLLARY-pending-C1(a) Codex citation verify ∧ C2 user signature]
+**严谨性 banner**：[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01 user batch sign-off) / C3 ✅
 
 **Note on difficulty**：本 sub-gap 是 path α 11 sub-gap 中 **substantively 最 demanding** —— per [§7.x.5.5 of lemma skeletons](umr_path_alpha_lemma_skeletons_v0_1.md) C1(a) point 6 retest, KW SKA framework 需 "extra embedding/reduction argument beyond KW §20.2" 才能 cover Cui untrusted-relay topology。本 closure 提供这一 embedding argument。
 

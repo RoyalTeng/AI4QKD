@@ -9,7 +9,7 @@
 **前身 / 立项依据**：[c3-dev-reviewer-batch-holistic-1.md](../workflow/umr-path-alpha-three-lemma-v0-2/c3-dev-reviewer-batch-holistic-1.md) §1 + [RETRACTION.md §9.4](../research/RETRACTION.md#94-holistic-fail--lemma-c-countingnormalization-residual) — holistic reviewer Round 1 揭露 L3.G2 closure（在 user Option B 下 close Devetak-Winter ↔ ε-private state bridge）**未** 吸收 lemma_skeletons §157 原 statement target C 中"channel use 计数对齐"的部分；该部分 split 为新 sub-gap L3.G2.E
 
 **C1 path used**：**C1(a)** 跨家族 AI 直读 Cui 2019 Section III + Pirandola 2019 SI Note 1/2
-**严谨性 banner**：[SYN candidate-for-COROLLARY-pending-C1(a) Codex citation verify ∧ C2 user signature]
+**严谨性 banner**：[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01 user batch sign-off) / C3 ✅
 
 ---
 

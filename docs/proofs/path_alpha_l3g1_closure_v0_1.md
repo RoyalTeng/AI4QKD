@@ -5,7 +5,7 @@
 **版本**：v0.1
 **日期**：2026-04-26
 **C1 path used**：**C1(a)** 跨家族 AI 直读 KW Ch 20 §20.1 + Pirandola SI Note 1 + Cui 2019 Step 3
-**严谨性 banner**：[SYN candidate-for-COROLLARY-pending-C1(a) Codex citation verify ∧ C2 user signature]
+**严谨性 banner**：[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01 user batch sign-off) / C3 ✅
 
 ---
 

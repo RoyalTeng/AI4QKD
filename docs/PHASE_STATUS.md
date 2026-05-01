@@ -1,7 +1,7 @@
-# Phase Status Snapshot — 2026-04-24 (last revised 2026-04-25)
+# Phase Status Snapshot — 2026-04-24 (last revised 2026-05-01)
 
-**版本**：v1.1  
-**日期**：2026-04-25（post-R7 retraction + followup-review fix） / 2026-04-24（首版）  
+**版本**：v1.2  
+**日期**：2026-05-01（C2 user batch sign-off — path α 10 sub-gap 升级至 [COROLLARY]） / 2026-04-25（v1.1）  
 **用途**：Phase 0/1/2/3 当前进度一览 + 用户决策队列
 
 ---
@@ -12,10 +12,10 @@
 |-------|---------|-------|
 | **Phase 0** | ✅ 完成 | MS-EB 框架 + WLC SDP + 七族五元组 + M1-M4 数值 |
 | **Phase 1** | ✅ 完成 (v1.1) | 三族 Pareto 2581+2831+1600 pts + Kamin GEAT + family_comparison 主图 |
-| **Phase 2 (Sub-Q3)** | 🟡 部分完成（AI 自主上限 [CONJ]/[SYN]） | upper_bound_report v0.7 + β.G3 [SYN] (C2/C3 满足，THM anchor 缺) + 4 路径 OPEN gap + AD channel-level 撤回 |
+| **Phase 2 (Sub-Q3)** | 🟡 部分完成 → 10/12 sub-gap [COROLLARY] | upper_bound_report v0.7 + path α 10 sub-gap C1+C2+C3 闭合 + 2 OPEN (L2.G3 + L3.G3) + β.G3 [SYN] |
 | **Phase 3 (Sub-Q4)** | 🟡 初步（数据驱动 [CONJ]） | gap_shape v0.3 4 candidates + gap_analysis G4.2 v0.1 归因初稿 |
 
-**AI 自主边界**：所有 [THM] 升级被 R0.2 C1 (independent non-AI validation) 硬门槛阻挡。**等用户 paper-level work 解锁**。
+**AI 自主边界**：10/12 sub-gap 经 C1(a) + C2 (2026-05-01) + C3 升级至 [COROLLARY]。2/12 OPEN (L2.G3 + L3.G3) 仍等用户 paper-level work。Combined chain 仍 [SYN, conditional]。
 
 ---
 
@@ -177,6 +177,16 @@
 
 **回滚条件**：v0.3 dev-reviewer 再 REJECTED → directive 失效，回到 Log 07 的 γ-first 顺序。
 
+### 4.5.1 C2 签批结果 (2026-05-01)
+
+path α 10/12 sub-gap 经 C1(a) + C2 (user batch sign-off) + C3 完整流程，升级至 **[COROLLARY]**：
+- ✅ **Lemma A 全部 4 个**：[COROLLARY]
+- ✅ **Lemma B 3 个** (L2.G3 OPEN 除外)：[COROLLARY]
+- ✅ **Lemma C 3 个** (L3.G3 OPEN 除外)：[COROLLARY]
+- 🔓 **L2.G3 + L3.G3 (5 sub-residuals)**：仍 [UNKNOWN] OPEN
+- Combined chain：仍 [SYN, conditional]
+- 签批记录：[path_alpha_c2_signoff_2026-05-01.md](proofs/path_alpha_c2_signoff_2026-05-01.md)
+
 ---
 
 ## 5. 用户决策队列（AI 自主 reach 不到）
@@ -185,9 +195,9 @@
 
 ### 5.1 Sub-Q3 结构 gap (R0.2 C1 非 AI 验证依赖)
 
-**§4.5 user-directive 顺序**（2026-04-25 起生效，user override §7.3 后维持）：
+**§4.5 user-directive 顺序**（2026-05-01 更新，C2 签批后）：
 
-1. **path α 三 lemma framework** ([v0.3 USER-APPROVED PRIORITY](proofs/umr_path_alpha_three_lemma_v0_3.md))：L1.G1-G4 / L2.G1-G4 / L3.G1-G3 共 11 sub-gap [UNKNOWN]，user 直读 PDF + 形式化（Pirandola 2019 §III-IV / Khatri-Wilde §19-20 / Lucamarini 2018 / Wang 2019 / Curras-Lorenzo 2021 / Portmann-Renner 2022）。**user 时间约束 hedge 选择**，不主张比 γ 更稳。
+1. **path α 三 lemma framework** ([v0.3 → 10/12 [COROLLARY]](proofs/path_alpha_subgap_closure_integration_v0_3.md))：10 sub-gap C1+C2+C3 闭合 ✅；剩 L2.G3（cross-space Eve set 声明）+ post-split L3.G3（5 项 Pirandola Eq. 11 specialization）。**剩余 2 OPEN 仍需 user paper-level work**。
 2. **β.G4 Eve model transfer** — Khatri-Wilde 2020 §19 Prop 19.2 umr 适用性（path α scaling-级失败时的 fallback；prefactor-紧 UB 仍依赖此）
 3. **β.G5 adversarial comb reduction** — WTB 2017 Thm 4 umr 继承
 4. **γ.B.G1 DPI target lemma** — Pirandola 2019 Eq. 9 拓扑适用性
@@ -209,10 +219,13 @@
 
 ### 5.4 升级待签 (C2 用户签字)
 
-当 C1 上述 1-4 任一通过后:
+**2026-05-01 更新**：path α 10 sub-gap C2 已完成。
+
+剩余待签：
 - β.G3 [SYN] 若找到 THM anchor (Wilde-Horodecki 2013 / Plenio-Virmani 2007 §V.C) 可升 [THM]
 - upper_bound_report v0.7 §11 hierarchy table 可升 [COROLLARY]（仅 tele-covariant 信道行 — dephase/depolar/erasure；AD 行 channel-level UB 仍 OPEN per RETRACTION §8）
 - gap_analysis G4.2 可升到 [THM] 级归因 verdict
+- L2.G3 + L3.G3 闭合后 combined chain 可升 [COROLLARY]
 
 ---
 

@@ -6,7 +6,7 @@
 **前身**：[v0.1 RETRACTED](path_alpha_l1g4_closure_v0_1.md)（2026-04-26 C3 dev-reviewer Round 1 diff REJECTED — §1.2 application 段 smuggled L1.G2 + L2.G3 closure，与 §1.3 explicit scope 矛盾）
 **日期**：2026-04-26（v0.1 撤回当天 redo）
 **C1 path used**：**C1(c)** non-AI 数值（v0.1 已 PASS, 300 trials）+ **C1(a)** 跨家族 AI 直读 PDF（v0.1 已 PASS at round 4）；本 v0.2 仅修 §1.2 application 段，main citation + math + numerical 维持 v0.1 verified status
-**严谨性 banner**：[SYN candidate-for-COROLLARY-pending-C2 user signature ∧ C3 R2 dev-reviewer]
+**严谨性 banner**：[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01 user batch sign-off) / C3 ✅
 
 ---
 

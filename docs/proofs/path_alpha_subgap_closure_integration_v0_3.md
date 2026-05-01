@@ -1,8 +1,9 @@
 # Path α Sub-Gap Closure — Integration Status Report v0.3
 
-**版本**：v0.3
-**日期**：2026-04-26（C3 batch round 2 post-fix same-day）
+**版本**：v0.4
+**日期**：2026-05-01（C2 user batch sign-off）
 **前身**：
+- [v0.3](path_alpha_subgap_closure_integration_v0_3.md)（2026-04-26 C3 batch round 2 post-fix）
 - [v0.1 SUPERSEDED](path_alpha_subgap_closure_integration_v0_1.md)（C3 R1 holistic FAIL + diff REJECTED + Pirandola Eq. 11 citation 错揭露）
 - [v0.2 SUPERSEDED](path_alpha_subgap_closure_integration_v0_2.md)（v0.2 是 R1 post-fix 即时版本，但 C3 R2 holistic 揭露未 propagate 到 later same-day state）
 
@@ -26,31 +27,31 @@
 
 ## §1 12 Sub-Gap 主状态矩阵（v0.3 修正）
 
-| Sub-gap | Lemma | 主题 | C1(a) | C3 R2 | 总状态 |
+| Sub-gap | Lemma | 主题 | C1(a) | C3 | C2 | 总状态 |
 |---|---|---|---|---|---|
-| **L1.G1** | A | Hilbert 空间 alignment | ✅ R2 PASS | ✅ R2 diff PASS | C1+C3 R2 PASS / C2 待 |
-| **L1.G2** | A | embedding ι 构造 (HARDEST) | ✅ R1 PASS | ✅ R2 diff PASS | C1+C3 R2 PASS / C2 待 |
-| **L1.G3** | A | Stinespring gauge invariance | ✅ R3 PASS | ✅ R2 diff PASS | C1+C3 R2 PASS / C2 待 |
-| **L1.G4 v0.2** | A | trace-distance contraction（v0.1 [RETRACTED] → v0.2 redo）| ✅ R1 PASS（v0.2 redo verify）| ✅ R2 diff PASS（"R1 smuggling defect appears fixed"）| **C1+C3 R2 PASS** / C2 待 |
-| **L2.G1 v0.3 final** | B | rate-direction sign | ✅ R2 PASS | ✅ R2 diff FAIL #5 → v0.3 patch → **R3 A 项 PASS** | **C1 + C3 R3 PASS** / C2 待 |
-| **L2.G2** | B | ε-composable decomposition | ✅ R3 PASS | ✅ R2 diff PASS | C1+C3 R2 PASS / C2 待 |
+| **L1.G1** | A | Hilbert 空间 alignment | ✅ R2 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
+| **L1.G2** | A | embedding ι 构造 (HARDEST) | ✅ R1 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
+| **L1.G3** | A | Stinespring gauge invariance | ✅ R3 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
+| **L1.G4 v0.2** | A | trace-distance contraction（v0.1 [RETRACTED] → v0.2 redo）| ✅ R1 PASS（v0.2 redo verify）| ✅ R2 diff PASS（"R1 smuggling defect appears fixed"）| **C1+C2+C3 闭合 → [COROLLARY]** |
+| **L2.G1 v0.3 final** | B | rate-direction sign | ✅ R2 PASS | ✅ R2 diff FAIL #5 → v0.3 patch → **R3 A 项 PASS** | **C1+C2+C3 闭合 → [COROLLARY]** |
+| **L2.G2** | B | ε-composable decomposition | ✅ R3 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
 | **L2.G3** | B | Eve set across spaces | — | — | **OPEN per R0.1**（cross-space gap，user 显式声明范畴）|
-| **L2.G4** | B | non-LOCC joint attack | ✅ R2 PASS | ✅ R2 diff PASS | C1+C3 R2 PASS / C2 待 |
-| **L3.G1** | C | LOPC syntax cross-topology | ✅ R1 PASS | ✅ R2 diff PASS | C1+C3 R2 PASS / C2 待 |
-| **L3.G2 v0.5 final** | C | key length cross-topology (under user Option B) | ✅ R3 PASS | ✅ R3 PASS | **C1+C3 R3 PASS** / C2 待 |
-| **L3.G2.E v0.3 final** | C | channel-use counting alignment（NEWLY opened，split-out from former L3.G3 sub-residual 4）| ✅ R3 PASS | ✅ R2 diff PASS（"clean split-out"）| **C1+C3 R2 PASS** / C2 待 |
+| **L2.G4** | B | non-LOCC joint attack | ✅ R2 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
+| **L3.G1** | C | LOPC syntax cross-topology | ✅ R1 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
+| **L3.G2 v0.5 final** | C | key length cross-topology (under user Option B) | ✅ R3 PASS | ✅ R3 PASS | **C1+C2+C3 闭合 → [COROLLARY]** |
+| **L3.G2.E v0.3 final** | C | channel-use counting alignment（NEWLY opened，split-out from former L3.G3 sub-residual 4）| ✅ R3 PASS | ✅ R2 diff PASS（"clean split-out"）| **C1+C2+C3 闭合 → [COROLLARY]** |
 | **L3.G3 (post-split)** | C | Pirandola Eq. 11 specialization chain to specific η-form：5 项 sub-residual（citation / parameter-id / symmetry / protocol-model / edge-model）| — | — | **OPEN per R0.1**（5 项 user-level operational-link sub-residual）|
 
-**v0.3 汇总**（post C3 R4 batch verify 2026-04-26）：
+**v0.4 汇总**（post C2 user batch sign-off 2026-05-01）：
 
-- **10/12 sub-gap C1 + C3 PASS**：L1.G1, L1.G2, L1.G3, **L1.G4 v0.2**, **L2.G1 v0.3 final**, L2.G2, L2.G4, L3.G1, **L3.G2 v0.5 final**, **L3.G2.E v0.3 final**
+- **10/12 sub-gap C1 + C2 + C3 FULLY CLOSED → [COROLLARY]**：L1.G1, L1.G2, L1.G3, **L1.G4 v0.2**, **L2.G1 v0.3 final**, L2.G2, L2.G4, L3.G1, **L3.G2 v0.5 final**, **L3.G2.E v0.3 final**
 - **2/12 OPEN per R0.1**：L2.G3（cross-space）+ post-split L3.G3（5 项 user-level sub-residual）
-- **C2 用户审签 batch**：⏳ **未启动**（10 个 PASS closure 等用户逐项签字）
+- **C2 用户审签 batch**：✅ **已完成**（2026-05-01 用户批量签批，签批记录见 [path_alpha_c2_signoff_2026-05-01.md](path_alpha_c2_signoff_2026-05-01.md)）
 - **额外 caveat**：Pirandola Eq. 11 specialization chain（Eq. (8)/(9) lossy chain + tele-covariance + symmetric η split），**独立**于 12 sub-gap 之外的 conditional step
 
 ---
 
-## §2 已 PASS 的 9 个 closure candidate 文件清单（v0.3 确认）
+## §2 已 PASS 的 10 个 closure 文件清单（v0.4 C2 签批后确认）
 
 | Sub-gap | 文件 | 关键 PDF 直读对象 | C3 R2 验证 |
 |---|---|---|---|
@@ -64,11 +65,11 @@
 | **L3.G2 v0.5 final** | [path_alpha_l3g2_closure_v0_1.md](path_alpha_l3g2_closure_v0_1.md) | Portmann-Renner 2022 §III.B + Pirandola Methods near-Eq.-(35) + Cui Eq. (3)（user Option B）| **R3 PASS** |
 | **L3.G2.E v0.3 final** | [path_alpha_l3g2e_closure_v0_1.md](path_alpha_l3g2e_closure_v0_1.md) | Cui Step 2.a + Step 3 + Pirandola SI Note 1/2 + Methods（per-edge-use 等同）| **diff PASS** "clean split-out" |
 
-**待 C3 R3 重评**：
+**已闭合（C3 R3 PASS + C2 签批完成）**：
 
-| Sub-gap | 文件 | C3 R2 issue | v0.3 patch |
-|---|---|---|---|
-| **L2.G1 v0.3** | [path_alpha_l2g1_closure_v0_1.md](path_alpha_l2g1_closure_v0_1.md) | §1.2 证明链 "Pirandola Eq. 11 [THM] ≤ -log_2(1-√η_AB)" 是 silent specialization upgrade | §1.2 chain 改两步：Eq. 11 → min_C E_R(C) → specialization → -log_2 形式；加 v0.3 corrected note + cross-link RETRACTION.md §9.3 |
+| Sub-gap | 文件 | 原 C3 R2 issue | v0.3 patch | C2 |
+|---|---|---|---|---|
+| **L2.G1 v0.3** | [path_alpha_l2g1_closure_v0_1.md](path_alpha_l2g1_closure_v0_1.md) | §1.2 证明链 "Pirandola Eq. 11 [THM] ≤ -log_2(1-√η_AB)" 是 silent specialization upgrade | §1.2 chain 改两步：Eq. 11 → min_C E_R(C) → specialization → -log_2 形式；加 v0.3 corrected note + cross-link RETRACTION.md §9.3 | ✅ 2026-05-01 |
 
 **[RETRACTED]**：
 
@@ -115,20 +116,21 @@ v0.2 §3.3 把 "Lemma C counting/normalization residual" 列为独立 named resi
 
 $$\underbrace{R_{Cui}(\Pi)}_{\text{TF-QKD 密钥率, Cui Eq. (3)}} \stackrel{\text{Lemma A+B+C [SYN, conditional]}}{\leq} \underbrace{R_{Pirandola}(\Pi_{tr})}_{\text{end-to-end 网络 secret-key capacity}} \stackrel{\text{Pirandola Eq. 11 (REE cut UB) [THM]}}{\leq} \underbrace{\min_C E_R(C)}_{\text{REE 最小切割流, Eq. 10/11}} \stackrel{\substack{\text{Eq. (8)/(9) specialization} \\ \text{+ tele-cov + sym η split [conditional]}}}{=} \underbrace{-\log_2(1-\sqrt{\eta_{AB}})}_{\text{single-repeater bound, N=1 equidistant}}$$
 
-**当前 conditional status (post C3 batch round 2, 2026-04-26 same-day)**：
+**当前 conditional status (post C2 user batch sign-off 2026-05-01)**：
 
-- **9/12 sub-gap C1 + C3 R2 PASS**（详 §1）
-- **1/12 C1 PASS / C3 R3 待**：L2.G1 v0.3（specialization caveat patch）
+- **10/12 sub-gap C1 + C2 + C3 FULLY CLOSED → [COROLLARY]**（详 §1）
 - **2/12 OPEN per R0.1**：L2.G3（cross-space）+ post-split L3.G3（5 项 user-level sub-residual）
 - **额外**：Pirandola Eq. 11 specialization chain（Eq. (8)/(9) + tele-covariance + sym η split），独立 conditional step
-- **C2 用户审签 batch**：⏳ 未启动
-- **C3 R3**：⏳ 待重评 L2.G1 v0.3 patch + 4 propagation patches（lemma_skeletons §6 + path α v0.3 spec + integration v0.3 本文件）
-- **Combined chain**：[SYN, conditional on **{12 sub-gaps with post-split L3.G3 = 5 sub-residuals + Eq. 11 specialization chain}**]
+- **C2 用户审签 batch**：✅ 已完成（2026-05-01 user batch sign-off）
+- **C2 用户审签 batch**：✅ 已完成（2026-05-01 user batch sign-off）
+- **C3 R3**：✅ L2.G1 v0.3 + 4 propagation patches 已通过（lemma_skeletons §6 + path α v0.3 spec + integration）
+- **Combined chain**：[SYN, conditional on **{L2.G3 + post-split L3.G3 (5 sub-residuals) + Pirandola Eq. 11 specialization chain}**]（10/12 sub-gap 已 C1+C2+C3 全闭合 → [COROLLARY]）
 
 **对外引用资格**：
 
-- **[NONE]** — combined chain 仍 [SYN, conditional on multi-OPEN]
-- 升级到 [COROLLARY] / [THM] 仍需 R0.2 完整 (C1∧C2∧C3) 流程；当前**远未**满足
+- **10 个 [COROLLARY] sub-gap**：可对外引用（限对应假设）
+- **Combined chain**：仍 [SYN, conditional] — 不可对外引用
+- Combined chain 升级仍需 L2.G3 + L3.G3 闭合
 
 ---
 
@@ -136,21 +138,21 @@ $$\underbrace{R_{Cui}(\Pi)}_{\text{TF-QKD 密钥率, Cui Eq. (3)}} \stackrel{\te
 
 ### §5.1 R0.1 — 不做计划外降级
 
-- **9 个 PASS closure**：每个 §1.3 strict scope 必须保持不动
-- **L1.G4 v0.1 [RETRACTED]**：未恢复前 path α Lemma A 整体 closure 状态依赖 v0.2 redo
-- **L2.G3 / post-split L3.G3 5 项 / L2.G1 v0.3 R3 待**：**禁止** AI 自行 close
+- **10 个 COROLLARY closure**：每个 §1.3 strict scope 必须保持不动
+- **L1.G4 v0.1 [RETRACTED]**：v0.2 已 C1+C2+C3 闭合 → [COROLLARY]
+- **L2.G3 / post-split L3.G3 5 项**：**禁止** AI 自行 close
 
 ### §5.2 R0.2 — 三闸门并列必要（v0.2 措辞维持）
 
-- **C1(a)** Codex 端直读 PDF 满足；Claude 端**间接**（通过 prior synthesis）—— 弱 fit R0.2 字面要求；建议 user 在 C2 时 cross-verify Claude 引用准确性
-- **C2 用户签字**：未走（9 个 PASS + L2.G1 v0.3 都待）
-- **C3 R3**：待（L2.G1 v0.3 + 4 propagation patches 须 verify）
-- **任何升级 [SYN] → [COROLLARY] 仍非法**
+- **C1(a)** Codex 端直读 PDF 满足；Claude 端**间接**（通过 prior synthesis）
+- **C2 用户签字**：✅ 已完成（2026-05-01 user batch sign-off，见 [path_alpha_c2_signoff_2026-05-01.md](path_alpha_c2_signoff_2026-05-01.md)）
+- **C3 R3**：✅ 已完成（L2.G1 v0.3 + 4 propagation patches）
+- **10/12 sub-gap [SYN] → [COROLLARY] 升级合法**
 
 ### §5.3 R0.3 — 严谨性分级
 
-- 9 个 PASS closure banner = `[SYN candidate-for-COROLLARY-pending-C2 user signature]`（C3 R2 已 PASS，待 C3 R3 整体确认）
-- **L1.G4 v0.1 banner = [RETRACTED]**；v0.2 banner = `[SYN candidate]`
+- 10 个 closure banner = `[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01) / C3 ✅`
+- **L1.G4 v0.1 banner = [RETRACTED]**；v0.2 banner = `[COROLLARY]`
 - combined chain 仍 [SYN, conditional]，**不可对外引用**
 
 ---
