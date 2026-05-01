@@ -35,19 +35,20 @@
 | **L1.G4 v0.2** | A | trace-distance contraction（v0.1 [RETRACTED] → v0.2 redo）| ✅ R1 PASS（v0.2 redo verify）| ✅ R2 diff PASS（"R1 smuggling defect appears fixed"）| **C1+C2+C3 闭合 → [COROLLARY]** |
 | **L2.G1 v0.3 final** | B | rate-direction sign | ✅ R2 PASS | ✅ R2 diff FAIL #5 → v0.3 patch → **R3 A 项 PASS** | **C1+C2+C3 闭合 → [COROLLARY]** |
 | **L2.G2** | B | ε-composable decomposition | ✅ R3 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
-| **L2.G3** | B | Eve set across spaces | — | — | **OPEN per R0.1**（cross-space gap，user 显式声明范畴）|
+| **L2.G3 v0.1** | B | Eve set across spaces（user 显式声明 + Pirandola §II-C citation）| ✅ Log 07 审计 | ✅ user declaration verified | ✅ 2026-05-01 | **C1+C2+C3 闭合 → [COROLLARY]** |
 | **L2.G4** | B | non-LOCC joint attack | ✅ R2 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
 | **L3.G1** | C | LOPC syntax cross-topology | ✅ R1 PASS | ✅ R2 diff PASS | C1+C2+C3 闭合 → [COROLLARY] |
 | **L3.G2 v0.5 final** | C | key length cross-topology (under user Option B) | ✅ R3 PASS | ✅ R3 PASS | **C1+C2+C3 闭合 → [COROLLARY]** |
 | **L3.G2.E v0.3 final** | C | channel-use counting alignment（NEWLY opened，split-out from former L3.G3 sub-residual 4）| ✅ R3 PASS | ✅ R2 diff PASS（"clean split-out"）| **C1+C2+C3 闭合 → [COROLLARY]** |
 | **L3.G3 (post-split)** | C | Pirandola Eq. 11 specialization chain to specific η-form：5 项 sub-residual（citation / parameter-id / symmetry / protocol-model / edge-model）| — | — | **OPEN per R0.1**（5 项 user-level operational-link sub-residual）|
 
-**v0.4 汇总**（post C2 user batch sign-off 2026-05-01）：
+**v0.5 汇总**（post L2.G3 closure 2026-05-01）：
 
-- **10/12 sub-gap C1 + C2 + C3 FULLY CLOSED → [COROLLARY]**：L1.G1, L1.G2, L1.G3, **L1.G4 v0.2**, **L2.G1 v0.3 final**, L2.G2, L2.G4, L3.G1, **L3.G2 v0.5 final**, **L3.G2.E v0.3 final**
-- **2/12 OPEN per R0.1**：L2.G3（cross-space）+ post-split L3.G3（5 项 user-level sub-residual）
-- **C2 用户审签 batch**：✅ **已完成**（2026-05-01 用户批量签批，签批记录见 [path_alpha_c2_signoff_2026-05-01.md](path_alpha_c2_signoff_2026-05-01.md)）
+- **11/12 sub-gap C1 + C2 + C3 FULLY CLOSED → [COROLLARY]**：L1.G1, L1.G2, L1.G3, **L1.G4 v0.2**, **L2.G1 v0.3 final**, L2.G2, **L2.G3 v0.1**, L2.G4, L3.G1, **L3.G2 v0.5 final**, **L3.G2.E v0.3 final**
+- **1/12 OPEN per R0.1**：post-split L3.G3（5 项 user-level sub-residual）
+- **C2 用户审签**：✅ **已完成**（2026-05-01 批量签批 10 sub-gap + L2.G3 单独声明）
 - **额外 caveat**：Pirandola Eq. 11 specialization chain（Eq. (8)/(9) lossy chain + tele-covariance + symmetric η split），**独立**于 12 sub-gap 之外的 conditional step
+- **Lemma A + Lemma B + Lemma C 单体均已闭合**（Lemma C 的 L3.G3 除外）
 
 ---
 
@@ -60,6 +61,7 @@
 | L1.G3 | [path_alpha_l1g3_closure_v0_1.md](path_alpha_l1g3_closure_v0_1.md) | KW Chapter 4 §4.3 | diff PASS |
 | **L1.G4 v0.2** | [path_alpha_l1g4_closure_v0_2.md](path_alpha_l1g4_closure_v0_2.md)（[v0.1 RETRACTED](path_alpha_l1g4_closure_v0_1.md)）| KW Ch 6 Theorem 6.3 + §4.4.2 + 数值 300 trials | **diff PASS** "R1 smuggling defect appears fixed" |
 | L2.G2 | [path_alpha_l2g2_closure_v0_1.md](path_alpha_l2g2_closure_v0_1.md) | Portmann-Renner 2022 §III.B Theorem 2 + Lemma 3 | diff PASS |
+| **L2.G3 v0.1** | [path_alpha_l2g3_closure_v0_1.md](path_alpha_l2g3_closure_v0_1.md) | Pirandola 2019 §II-C + §IV Step B + SI Note 1 + Log 07 §1.3 | **user declaration + citation verified** |
 | L2.G4 | [path_alpha_l2g4_closure_v0_1.md](path_alpha_l2g4_closure_v0_1.md) | Cui 2019 Eq. (1) + Section III page 3 | diff PASS |
 | L3.G1 | [path_alpha_l3g1_closure_v0_1.md](path_alpha_l3g1_closure_v0_1.md) | KW Eq. (20.1.12) + Pirandola SI Note 1 + Cui Step 3 | diff PASS |
 | **L3.G2 v0.5 final** | [path_alpha_l3g2_closure_v0_1.md](path_alpha_l3g2_closure_v0_1.md) | Portmann-Renner 2022 §III.B + Pirandola Methods near-Eq.-(35) + Cui Eq. (3)（user Option B）| **R3 PASS** |
@@ -79,13 +81,13 @@
 
 ---
 
-## §3 OPEN sub-gap — 结构性维持 [UNKNOWN]（v0.3 反映 post-split 状态）
+## §3 OPEN sub-gap — 仅剩 1 个（v0.5 反映 L2.G3 闭合后状态）
 
-### §3.1 L2.G3 — Eve set across spaces（与 v0.2 §3.1 一致）
+### §3.1 L2.G3 — ✅ 已闭合 → [COROLLARY]（2026-05-01）
 
-trusted-relay Eve **仅** access $\mathcal{H}_E$，**不**触 $\mathcal{H}_C$ 这一 cross-space 假设。维持 **OPEN per R0.1**，需 user 显式声明。详 [v0.2 §3.1](path_alpha_subgap_closure_integration_v0_2.md#31-l2g3--eve-set-across-spaces与-v01-31-一致原文重述)（保留作 audit）。
+User 显式声明接受 Pirandola 2019 §II-C 安全模型（Eve = channel purifications，不包含 Charlie 内部 $H_C$）+ 要求标注出处。闭合文档：[path_alpha_l2g3_closure_v0_1.md](path_alpha_l2g3_closure_v0_1.md)。引用来源：Pirandola 2019 §II-C + §IV Step B + SI Note 1 + Log 07 §1.3。
 
-### §3.2 post-split L3.G3 — 5 sub-residual（v0.3 修正：从 6 减至 5）
+### §3.2 post-split L3.G3 — 5 sub-residual（唯一剩余 OPEN）
 
 L3.G3 原 6 项 sub-residual 中第 4 项（"channel-use accounting"）已 split out 为 newly opened **L3.G2.E**（C1+C3 R2 PASS）。剩余 **post-split L3.G3 = 5 sub-residual**，全部 user-level OPEN：
 
@@ -116,12 +118,13 @@ v0.2 §3.3 把 "Lemma C counting/normalization residual" 列为独立 named resi
 
 $$\underbrace{R_{Cui}(\Pi)}_{\text{TF-QKD 密钥率, Cui Eq. (3)}} \stackrel{\text{Lemma A+B+C [SYN, conditional]}}{\leq} \underbrace{R_{Pirandola}(\Pi_{tr})}_{\text{end-to-end 网络 secret-key capacity}} \stackrel{\text{Pirandola Eq. 11 (REE cut UB) [THM]}}{\leq} \underbrace{\min_C E_R(C)}_{\text{REE 最小切割流, Eq. 10/11}} \stackrel{\substack{\text{Eq. (8)/(9) specialization} \\ \text{+ tele-cov + sym η split [conditional]}}}{=} \underbrace{-\log_2(1-\sqrt{\eta_{AB}})}_{\text{single-repeater bound, N=1 equidistant}}$$
 
-**当前 conditional status (post C2 user batch sign-off 2026-05-01)**：
+**当前 conditional status (post L2.G3 closure 2026-05-01)**：
 
-- **10/12 sub-gap C1 + C2 + C3 FULLY CLOSED → [COROLLARY]**（详 §1）
-- **2/12 OPEN per R0.1**：L2.G3（cross-space）+ post-split L3.G3（5 项 user-level sub-residual）
+- **11/12 sub-gap C1 + C2 + C3 FULLY CLOSED → [COROLLARY]**（详 §1）
+- **1/12 OPEN per R0.1**：post-split L3.G3（5 项 user-level sub-residual）
 - **额外**：Pirandola Eq. 11 specialization chain（Eq. (8)/(9) + tele-covariance + sym η split），独立 conditional step
-- **C2 用户审签 batch**：✅ 已完成（2026-05-01 user batch sign-off）
+- **C2 用户审签**：✅ 已完成（2026-05-01 user batch sign-off + L2.G3 单独声明）
+- **Combined chain**：[SYN, conditional on **{post-split L3.G3 (5 sub-residuals) + Pirandola Eq. 11 specialization chain}**]（11/12 sub-gap 已 C1+C2+C3 全闭合 → [COROLLARY]；Lemma A + Lemma B + Lemma C 单体均已闭合）
 - **C2 用户审签 batch**：✅ 已完成（2026-05-01 user batch sign-off）
 - **C3 R3**：✅ L2.G1 v0.3 + 4 propagation patches 已通过（lemma_skeletons §6 + path α v0.3 spec + integration）
 - **Combined chain**：[SYN, conditional on **{L2.G3 + post-split L3.G3 (5 sub-residuals) + Pirandola Eq. 11 specialization chain}**]（10/12 sub-gap 已 C1+C2+C3 全闭合 → [COROLLARY]）
@@ -138,21 +141,22 @@ $$\underbrace{R_{Cui}(\Pi)}_{\text{TF-QKD 密钥率, Cui Eq. (3)}} \stackrel{\te
 
 ### §5.1 R0.1 — 不做计划外降级
 
-- **10 个 COROLLARY closure**：每个 §1.3 strict scope 必须保持不动
+- **11 个 COROLLARY closure**：每个 §1.3 strict scope 必须保持不动
 - **L1.G4 v0.1 [RETRACTED]**：v0.2 已 C1+C2+C3 闭合 → [COROLLARY]
-- **L2.G3 / post-split L3.G3 5 项**：**禁止** AI 自行 close
+- **post-split L3.G3 5 项**：**禁止** AI 自行 close（仅剩的 OPEN）
 
 ### §5.2 R0.2 — 三闸门并列必要（v0.2 措辞维持）
 
 - **C1(a)** Codex 端直读 PDF 满足；Claude 端**间接**（通过 prior synthesis）
-- **C2 用户签字**：✅ 已完成（2026-05-01 user batch sign-off，见 [path_alpha_c2_signoff_2026-05-01.md](path_alpha_c2_signoff_2026-05-01.md)）
+- **C2 用户签字**：✅ 已完成（2026-05-01 user batch sign-off 10 sub-gap + L2.G3 单独声明）
 - **C3 R3**：✅ 已完成（L2.G1 v0.3 + 4 propagation patches）
-- **10/12 sub-gap [SYN] → [COROLLARY] 升级合法**
+- **11/12 sub-gap [SYN] → [COROLLARY] 升级合法**
 
 ### §5.3 R0.3 — 严谨性分级
 
-- 10 个 closure banner = `[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01) / C3 ✅`
+- 11 个 closure banner = `[COROLLARY] — C1(a) ✅ / C2 ✅ (2026-05-01) / C3 ✅`
 - **L1.G4 v0.1 banner = [RETRACTED]**；v0.2 banner = `[COROLLARY]`
+- **L2.G3 v0.1 banner = `[COROLLARY]`**（2026-05-01 user declaration + Pirandola §II-C citation）
 - combined chain 仍 [SYN, conditional]，**不可对外引用**
 
 ---

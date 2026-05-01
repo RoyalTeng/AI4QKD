@@ -12,10 +12,10 @@
 |-------|---------|-------|
 | **Phase 0** | ✅ 完成 | MS-EB 框架 + WLC SDP + 七族五元组 + M1-M4 数值 |
 | **Phase 1** | ✅ 完成 (v1.1) | 三族 Pareto 2581+2831+1600 pts + Kamin GEAT + family_comparison 主图 |
-| **Phase 2 (Sub-Q3)** | 🟡 部分完成 → 10/12 sub-gap [COROLLARY] | upper_bound_report v0.7 + path α 10 sub-gap C1+C2+C3 闭合 + 2 OPEN (L2.G3 + L3.G3) + β.G3 [SYN] |
+| **Phase 2 (Sub-Q3)** | 🟡 部分完成 → 11/12 sub-gap [COROLLARY] | upper_bound_report v0.7 + path α 11 sub-gap C1+C2+C3 闭合 + 1 OPEN (L3.G3) + β.G3 [SYN] |
 | **Phase 3 (Sub-Q4)** | 🟡 初步（数据驱动 [CONJ]） | gap_shape v0.3 4 candidates + gap_analysis G4.2 v0.1 归因初稿 |
 
-**AI 自主边界**：10/12 sub-gap 经 C1(a) + C2 (2026-05-01) + C3 升级至 [COROLLARY]。2/12 OPEN (L2.G3 + L3.G3) 仍等用户 paper-level work。Combined chain 仍 [SYN, conditional]。
+**AI 自主边界**：11/12 sub-gap 经 C1(a) + C2 (2026-05-01) + C3 升级至 [COROLLARY]。1/12 OPEN (L3.G3 5 sub-residuals) 仍等用户 paper-level work。Combined chain 仍 [SYN, conditional on L3.G3]。
 
 ---
 
@@ -181,11 +181,11 @@
 
 path α 10/12 sub-gap 经 C1(a) + C2 (user batch sign-off) + C3 完整流程，升级至 **[COROLLARY]**：
 - ✅ **Lemma A 全部 4 个**：[COROLLARY]
-- ✅ **Lemma B 3 个** (L2.G3 OPEN 除外)：[COROLLARY]
+- ✅ **Lemma B 全部 4 个** (含 L2.G3 v0.1 user declaration)：[COROLLARY]
 - ✅ **Lemma C 3 个** (L3.G3 OPEN 除外)：[COROLLARY]
-- 🔓 **L2.G3 + L3.G3 (5 sub-residuals)**：仍 [UNKNOWN] OPEN
-- Combined chain：仍 [SYN, conditional]
-- 签批记录：[path_alpha_c2_signoff_2026-05-01.md](proofs/path_alpha_c2_signoff_2026-05-01.md)
+- 🔓 **L3.G3 (5 sub-residuals)**：仅剩的 [UNKNOWN] OPEN
+- Combined chain：仍 [SYN, conditional on L3.G3 + Pirandola Eq. 11 specialization chain]
+- 签批记录：[path_alpha_c2_signoff_2026-05-01.md](proofs/path_alpha_c2_signoff_2026-05-01.md) + [path_alpha_l2g3_closure_v0_1.md](proofs/path_alpha_l2g3_closure_v0_1.md)
 
 ---
 
